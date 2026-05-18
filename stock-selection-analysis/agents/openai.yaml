@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stock Selection Analysis"
+  short_description: "Analyze and forecast US/HK/A-share stocks"
+  default_prompt: "Use $stock-selection-analysis to screen US, Hong Kong, and A-share candidates, analyze technical indicators, and forecast future prices."
