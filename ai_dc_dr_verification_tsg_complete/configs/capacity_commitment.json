@@ -1,0 +1,8 @@
+{
+  "flexible_capacity_mw": 118.0,
+  "commitment_scope": "study nameplate fixed before validation/test selection",
+  "selection_inputs": "public model configuration only; no workload rows or locked outcomes",
+  "locked_test_observations_used_for_selection": false,
+  "unit": "MW",
+  "version": "capacity-commitment-v1"
+}

@@ -1,0 +1,2329 @@
+from __future__ import annotations
+
+import json
+import logging
+import re
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+from PIL import Image
+
+from .data import load_workload
+from .optimization import parse_pglib_case, solve_sced, solve_workload_schedule
+from .utils import sha256, write_json
+
+
+EXPECTED_FILES = {
+    "data": [
+        "data/processed/workload_15min.npz",
+        "data/processed/workload_daily_summary.csv",
+        "data/processed/data_manifest.json",
+        "data/processed/data_flow_audit.csv",
+        "configs/capacity_commitment.json",
+    ],
+    "experiment_1": [
+        "experiments/exp1_manipulation/results/final/manipulation_grid.csv",
+        "experiments/exp1_manipulation/results/final/experiment_metadata.json",
+        "experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.png",
+        "experiments/exp1_manipulation/figures/fig2_response_and_migration.png",
+    ],
+    "experiment_2": [
+        "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+        "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
+        "experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
+        "experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+        "experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
+        "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
+        "experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
+        "experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
+        "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
+        "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+        "experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
+        "experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
+        "experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
+        "experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
+        "experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
+        "experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
+        "experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
+        "experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
+        "experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
+        "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
+        "experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
+        "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
+        "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
+        "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
+    ],
+    "experiment_3": [
+        "experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv",
+        "experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv",
+        "experiments/exp3_nodal_settlement/results/final/mean_line_loading.csv",
+        "experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv",
+        "experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv",
+        "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition.csv",
+        "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition_summary.csv",
+        "experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
+        "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.png",
+        "experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.png",
+        "experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.png",
+    ],
+    "experiment_4": [
+        "experiments/exp4_case_study/results/intermediate/case_selection_candidates.csv",
+        "experiments/exp4_case_study/results/final/spatial_case_timeseries.csv",
+        "experiments/exp4_case_study/results/final/case_summary_by_data_center.csv",
+        "experiments/exp4_case_study/results/final/case_metadata.json",
+        "experiments/exp4_case_study/figures/fig7_spatial_response_case.png",
+        "experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.png",
+    ],
+    "experiment_5": [
+        "experiments/exp5_network_robustness/results/final/network_robustness.csv",
+        "experiments/exp5_network_robustness/results/final/network_robustness_summary.csv",
+        "experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv",
+        "experiments/exp5_network_robustness/results/final/resolution_convergence_daily.csv",
+        "experiments/exp5_network_robustness/results/final/resolution_convergence_summary.csv",
+        "experiments/exp5_network_robustness/results/final/experiment_metadata.json",
+        "experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.png",
+    ],
+    "experiment_6": [
+        "experiments/exp6_physical_stress/results/final/physical_stress.csv",
+        "experiments/exp6_physical_stress/results/final/physical_stress_summary.csv",
+        "experiments/exp6_physical_stress/results/final/experiment_metadata.json",
+        "experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.png",
+    ],
+    "experiment_7": [
+        "experiments/exp7_value_allocation/results/final/value_allocation.csv",
+        "experiments/exp7_value_allocation/results/final/value_allocation_summary.csv",
+        "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv",
+        "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling_summary.csv",
+        "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv",
+        "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling_summary.csv",
+        "experiments/exp7_value_allocation/results/final/experiment_metadata.json",
+        "experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.png",
+        "experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.png",
+        "experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.png",
+    ],
+    "experiment_8": [
+        "experiments/exp8_n1_security/results/final/n1_security_interval_results.csv",
+        "experiments/exp8_n1_security/results/final/n1_security_daily_results.csv",
+        "experiments/exp8_n1_security/results/final/n1_security_summary.csv",
+        "experiments/exp8_n1_security/results/final/n1_security_paired_tests.csv",
+        "experiments/exp8_n1_security/results/final/experiment_metadata.json",
+        "experiments/exp8_n1_security/figures/fig13_n1_security_validation.png",
+    ],
+    "experiment_9": [
+        "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+        "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
+        "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+        "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+        "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+        "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
+        "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
+    ],
+    "experiment_10": [
+        "experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
+        "experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
+        "experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
+        "experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
+        "experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
+        "experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
+        "experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+        "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
+        "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
+        "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
+    ],
+    "experiment_11": [
+        "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
+        "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
+        "experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
+        "experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
+        "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
+    ],
+    "experiment_12": [
+        "experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
+        "experiments/exp12_rolling_market_validation/results/final/rolling_market_summary.csv",
+        "experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
+        "experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
+        "experiments/exp12_rolling_market_validation/results/final/rolling_counterfactual_profiles.npz",
+        "experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
+        "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
+    ],
+    "experiment_13": [
+        "experiments/exp13_real_trace_replay/results/final/real_trace_replay_daily.csv",
+        "experiments/exp13_real_trace_replay/results/final/real_trace_replay_trace.csv",
+        "experiments/exp13_real_trace_replay/results/final/real_trace_replay_summary.csv",
+        "experiments/exp13_real_trace_replay/results/final/experiment_metadata.json",
+        "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
+    ],
+    "experiment_14": [
+        "experiments/exp14_job_level_fidelity/results/final/job_level_flow_solution.npz",
+        "experiments/exp14_job_level_fidelity/results/final/job_level_slot_profile.csv",
+        "experiments/exp14_job_level_fidelity/results/final/job_level_fidelity_summary.csv",
+        "experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json",
+        "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
+    ],
+    "experiment_15": [
+        "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+        "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+        "experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
+        "experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
+        "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
+    ],
+    "experiment_16": [
+        "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
+        "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+        "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
+        "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
+        "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
+        "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
+    ],
+    "experiment_17": [
+        "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
+        "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+        "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
+        "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
+    ],
+    "experiment_18": [
+        "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
+        "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+    ],
+    "manuscript_sources": [
+        "manuscript/main.tex",
+        "manuscript/main.pdf",
+        "manuscript/IEEEtran.cls",
+        "manuscript/references.bib",
+        "manuscript/formula_source_matrix.md",
+        "manuscript/model_formulation.md",
+        "manuscript/paper_outline_zh.md",
+        "manuscript/theoretical_results.md",
+        "manuscript/figures/framework_architecture.drawio",
+        "manuscript/figures/framework_architecture.svg",
+        "manuscript/figures/method_detail.drawio",
+        "manuscript/figures/method_detail.svg",
+        "manuscript/figures/fig0_framework.pdf",
+        "manuscript/figures/fig0_framework.png",
+        "manuscript/figures/fig_method_detail.pdf",
+        "manuscript/figures/fig_method_detail.png",
+        "manuscript/figures/fig17_cross_layer_robustness.png",
+        "manuscript/figures/fig17_cross_layer_robustness.pdf",
+    ],
+}
+
+
+def _check(condition: bool, name: str, detail: str, checks: list[dict[str, Any]]) -> None:
+    checks.append({"name": name, "passed": bool(condition), "detail": detail})
+
+
+def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
+    checks: list[dict[str, Any]] = []
+    for section, files in EXPECTED_FILES.items():
+        for rel in files:
+            path = root / rel
+            _check(path.exists() and path.stat().st_size > 0, f"{section}:{rel}", "exists and non-empty", checks)
+
+    unified_manifest_path = root / "artifacts/run_manifest.json"
+    unified_manifest = json.loads(
+        unified_manifest_path.read_text(encoding="utf-8")
+    )
+    expected_stages = {
+        "data",
+        "exp1",
+        "exp2",
+        "exp3",
+        "exp4",
+        "exp5",
+        "exp6",
+        "exp7",
+        "exp8",
+        "exp9",
+        "exp10",
+        "exp11",
+        "exp12",
+        "exp13",
+        "exp14",
+        "exp15",
+        "exp16",
+        "exp17",
+        "exp18",
+        "audit",
+    }
+    recorded_stages = unified_manifest.get("stages", {})
+    completed_before_audit = all(
+        recorded_stages.get(name, {}).get("status") == "completed"
+        for name in expected_stages - {"audit"}
+    )
+    audit_status_valid = recorded_stages.get("audit", {}).get("status") in {
+        "running",
+        "completed",
+    }
+    _check(
+        unified_manifest.get("stage_requested") == "all"
+        and set(recorded_stages) == expected_stages
+        and completed_before_audit
+        and audit_status_valid,
+        "canonical_unified_manifest_preserved",
+        (
+            f"{len(recorded_stages)}/{len(expected_stages)} stages recorded; "
+            f"canonical request={unified_manifest.get('stage_requested')}; "
+            f"audit status={recorded_stages.get('audit', {}).get('status')}"
+        ),
+        checks,
+    )
+
+    figure_failures: list[str] = []
+    figure_dimensions: list[str] = []
+    for rel in sorted(rel for files in EXPECTED_FILES.values() for rel in files if rel.endswith(".png")):
+        path = root / rel
+        try:
+            with Image.open(path) as image:
+                width, height = image.size
+                image.verify()
+            if width < 1_000 or height < 500:
+                figure_failures.append(f"{rel}: insufficient resolution {width}x{height}")
+            figure_dimensions.append(f"{Path(rel).name}={width}x{height}")
+        except Exception as exc:
+            figure_failures.append(f"{rel}: {type(exc).__name__}: {exc}")
+    _check(
+        not figure_failures,
+        "all_png_figures_decodable_and_high_resolution",
+        "; ".join(figure_failures if figure_failures else figure_dimensions),
+        checks,
+    )
+    required_citation_keys = {
+        "wang2022baseline",
+        "caiso2017baseline",
+        "liu2013dcdr",
+        "adnan2012geographical",
+        "zimmerman2011matpower",
+        "babaeinejadsarookolaee2021pglib",
+        "boyd2004convex",
+        "rockafellar2000cvar",
+        "shapley1953value",
+        "kunsch1989bootstrap",
+        "holm1979multiple",
+        "huangfu2018highs",
+        "friedman2001gradient",
+        "geurts2006extratrees",
+        "hoerl1970ridge",
+        "wang2024burstgpt",
+        "samsi2021supercloud",
+        "stott2009dc",
+        "tejada2018lodf",
+        "nerc2020tpl",
+        "grigg1999rts",
+        "zhang2020virtuallinks",
+        "zhang2022remunerating",
+        "zhang2023receding",
+        "nash1950bargaining",
+        "satchidanandan2023twostage",
+        "chen2021incentive",
+        "nist2015fips1804",
+    }
+    bibliography = (root / "manuscript/references.bib").read_text(
+        encoding="utf-8"
+    )
+    bibliography_keys = set(
+        re.findall(r"@\w+\{\s*([^,\s]+)", bibliography)
+    )
+    source_matrix = (
+        root / "manuscript/formula_source_matrix.md"
+    ).read_text(encoding="utf-8")
+    formulation = (
+        root / "manuscript/model_formulation.md"
+    ).read_text(encoding="utf-8")
+    _check(
+        required_citation_keys <= bibliography_keys
+        and all(key in source_matrix for key in required_citation_keys)
+        and all(key in formulation for key in required_citation_keys),
+        "model_formula_citation_traceability",
+        (
+            f"{len(required_citation_keys & bibliography_keys)}/"
+            f"{len(required_citation_keys)} required source keys in bibliography, "
+            "formula-source matrix, and complete formulation"
+        ),
+        checks,
+    )
+    manuscript_text = (root / "manuscript/main.tex").read_text(
+        encoding="utf-8"
+    )
+    _check(
+        re.search(
+            r"\\documentclass\[(?:[0-9]+pt,)?journal\]\{IEEEtran\}",
+            manuscript_text,
+        )
+        is not None,
+        "official_ieee_journal_template",
+        "manuscript uses the vendored official IEEEtran journal class",
+        checks,
+    )
+    cited_keys = {
+        key.strip()
+        for group in re.findall(r"\\cite\{([^}]+)\}", manuscript_text)
+        for key in group.split(",")
+    }
+    citation_groups = re.findall(r"\\cite\{([^}]+)\}", manuscript_text)
+    _check(
+        all(len(group.split(",")) <= 2 for group in citation_groups),
+        "maximum_two_sources_per_citation_group",
+        f"{len(citation_groups)} in-text citation groups checked",
+        checks,
+    )
+    _check(
+        len(bibliography_keys) >= 30
+        and bibliography_keys == cited_keys,
+        "complete_manuscript_bibliography",
+        (
+            f"{len(bibliography_keys)} verified bibliography entries; "
+            f"{len(cited_keys)} unique in-text citations; "
+            f"uncited={sorted(bibliography_keys - cited_keys)}; "
+            f"missing={sorted(cited_keys - bibliography_keys)}"
+        ),
+        checks,
+    )
+
+    manifest_path = root / "data/processed/data_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    data_flow = pd.read_csv(root / "data/processed/data_flow_audit.csv")
+    for source in manifest["sources"]:
+        path = root / source["path"]
+        current = sha256(path)
+        _check(current == source["sha256"], f"sha256:{source['path']}", current, checks)
+    _check(
+        manifest["burstgpt"]["rows"] == 5_188_507,
+        "full_burstgpt_rows",
+        str(manifest["burstgpt"]["rows"]),
+        checks,
+    )
+    _check(
+        manifest["mit_supercloud"]["valid_joined_jobs"] > 50_000,
+        "full_measured_gpu_jobs",
+        str(manifest["mit_supercloud"]["valid_joined_jobs"]),
+        checks,
+    )
+    conversion_quantiles = manifest["power_calibration"][
+        "heldout_job_energy_measured_to_predicted_quantiles"
+    ]
+    declared_conversion_factors = np.asarray(
+        [
+            conversion_quantiles["0.1"],
+            conversion_quantiles["0.5"],
+            conversion_quantiles["0.9"],
+        ],
+        dtype=float,
+    )
+    _check(
+        manifest["power_calibration"][
+            "heldout_jobs_with_positive_prediction"
+        ]
+        == 21919
+        and bool(np.all(np.diff(declared_conversion_factors) > 0))
+        and float(declared_conversion_factors[0]) < 1.0
+        and float(declared_conversion_factors[-1]) > 1.0,
+        "heldout_power_conversion_scenarios_complete",
+        (
+            "21,919 held-out jobs; measured-to-predicted energy factors="
+            + ", ".join(
+                f"{value:.6f}" for value in declared_conversion_factors
+            )
+        ),
+        checks,
+    )
+    _check(
+        len(data_flow) == 5
+        and int(
+            manifest["power_calibration"]["train_observations"]
+            + manifest["power_calibration"]["test_observations"]
+        )
+        == int(manifest["power_calibration"]["observations"])
+        and int(
+            data_flow.loc[
+                data_flow["stage"] == "MIT scheduler-telemetry join",
+                "retained_records",
+            ].iloc[0]
+        )
+        == int(manifest["mit_supercloud"]["valid_joined_jobs"]),
+        "complete_source_to_evaluation_data_flow",
+        (
+            f"{len(data_flow)} source/join/split stages; calibration "
+            f"{manifest['power_calibration']['train_observations']} train + "
+            f"{manifest['power_calibration']['test_observations']} held out"
+        ),
+        checks,
+    )
+    workload = load_workload(root / "data/processed/workload_15min.npz")
+    arrivals = workload["arrivals_mwh"]
+    observed = workload["observed_counterfactual_mw"]
+    _check(np.isfinite(arrivals).all() and (arrivals >= 0).all(), "processed_data_finite_nonnegative", str(arrivals.shape), checks)
+    _check(arrivals.sum() > 0, "processed_data_nonempty", f"{arrivals.sum():.3f} MWh", checks)
+    _check(
+        np.isfinite(observed).all() and observed.shape == (arrivals.shape[0], arrivals.shape[1]),
+        "trace_observed_counterfactual_complete",
+        str(observed.shape),
+        checks,
+    )
+    valid_days = workload["valid_days"].astype(int)
+    future_days = int(
+        np.ceil(
+            int(cfg["experiments"]["lookahead_slots"])
+            / int(cfg["project"]["slots_per_day"])
+        )
+    )
+    eligible_days = valid_days[
+        (valid_days >= int(cfg["experiments"]["strategic_history_days"]))
+        & (valid_days <= int(valid_days.max()) - future_days)
+    ]
+    selected_days = eligible_days[
+        -(
+            int(cfg["experiments"]["validation_days"])
+            + int(cfg["experiments"]["test_days"])
+        ) :
+    ]
+    _check(
+        len(selected_days)
+        == int(cfg["experiments"]["validation_days"])
+        + int(cfg["experiments"]["test_days"])
+        and bool((np.diff(selected_days) == 1).all())
+        and int(selected_days.max()) + future_days <= int(valid_days.max()),
+        "locked_days_have_complete_history_and_future_coverage",
+        (
+            f"days {int(selected_days.min())}--{int(selected_days.max())}; "
+            f"{future_days} future days available for the 512-slot deadline"
+        ),
+        checks,
+    )
+
+    # Independently verify primal conservation/capacity/deadlines on a locked day.
+    slots = int(cfg["project"]["slots_per_day"])
+    day = int(workload["valid_days"][-1])
+    daily = arrivals.reshape(-1, slots, arrivals.shape[1], arrivals.shape[2])[day]
+    system = parse_pglib_case(root / cfg["data"]["pglib_case"])
+    dc_count = int(cfg["project"]["number_of_regions"])
+    prices = np.full((dc_count, slots), 50.0)
+    schedule = solve_workload_schedule(daily, prices, cfg, mode="honest")
+    served = schedule.served_mwh
+    conservation_gap = float(np.max(np.abs(served.sum(axis=(2, 3)) - daily.sum(axis=0))))
+    capacity_violation = float(
+        max(0.0, served.sum(axis=(0, 1)).max() / (cfg["project"]["interval_minutes"] / 60.0) - cfg["project"]["flexible_capacity_mw"])
+    )
+    max_deadline_gap = 0.0
+    cumulative_arrivals = np.cumsum(daily, axis=0)
+    cumulative_service = np.cumsum(served.sum(axis=2), axis=2)
+    for source in range(daily.shape[1]):
+        for klass, deadline in enumerate(cfg["workload"]["deadlines_slots"]):
+            for t in range(int(deadline), slots):
+                required = cumulative_arrivals[t - int(deadline), source, klass]
+                max_deadline_gap = max(max_deadline_gap, float(required - cumulative_service[source, klass, t]))
+    _check(schedule.success and conservation_gap <= 1e-7, "workload_conservation", f"max gap={conservation_gap:.3e} MWh", checks)
+    _check(capacity_violation <= 1e-7, "data_center_capacity", f"violation={capacity_violation:.3e} MW", checks)
+    _check(max_deadline_gap <= 1e-7, "deadline_feasibility", f"violation={max_deadline_gap:.3e} MWh", checks)
+
+    # SCED nodal balance and line-limit validation.
+    sced = solve_sced(system, system.bus[:, 2] * 0.9, int(cfg["market"]["generator_segments"]))
+    balance_gap = float(abs(sced.generation_mw.sum() - (system.bus[:, 2] * 0.9).sum()))
+    _check(balance_gap <= 1e-6, "sced_power_balance", f"gap={balance_gap:.3e} MW", checks)
+    _check(sced.max_loading <= 1.000001, "sced_line_limits", f"max loading={sced.max_loading:.6f} pu", checks)
+
+    exp1 = pd.read_csv(root / "experiments/exp1_manipulation/results/final/manipulation_grid.csv")
+    expected_grid = len(cfg["experiments"]["exp1_dr_prices"]) * len(cfg["experiments"]["exp1_event_probabilities"])
+    _check(len(exp1) == expected_grid, "complete_exp1_grid", f"{len(exp1)}/{expected_grid}", checks)
+    _check(
+        bool(exp1["theory_optimizer_agreement"].astype(bool).all()),
+        "strategic_threshold_theory_matches_optimizer",
+        (
+            f"{int(exp1['theory_optimizer_agreement'].astype(bool).sum())}/"
+            f"{len(exp1)} price-probability cells"
+        ),
+        checks,
+    )
+
+    metrics = pd.read_csv(root / "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv")
+    expected_test = int(cfg["experiments"]["test_days"])
+    expected_blocks = int(
+        np.ceil(expected_test / int(cfg["experiments"]["block_length_days"]))
+    )
+    expected_methods = {
+        "High-5-of-10",
+        "Ridge",
+        "Gradient Boosting",
+        "Extra Trees",
+        "Metadata Gradient Boosting",
+        "Ex-post Metadata Gradient Boosting",
+        "Ex-post Quantile Gradient Boosting",
+        "Synthetic Control",
+        "Feasible Quantile Projection",
+        "Tail-Risk Feasible Counterfactual",
+        "Single Feasible Projection",
+        "Risk-Constrained Convex Verifier",
+    }
+    metric_cells = metrics.groupby("method")["day"].nunique()
+    _check(
+        set(metrics["method"].unique()) == expected_methods
+        and len(metrics) == expected_test * len(expected_methods)
+        and bool((metric_cells == expected_test).all()),
+        "locked_test_set_complete",
+        f"{len(metrics)}/{expected_test * len(expected_methods)} outcomes",
+        checks,
+    )
+    locked_profile_store = np.load(
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/"
+        "test_profiles.npz",
+        allow_pickle=False,
+    )
+    locked_days = set(locked_profile_store["days"].astype(int).tolist())
+    two_sided = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "two_sided_credit_certificate.csv"
+    )
+    _check(
+        len(two_sided) == expected_test
+        and set(two_sided["day"].astype(int)) == set(locked_days)
+        and bool((two_sided["pointwise_upper_bound_satisfied"] == 1).all())
+        and bool((two_sided["pointwise_lower_bound_satisfied"] == 1).all())
+        and bool(
+            (two_sided["lower_margin_min_mw"] >= -1e-7).all()
+            and (two_sided["upper_margin_min_mw"] >= -1e-7).all()
+        ),
+        "two_sided_credit_band_certificate",
+        (
+            f"{len(two_sided)}/{expected_test} locked days satisfy the "
+            "predeclared lower and upper physical credit band"
+        ),
+        checks,
+    )
+    decision_time = pd.read_csv(
+        root
+        / "experiments/exp17_decision_time_information/results/final/"
+        "decision_time_comparison.csv"
+    )
+    decision_meta = json.loads(
+        (
+            root
+            / "experiments/exp17_decision_time_information/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(decision_time) == expected_test * 2
+        and set(decision_time["day"].astype(int)) == set(locked_days)
+        and bool(
+            decision_time.loc[
+                decision_time["method"].eq(
+                    "Decision-time truncated-ledger verifier"
+                ),
+                "future_arrivals_used_for_decision",
+            ].eq(False).all()
+        )
+        and decision_meta.get("future_arrivals_removed_from_decision") is True,
+        "decision_time_information_boundary_panel",
+        (
+            f"{len(decision_time)}/{expected_test * 2} rows; post-gate arrivals "
+            "are excluded from the event-gate decision"
+        ),
+        checks,
+    )
+    ac_cross = pd.read_csv(
+        root
+        / "experiments/exp18_preventive_ac_network_panel/results/final/"
+        "preventive_ac_cross_network_results.csv"
+    )
+    ac_cross_meta = json.loads(
+        (
+            root
+            / "experiments/exp18_preventive_ac_network_panel/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    expected_ac_networks = {
+        "IEEE RTS 24-bus",
+        "IEEE 30-bus",
+        "IEEE 39-bus",
+        "IEEE 118-bus",
+    }
+    _check(
+        set(ac_cross["network"].unique()) == expected_ac_networks
+        and set(ac_cross["method"].unique())
+        == {"Payment-Certified N-1 Verifier", "Trace-Anchored Reference"}
+        and len(ac_cross) == sum(
+            int(count)
+            for count in ac_cross_meta["outages_by_network"].values()
+        )
+        * 3
+        * 2
+        and bool((ac_cross["solver_success"] == 1).all())
+        and np.isfinite(
+            ac_cross[
+                [
+                    "maximum_apparent_line_loading",
+                    "maximum_voltage_violation_pu",
+                    "maximum_nonreference_active_plan_deviation_mw",
+                ]
+            ].to_numpy(dtype=float)
+        ).all()
+        and set(ac_cross["schema_version"].astype(int).unique()) == {2}
+        and ac_cross_meta.get("shared_active_plan") is False
+        and "corrective AC power-flow diagnostics" in str(
+            ac_cross_meta.get("scope", "")
+        )
+        and ac_cross_meta.get("ac_limits_enforced") is False
+        and ac_cross_meta["test_outcomes_used_for_scaling"] is False,
+        "cross_network_ac_n1_admissibility_panel",
+        (
+            f"{len(ac_cross)} AC outcomes over four public networks; "
+            "native-case AC admissibility and validation-only scaling recorded"
+        ),
+        checks,
+    )
+    literature = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "closest_literature_baselines.csv"
+    )
+    expected_literature = {
+        "Incentive-compatible spatial DR LP",
+        "Price-responsive non-wire workload LP",
+        "Proactive workload-shift projection",
+        "Aggregator-coordination workload schedule",
+    }
+    literature_cells = literature.groupby("baseline")["day"].nunique()
+    _check(
+        set(literature["baseline"].unique()) == expected_literature
+        and len(literature) == expected_test * len(expected_literature)
+        and bool((literature_cells == expected_test).all())
+        and np.isfinite(literature[["nrmse", "false_response_mwh", "credit_f1"]].to_numpy(dtype=float)).all(),
+        "closest_literature_baseline_panel",
+        (
+            f"{len(literature)}/{expected_test * len(expected_literature)} exact "
+            "same-ledger comparator outcomes covering incentive-compatible, "
+            "non-wire, proactive-shift, and frequency-regulation mechanisms"
+        ),
+        checks,
+    )
+    locked_day_panels = {
+        "exp2": (
+            root
+            / "experiments/exp2_baseline_verification/results/final/"
+            "per_day_baseline_metrics.csv"
+        ),
+        "exp3": (
+            root
+            / "experiments/exp3_nodal_settlement/results/final/"
+            "settlement_metrics.csv"
+        ),
+        "exp5": (
+            root
+            / "experiments/exp5_network_robustness/results/final/"
+            "network_robustness.csv"
+        ),
+        "exp6": (
+            root
+            / "experiments/exp6_physical_stress/results/final/"
+            "physical_stress.csv"
+        ),
+        "exp7": (
+            root
+            / "experiments/exp7_value_allocation/results/final/"
+            "value_allocation.csv"
+        ),
+        "exp8": (
+            root
+            / "experiments/exp8_n1_security/results/final/"
+            "n1_security_daily_results.csv"
+        ),
+        "exp9": (
+            root
+            / "experiments/exp9_payment_certificate/results/final/"
+            "payment_evaluation_daily.csv"
+        ),
+        "exp10": (
+            root
+            / "experiments/exp10_ac_validation/results/final/"
+            "ac_opf_locked_day_results.csv"
+        ),
+        "exp11": (
+            root
+            / "experiments/exp11_spatial_scale_robustness/results/final/"
+            "spatial_scale_robustness.csv"
+        ),
+        "exp12": (
+            root
+            / "experiments/exp12_rolling_market_validation/results/final/"
+            "rolling_market_validation.csv"
+        ),
+    }
+    aligned_day_panels: list[str] = []
+    misaligned_day_panels: list[str] = []
+    for label, path in locked_day_panels.items():
+        panel_days = set(
+            pd.read_csv(path, usecols=["day"])["day"]
+            .astype(int)
+            .unique()
+            .tolist()
+        )
+        if panel_days == locked_days:
+            aligned_day_panels.append(label)
+        else:
+            misaligned_day_panels.append(label)
+    _check(
+        len(locked_days) == expected_test
+        and not misaligned_day_panels,
+        "cross_experiment_locked_day_identity",
+        (
+            f"{len(aligned_day_panels)}/{len(locked_day_panels)} main panels "
+            f"use the identical locked days {min(locked_days)}--"
+            f"{max(locked_days)}; mismatches={misaligned_day_panels}"
+        ),
+        checks,
+    )
+    paired = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv"
+    )
+    expected_comparators = {
+        "High-5-of-10",
+        "Metadata Gradient Boosting",
+        "Ex-post Metadata Gradient Boosting",
+        "Ex-post Quantile Gradient Boosting",
+        "Synthetic Control",
+        "Feasible Quantile Projection",
+        "Single Feasible Projection",
+    }
+    _check(
+        set(paired["comparator"]) == expected_comparators
+        and set(paired["metric"])
+        == {"nrmse", "false_response_ratio", "credit_f1"}
+        and len(paired)
+        == len(expected_comparators) * 3
+        and bool((paired["blocks"] == expected_blocks).all())
+        and bool((paired["extreme_assignments"] >= 2).all())
+        and bool(
+            (
+                paired["two_sided_exact_p_value"] + 1e-15
+                >= paired["minimum_attainable_two_sided_p"]
+            ).all()
+        )
+        and bool(
+            (paired["holm_adjusted_p_value"] + 1e-12
+             >= paired["two_sided_exact_p_value"]).all()
+        ),
+        "dependence_robust_exact_block_tests",
+        (
+            f"{expected_blocks} pre-declared "
+            f"{int(cfg['experiments']['block_length_days'])}-day blocks, exact "
+            "sign randomization, attainable-p audit, and Holm family-wise correction"
+        ),
+        checks,
+    )
+    significance = {
+        f"{row.comparator} | {row.metric}": {
+            key: value
+            for key, value in row._asdict().items()
+            if key not in {"Index", "comparator", "metric"}
+        }
+        for row in paired.itertuples()
+    }
+    estimator_tests = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv"
+    )
+    single_estimator_tests = estimator_tests[
+        estimator_tests["comparator"] == "Single Feasible Projection"
+    ]
+    single_tail_f1 = single_estimator_tests[
+        single_estimator_tests["metric"] == "credit_f1"
+    ]
+    single_tail_nrmse = single_estimator_tests[
+        single_estimator_tests["metric"] == "nrmse"
+    ]
+    _check(
+        len(estimator_tests) == 6
+        and len(single_estimator_tests) == 2
+        and set(single_estimator_tests["metric"]) == {"nrmse", "credit_f1"}
+        and bool((estimator_tests["blocks"] == expected_blocks).all())
+        and bool((estimator_tests["extreme_assignments"] >= 2).all())
+        and bool((single_tail_f1["observed_mean_difference"] > 0).all())
+        and bool((single_tail_f1["holm_adjusted_p_value"] <= 0.05).all())
+        and bool((single_tail_nrmse["holm_adjusted_p_value"] > 0.05).all()),
+        "tail_risk_counterfactual_estimator_comparison",
+        (
+            "tail-risk feasible counterfactual improves credit F1 against the "
+            "single feasible projection, while its nRMSE difference is retained "
+            f"and nonsignificant over {expected_blocks} exact temporal blocks"
+        ),
+        checks,
+    )
+    fair_pair = paired[
+        (paired["comparator"] == "Feasible Quantile Projection")
+        & (paired["metric"] == "false_response_ratio")
+    ]
+    proposed_summary = metrics[
+        metrics["method"] == "Risk-Constrained Convex Verifier"
+    ]
+    closest_summary = metrics[
+        metrics["method"] == "Feasible Quantile Projection"
+    ]
+    _check(
+        bool(
+            (fair_pair["observed_mean_difference"] > 0).all()
+            and proposed_summary["nrmse"].mean()
+            <= closest_summary["nrmse"].mean() + 1e-9
+            and proposed_summary["false_response_mwh"].mean()
+            <= closest_summary["false_response_mwh"].mean() + 1e-9
+        ),
+        "closest_feasible_baseline_comparison",
+        (
+            "risk verifier has no greater mean nRMSE and significantly lower "
+            "false-credit exposure than the complete-ledger feasible-quantile "
+            "projection"
+        ),
+        checks,
+    )
+    matched_effects = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "matched_comparator_effects.csv"
+    )
+    closest_false_credit_effect = matched_effects[
+        (matched_effects["comparator"] == "Feasible Quantile Projection")
+        & (matched_effects["metric"] == "false_response_mwh")
+    ].iloc[0]
+    single_nrmse_effect = matched_effects[
+        (matched_effects["comparator"] == "Single Feasible Projection")
+        & (matched_effects["metric"] == "nrmse")
+    ].iloc[0]
+    single_f1_effect = matched_effects[
+        (matched_effects["comparator"] == "Single Feasible Projection")
+        & (matched_effects["metric"] == "credit_f1")
+    ].iloc[0]
+    _check(
+        len(matched_effects) == len(expected_comparators) * 3
+        and float(closest_false_credit_effect["moving_block_ci_2.5"]) > 0
+        and float(single_nrmse_effect["moving_block_ci_2.5"])
+        <= float(single_nrmse_effect["observed_mean_difference"])
+        <= float(single_nrmse_effect["moving_block_ci_97.5"])
+        and float(single_f1_effect["moving_block_ci_2.5"])
+        <= float(single_f1_effect["observed_mean_difference"])
+        <= float(single_f1_effect["moving_block_ci_97.5"]),
+        "matched_effect_sizes_with_dependence_robust_intervals",
+        (
+            "false-credit improvement over feasible quantile has a positive "
+            "three-day moving-block 95% interval, while all single-projection "
+            "effects are contained in their dependence-aware intervals"
+        ),
+        checks,
+    )
+    intervention = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/intervention_robustness.csv"
+    )
+    intervention_cells = intervention.groupby(
+        ["intervention", "method"]
+    )["day"].nunique()
+    intervention_pivot = intervention[
+        intervention["method"].isin(
+            [
+                "Single Feasible Projection",
+                "Feasible Quantile Projection",
+                "Risk-Constrained Convex Verifier",
+            ]
+        )
+    ].pivot(
+        index=["intervention", "day"],
+        columns="method",
+        values="false_response_mwh",
+    )
+    _check(
+        intervention["intervention"].nunique() == 4
+        and len(intervention) == 4 * expected_test * 4
+        and bool((intervention_cells == expected_test).all())
+        and np.isfinite(intervention_pivot.to_numpy(dtype=float)).all(),
+        "complete_independent_intervention_panel",
+        (
+            f"{len(intervention)}/{4 * expected_test * 4} rows; all matched "
+            "interventions are evaluated without a comparator-derived cap"
+        ),
+        checks,
+    )
+    risk_panel = metrics[
+        metrics["method"].isin(
+            [
+                "Feasible Quantile Projection",
+                "Risk-Constrained Convex Verifier",
+            ]
+        )
+    ].pivot(
+        index="day", columns="method", values="false_response_mwh"
+    )
+    risk_metadata = json.loads(
+        (
+            root
+            / "experiments/exp2_baseline_verification/results/final/experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(risk_panel) == expected_test
+        and np.isfinite(risk_panel.to_numpy(dtype=float)).all()
+        and risk_metadata.get("pointwise_envelope_candidate")
+        == "Single Feasible Projection"
+        and risk_metadata.get("risk_reference_candidate")
+        != "Feasible quantile projection",
+        "independent_pointwise_risk_envelope",
+        (
+            "locked test false-credit is compared to the feasible-quantile "
+            "reference, while the LP cap and risk budget are anchored to the "
+            f"independent {risk_metadata.get('risk_reference_candidate')} candidate"
+        ),
+        checks,
+    )
+    risk_certificate = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv"
+    ).iloc[0]
+    _check(
+        bool(
+            risk_certificate["optimizer_success"] == 1
+            and risk_certificate["risk_constraints_satisfied"] == 1
+            and risk_certificate["fitted_validation_mse_mw2"]
+            <= risk_certificate["reference_validation_mse_mw2"] + 1e-8
+            and risk_certificate["fitted_false_credit_exposure_mw_slots"]
+            <= risk_certificate[
+                "risk_budget_mw_slots"
+            ]
+            + 1e-7
+        ),
+        "risk_constrained_validation_dominance",
+        (
+            "convex verifier has no larger validation MSE and satisfies both "
+            "total and daily-tail CVaR false-credit budgets"
+        ),
+        checks,
+    )
+    reserve_cv = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv"
+    )
+    reserve_summary = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv"
+    )
+    _check(
+        len(reserve_cv)
+        == 4 * len(cfg["experiments"]["risk_reserve_fractions"])
+        and reserve_summary["selected"].sum() == 1
+        and reserve_cv["selected_reserve_fraction"].any()
+        and not reserve_cv[
+            reserve_cv["selected_reserve_fraction"]
+        ]["held_out_nrmse"].isna().any(),
+        "nested_daily_risk_reserve_selection",
+        (
+            f"{len(reserve_cv)} reserve-fold cells; "
+            f"selected reserve={reserve_summary.loc[reserve_summary['selected'], 'reserve_fraction'].iloc[0]:.2f}"
+        ),
+        checks,
+    )
+    envelope = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv"
+    )
+    _check(
+        len(envelope) == len(cfg["experiments"]["projection_weights"])
+        and envelope["selected"].sum() == 1
+        and np.isfinite(
+            envelope[
+                [
+                    "mean_validation_nrmse",
+                    "mean_validation_credit_f1",
+                    "mean_false_response_mwh",
+                ]
+            ]
+        ).all().all(),
+        "exact_pointwise_risk_envelope_selection",
+        (
+            f"{len(envelope)} globally solved envelope projections; "
+            f"selected weight={envelope.loc[envelope['selected'], 'projection_weight'].iloc[0]:g}"
+        ),
+        checks,
+    )
+    protocol = pd.read_csv(
+        root / "experiments/exp2_baseline_verification/results/final/information_set_audit.csv"
+    ).set_index("method")
+    fair_methods = [
+        "Ex-post Metadata Gradient Boosting",
+        "Ex-post Quantile Gradient Boosting",
+        "Feasible Quantile Projection",
+        "Tail-Risk Feasible Counterfactual",
+        "Single Feasible Projection",
+        "Risk-Constrained Convex Verifier",
+    ]
+    _check(
+        bool(
+            (protocol.loc[fair_methods, "decision_time"] == "post-event audit").all()
+            and protocol.loc[fair_methods, "complete_submitted_job_ledger"].astype(bool).all()
+            and not protocol.loc[fair_methods, "execution_truth"].astype(bool).any()
+        ),
+        "matched_post_event_information_protocol",
+        "statistical, single-projection, and convex verifiers share the full ledger and never observe execution truth",
+        checks,
+    )
+    tuning = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv"
+    )
+    _check(
+        len(tuning) >= 5,
+        "complete_predeclared_projection_validation",
+        f"{len(tuning)} pre-declared validation candidates",
+        checks,
+    )
+    ensemble = pd.read_csv(root / "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv")
+    _check(
+        (
+            len(ensemble) == len(cfg["experiments"]["projection_weights"]) + 1
+            and bool((ensemble["ensemble_weight"] >= -1e-10).all())
+            and np.isclose(ensemble["ensemble_weight"].sum(), 1.0, atol=1e-8)
+        ),
+        "convex_projection_simplex",
+        f"{len(ensemble)} coefficients; sum={ensemble['ensemble_weight'].sum():.12f}",
+        checks,
+    )
+    blocked_cv = pd.read_csv(
+        root / "experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv"
+    )
+    _check(
+        len(blocked_cv) == 4
+        and blocked_cv["fold"].nunique() == 4
+        and np.isfinite(blocked_cv["held_out_nrmse"]).all(),
+        "contiguous_blocked_validation",
+        f"{len(blocked_cv)} held-out temporal folds",
+        checks,
+    )
+    ablation_daily = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv"
+    )
+    full_variants = [
+        "Full single projection",
+        "Tail-risk convex ensemble",
+        "Full risk-envelope verifier",
+    ]
+    full_certificate = ablation_daily[ablation_daily["variant"].isin(full_variants)]
+    _check(
+        len(full_certificate) == expected_test * len(full_variants)
+        and bool((full_certificate["certified_feasible"] == 1).all())
+        and float(
+            full_certificate[
+                [
+                    "release_violation_mwh",
+                    "deadline_violation_mwh",
+                    "capacity_violation_mw",
+                    "conservation_violation_mwh",
+                ]
+            ].max().max()
+        )
+        <= 1e-7,
+        "independent_full_constraint_certificates",
+        f"{len(full_certificate)} day-variant schedules certified",
+        checks,
+    )
+    complexity = pd.read_csv(
+        root / "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv"
+    )
+    slope = float(
+        np.polyfit(
+            np.log(complexity["horizon_slots"]),
+            np.log(complexity["sparse_nonzeros"]),
+            1,
+        )[0]
+    )
+    _check(
+        len(complexity) == len(cfg["experiments"]["complexity_horizons_slots"])
+        and bool(complexity["solver_success"].astype(bool).all())
+        and bool((np.diff(complexity["variables"]) > 0).all())
+        and bool((np.diff(complexity["sparse_nonzeros"]) > 0).all())
+        and 0.95 <= slope <= 1.05,
+        "exact_sparse_complexity_scaling",
+        f"log-log nonzero slope={slope:.4f}",
+        checks,
+    )
+
+    settlement = pd.read_csv(root / "experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv")
+    mae = settlement.groupby(["baseline_method", "mechanism"])["payment_error_usd"].apply(
+        lambda x: float(np.mean(np.abs(x)))
+    )
+    expected_baselines = set(metrics["method"].unique()) | {
+        "Trace-Anchored Reference"
+    }
+    expected_mechanisms = {
+        "Uniform gross",
+        "Nodal gross",
+        "Uniform signed net",
+        "Nodal signed linear",
+        "Nodal exact net value",
+    }
+    settlement_cells = settlement.groupby(["baseline_method", "mechanism"])["day"].nunique()
+    expected_settlement = expected_test * len(expected_baselines) * len(expected_mechanisms)
+    settlement_complete = (
+        set(settlement["baseline_method"].unique()) == expected_baselines
+        and set(settlement["mechanism"].unique()) == expected_mechanisms
+        and len(settlement_cells) == len(expected_baselines) * len(expected_mechanisms)
+        and bool((settlement_cells == expected_test).all())
+        and len(settlement) == expected_settlement
+    )
+    _check(
+        settlement_complete,
+        "complete_settlement_factorial_panel",
+        (
+            f"{len(settlement)}/{expected_settlement} rows; "
+            f"{len(settlement_cells)}/{len(expected_baselines) * len(expected_mechanisms)} complete cells"
+        ),
+        checks,
+    )
+    factor_decomposition = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/"
+        "settlement_factor_decomposition.csv"
+    )
+    factor_summary = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/"
+        "settlement_factor_decomposition_summary.csv"
+    )
+    factor_columns = {
+        "gross_to_signed_error_reduction_usd",
+        "uniform_to_nodal_error_reduction_usd",
+        "linear_to_exact_error_reduction_usd",
+        "uniform_gross_to_exact_error_reduction_usd",
+    }
+    factor_cells = factor_decomposition.groupby("baseline_method")[
+        "day"
+    ].nunique()
+    _check(
+        len(factor_decomposition)
+        == expected_test * len(expected_baselines)
+        and bool((factor_cells == expected_test).all())
+        and factor_columns.issubset(factor_decomposition.columns)
+        and len(factor_summary)
+        == len(expected_baselines) * len(factor_columns),
+        "paired_settlement_factor_decomposition",
+        (
+            f"{len(factor_decomposition)} locked day-baseline rows and "
+            f"{len(factor_summary)} one-factor paired summaries separate "
+            "signed netting, locational pricing, and exact valuation"
+        ),
+        checks,
+    )
+    interval_value = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv"
+    )
+    trace_exact_error = settlement[
+        (settlement["baseline_method"] == "Trace-Anchored Reference")
+        & (settlement["mechanism"] == "Nodal exact net value")
+    ]["payment_error_usd"].abs()
+    _check(
+        interval_value["settlement_segments"].nunique() == 1
+        and interval_value["evaluation_segments"].nunique() == 1
+        and int(interval_value["evaluation_segments"].iloc[0])
+        > int(interval_value["settlement_segments"].iloc[0])
+        and float(trace_exact_error.max()) > 1e-9,
+        "independent_high_resolution_value_evaluator",
+        (
+            f"{int(interval_value['settlement_segments'].iloc[0])}-segment "
+            f"settlement versus {int(interval_value['evaluation_segments'].iloc[0])}-segment "
+            f"evaluation; trace-reference max non-circular error="
+            f"{trace_exact_error.max():.6f} USD/day"
+        ),
+        checks,
+    )
+    settlement_tests = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv"
+    )
+    _check(
+        len(settlement_tests)
+        == len(expected_baselines) * (len(expected_mechanisms) - 1)
+        and bool((settlement_tests["blocks"] == expected_blocks).all())
+        and bool((settlement_tests["extreme_assignments"] >= 2).all())
+        and bool(
+            (
+                settlement_tests["two_sided_exact_p_value"] + 1e-15
+                >= settlement_tests["minimum_attainable_two_sided_p"]
+            ).all()
+        )
+        and bool(
+            (
+                settlement_tests["holm_adjusted_p_value"]
+                + 1e-12
+                >= settlement_tests["two_sided_exact_p_value"]
+            ).all()
+        ),
+        "complete_settlement_mechanism_block_tests",
+        (
+            f"{len(settlement_tests)} paired mechanism tests; "
+            "Holm correction within each baseline-method family"
+        ),
+        checks,
+    )
+    value_certificates = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv"
+    )
+    _check(
+        len(value_certificates)
+        == expected_test * len(expected_baselines) * len(
+            cfg["market"]["event_slots"]
+        )
+        and float(
+            value_certificates[
+                "subgradient_inequality_violation_usd"
+            ].max()
+        )
+        <= 1e-6,
+        "global_polyhedral_value_certificate",
+        (
+            f"{len(value_certificates)} interval-baseline certificates; "
+            "maximum subgradient-inequality violation "
+            f"{value_certificates['subgradient_inequality_violation_usd'].max():.3e} USD"
+        ),
+        checks,
+    )
+    network = pd.read_csv(root / "experiments/exp5_network_robustness/results/final/network_robustness.csv")
+    network_count = 4
+    expected_network = expected_test * network_count * len(cfg["experiments"]["network_load_multipliers"]) * 5 * 2
+    network_cells = network.groupby(["network", "load_multiplier", "mechanism", "baseline_quality"])["day"].nunique()
+    expected_network_cells = network_count * len(cfg["experiments"]["network_load_multipliers"]) * 5 * 2
+    _check(
+        (
+            len(network) == expected_network
+            and network["network"].nunique() == network_count
+            and len(network_cells) == expected_network_cells
+            and bool((network_cells == expected_test).all())
+        ),
+        "complete_cross_network_panel",
+        (
+            f"{len(network)}/{expected_network} rows; "
+            f"{len(network_cells)}/{expected_network_cells} complete cells across "
+            f"{network['network'].nunique()} networks"
+        ),
+        checks,
+    )
+    network_tests = pd.read_csv(
+        root
+        / "experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv"
+    )
+    estimated_network_tests = network_tests[
+        network_tests["baseline_quality"]
+        == "Risk-Constrained Convex Verifier"
+    ]
+    reference_network_tests = network_tests[
+        network_tests["baseline_quality"]
+        == "Trace-Anchored Reference"
+    ]
+    # The polyhedral result guarantees a nonnegative linearization gap at a
+    # common pair of load endpoints. Once the baseline itself is estimated,
+    # absolute end-to-end settlement error also contains baseline error and is
+    # not theoretically required to improve strictly in every network cell.
+    estimated_effects = estimated_network_tests[
+        "observed_mean_difference"
+    ]
+    estimated_has_both_signs = bool(
+        (estimated_effects > 0).any() and (estimated_effects < 0).any()
+    )
+    _check(
+        len(network_tests)
+        == network_count
+        * len(cfg["experiments"]["network_load_multipliers"])
+        * 2
+        and bool((network_tests["blocks"] == expected_blocks).all())
+        and bool((network_tests["extreme_assignments"] >= 2).all())
+        and bool(
+            (
+                network_tests["two_sided_exact_p_value"] + 1e-15
+                >= network_tests["minimum_attainable_two_sided_p"]
+            ).all()
+        )
+        and bool(
+            (
+                network_tests["holm_adjusted_p_value"]
+                + 1e-12
+                >= network_tests["two_sided_exact_p_value"]
+            ).all()
+        )
+        and bool(
+            (
+                reference_network_tests["observed_mean_difference"]
+                >= -1e-8
+            ).all()
+        )
+        and estimated_has_both_signs
+        and float(
+            estimated_network_tests["observed_mean_difference"].mean()
+        )
+        >= -1e-9,
+        "cross_network_paired_mechanism_inference",
+        (
+            f"{len(network_tests)} paired exact block tests; positive "
+            "estimated-baseline linear-minus-exact effect in "
+            f"{int((estimated_network_tests['observed_mean_difference'] > 0).sum())}/"
+            f"{len(estimated_network_tests)} cells; minimum effect "
+            f"{estimated_network_tests['observed_mean_difference'].min():.6f} "
+            "USD/day; sign-mixed end-to-end effects are retained, while the "
+            "trace-anchored reference must remain nonnegative in every cell"
+        ),
+        checks,
+    )
+    resolution = pd.read_csv(
+        root
+        / "experiments/exp5_network_robustness/results/final/"
+        "resolution_convergence_summary.csv"
+    ).sort_values("settlement_segments")
+    expected_resolution_pairs = {
+        tuple(map(int, pair))
+        for pair in cfg["experiments"]["cross_network_resolution_pairs"]
+    }
+    observed_resolution_pairs = set(
+        zip(
+            resolution["settlement_segments"].astype(int),
+            resolution["evaluation_segments"].astype(int),
+        )
+    )
+    final_two = resolution.tail(2)[
+        "mean_linear_minus_exact_error_usd_day"
+    ].to_numpy()
+    resolution_means = resolution[
+        "mean_linear_minus_exact_error_usd_day"
+    ].to_numpy()
+    resolution_half_widths = 1.96 * resolution[
+        "standard_error_usd_day"
+    ].to_numpy()
+    initial_step = float(abs(resolution_means[1] - resolution_means[0]))
+    final_step = float(abs(resolution_means[-1] - resolution_means[-2]))
+    _check(
+        observed_resolution_pairs == expected_resolution_pairs
+        and len(resolution) == len(expected_resolution_pairs)
+        and bool((np.abs(resolution_means) <= resolution_half_widths).all())
+        and final_step < initial_step,
+        "complete_cross_network_resolution_convergence",
+        (
+            f"{len(resolution)} complete 54-day resolution levels; highest "
+            f"two mean effects={final_two[-2]:.6f}, {final_two[-1]:.6f} "
+            f"USD/day; final step={final_step:.6f} versus initial step="
+            f"{initial_step:.6f} USD/day, and every 95% interval contains zero"
+        ),
+        checks,
+    )
+    congestion_cells = network.groupby(["network", "load_multiplier"])["congested_interval_share"].mean()
+    _check(
+        int((congestion_cells > 0).sum()) >= 3
+        and int(
+            network.groupby("network")["congested_interval_share"].max().gt(0).sum()
+        )
+        >= 1,
+        "native_rating_congestion_identification",
+        (
+            f"{int((congestion_cells > 0).sum())}/{len(congestion_cells)} "
+            "network-loading cells exhibit endogenous congestion"
+        ),
+        checks,
+    )
+    fixed_sites = network.groupby("network")[
+        "data_center_bus_indices_zero_based"
+    ].nunique()
+    _check(
+        bool(
+            np.isclose(
+                network["thermal_rating_normalization_factor"], 1.0, atol=0, rtol=0
+            ).all()
+            and (fixed_sites == 1).all()
+        ),
+        "native_ratings_and_predeclared_sites",
+        (
+            "all thermal-rating factors equal 1.0; "
+            f"fixed-site specifications invariant in {len(fixed_sites)} networks"
+        ),
+        checks,
+    )
+    oracle_network = network[
+        network["baseline_quality"] == "Trace-Anchored Reference"
+    ]
+    oracle_means = oracle_network.groupby(["network", "load_multiplier", "mechanism"])["absolute_error_usd"].mean().unstack()
+    nodal_identified = (
+        (oracle_means["Uniform gross"] - oracle_means["Nodal gross"]).abs().max() > 1e-6
+        or (
+            oracle_means["Uniform signed net"]
+            - oracle_means["Nodal signed linear"]
+        ).abs().max()
+        > 1e-6
+    )
+    _check(
+        nodal_identified,
+        "nodal_price_effect_identified",
+        "at least one cross-network cell has a nonzero uniform-versus-nodal error contrast",
+        checks,
+    )
+    allocation = pd.read_csv(
+        root / "experiments/exp7_value_allocation/results/final/value_allocation.csv"
+    )
+    allocation_cells = allocation.groupby(
+        ["baseline_quality", "allocation_method", "participant"]
+    )["day"].nunique()
+    expected_allocation = expected_test * 2 * 4 * 4
+    _check(
+        len(allocation) == expected_allocation
+        and len(allocation_cells) == 2 * 4 * 4
+        and bool((allocation_cells == expected_test).all()),
+        "complete_exact_value_allocation_panel",
+        f"{len(allocation)}/{expected_allocation} participant-day outcomes",
+        checks,
+    )
+    exact_allocation = allocation[
+        allocation["allocation_method"] == "Exact Shapley net value"
+    ]
+    _check(
+        float(exact_allocation["budget_residual_usd"].abs().max()) <= 1e-6,
+        "exact_shapley_budget_balance",
+        (
+            "maximum absolute participant-sum minus grand-coalition value="
+            f"{exact_allocation['budget_residual_usd'].abs().max():.3e} USD"
+        ),
+        checks,
+    )
+    scaling = pd.read_csv(
+        root
+        / "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv"
+    )
+    expected_scaling = (
+        expected_test * len(cfg["market"]["event_slots"]) * 8
+    )
+    scaling_cells = scaling.groupby(["day", "slot"])[
+        "participant"
+    ].nunique()
+    _check(
+        len(scaling) == expected_scaling
+        and scaling["participant"].nunique() == 8
+        and scaling["day"].nunique() == expected_test
+        and bool((scaling_cells == 8).all())
+        and bool((scaling["coalitions_enumerated"] == 256).all())
+        and float(scaling["budget_residual_usd"].abs().max()) <= 1e-6,
+        "complete_exact_eight_participant_scaling",
+        (
+            f"{len(scaling)}/{expected_scaling} participant-interval outcomes; "
+            "all 256 coalitions enumerated per interval"
+        ),
+        checks,
+    )
+    grouped_scaling = pd.read_csv(
+        root
+        / "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv"
+    )
+    grouped_cells = grouped_scaling.groupby(
+        ["day", "participant_count"]
+    )["site"].nunique()
+    _check(
+        len(grouped_scaling) == expected_test * 5 * 4
+        and set(grouped_scaling["participant_count"])
+        == {4, 8, 12, 16, 20}
+        and bool((grouped_cells == 4).all())
+        and float(grouped_scaling["budget_residual_usd"].abs().max()) <= 1e-6
+        and int(
+            grouped_scaling.loc[
+                grouped_scaling["participant_count"] == 20,
+                "count_states_evaluated",
+            ].max()
+        )
+        == 1296,
+        "exact_group_symmetric_20_participant_scaling",
+        (
+            f"{len(grouped_scaling)}/{expected_test * 5 * 4} site-day-size "
+            "outcomes; exact count-state summation through 20 participants"
+        ),
+        checks,
+    )
+    non_shapley = allocation[
+        allocation["allocation_method"].isin(
+            ["Standalone avoided cost", "Leave-one-out marginal"]
+        )
+    ]
+    _check(
+        float(non_shapley["budget_residual_usd"].abs().max()) > 1e-6,
+        "allocation_mechanism_identification",
+        "non-efficient marginal allocation rules exhibit a nonzero budget residual",
+        checks,
+    )
+    stress = pd.read_csv(root / "experiments/exp6_physical_stress/results/final/physical_stress.csv")
+    expected_stress = expected_test * len(cfg["experiments"]["stress_capacity_multipliers"]) * len(
+        cfg["experiments"]["stress_deadline_multipliers"]
+    )
+    stress_cells = stress.groupby(["capacity_multiplier", "deadline_multiplier"])["day"].nunique()
+    expected_stress_cells = len(cfg["experiments"]["stress_capacity_multipliers"]) * len(
+        cfg["experiments"]["stress_deadline_multipliers"]
+    )
+    _check(
+        (
+            len(stress) == expected_stress
+            and len(stress_cells) == expected_stress_cells
+            and bool((stress_cells == expected_test).all())
+            and stress["capacity_binding_share"].max() > 0
+        ),
+        "complete_binding_constraint_panel",
+        (
+            f"{len(stress)}/{expected_stress} rows; "
+            f"{len(stress_cells)}/{expected_stress_cells} complete cells; "
+            f"max capacity binding={stress['capacity_binding_share'].max():.3f}"
+        ),
+        checks,
+    )
+    n1_interval = pd.read_csv(
+        root
+        / "experiments/exp8_n1_security/results/final/n1_security_interval_results.csv"
+    )
+    n1_daily = pd.read_csv(
+        root
+        / "experiments/exp8_n1_security/results/final/n1_security_daily_results.csv"
+    )
+    expected_n1_interval = (
+        expected_test * len(cfg["market"]["event_slots"]) * 2 * 3
+    )
+    expected_n1_daily = expected_test * 2 * 3
+    _check(
+        len(n1_interval) == expected_n1_interval
+        and len(n1_daily) == expected_n1_daily
+        and n1_interval["day"].nunique() == expected_test
+        and bool(
+            (
+                n1_interval["n1_max_post_contingency_loading"]
+                <= 1.000001
+            ).all()
+        )
+        and bool((n1_interval["credible_line_contingencies"] == 37).all())
+        and bool((n1_interval["excluded_islanding_contingencies"] == 1).all()),
+        "complete_n1_security_panel",
+        (
+            f"{len(n1_interval)}/{expected_n1_interval} interval-mechanism "
+            "outcomes; all 37 non-islanding line outages enforced"
+        ),
+        checks,
+    )
+    n1_oracle = n1_daily[
+        n1_daily["baseline_quality"] == "Trace-Anchored Reference"
+    ]
+    n1_oracle_mae = n1_oracle.groupby("mechanism")[
+        "absolute_error_usd"
+    ].mean()
+    _check(
+        n1_oracle_mae["N-1 exact net value"]
+        < n1_oracle_mae["Base-case exact net value"]
+        and n1_oracle_mae["N-1 exact net value"]
+        < n1_oracle_mae["N-1 signed linear"],
+        "n1_mechanism_identification",
+        (
+            "trace-reference N-1 exact MAE="
+            f"{n1_oracle_mae['N-1 exact net value']:.3f} USD versus "
+            "base-case exact MAE="
+            f"{n1_oracle_mae['Base-case exact net value']:.3f} USD and "
+            "N-1 linear MAE="
+            f"{n1_oracle_mae['N-1 signed linear']:.3f} USD"
+        ),
+        checks,
+    )
+    payment_certificates = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv"
+    )
+    payment_daily = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv"
+    )
+    paired_payment = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv"
+    )
+    conversion_certificates = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "conversion_scenario_certificates.csv"
+    )
+    payment_target_selection = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_target_selection_validation.csv"
+    )
+    payment_metadata = json.loads(
+        (
+            root
+            / "experiments/exp9_payment_certificate/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    profile_store = np.load(
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/"
+        "test_profiles.npz",
+        allow_pickle=False,
+    )
+    certificate_store = np.load(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "certified_counterfactual_profiles.npz",
+        allow_pickle=False,
+    )
+    payment_weight_columns = [
+        column
+        for column in payment_certificates.columns
+        if column.startswith("weight_rho_")
+        or column == "weight_feasible_quantile"
+    ]
+    payment_weights = payment_certificates[
+        payment_weight_columns
+    ].to_numpy()
+    profile_methods = [
+        str(value) for value in profile_store["methods"]
+    ]
+    risk_profiles = profile_store["baselines"][
+        :,
+        profile_methods.index("Risk-Constrained Convex Verifier"),
+    ]
+    candidate_profiles = profile_store["projection_candidates"]
+    target_candidate_distances = np.asarray(
+        [
+            np.max(np.abs(risk_profiles - candidate_profiles[:, index]))
+            for index in range(candidate_profiles.shape[1])
+        ]
+    )
+    _check(
+        len(payment_certificates) == expected_test
+        and payment_certificates["day"].nunique() == expected_test
+        and bool((payment_certificates["solver_success"] == 1).all())
+        and float(
+            np.max(
+                np.abs(
+                    payment_certificates[
+                        "mean_absolute_target_deviation_mw"
+                    ]
+                    - payment_certificates[
+                        "first_stage_optimal_target_deviation_mw"
+                    ]
+                )
+            )
+        )
+        <= 2e-8
+        and float(
+            payment_certificates[
+                "worst_case_fractional_cost_margin"
+            ].min()
+        )
+        >= -1e-9
+        and float(payment_certificates["payment_cap_violation_usd"].max()) <= 1e-6
+        and len(payment_daily) == expected_test * 3 * 4
+        and len(conversion_certificates) == expected_test * 3
+        and conversion_certificates["conversion_scenario"].nunique() == 3
+        and float(
+            conversion_certificates["payment_cap_violation_usd"].max()
+        )
+        <= 1e-6
+        and float(
+            paired_payment[
+                "certified_minus_single_payment_usd"
+            ].max()
+        )
+        <= 1e-6
+        and float(
+            paired_payment[
+                "certified_minus_single_payment_usd"
+            ].mean()
+        )
+        < -1e-6,
+        "scenario_robust_exact_n1_payment_noninferiority_certificate",
+        (
+            f"{len(payment_certificates)}/{expected_test} lexicographically "
+            "solved daily certificates across three held-out conversion "
+            "scenarios; maximum cap violation="
+            f"{payment_certificates['payment_cap_violation_usd'].max():.3e} USD"
+        ),
+        checks,
+    )
+    evaluator_methods = set(
+        payment_daily["counterfactual_method"].astype(str).unique()
+    )
+    _check(
+        evaluator_methods
+        == {
+            "Feasible Quantile Projection",
+            "Single Feasible Projection",
+            "Risk-Constrained Convex Verifier",
+            "Payment-Certified N-1 Verifier",
+        }
+        and payment_daily["conversion_scenario"].nunique() == 3
+        and payment_daily["day"].nunique() == expected_test
+        and np.isfinite(payment_daily["absolute_error_usd"]).all()
+        and np.isfinite(payment_daily["overpayment_usd"]).all(),
+        "complete_independent_payment_model_transfer_evaluation",
+        (
+            f"{len(payment_daily)} method-day-scenario outcomes scored with "
+            "the independent 40-segment N-1 evaluator; accuracy is reported "
+            "as model-transfer evidence and is not part of Proposition 4"
+        ),
+        checks,
+    )
+    interval_endpoint = pd.read_csv(
+        root
+        / "experiments/exp15_interval_certificate/results/final/"
+        "interval_endpoint_certificates.csv"
+    )
+    interval_metadata = json.loads(
+        (
+            root
+            / "experiments/exp15_interval_certificate/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(interval_endpoint) == expected_test * 2 * 2
+        and set(interval_endpoint["method"].astype(str).unique())
+        == {
+            "Selected Single Feasible Projection",
+            "Payment-Certified N-1 Verifier",
+        }
+        and interval_endpoint["endpoint"].nunique() == 2
+        and interval_endpoint["day"].nunique() == expected_test
+        and float(interval_endpoint["payment_cap_violation_usd"].max()) <= 1e-6
+        and interval_metadata.get("external_transfer_comparator")
+        == "Feasible Quantile Projection"
+        and "selected single feasible" in str(
+            interval_metadata.get("profile_source", "")
+        ).lower(),
+        "independent_endpoint_certificate_uses_selected_single_reference",
+        (
+            f"{len(interval_endpoint)}/{expected_test * 2 * 2} endpoint rows "
+            "compare the payment-certified profile with the preselected single "
+            "feasible reference; the quantile profile remains external"
+        ),
+        checks,
+    )
+    _check(
+        len(payment_weight_columns) == 7
+        and candidate_profiles.shape[1] == 6
+        and len(certificate_store["candidate_names"]) == 7
+        and all(
+            "Risk-Constrained" not in str(name)
+            for name in certificate_store["candidate_names"]
+        )
+        and float(target_candidate_distances.min()) > 1e-6
+        and np.allclose(payment_weights.sum(axis=1), 1.0, atol=1e-7)
+        and float(payment_weights.min()) >= -1e-7
+        and len(np.unique(np.round(payment_weights, 8), axis=0)) > 1,
+        "independent_nondegenerate_payment_candidate_hull",
+        (
+            "six first-stage projection candidates plus an external matched "
+            "feasible-quantile comparator; the selected single projection is "
+            "the contractual reference and the risk verifier is an "
+            "external target with minimum maximum-distance "
+            f"{target_candidate_distances.min():.3f} MW; "
+            f"{len(np.unique(np.round(payment_weights, 8), axis=0))} distinct "
+            "daily optimal weight vectors"
+        ),
+        checks,
+    )
+    _check(
+        len(payment_target_selection) == 7
+        and set(payment_target_selection.columns)
+        >= {
+            "candidate_index",
+            "candidate_name",
+            "mean_validation_payment_mae_usd",
+            "validation_cells",
+            "selected",
+        }
+        and payment_target_selection["candidate_index"].nunique() == 7
+        and bool(
+            np.isfinite(
+                payment_target_selection["mean_validation_payment_mae_usd"]
+            ).all()
+        )
+        and bool(
+            (
+                payment_target_selection["validation_cells"]
+                == 16 * 3 * len(cfg["market"]["event_slots"])
+            ).all()
+        )
+        and int(payment_target_selection["selected"].sum()) == 1
+        and int(
+            payment_target_selection.loc[
+                payment_target_selection["selected"], "candidate_index"
+            ].iloc[0]
+        )
+        == int(payment_metadata["payment_target_candidate_index"])
+        and payment_metadata.get("test_peak_used_for_scaling") is False
+        and float(payment_metadata.get("validation_peak_trace_mw", 0.0)) > 0.0,
+        "validation_only_payment_target_selection",
+        (
+            "seven workload-feasible candidates ranked on "
+            f"{16 * 3 * len(cfg['market']['event_slots'])} independent "
+            "validation N-1 payment cells; the selected target and DC scale "
+            "are frozen before locked test evaluation"
+        ),
+        checks,
+    )
+    ac_results = pd.read_csv(
+        root
+        / "experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv"
+    )
+    ac_cells = ac_results.groupby(["network", "counterfactual_method"])[
+        "day"
+    ].nunique()
+    _check(
+        len(ac_results) == 4 * expected_test * 4
+        and ac_results["network"].nunique() == 4
+        and bool((ac_cells == expected_test).all())
+        and float(ac_results["maximum_voltage_violation_pu"].max()) <= 1e-6
+        and float(ac_results["maximum_apparent_line_loading"].max()) <= 1.000001,
+        "complete_nonlinear_ac_opf_panel",
+        (
+            f"{len(ac_results)}/{4 * expected_test * 4} converged network-day-"
+            "method outcomes with AC voltage and apparent-power limits enforced"
+        ),
+        checks,
+    )
+    ac_n1 = pd.read_csv(
+        root
+        / "experiments/exp10_ac_validation/results/final/"
+        "ac_n1_contingency_results.csv"
+    )
+    expected_ac_n1_outages = {"IEEE 9-bus": 6, "IEEE 14-bus": 19}
+    expected_ac_n1 = (
+        expected_test * 4 * sum(expected_ac_n1_outages.values())
+    )
+    ac_n1_cells = ac_n1.groupby(
+        ["network", "counterfactual_method", "outage"]
+    )["day"].nunique()
+    observed_ac_n1_outages = (
+        ac_n1.groupby("network")["outage"].nunique().to_dict()
+    )
+    _check(
+        len(ac_n1) == expected_ac_n1
+        and observed_ac_n1_outages == expected_ac_n1_outages
+        and bool((ac_n1_cells == expected_test).all())
+        and bool(ac_n1["solver_success"].astype(bool).all())
+        and float(ac_n1["maximum_voltage_violation_pu"].max()) <= 1e-6
+        and float(ac_n1["maximum_apparent_line_loading"].max()) <= 1.000001,
+        "complete_nonlinear_ac_n1_panel",
+        (
+            f"{len(ac_n1)}/{expected_ac_n1} converged method-day-outage AC "
+            "OPFs across all 6 IEEE-9 and 19 IEEE-14 non-islanding line "
+            "outages"
+        ),
+        checks,
+    )
+    preventive_ac = pd.read_csv(
+        root
+        / "experiments/exp10_ac_validation/results/final/"
+        "preventive_ac_n1_results.csv"
+    )
+    expected_preventive_ac = expected_test * 3 * 4 * 6
+    preventive_cells = preventive_ac.groupby(
+        [
+            "peak_dc_penetration",
+            "counterfactual_method",
+            "outage",
+        ]
+    )["day"].nunique()
+    shared_pg_columns = [
+        column
+        for column in preventive_ac.columns
+        if column.startswith("shared_pg_generator_")
+    ]
+    shared_plan_consistency = (
+        preventive_ac.groupby(
+            [
+                "peak_dc_penetration",
+                "day",
+                "counterfactual_method",
+            ]
+        )[shared_pg_columns]
+        .nunique()
+        .to_numpy()
+    )
+    _check(
+        len(preventive_ac) == expected_preventive_ac
+        and preventive_ac["peak_dc_penetration"].nunique() == 3
+        and preventive_ac["outage"].nunique() == 6
+        and len(shared_pg_columns) == 3
+        and bool((shared_plan_consistency == 1).all())
+        and bool((preventive_cells == expected_test).all())
+        and bool(preventive_ac["solver_success"].astype(bool).all())
+        and float(
+            preventive_ac[
+                "maximum_nonreference_active_plan_deviation_mw"
+            ].max()
+        )
+        <= 1e-6
+        and float(
+            preventive_ac["maximum_voltage_violation_pu"].max()
+        )
+        <= 1e-6
+        and float(
+            preventive_ac["maximum_apparent_line_loading"].max()
+        )
+        <= 1.000001,
+        "complete_shared_active_plan_preventive_ac_n1_panel",
+        (
+            f"{len(preventive_ac)}/{expected_preventive_ac} converged "
+            "penetration-method-day-outage cells across four matched "
+            "counterfactuals; all six IEEE-9 outages "
+            "share the intact-state non-reference active dispatch exactly"
+        ),
+        checks,
+    )
+    spatial = pd.read_csv(
+        root
+        / "experiments/exp11_spatial_scale_robustness/results/final/"
+        "spatial_scale_robustness.csv"
+    )
+    declared_penetrations = set(
+        float(value)
+        for value in cfg["experiments"]["spatial_scale_peak_penetrations"]
+    )
+    spatial_methods = {
+        "Feasible Quantile Projection",
+        "Single Feasible Projection",
+        "Risk-Constrained Convex Verifier",
+        "Trace-Anchored Reference",
+    }
+    expected_spatial = (
+        24 * len(declared_penetrations) * expected_test * len(spatial_methods)
+    )
+    spatial_cells = spatial.groupby(
+        [
+            "assignment_id",
+            "peak_dc_penetration",
+            "counterfactual_method",
+        ]
+    )["day"].nunique()
+    _check(
+        len(spatial) == expected_spatial
+        and spatial["assignment_id"].nunique() == 24
+        and set(spatial["peak_dc_penetration"].unique())
+        == declared_penetrations
+        and set(spatial["counterfactual_method"].unique())
+        == spatial_methods
+        and bool((spatial_cells == expected_test).all())
+        and float(spatial["maximum_line_loading"].max()) <= 1.000001,
+        "complete_spatial_scale_factorial_panel",
+        (
+            f"{len(spatial)}/{expected_spatial} outcomes cover all 24 regional "
+            f"assignments, {len(declared_penetrations)} penetrations, "
+            f"{expected_test} locked days, and {len(spatial_methods)} methods"
+        ),
+        checks,
+    )
+    rolling = pd.read_csv(
+        root
+        / "experiments/exp12_rolling_market_validation/results/final/"
+        "rolling_market_validation.csv"
+    )
+    rolling_methods = {
+        "Feasible Quantile Projection",
+        "Single Feasible Projection",
+        "Risk-Constrained Convex Verifier",
+        "Payment-Certified N-1 Verifier",
+    }
+    rolling_cells = rolling.groupby("counterfactual_method")["day"].nunique()
+    paired_rolling = pd.read_csv(
+        root
+        / "experiments/exp12_rolling_market_validation/results/final/"
+        "paired_payment_comparisons.csv"
+    )
+    _check(
+        len(rolling) == expected_test * len(rolling_methods)
+        and set(rolling["counterfactual_method"].unique())
+        == rolling_methods
+        and bool((rolling_cells == expected_test).all())
+        and float(rolling["baseline_projection_l1_mw"].max()) <= 2e-5
+        and float(rolling["actual_projection_l1_mw"].max()) <= 2e-5
+        and float(
+            rolling["total_cycle_energy_difference_mwh"].abs().max()
+        )
+        <= 1e-3
+        and float(
+            rolling["allocation_budget_balance_residual_usd"].abs().max()
+        )
+        <= 1e-8
+        and float(
+            rolling["bilateral_budget_balance_residual_usd"].abs().max()
+        )
+        <= 1e-8
+        and bool(
+            rolling["bilateral_individual_rationality_satisfied"].all()
+        )
+        and float(rolling["participant_contract_utility_usd"].min()) >= -1e-7
+        and float(rolling["operator_contract_utility_usd"].min()) >= -1e-7
+        and len(paired_rolling) == 3,
+        "complete_continuous_horizon_market_validation",
+        (
+            f"{len(rolling)}/{expected_test * len(rolling_methods)} "
+            "method-day outcomes use real future arrivals, lexicographic "
+            "projection, complete-cycle energy accounting, exact site budget "
+            "balance, and an individually rational bilateral outside option"
+        ),
+        checks,
+    )
+    provenance = json.loads(
+        (
+            root
+            / "experiments/exp16_ledger_capacity_provenance/results/final/"
+            "ledger_provenance_certificate.json"
+        ).read_text(encoding="utf-8")
+    )
+    provenance_metadata = json.loads(
+        (
+            root
+            / "experiments/exp16_ledger_capacity_provenance/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    capacity_reconciliation = pd.read_csv(
+        root
+        / "experiments/exp16_ledger_capacity_provenance/results/final/"
+        "capacity_reconciliation.csv"
+    )
+    _check(
+        provenance["joined_positive_energy_jobs"] > 50_000
+        and provenance["canonical_row_count"] == provenance["joined_positive_energy_jobs"]
+        and bool(provenance["integrity_conditions"]["raw_to_join_energy_conservation"])
+        and bool(provenance["integrity_conditions"]["release_before_start"])
+        and bool(provenance["integrity_conditions"]["start_before_end"])
+        and float(abs(provenance["raw_to_join_energy_residual_j"])) <= 1e-6
+        and len(provenance["canonical_joined_ledger_sha256"]) == 64
+        and provenance_metadata["integrity_passed"] is True
+        and float(capacity_reconciliation["observed_peak_mw"].max())
+        <= float(cfg["project"]["flexible_capacity_mw"]) + 1e-6
+        and provenance_metadata.get("capacity_commitment", {}).get(
+            "locked_test_observations_used_for_selection"
+        ) is False
+        and provenance_metadata.get("capacity_commitment", {}).get(
+            "measured_envelope_is_reconciliation_only"
+        ) is True,
+        "immutable_ledger_provenance_and_capacity_reconciliation",
+        (
+            f"{provenance['joined_positive_energy_jobs']:,} joined jobs, canonical "
+            f"digest {provenance['canonical_joined_ledger_sha256'][:12]}..., "
+            "raw-to-join energy conserved, and the pre-split committed capacity "
+            "covers the observed regional envelope as a reconciliation"
+        ),
+        checks,
+    )
+
+    generated_files = []
+    for path in sorted(root.glob("experiments/**/results/final/*")) + sorted(root.glob("experiments/**/figures/*")):
+        if path.is_file():
+            generated_files.append({"path": str(path.relative_to(root)), "bytes": path.stat().st_size, "sha256": sha256(path)})
+    audit = {
+        "all_checks_passed": all(item["passed"] for item in checks),
+        "checks": checks,
+        "statistical_tests": significance,
+        "settlement_absolute_error_usd": {f"{key[0]} | {key[1]}": value for key, value in mae.items()},
+        "generated_artifacts": generated_files,
+        "limitations": [
+            "BurstGPT exposes workload tokens but not facility power; token traces are scaled to an explicitly documented hyperscale capacity target.",
+            "MIT SuperCloud provides measured GPU energy for its own workload, which is independently aggregated and scaled; it is not claimed to be a co-located trace from the same operator.",
+            "The network tests use public IEEE RTS-24, IEEE-14, IEEE-30, IEEE-39, IEEE-118, and IEEE-300 benchmark cases, not confidential utility topology or market telemetry.",
+            "All 24 mappings of the four measured regional traces to the four declared IEEE-118 connection buses and three predeclared power penetrations are evaluated, but these public traces are not claimed to be co-located utility and facility measurements.",
+            "The final workload credit is constrained by a predeclared two-sided band around the selected single feasible projection; the upper side certifies false-credit noninferiority and the lower side bounds additional under-credit by the declared tolerance.",
+            "The complete N-1 panel certifies preventive feasibility for every finite non-islanding line outage in the lossless continuous DC model; it is not an AC voltage, transient-stability, or island-balancing certificate.",
+            "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
+            "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
+            "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
+            "The cross-network AC panel is a corrective power-flow diagnostic over native-case admissible outages; voltage and loading diagnostics are reported without being promoted to a preventive AC security certificate.",
+        ],
+    }
+    write_json(root / "audit/result_audit.json", audit)
+    _write_report(root, cfg, audit, metrics, tuning, settlement)
+    if not audit["all_checks_passed"]:
+        failed = [item["name"] for item in checks if not item["passed"]]
+        raise RuntimeError(f"Audit failed: {failed}")
+    logger.info("Audit complete: %d/%d checks passed", len(checks), len(checks))
+
+
+def _write_report(
+    root: Path,
+    cfg: dict[str, Any],
+    audit: dict[str, Any],
+    metrics: pd.DataFrame,
+    tuning: pd.DataFrame,
+    settlement: pd.DataFrame,
+) -> None:
+    grouped = metrics.groupby("method").agg(
+        nrmse=("nrmse", "mean"),
+        false_response_ratio=("false_response_ratio", "mean"),
+        false_response_mwh=("false_response_mwh", "mean"),
+        credit_precision=("credit_precision", "mean"),
+        credit_recall=("credit_recall", "mean"),
+        credit_f1=("credit_f1", "mean"),
+        bias_mw=("bias_mw", "mean"),
+    )
+    settle = settlement.groupby(["baseline_method", "mechanism"]).agg(
+        payment_usd=("payment_usd", "mean"),
+        realized_value_usd=("realized_grid_value_usd", "mean"),
+        absolute_error_usd=("payment_error_usd", lambda x: np.mean(np.abs(x))),
+        overpayment_ratio=("overpayment_ratio", "mean"),
+    )
+    lines = [
+        "# Reproducibility and Result Audit",
+        "",
+        f"Overall status: **{'PASS' if audit['all_checks_passed'] else 'FAIL'}**.",
+        "",
+        "## Completeness",
+        "",
+    ]
+    lines.extend(f"- [{'x' if c['passed'] else ' '}] {c['name']}: {c['detail']}" for c in audit["checks"])
+    lines.extend(["", "## Locked test-set baseline results", "", _markdown_table(grouped.reset_index(), 4), ""])
+    lines.extend(["## Projection candidate validation", "", _markdown_table(tuning, 5), ""])
+    lines.extend(["## Settlement results", "", _markdown_table(settle.reset_index(), 3), ""])
+    factors = pd.read_csv(
+        root
+        / "experiments/exp3_nodal_settlement/results/final/"
+        "settlement_factor_decomposition_summary.csv"
+    )
+    factors = factors[
+        factors["baseline_method"].isin(
+            [
+                "Trace-Anchored Reference",
+                "Risk-Constrained Convex Verifier",
+            ]
+        )
+    ]
+    lines.extend(
+        [
+            "## Paired settlement-factor decomposition",
+            "",
+            _markdown_table(factors, 4),
+            "",
+        ]
+    )
+    network = pd.read_csv(root / "experiments/exp5_network_robustness/results/final/network_robustness_summary.csv")
+    lines.extend(["## Cross-network robustness", "", _markdown_table(network, 3), ""])
+    stress = pd.read_csv(root / "experiments/exp6_physical_stress/results/final/physical_stress_summary.csv")
+    lines.extend(["## Binding-constraint stress test", "", _markdown_table(stress, 4), ""])
+    allocation = pd.read_csv(
+        root / "experiments/exp7_value_allocation/results/final/value_allocation_summary.csv"
+    )
+    lines.extend(["## Exact multi-participant value allocation", "", _markdown_table(allocation, 4), ""])
+    n1 = pd.read_csv(
+        root / "experiments/exp8_n1_security/results/final/n1_security_summary.csv"
+    )
+    lines.extend(
+        [
+            "## Complete N-1 security-aware settlement",
+            "",
+            _markdown_table(n1, 4),
+            "",
+        ]
+    )
+    payment = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv"
+    )
+    payment_target = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_target_selection_validation.csv"
+    )
+    lines.extend(
+        [
+            "## Scenario-robust N-1 payment certificate",
+            "",
+            _markdown_table(payment, 4),
+            "",
+            "## Validation-frozen payment target selection",
+            "",
+            _markdown_table(payment_target, 4),
+            "",
+        ]
+    )
+    ac = pd.read_csv(
+        root / "experiments/exp10_ac_validation/results/final/ac_opf_summary.csv"
+    )
+    lines.extend(
+        [
+            "## Nonlinear AC out-of-model validation",
+            "",
+            _markdown_table(ac, 4),
+            "",
+        ]
+    )
+    ac_n1 = pd.read_csv(
+        root
+        / "experiments/exp10_ac_validation/results/final/"
+        "ac_n1_contingency_summary.csv"
+    )
+    lines.extend(
+        [
+            "## Complete nonlinear AC post-contingency validation",
+            "",
+            _markdown_table(ac_n1, 5),
+            "",
+        ]
+    )
+    spatial = pd.read_csv(
+        root
+        / "experiments/exp11_spatial_scale_robustness/results/final/"
+        "spatial_scale_summary.csv"
+    )
+    lines.extend(
+        [
+            "## Complete spatial-assignment and power-scale robustness",
+            "",
+            _markdown_table(spatial, 4),
+            "",
+        ]
+    )
+    rolling = pd.read_csv(
+        root
+        / "experiments/exp12_rolling_market_validation/results/final/"
+        "rolling_market_summary.csv"
+    )
+    lines.extend(
+        [
+            "## Continuous-horizon space-time market validation",
+            "",
+            _markdown_table(rolling, 6),
+            "",
+        ]
+    )
+    lines.extend(["## Dependence-robust paired tests", ""])
+    for name, result in audit["statistical_tests"].items():
+        lines.append(
+            f"- {name}: comparator-minus-proposed mean difference "
+            f"{result['observed_mean_difference']:.4f}, two-sided exact block-sign "
+            f"p={result['two_sided_exact_p_value']:.4g}, Holm-adjusted "
+            f"p={result['holm_adjusted_p_value']:.4g} "
+            f"({int(result['blocks'])} nonoverlapping blocks)."
+        )
+    lines.extend(["", "## Scope and limitations", ""])
+    lines.extend(f"- {item}" for item in audit["limitations"])
+    (root / "audit/completeness_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _markdown_table(frame: pd.DataFrame, decimals: int) -> str:
+    """Render a compact Markdown table without optional runtime dependencies."""
+    columns = [str(column) for column in frame.columns]
+    rows = ["| " + " | ".join(columns) + " |", "| " + " | ".join(["---"] * len(columns)) + " |"]
+    for values in frame.itertuples(index=False, name=None):
+        cells = []
+        for value in values:
+            if isinstance(value, (float, np.floating)):
+                cells.append(f"{float(value):.{decimals}f}")
+            else:
+                cells.append(str(value))
+        rows.append("| " + " | ".join(cells) + " |")
+    return "\n".join(rows)
