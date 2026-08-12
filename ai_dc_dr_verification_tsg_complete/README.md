@@ -10,20 +10,19 @@ transmission benchmarks.
 ## Reproduction status and command
 
 The checked-in processed arrays, experiment outputs, manuscript, tests, and
-audit report come from the locked study run. The uploaded archive and the raw
-copies currently available in this workspace are incomplete: the second
-BurstGPT CSV and the scheduler CSV fail the sizes and SHA-256 hashes declared
-in `data/processed/data_manifest.json`. Consequently, a fresh raw-to-result
-run must not be claimed until those two original files are restored.
+audit report come from the locked study run. The two raw files that were
+truncated in the uploaded archive have now been restored from their public
+upstream releases and verified against the sizes and SHA-256 hashes declared
+in `data/processed/data_manifest.json`.
 
 ```bash
 ./run_all.sh --stage all --force-preprocess
 ```
 
-After the original raw inputs are restored, this command performs the full
-20-stage run. In the current snapshot, the independent audit is expected to
-stop at the raw-file hash checks; the existing generated results are retained
-for inspection and are not silently regenerated from truncated inputs.
+This command performs the full 20-stage run after the public raw inputs have
+been downloaded. The current workspace has completed the data stage and the
+independent audit reports 237/237 checks passed. Long-running experiment
+stages remain resumable through `--resume`.
 
 The unified command writes a timestamped-entry log to `logs/full_run.log`, continuously
 checkpoints long experiments, and produces an auditable run manifest in
@@ -72,7 +71,8 @@ budget balance, and stage-manifest isolation.
 Raw-file paths remain under `data/raw`; expected hashes, row counts, preprocessing rules, held-out
 DCGM power-calibration performance, held-out per-job energy-ratio quantiles,
 temporal coverage, and scaling constants are recorded in
-`data/processed/data_manifest.json`. MIT scheduler submission timestamps
+`data/processed/data_manifest.json`. The exact public download URLs and
+redistribution notes are recorded in `DATA.md`. MIT scheduler submission timestamps
 define queue arrivals, while independently measured DCGM execution defines the
 counterfactual scoring truth. BurstGPT request service remains trace-observed. The
 joint grid-coupled setting is a documented trace-driven benchmark: public traces do

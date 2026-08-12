@@ -2,11 +2,20 @@
 
 ## Inputs
 
-1. **[BurstGPT](https://github.com/HPMLL/BurstGPT)**: two no-failure request traces. All valid rows are processed; request
+1. **[BurstGPT](https://github.com/HPMLL/BurstGPT)**: two no-failure request traces. The exact v2.0 release assets are
+   [`BurstGPT_without_fails_1.csv`](https://github.com/HPMLL/BurstGPT/releases/download/v2.0/BurstGPT_without_fails_1.csv)
+   and [`BurstGPT_without_fails_2.csv`](https://github.com/HPMLL/BurstGPT/releases/download/v2.0/BurstGPT_without_fails_2.csv).
+   Their expected sizes and SHA-256 digests are recorded in
+   `data/processed/data_manifest.json`. All valid rows are processed; request
    timestamps and token counts define 15-minute inference arrivals. Conversation
    requests are treated as non-deferrable real-time inference and other API requests
    as short-deadline elastic inference.
-2. **[MIT SuperCloud scheduler + DCGM](https://dcc.mit.edu/data/)**: scheduler jobs are one-to-one joined to DCGM
+2. **[MIT SuperCloud scheduler + DCGM](https://dcc.mit.edu/data/)**: the public
+   [2022 HPCA S3 release](https://mit-supercloud-dataset.s3.amazonaws.com/2022-hpca/)
+   provides [`scheduler_data.csv`](https://mit-supercloud-dataset.s3.amazonaws.com/2022-hpca/scheduler_data.csv)
+   and [`dcgm.csv`](https://mit-supercloud-dataset.s3.amazonaws.com/2022-hpca/dcgm.csv),
+   which is stored locally as `dcgm_verified_full.csv` without changing its bytes.
+   Scheduler jobs are one-to-one joined to DCGM
    measurements by immutable job ID. Measured joules are allocated to 15-minute
    intervals in exact proportion to temporal overlap. No average-power proxy replaces
    a job when measured energy is available. Because the two releases use independent

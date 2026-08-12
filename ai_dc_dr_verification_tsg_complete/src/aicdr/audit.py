@@ -2091,6 +2091,35 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
+    provenance_source_hashes = json.loads(
+        (
+            root
+            / "experiments/exp16_ledger_capacity_provenance/results/final/"
+            "source_hashes.json"
+        ).read_text(encoding="utf-8")
+    )
+    current_provenance_inputs = {
+        "scheduler": {
+            "path": str((root / cfg["data"]["mit_scheduler"]).relative_to(root)),
+            "sha256": sha256(root / cfg["data"]["mit_scheduler"]),
+            "bytes": int((root / cfg["data"]["mit_scheduler"]).stat().st_size),
+        },
+        "dcgm": {
+            "path": str((root / cfg["data"]["mit_dcgm"]).relative_to(root)),
+            "sha256": sha256(root / cfg["data"]["mit_dcgm"]),
+            "bytes": int((root / cfg["data"]["mit_dcgm"]).stat().st_size),
+        },
+        "processed_workload": {
+            "path": str((root / cfg["data"]["processed_dir"] / "workload_15min.npz").relative_to(root)),
+            "sha256": sha256(root / cfg["data"]["processed_dir"] / "workload_15min.npz"),
+        },
+    }
+    _check(
+        provenance_source_hashes == current_provenance_inputs,
+        "exp16_source_hashes_match_current_inputs",
+        "Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files",
+        checks,
+    )
     capacity_reconciliation = pd.read_csv(
         root
         / "experiments/exp16_ledger_capacity_provenance/results/final/"

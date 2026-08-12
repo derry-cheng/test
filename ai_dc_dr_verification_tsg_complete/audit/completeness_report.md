@@ -1,6 +1,6 @@
 # Reproducibility and Result Audit
 
-Overall status: **FAIL**.
+Overall status: **PASS**.
 
 ## Completeness
 
@@ -171,8 +171,8 @@ Overall status: **FAIL**.
 - [x] maximum_two_sources_per_citation_group: 41 in-text citation groups checked
 - [x] complete_manuscript_bibliography: 32 verified bibliography entries; 32 unique in-text citations; uncited=[]; missing=[]
 - [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
-- [ ] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: a8c4971fe0867c4f74c550b64f1ddb5c860af8c550a5935b1e17b3a7145cd2b4
-- [ ] sha256:data/raw/mit_supercloud/scheduler_data.csv: 11467653a51bbd28f53e2ff650496493b4f96c9af8b1b1e0838bf1bbe6968a8b
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
 - [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
@@ -186,7 +186,7 @@ Overall status: **FAIL**.
 - [x] workload_conservation: max gap=1.776e-15 MWh
 - [x] data_center_capacity: violation=0.000e+00 MW
 - [x] deadline_feasibility: violation=0.000e+00 MWh
-- [x] sced_power_balance: gap=4.547e-13 MW
+- [x] sced_power_balance: gap=0.000e+00 MW
 - [x] sced_line_limits: max loading=1.000000 pu
 - [x] complete_exp1_grid: 56/56
 - [x] strategic_threshold_theory_matches_optimizer: 56/56 price-probability cells
@@ -240,6 +240,7 @@ Overall status: **FAIL**.
 - [x] complete_shared_active_plan_preventive_ac_n1_panel: 3888/3888 converged penetration-method-day-outage cells across four matched counterfactuals; all six IEEE-9 outages share the intact-state non-reference active dispatch exactly
 - [x] complete_spatial_scale_factorial_panel: 15552/15552 outcomes cover all 24 regional assignments, 3 penetrations, 54 locked days, and 4 methods
 - [x] complete_continuous_horizon_market_validation: 216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option
+- [x] exp16_source_hashes_match_current_inputs: Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files
 - [x] immutable_ledger_provenance_and_capacity_reconciliation: 71,128 joined jobs, canonical digest fdf49ad75d30..., raw-to-join energy conserved, and the pre-split committed capacity covers the observed regional envelope as a reconciliation
 
 ## Locked test-set baseline results

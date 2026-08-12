@@ -1,5 +1,5 @@
 {
-  "all_checks_passed": false,
+  "all_checks_passed": true,
   "checks": [
     {
       "name": "data:data/processed/workload_15min.npz",
@@ -838,13 +838,13 @@
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
-      "passed": false,
-      "detail": "a8c4971fe0867c4f74c550b64f1ddb5c860af8c550a5935b1e17b3a7145cd2b4"
+      "passed": true,
+      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
-      "passed": false,
-      "detail": "11467653a51bbd28f53e2ff650496493b4f96c9af8b1b1e0838bf1bbe6968a8b"
+      "passed": true,
+      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
@@ -914,7 +914,7 @@
     {
       "name": "sced_power_balance",
       "passed": true,
-      "detail": "gap=4.547e-13 MW"
+      "detail": "gap=0.000e+00 MW"
     },
     {
       "name": "sced_line_limits",
@@ -1180,6 +1180,11 @@
       "name": "complete_continuous_horizon_market_validation",
       "passed": true,
       "detail": "216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option"
+    },
+    {
+      "name": "exp16_source_hashes_match_current_inputs",
+      "passed": true,
+      "detail": "Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files"
     },
     {
       "name": "immutable_ledger_provenance_and_capacity_reconciliation",
