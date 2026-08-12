@@ -1,0 +1,2361 @@
+{
+  "all_checks_passed": false,
+  "checks": [
+    {
+      "name": "data:data/processed/workload_15min.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/workload_daily_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/data_manifest.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/data_flow_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:configs/capacity_commitment.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/results/final/manipulation_grid.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/figures/fig2_response_and_migration.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/mean_line_loading.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/intermediate/case_selection_candidates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/spatial_case_timeseries.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/case_summary_by_data_center.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/case_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/figures/fig7_spatial_response_case.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/network_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/network_robustness_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/resolution_convergence_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/resolution_convergence_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/physical_stress.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/physical_stress_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/value_allocation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/value_allocation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_interval_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_daily_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_paired_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/figures/fig13_n1_security_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_market_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_trace.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_flow_solution.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_slot_profile.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_fidelity_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/main.tex",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/main.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/IEEEtran.cls",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/references.bib",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/formula_source_matrix.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/model_formulation.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/paper_outline_zh.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/theoretical_results.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/framework_architecture.drawio",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/framework_architecture.svg",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/method_detail.drawio",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/method_detail.svg",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig0_framework.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig0_framework.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig_method_detail.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig_method_detail.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "canonical_unified_manifest_preserved",
+      "passed": true,
+      "detail": "20/20 stages recorded; canonical request=all; audit status=completed"
+    },
+    {
+      "name": "all_png_figures_decodable_and_high_resolution",
+      "passed": true,
+      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=3365x1221; fig22_ledger_capacity_provenance.png=4005x1189; fig23_decision_time_information.png=3813x1157; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4039x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4347x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643"
+    },
+    {
+      "name": "model_formula_citation_traceability",
+      "passed": true,
+      "detail": "28/28 required source keys in bibliography, formula-source matrix, and complete formulation"
+    },
+    {
+      "name": "official_ieee_journal_template",
+      "passed": true,
+      "detail": "manuscript uses the vendored official IEEEtran journal class"
+    },
+    {
+      "name": "maximum_two_sources_per_citation_group",
+      "passed": true,
+      "detail": "41 in-text citation groups checked"
+    },
+    {
+      "name": "complete_manuscript_bibliography",
+      "passed": true,
+      "detail": "32 verified bibliography entries; 32 unique in-text citations; uncited=[]; missing=[]"
+    },
+    {
+      "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
+      "passed": true,
+      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+    },
+    {
+      "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
+      "passed": false,
+      "detail": "a8c4971fe0867c4f74c550b64f1ddb5c860af8c550a5935b1e17b3a7145cd2b4"
+    },
+    {
+      "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
+      "passed": false,
+      "detail": "11467653a51bbd28f53e2ff650496493b4f96c9af8b1b1e0838bf1bbe6968a8b"
+    },
+    {
+      "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
+      "passed": true,
+      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+    },
+    {
+      "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
+      "passed": true,
+      "detail": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78"
+    },
+    {
+      "name": "full_burstgpt_rows",
+      "passed": true,
+      "detail": "5188507"
+    },
+    {
+      "name": "full_measured_gpu_jobs",
+      "passed": true,
+      "detail": "68664"
+    },
+    {
+      "name": "heldout_power_conversion_scenarios_complete",
+      "passed": true,
+      "detail": "21,919 held-out jobs; measured-to-predicted energy factors=0.734154, 0.995724, 1.278023"
+    },
+    {
+      "name": "complete_source_to_evaluation_data_flow",
+      "passed": true,
+      "detail": "5 source/join/split stages; calibration 66769 train + 28413 held out"
+    },
+    {
+      "name": "processed_data_finite_nonnegative",
+      "passed": true,
+      "detail": "(11616, 4, 3)"
+    },
+    {
+      "name": "processed_data_nonempty",
+      "passed": true,
+      "detail": "89968.421 MWh"
+    },
+    {
+      "name": "trace_observed_counterfactual_complete",
+      "passed": true,
+      "detail": "(11616, 4)"
+    },
+    {
+      "name": "locked_days_have_complete_history_and_future_coverage",
+      "passed": true,
+      "detail": "days 45--114; 6 future days available for the 512-slot deadline"
+    },
+    {
+      "name": "workload_conservation",
+      "passed": true,
+      "detail": "max gap=1.776e-15 MWh"
+    },
+    {
+      "name": "data_center_capacity",
+      "passed": true,
+      "detail": "violation=0.000e+00 MW"
+    },
+    {
+      "name": "deadline_feasibility",
+      "passed": true,
+      "detail": "violation=0.000e+00 MWh"
+    },
+    {
+      "name": "sced_power_balance",
+      "passed": true,
+      "detail": "gap=4.547e-13 MW"
+    },
+    {
+      "name": "sced_line_limits",
+      "passed": true,
+      "detail": "max loading=1.000000 pu"
+    },
+    {
+      "name": "complete_exp1_grid",
+      "passed": true,
+      "detail": "56/56"
+    },
+    {
+      "name": "strategic_threshold_theory_matches_optimizer",
+      "passed": true,
+      "detail": "56/56 price-probability cells"
+    },
+    {
+      "name": "locked_test_set_complete",
+      "passed": true,
+      "detail": "648/648 outcomes"
+    },
+    {
+      "name": "two_sided_credit_band_certificate",
+      "passed": true,
+      "detail": "54/54 locked days satisfy the predeclared lower and upper physical credit band"
+    },
+    {
+      "name": "decision_time_information_boundary_panel",
+      "passed": true,
+      "detail": "108/108 rows; post-gate arrivals are excluded from the event-gate decision"
+    },
+    {
+      "name": "cross_network_ac_n1_admissibility_panel",
+      "passed": true,
+      "detail": "1698 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded"
+    },
+    {
+      "name": "closest_literature_baseline_panel",
+      "passed": true,
+      "detail": "216/216 exact same-ledger comparator outcomes covering incentive-compatible, non-wire, proactive-shift, and frequency-regulation mechanisms"
+    },
+    {
+      "name": "cross_experiment_locked_day_identity",
+      "passed": true,
+      "detail": "10/10 main panels use the identical locked days 61--114; mismatches=[]"
+    },
+    {
+      "name": "dependence_robust_exact_block_tests",
+      "passed": true,
+      "detail": "18 pre-declared 3-day blocks, exact sign randomization, attainable-p audit, and Holm family-wise correction"
+    },
+    {
+      "name": "tail_risk_counterfactual_estimator_comparison",
+      "passed": true,
+      "detail": "tail-risk feasible counterfactual improves credit F1 against the single feasible projection, while its nRMSE difference is retained and nonsignificant over 18 exact temporal blocks"
+    },
+    {
+      "name": "closest_feasible_baseline_comparison",
+      "passed": true,
+      "detail": "risk verifier has no greater mean nRMSE and significantly lower false-credit exposure than the complete-ledger feasible-quantile projection"
+    },
+    {
+      "name": "matched_effect_sizes_with_dependence_robust_intervals",
+      "passed": true,
+      "detail": "false-credit improvement over feasible quantile has a positive three-day moving-block 95% interval, while all single-projection effects are contained in their dependence-aware intervals"
+    },
+    {
+      "name": "complete_independent_intervention_panel",
+      "passed": true,
+      "detail": "864/864 rows; all matched interventions are evaluated without a comparator-derived cap"
+    },
+    {
+      "name": "independent_pointwise_risk_envelope",
+      "passed": true,
+      "detail": "locked test false-credit is compared to the feasible-quantile reference, while the LP cap and risk budget are anchored to the independent Metadata projection rho=0.3 candidate"
+    },
+    {
+      "name": "risk_constrained_validation_dominance",
+      "passed": true,
+      "detail": "convex verifier has no larger validation MSE and satisfies both total and daily-tail CVaR false-credit budgets"
+    },
+    {
+      "name": "nested_daily_risk_reserve_selection",
+      "passed": true,
+      "detail": "16 reserve-fold cells; selected reserve=1.00"
+    },
+    {
+      "name": "exact_pointwise_risk_envelope_selection",
+      "passed": true,
+      "detail": "6 globally solved envelope projections; selected weight=3"
+    },
+    {
+      "name": "matched_post_event_information_protocol",
+      "passed": true,
+      "detail": "statistical, single-projection, and convex verifiers share the full ledger and never observe execution truth"
+    },
+    {
+      "name": "complete_predeclared_projection_validation",
+      "passed": true,
+      "detail": "7 pre-declared validation candidates"
+    },
+    {
+      "name": "convex_projection_simplex",
+      "passed": true,
+      "detail": "7 coefficients; sum=1.000000000000"
+    },
+    {
+      "name": "contiguous_blocked_validation",
+      "passed": true,
+      "detail": "4 held-out temporal folds"
+    },
+    {
+      "name": "independent_full_constraint_certificates",
+      "passed": true,
+      "detail": "162 day-variant schedules certified"
+    },
+    {
+      "name": "exact_sparse_complexity_scaling",
+      "passed": true,
+      "detail": "log-log nonzero slope=1.0025"
+    },
+    {
+      "name": "complete_settlement_factorial_panel",
+      "passed": true,
+      "detail": "3510/3510 rows; 65/65 complete cells"
+    },
+    {
+      "name": "paired_settlement_factor_decomposition",
+      "passed": true,
+      "detail": "702 locked day-baseline rows and 52 one-factor paired summaries separate signed netting, locational pricing, and exact valuation"
+    },
+    {
+      "name": "independent_high_resolution_value_evaluator",
+      "passed": true,
+      "detail": "10-segment settlement versus 80-segment evaluation; trace-reference max non-circular error=11.129670 USD/day"
+    },
+    {
+      "name": "complete_settlement_mechanism_block_tests",
+      "passed": true,
+      "detail": "52 paired mechanism tests; Holm correction within each baseline-method family"
+    },
+    {
+      "name": "global_polyhedral_value_certificate",
+      "passed": true,
+      "detail": "5616 interval-baseline certificates; maximum subgradient-inequality violation 2.029e-11 USD"
+    },
+    {
+      "name": "complete_cross_network_panel",
+      "passed": true,
+      "detail": "6480/6480 rows; 120/120 complete cells across 4 networks"
+    },
+    {
+      "name": "cross_network_paired_mechanism_inference",
+      "passed": true,
+      "detail": "24 paired exact block tests; positive estimated-baseline linear-minus-exact effect in 9/12 cells; minimum effect -0.058248 USD/day; sign-mixed end-to-end effects are retained, while the trace-anchored reference must remain nonnegative in every cell"
+    },
+    {
+      "name": "complete_cross_network_resolution_convergence",
+      "passed": true,
+      "detail": "4 complete 54-day resolution levels; highest two mean effects=-0.014411, -0.010558 USD/day; final step=0.003853 versus initial step=0.010797 USD/day, and every 95% interval contains zero"
+    },
+    {
+      "name": "native_rating_congestion_identification",
+      "passed": true,
+      "detail": "3/12 network-loading cells exhibit endogenous congestion"
+    },
+    {
+      "name": "native_ratings_and_predeclared_sites",
+      "passed": true,
+      "detail": "all thermal-rating factors equal 1.0; fixed-site specifications invariant in 4 networks"
+    },
+    {
+      "name": "nodal_price_effect_identified",
+      "passed": true,
+      "detail": "at least one cross-network cell has a nonzero uniform-versus-nodal error contrast"
+    },
+    {
+      "name": "complete_exact_value_allocation_panel",
+      "passed": true,
+      "detail": "1728/1728 participant-day outcomes"
+    },
+    {
+      "name": "exact_shapley_budget_balance",
+      "passed": true,
+      "detail": "maximum absolute participant-sum minus grand-coalition value=2.274e-13 USD"
+    },
+    {
+      "name": "complete_exact_eight_participant_scaling",
+      "passed": true,
+      "detail": "3456/3456 participant-interval outcomes; all 256 coalitions enumerated per interval"
+    },
+    {
+      "name": "exact_group_symmetric_20_participant_scaling",
+      "passed": true,
+      "detail": "1080/1080 site-day-size outcomes; exact count-state summation through 20 participants"
+    },
+    {
+      "name": "allocation_mechanism_identification",
+      "passed": true,
+      "detail": "non-efficient marginal allocation rules exhibit a nonzero budget residual"
+    },
+    {
+      "name": "complete_binding_constraint_panel",
+      "passed": true,
+      "detail": "810/810 rows; 15/15 complete cells; max capacity binding=0.138"
+    },
+    {
+      "name": "complete_n1_security_panel",
+      "passed": true,
+      "detail": "2592/2592 interval-mechanism outcomes; all 37 non-islanding line outages enforced"
+    },
+    {
+      "name": "n1_mechanism_identification",
+      "passed": true,
+      "detail": "trace-reference N-1 exact MAE=0.903 USD versus base-case exact MAE=192.693 USD and N-1 linear MAE=2.298 USD"
+    },
+    {
+      "name": "scenario_robust_exact_n1_payment_noninferiority_certificate",
+      "passed": true,
+      "detail": "54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=0.000e+00 USD"
+    },
+    {
+      "name": "complete_independent_payment_model_transfer_evaluation",
+      "passed": true,
+      "detail": "648 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
+    },
+    {
+      "name": "independent_endpoint_certificate_uses_selected_single_reference",
+      "passed": true,
+      "detail": "216/216 endpoint rows compare the payment-certified profile with the preselected single feasible reference; the quantile profile remains external"
+    },
+    {
+      "name": "independent_nondegenerate_payment_candidate_hull",
+      "passed": true,
+      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference and the risk verifier is an external target with minimum maximum-distance 14.027 MW; 34 distinct daily optimal weight vectors"
+    },
+    {
+      "name": "validation_only_payment_target_selection",
+      "passed": true,
+      "detail": "seven workload-feasible candidates ranked on 384 independent validation N-1 payment cells; the selected target and DC scale are frozen before locked test evaluation"
+    },
+    {
+      "name": "complete_nonlinear_ac_opf_panel",
+      "passed": true,
+      "detail": "864/864 converged network-day-method outcomes with AC voltage and apparent-power limits enforced"
+    },
+    {
+      "name": "complete_nonlinear_ac_n1_panel",
+      "passed": true,
+      "detail": "5400/5400 converged method-day-outage AC OPFs across all 6 IEEE-9 and 19 IEEE-14 non-islanding line outages"
+    },
+    {
+      "name": "complete_shared_active_plan_preventive_ac_n1_panel",
+      "passed": true,
+      "detail": "3888/3888 converged penetration-method-day-outage cells across four matched counterfactuals; all six IEEE-9 outages share the intact-state non-reference active dispatch exactly"
+    },
+    {
+      "name": "complete_spatial_scale_factorial_panel",
+      "passed": true,
+      "detail": "15552/15552 outcomes cover all 24 regional assignments, 3 penetrations, 54 locked days, and 4 methods"
+    },
+    {
+      "name": "complete_continuous_horizon_market_validation",
+      "passed": true,
+      "detail": "216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option"
+    },
+    {
+      "name": "immutable_ledger_provenance_and_capacity_reconciliation",
+      "passed": true,
+      "detail": "71,128 joined jobs, canonical digest fdf49ad75d30..., raw-to-join energy conserved, and the pre-split committed capacity covers the observed regional envelope as a reconciliation"
+    }
+  ],
+  "statistical_tests": {
+    "High-5-of-10 | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 2.3045122313213,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.4616340948643258,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "High-5-of-10 | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.7393383493705431,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": -0.4174267536627238,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "High-5-of-10 | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2524968010393303,
+      "extreme_assignments": 4,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 1.52587890625e-05,
+      "block_sum_lag1_autocorrelation": 0.6236402331934333,
+      "holm_adjusted_p_value": 0.0001068115234375
+    },
+    "Metadata Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 1.7749430809920623,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.3067297214800355,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Metadata Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.707539107334347,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": -0.363724767433043,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Metadata Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2075684546748601,
+      "extreme_assignments": 232,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.000885009765625,
+      "block_sum_lag1_autocorrelation": 0.6785860298605325,
+      "holm_adjusted_p_value": 0.00531005859375
+    },
+    "Ex-post Metadata Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 1.61969467668599,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.2093361938822168,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Metadata Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.691423554184682,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": -0.2899945917198036,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Metadata Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.1839570965425058,
+      "extreme_assignments": 1316,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0050201416015625,
+      "block_sum_lag1_autocorrelation": 0.7191829442101433,
+      "holm_adjusted_p_value": 0.02008056640625
+    },
+    "Ex-post Quantile Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 1.5427807288878796,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.2778740273164773,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Quantile Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.6658345896710379,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": -0.1394127760730067,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Quantile Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.1592185401746865,
+      "extreme_assignments": 6318,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0241012573242187,
+      "block_sum_lag1_autocorrelation": 0.7349161551501101,
+      "holm_adjusted_p_value": 0.0723037719726562
+    },
+    "Synthetic Control | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 1.5448578977527527,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.1918373955685614,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Synthetic Control | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.7025382419089765,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": -0.3326311920771631,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Synthetic Control | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.212639817331415,
+      "extreme_assignments": 234,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0008926391601562,
+      "block_sum_lag1_autocorrelation": 0.7513158158108981,
+      "holm_adjusted_p_value": 0.00531005859375
+    },
+    "Feasible Quantile Projection | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.005325216067325,
+      "extreme_assignments": 1062,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0040512084960937,
+      "block_sum_lag1_autocorrelation": 0.0454164608799416,
+      "holm_adjusted_p_value": 0.0081024169921875
+    },
+    "Feasible Quantile Projection | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.0101572757009605,
+      "extreme_assignments": 16384,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0625,
+      "block_sum_lag1_autocorrelation": 0.4098278240851363,
+      "holm_adjusted_p_value": 0.125
+    },
+    "Feasible Quantile Projection | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.0031942815073982,
+      "extreme_assignments": 39136,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.1492919921875,
+      "block_sum_lag1_autocorrelation": 0.2890922044422523,
+      "holm_adjusted_p_value": 0.1492919921875
+    },
+    "Single Feasible Projection | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.0013725424441229,
+      "extreme_assignments": 3556,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0135650634765625,
+      "block_sum_lag1_autocorrelation": 0.0026132950600238,
+      "holm_adjusted_p_value": 0.0135650634765625
+    },
+    "Single Feasible Projection | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.0059191857168639,
+      "extreme_assignments": 88992,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.3394775390625,
+      "block_sum_lag1_autocorrelation": -0.2767482089423866,
+      "holm_adjusted_p_value": 0.3394775390625
+    },
+    "Single Feasible Projection | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.0022017371672115,
+      "extreme_assignments": 15360,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.05859375,
+      "block_sum_lag1_autocorrelation": 0.2705213532870982,
+      "holm_adjusted_p_value": 0.1171875
+    }
+  },
+  "settlement_absolute_error_usd": {
+    "Ex-post Metadata Gradient Boosting | Nodal exact net value": 2327.400097707427,
+    "Ex-post Metadata Gradient Boosting | Nodal gross": 4054.25190844228,
+    "Ex-post Metadata Gradient Boosting | Nodal signed linear": 2345.9779228119887,
+    "Ex-post Metadata Gradient Boosting | Uniform gross": 4054.5463930770547,
+    "Ex-post Metadata Gradient Boosting | Uniform signed net": 2346.262764778613,
+    "Ex-post Quantile Gradient Boosting | Nodal exact net value": 2269.608348379632,
+    "Ex-post Quantile Gradient Boosting | Nodal gross": 3905.64842867452,
+    "Ex-post Quantile Gradient Boosting | Nodal signed linear": 2284.6522381498603,
+    "Ex-post Quantile Gradient Boosting | Uniform gross": 3905.9281131968687,
+    "Ex-post Quantile Gradient Boosting | Uniform signed net": 2284.915850575755,
+    "Extra Trees | Nodal exact net value": 2969.3235266517786,
+    "Extra Trees | Nodal gross": 4420.115767225887,
+    "Extra Trees | Nodal signed linear": 2987.664723991527,
+    "Extra Trees | Uniform gross": 4420.414688686148,
+    "Extra Trees | Uniform signed net": 2987.8917118236986,
+    "Feasible Quantile Projection | Nodal exact net value": 522.6378111351113,
+    "Feasible Quantile Projection | Nodal gross": 635.4635004083318,
+    "Feasible Quantile Projection | Nodal signed linear": 523.6269630893927,
+    "Feasible Quantile Projection | Uniform gross": 635.9475779364537,
+    "Feasible Quantile Projection | Uniform signed net": 523.457369590264,
+    "Gradient Boosting | Nodal exact net value": 2932.252309930509,
+    "Gradient Boosting | Nodal gross": 4512.373379210784,
+    "Gradient Boosting | Nodal signed linear": 2952.9590089258086,
+    "Gradient Boosting | Uniform gross": 4512.668910698548,
+    "Gradient Boosting | Uniform signed net": 2953.1975254571917,
+    "High-5-of-10 | Nodal exact net value": 3301.916688848,
+    "High-5-of-10 | Nodal gross": 5121.654253991904,
+    "High-5-of-10 | Nodal signed linear": 3331.9006644113433,
+    "High-5-of-10 | Uniform gross": 5122.0022872820955,
+    "High-5-of-10 | Uniform signed net": 3332.211939003546,
+    "Metadata Gradient Boosting | Nodal exact net value": 2645.5695016724108,
+    "Metadata Gradient Boosting | Nodal gross": 4346.401029303658,
+    "Metadata Gradient Boosting | Nodal signed linear": 2665.0934721541153,
+    "Metadata Gradient Boosting | Uniform gross": 4346.706756279848,
+    "Metadata Gradient Boosting | Uniform signed net": 2665.3861230880757,
+    "Ridge | Nodal exact net value": 2881.2956670784206,
+    "Ridge | Nodal gross": 4113.475017832091,
+    "Ridge | Nodal signed linear": 2907.9368451360865,
+    "Ridge | Uniform gross": 4113.729809439014,
+    "Ridge | Uniform signed net": 2908.1798066968117,
+    "Risk-Constrained Convex Verifier | Nodal exact net value": 522.4993375254734,
+    "Risk-Constrained Convex Verifier | Nodal gross": 631.137230660556,
+    "Risk-Constrained Convex Verifier | Nodal signed linear": 523.8402373481013,
+    "Risk-Constrained Convex Verifier | Uniform gross": 631.5977835111639,
+    "Risk-Constrained Convex Verifier | Uniform signed net": 523.4577531971509,
+    "Single Feasible Projection | Nodal exact net value": 522.7286904359466,
+    "Single Feasible Projection | Nodal gross": 635.4177733421114,
+    "Single Feasible Projection | Nodal signed linear": 524.069746823731,
+    "Single Feasible Projection | Uniform gross": 635.892351380611,
+    "Single Feasible Projection | Uniform signed net": 523.700760856749,
+    "Synthetic Control | Nodal exact net value": 2023.3451520589297,
+    "Synthetic Control | Nodal gross": 3837.8612124518845,
+    "Synthetic Control | Nodal signed linear": 2035.7072049849767,
+    "Synthetic Control | Uniform gross": 3838.1410823069336,
+    "Synthetic Control | Uniform signed net": 2035.9169737041882,
+    "Tail-Risk Feasible Counterfactual | Nodal exact net value": 472.72870610860986,
+    "Tail-Risk Feasible Counterfactual | Nodal gross": 728.7163299251732,
+    "Tail-Risk Feasible Counterfactual | Nodal signed linear": 473.6172809463923,
+    "Tail-Risk Feasible Counterfactual | Uniform gross": 728.8965208410137,
+    "Tail-Risk Feasible Counterfactual | Uniform signed net": 473.65168257608775,
+    "Trace-Anchored Reference | Nodal exact net value": 2.343939581806572,
+    "Trace-Anchored Reference | Nodal gross": 741.6994257519291,
+    "Trace-Anchored Reference | Nodal signed linear": 6.004481811242209,
+    "Trace-Anchored Reference | Uniform gross": 741.7220059340999,
+    "Trace-Anchored Reference | Uniform signed net": 6.010722823412861
+  },
+  "generated_artifacts": [
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
+      "bytes": 1258013,
+      "sha256": "d052decfd8728b2e298120cbb1b5fadde7d54e19cf9f30a0c8ea696160291165"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
+      "bytes": 1025,
+      "sha256": "beede8eef07038f62c4739be6cbfa8bd64c9f9b423dcd9a7e5b0defa317c8454"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
+      "bytes": 241288,
+      "sha256": "900df7946d3b316cfecab12771c030831fec3ef4baee6f739fe8041aaa4b4015"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
+      "bytes": 1794,
+      "sha256": "82aef11fb8d14a6527a9aa5a33959a30e4a72c779044cb8e5c334a27e532b185"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+      "bytes": 1569,
+      "sha256": "2d47e7d5901867d7a713179a429349cf340d669c726c534e2f4799bad9250a86"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
+      "bytes": 1194143,
+      "sha256": "4b0376962030df758ac35b1047f16a0cb6e809007b8fcb672b7de062bb4484db"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
+      "bytes": 1241,
+      "sha256": "c58039eadc9f820fa9b3cbd10574c77845c79b5028cc84df5bcb138b52775b16"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
+      "bytes": 878,
+      "sha256": "baba345310e9af96737827b0ee6369032d715327affe0c569ea09bf124fb1e47"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
+      "bytes": 34647,
+      "sha256": "f998b4af77fa4a814ccf47134380b240e4eb6bff6d1bcc35128053829fc1c4e1"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
+      "bytes": 3568262,
+      "sha256": "68c19ccf306653cca75bc23046487f973eee6785bdda46e00dbeee7c66b4b3d3"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
+      "bytes": 1964,
+      "sha256": "828ed7b08afb9fb3434cdda6c8f9cf87dd263b2cb9299b840dbda95c58b43a5a"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
+      "bytes": 1894,
+      "sha256": "f8c2c744ee659126fe58e27d49b5867bd2abf90b4941b0204ad8d7bb48b1b569"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
+      "bytes": 681,
+      "sha256": "abe8e97fb525372f77fcc46a0d65f6a3845d8e809784fec3e8292adde52e7c6e"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_counterfactual_profiles.npz",
+      "bytes": 172502,
+      "sha256": "9a67573a1c30aec7b85b268cf62b9e1ea48350774b3c8fdde7e10a662f4c0812"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_market_summary.csv",
+      "bytes": 1464,
+      "sha256": "89c52b70bb781c1aa00ca941bc726dcd376708f43e75aef55e2760dbe226333e"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
+      "bytes": 103297,
+      "sha256": "6f2c603e675cd2f279a525f95900eeec7d78f7293feb2b5a552365cdd0715d90"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
+      "bytes": 43818,
+      "sha256": "747dc1d6516d449f45615edebf26f6ade6ac310c4364a73b4a45c13d9048eb91"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/experiment_metadata.json",
+      "bytes": 986,
+      "sha256": "a26d333e89957e6210d0e36d1738d2abdd9096ecf1fedccb4fc7d66893dbd943"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_daily.csv",
+      "bytes": 21538,
+      "sha256": "9d213eb3ca613d8d45d989231dc5905bc8ebed09177d8dade1261d28770d3474"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_summary.csv",
+      "bytes": 375,
+      "sha256": "30f1d0f55062a5ec92d9029a5f5cbd2617b26a036f0e083a431a2ff3b135790a"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_trace.csv",
+      "bytes": 358955,
+      "sha256": "5bb938883c598b126b3fa2ffdd5ed6c0149be0ad9ab850f32d2697f84a66e4f7"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json",
+      "bytes": 1361,
+      "sha256": "46b2fc32a06486f457df8c4df5b30d716f2524345b440907b8f31a5e4ed7c965"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_fidelity_summary.csv",
+      "bytes": 396,
+      "sha256": "8eab9a0fcfe69f9b16c3fe926a776af68aa4698f6c3453648a4d255502811002"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_flow_solution.npz",
+      "bytes": 2395776,
+      "sha256": "be8e85a2d027ea5cd4b73e5844cd545fd577663ca5aff2609ca3dfbd6ce94ee2"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_slot_profile.csv",
+      "bytes": 2540544,
+      "sha256": "70a77898127499961220b2bb4f9d41e258c43c6246cd2a0943e020d8cf790e01"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
+      "bytes": 1295,
+      "sha256": "745f63dbc34813f3482432e21378059c8c594012710978deb69bcd5758b06e2b"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+      "bytes": 481,
+      "sha256": "4e367dad85d154eb7593714322a124638e49fff03ac1ee0100a71ae7b03b40b7"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
+      "bytes": 139216,
+      "sha256": "f30f337fc5fdca6767d783542fb282f984dec9a1a32dacd48e25f39939f8f407"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+      "bytes": 25861,
+      "sha256": "c882ee32fe48d198b744bfe2342a59b8be90c33297167244d08e4f6180de97c8"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+      "bytes": 550,
+      "sha256": "0c2831041dead7055d287ba226b9ccddcda4ca7f1139432a7996f222daa53f87"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
+      "bytes": 1076,
+      "sha256": "4357542420102b9f720a79b11360b5b4154740b05923e2e8acdd840c89eb89b7"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
+      "bytes": 1754,
+      "sha256": "ec09f2fcf202b55e86e02cf666037c1396138efe9a2d533523770d7a23c16923"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
+      "bytes": 1067,
+      "sha256": "687bc4eb67000cf9a1693a28c8e9f0ec7e0f73b5d0667ae35f52570f2a981fe7"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
+      "bytes": 530,
+      "sha256": "aa5d571a39a8fcc6db7f23001401190d64a24da787cd6d75556e82f2552d2cc4"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
+      "bytes": 37813,
+      "sha256": "5e2414f510fea37ecc41db8f26c7a428c8beeb74179c08f5a48cf3b4275cf06f"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+      "bytes": 374,
+      "sha256": "145672dd1e778b42c23fb3ccc045f9a2bfc869d76bac4797c2bef8ab43ccf329"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
+      "bytes": 586,
+      "sha256": "49ddb98cf7a0b2d324a112a98e43860bc44736ab259c852bbc4d3a7bce7510ab"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
+      "bytes": 1465,
+      "sha256": "e7e8bcf47228d3f1620835cdc159ca227d47d77d7131f1ea1f9dabefa934d38d"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+      "bytes": 297720,
+      "sha256": "6e6761909df4ba26e1294eef3067ae4ce25c78fea78745aff98dfcd8f0e01089"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+      "bytes": 2386,
+      "sha256": "678d475bc89b1fd1d99f732bb9619c2035053c20a8c99a4b8360f01d4dc786b5"
+    },
+    {
+      "path": "experiments/exp1_manipulation/results/final/experiment_metadata.json",
+      "bytes": 940,
+      "sha256": "7a0ac0c054914c7a5429a77f904a843e16dff8f07c4fea41c509b0344871f153"
+    },
+    {
+      "path": "experiments/exp1_manipulation/results/final/manipulation_grid.csv",
+      "bytes": 11998,
+      "sha256": "70b060ab06a8b36c0bd5c218ebafba79d8eeedbf90dad497c1d53a2435035f0d"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
+      "bytes": 13879,
+      "sha256": "8336cccf59176e20aa942b9cd0fa5c01308c9cd22367df0e3cb5dc832a117eb6"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
+      "bytes": 1435,
+      "sha256": "287bd6d1024536e60daa3194d967736087f30b3fac50c94ffae7d64c114d1016"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
+      "bytes": 7984,
+      "sha256": "095310309517aabbf98fa463b18c47f71a9c2bc7198180e24518d1c290be4bad"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
+      "bytes": 87287,
+      "sha256": "eaf92ab640fb196e0f02115889fe67ab6e34729b1ea893750972cf0bcc665c8c"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+      "bytes": 681,
+      "sha256": "cf6ba695b50a52a5104c9817ab6419339fe1bc7ea5bd8f11f660226e5178270e"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
+      "bytes": 303,
+      "sha256": "173ac6941bc21c79243b6447a189c28ccf3add62603328e6ba9586118b51c0b2"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
+      "bytes": 1807,
+      "sha256": "f1b1a33e4c85929198e8b1bff843aa547bfcd537b8ae0b399d43df39465c1a60"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
+      "bytes": 136344,
+      "sha256": "ad893a570d6a942ada50c198406ed568f2ec7eea48b4bfab050408da67861c7f"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
+      "bytes": 343,
+      "sha256": "89b8081b8bbe954a6963b6c2ace63a2f6a07b32b9798a0b696475ca9271ec172"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
+      "bytes": 4303,
+      "sha256": "4d7103fa81818fc5e9d28a23298c5c878cd50b78afb047c36b82ccbcafc65bd0"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
+      "bytes": 817,
+      "sha256": "84ba0aea2fafebd80d80b466ed0555a79dcc8eda767d8a2e02f7af42ce052c31"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
+      "bytes": 194915,
+      "sha256": "e88a7f7a5269393494123a92d84fdbb6ea0e32fa243207e96e7c56b1a455df0d"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
+      "bytes": 6457,
+      "sha256": "f65df5dabf3488a3c253365f5faa5a8eda8a309f516b5cad72551109955c56bc"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
+      "bytes": 3926,
+      "sha256": "a631efda959198a0896ab0a2607f67283134282c41f55ab76998c30c95899dcd"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
+      "bytes": 1530,
+      "sha256": "98fe8c6bd3ff5229a4e6a57c34e6c973bfeaef44c233fba4310594cfe77668a6"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
+      "bytes": 220289,
+      "sha256": "bd761d8c30c7bd529dc9722c0a24f3a83cb499e1531638b187dca1feda41d864"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
+      "bytes": 1668,
+      "sha256": "eada94f6a9c5db10b124c92e15091602cac7d9a287acd6cbfc1999c5ab72d781"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
+      "bytes": 609,
+      "sha256": "c4c8ca748e88741ba243b65d014bfc20e2e3f5d70f27941be0bded4b1b5c7c14"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+      "bytes": 625,
+      "sha256": "95c76048ed3c85755cf49f8cf82f1bef4a7bdc868e7825d5d491c6697011c87e"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+      "bytes": 1011,
+      "sha256": "b728419863fc271e6cd1746737bcfb9de6c5b9bf14f9ee1add39e14a6932e192"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
+      "bytes": 2037,
+      "sha256": "d3c9862b20d89f583cfe8b69a3b11c61d647940276e4a5b0e8639b9dd7a1d728"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+      "bytes": 348,
+      "sha256": "8769a0c39b306fdc287dc74e401a3d74020e34c699626a2cafabebbb646707ad"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
+      "bytes": 133583,
+      "sha256": "2a523825b3306a5c007ff2aeaba6e9a388e3c044b5b66376a7482b1ec60253ea"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
+      "bytes": 4909,
+      "sha256": "de5e9d1af2a24166ba4a2cc248c130d2d32396cc68038586de9fc63bbf3f46bb"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
+      "bytes": 1987,
+      "sha256": "e6a63a947cb1b7159532a98a7e66d235455a5f654449df55aa6e120069240359"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv",
+      "bytes": 37876,
+      "sha256": "29b42b7332a2af6148ff6bdb261764a742f04212a4316a074fdb27b28df693fa"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/mean_line_loading.csv",
+      "bytes": 35499,
+      "sha256": "0cdb995fe2779544feb3ebd681db13eea8999c8a90b2a18e0d9c4146ddfd0952"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv",
+      "bytes": 9247,
+      "sha256": "285d361453a6eac8ffabddc326f0ce5a70c493358d4e0bb57cdecb677d3742be"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv",
+      "bytes": 517197,
+      "sha256": "d0db831ba03ab572426066fd0d7fcbf93d15c739655b9e1fb581af1b68bbbc24"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition.csv",
+      "bytes": 73280,
+      "sha256": "3472ec3f5e0563d46d1e91c9f680389324e1c5af8f1c1a3fca5d3d973bf9bef8"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition_summary.csv",
+      "bytes": 10380,
+      "sha256": "eb35f322932a686770b17312899934116b3935643ece9f5f614e1b536f43142e"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv",
+      "bytes": 548250,
+      "sha256": "6573fb87b57f8b7205153742e7ec3be3fa68f2faeb1f52fd2ab2c26c9039b153"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/case_metadata.json",
+      "bytes": 258,
+      "sha256": "3e3476ba64d81f568ede9666e095801cb848f28f6523f8695255d4f00cae4cef"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/case_summary_by_data_center.csv",
+      "bytes": 314,
+      "sha256": "bfcdda2ff116822e26c2767d9b5459333789c1780c9e7b1d55f51c08a29a5fbc"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/spatial_case_timeseries.csv",
+      "bytes": 28401,
+      "sha256": "928b174b46a47d18b13e8c370a27c772de8ee04c9cb16c89d2499f9fead501e2"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/experiment_metadata.json",
+      "bytes": 1662,
+      "sha256": "458754fe3a36479364f6474d8c0c6bea7dceb60a4b8216c7e2c08a782ac77b08"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/network_robustness.csv",
+      "bytes": 2237885,
+      "sha256": "1d4e33f79211644a0fc0f803f817a6b5aa6e663e8dcc25765534c8bfd6fb7ad0"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/network_robustness_summary.csv",
+      "bytes": 15150,
+      "sha256": "742b358eac3d94885d4ffea24eece1973941b29a420515f613ba34e724b45868"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv",
+      "bytes": 5069,
+      "sha256": "1e136285b601abfb76946782e922f601c617ec4ae547415468bbdb68958ce42c"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/resolution_convergence_daily.csv",
+      "bytes": 34006,
+      "sha256": "a4c144a5ce9ce0de3ea5f55f7ca0a0a7cb606161cbbc33372ade0780e5ada90c"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/resolution_convergence_summary.csv",
+      "bytes": 735,
+      "sha256": "31545e6197d650553db50593f96703b497bd35aa4b9e7ff2d173e7bd7895f6a9"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/experiment_metadata.json",
+      "bytes": 1180,
+      "sha256": "2641aea244ffacf20d64cc1d0d07d8eb3fb320258e5843745965bc9c5d5415b6"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/physical_stress.csv",
+      "bytes": 320354,
+      "sha256": "bea0e4c4884a0a52f3751014619c7519d6ae7eaaf262f0b54e726dfe48af6bf8"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/physical_stress_summary.csv",
+      "bytes": 5783,
+      "sha256": "b2c868a4a738d009754619a27b11c7b6d9a4b9056c2d6693a4b5c9439b0f1822"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv",
+      "bytes": 680893,
+      "sha256": "ba3f32b185defa7f2a05ab57fdc3ba430a841c92ce1ca9422ca9b01bf36fdfe6"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling_summary.csv",
+      "bytes": 947,
+      "sha256": "bea7b0f9aabcd5a9be7ab32f11074a6ae735788e51c5c5bf5d0930deb481acf8"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/experiment_metadata.json",
+      "bytes": 1085,
+      "sha256": "89cc8a63c71f89306e3fd9d45c24faf7ca57211274983927fc81931ad089a0b6"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv",
+      "bytes": 202267,
+      "sha256": "80d3c13693b1228a1445d2dc293a30ba2e6cee18453b0440061e0f5b4bfc0649"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling_summary.csv",
+      "bytes": 376,
+      "sha256": "438556817d8bcc49b5200ea2129273805a70f43c3e5cf46f4f185797476c44bd"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/value_allocation.csv",
+      "bytes": 474505,
+      "sha256": "9f868b5a6ccb2420db09878d70f2d2fe108d33b008a32042f498d1466a7795fd"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/value_allocation_summary.csv",
+      "bytes": 1182,
+      "sha256": "70553c3211ee6e06c3dff8b901f03e16e1135727cbdc9a5808ba26055702b7dc"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/experiment_metadata.json",
+      "bytes": 822,
+      "sha256": "7daabf3a0d56da10abec1b84799b6887f25c3bc518e8fccb0478b24db1dea21c"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_daily_results.csv",
+      "bytes": 51674,
+      "sha256": "e34bbf38defae9b87867531a1b0a4ace310574357ec25d8942e2bc210bb768ab"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_interval_results.csv",
+      "bytes": 738373,
+      "sha256": "37935405be7e1df02e5de16f33f94d87fbdc7407c311968080f072a41d0f0fe8"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_paired_tests.csv",
+      "bytes": 994,
+      "sha256": "c1ad0d86e1fa0e8ca4fcba68bebbf57b6bb302aefeb73aedec8495f31f795937"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_summary.csv",
+      "bytes": 1166,
+      "sha256": "dd5b8c6195dc2a0bcd45c3cf466daa221638c1e5c9e20e40d4e7adc349e3e79a"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+      "bytes": 139861,
+      "sha256": "222b5bb310f79ea55999dda7c70d00176b17225b1798937433e5417d14885fcb"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
+      "bytes": 14456,
+      "sha256": "a6b1eee9b6580cd41b6d5e68b36798fa3f10c99f986c7eb9e93f84b9c7049694"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+      "bytes": 24626,
+      "sha256": "7a8739f5cde3ad2a012a30dfcda51a714166f0f0ee7f67cd5533b4ca2d371682"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
+      "bytes": 2131,
+      "sha256": "3b29bc7aaf452fcce7491f53e6df90ee25afddad2bf1a13633dfe3e113653798"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
+      "bytes": 14905,
+      "sha256": "33fe64537ddc9b025a3fcb7034ae13cf4e0150fd4334dbdad8da368feaf31886"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
+      "bytes": 89586,
+      "sha256": "e917678bcbf1352cd645e3da5424d4317fcf156325646e90dea0b00dfdb0bb53"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
+      "bytes": 1082263,
+      "sha256": "35edf9202433752022a6b57a79400edf9e2829bc271cef32067ede4978e981c9"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+      "bytes": 1963,
+      "sha256": "b15dd9183d1853b3188e326c3c8e049a0abcffe5816131ef300a98f5bb923ae1"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+      "bytes": 439,
+      "sha256": "a67240f02a20e26c8810648147569e806364c5f17a43d37751a65d53b49bccd7"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.pdf",
+      "bytes": 19945,
+      "sha256": "98e8202a72eda945faf7bffe9f8d4709016ffc87f5ce3dd62c5d336fc53d3b5e"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
+      "bytes": 282954,
+      "sha256": "14850d08808d73fa2e466676f76a8c7643498c217870e4428399f037a34fd002"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.pdf",
+      "bytes": 19189,
+      "sha256": "241f74e9fc827242b63c38c896dce939d8614f3b29bc8b625c10810838171e69"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
+      "bytes": 282363,
+      "sha256": "797e75a5d5f1273bdb8bad55ea4f50aec8bebe8dbdf60900e1f93b68de6f354e"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.pdf",
+      "bytes": 21982,
+      "sha256": "26a51d92ef44efd404ebd20ba6c677fb44b09392c7e1a09bc0611b98940808be"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
+      "bytes": 305838,
+      "sha256": "b299dc30c4dd8c38cae6dab34583655631d52b8dd50aa84ad2f8e5dea89eaefe"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.pdf",
+      "bytes": 29185,
+      "sha256": "a5ff112584f078cea523f77578d2815ada7144b8cadbdfad3b4af964ab84d184"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
+      "bytes": 297869,
+      "sha256": "c8040398f5de33759f3129de71985d7287c15d55c72c965584ffe80b7ef0811e"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.pdf",
+      "bytes": 24802,
+      "sha256": "ed8e79a0356667a367d06577087bbfdfc574334d0e28aa5348bb9cb88576e077"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
+      "bytes": 434862,
+      "sha256": "bddc8de73261d576fed9c3423634d27f83c738d3f117c75cbf15e364815ccdea"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.pdf",
+      "bytes": 19693,
+      "sha256": "5b9382696eb44e4ed90d74e764b9294af346e0fbe46c8995f4133b5c5a44f088"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
+      "bytes": 371858,
+      "sha256": "768d8382acee30a95b4c8a7204c0d5d715578744736b3742271f8b116e15213c"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.pdf",
+      "bytes": 189480,
+      "sha256": "308242195b0d29679bc6bcb1467e21735244115b074978969dde454d7e5c4ec8"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
+      "bytes": 361152,
+      "sha256": "427e14495986b1285ca8c376aacbd05318fbe793654cdd80708c63a3aef64cbb"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.pdf",
+      "bytes": 41898,
+      "sha256": "5da7a746b407a035da7880d67e113b6d8865be8ebd8703fd17d6a30a1186f5e8"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
+      "bytes": 304559,
+      "sha256": "20803df34713c4356525ad377a39a807440664ff570efd84cb6bd42735ef5c86"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
+      "bytes": 18666,
+      "sha256": "fd5b4215518660c9d2a4a0db2fd05cb6a88f52868651665a2d2b1622aadc7fb7"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
+      "bytes": 259815,
+      "sha256": "037bbe9e47df3f999394b336a1b3727a387059338cbfc0bc5fd2c8df246ef1b5"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
+      "bytes": 16269,
+      "sha256": "cbceb343622fc6e63e5a649ea97ffbb7f7508ef72d9a79062582d823fb477ac4"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
+      "bytes": 182151,
+      "sha256": "17d185c2ac4da0f54cc51fcf1a722c9b62a02f85576ac6a4577dea20d3cdd399"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
+      "bytes": 25694,
+      "sha256": "6d488211a7a4298af2656c28c59b897cde4b8017ca092a090f8b5d93bae8c447"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+      "bytes": 252544,
+      "sha256": "36cd9900d64439979636cc70b093688623f93514fbdea6329c4866af3c6e969e"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.pdf",
+      "bytes": 24132,
+      "sha256": "009487da78f57bdad1443d26ed5daa0e1b95738763f2cd1b4a2926351f4c9545"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.png",
+      "bytes": 216634,
+      "sha256": "d265e3690a1482c1651cf6de7255c79c5d68e3b0fe816c28a37ba29950ea9e92"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig2_response_and_migration.pdf",
+      "bytes": 18656,
+      "sha256": "90c5cf989de049dda62b140729cb1bc02759a456ac9f6e7aace062eba89bfec6"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig2_response_and_migration.png",
+      "bytes": 264036,
+      "sha256": "c7018bf258fec5e95c07693f3cd7fd24616196c2efae02d66b71686c8ef27c61"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
+      "bytes": 51048,
+      "sha256": "8136b5527e8dcac759015c599d11eacb925c1d6223dbf3c62d0612f46df49b2d"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
+      "bytes": 511568,
+      "sha256": "2056e9fc5ea763366e8c87b6650298c6224ee25b87f21accd7efa5d632531012"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.pdf",
+      "bytes": 27800,
+      "sha256": "2b6a85bdb11bf0ea74267e887ebd2722a1f3c523cafed6aa6b747b50a97bf802"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
+      "bytes": 494015,
+      "sha256": "9b71bbddfee3655ffd8f00d57615f67140338dd4ebfa50ca6385faff5830abb7"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.pdf",
+      "bytes": 16653,
+      "sha256": "e4ff75bee6ecf8a537fce52b55b7ec776a7972769136eae604f8270b2c4240e6"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
+      "bytes": 208971,
+      "sha256": "f6fd933dce39548f49a96b6d7a02a5917e81ad46dee13128b3e48da7f8dd1f56"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.pdf",
+      "bytes": 42614,
+      "sha256": "b835cf6b5e4a1515cff5d6340a6e90d8ff4c6985b42f1b6993068e07b5f76313"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.png",
+      "bytes": 483962,
+      "sha256": "76018926844ce04e8210bf74649a76963d851ec04dd1d1e22694a3b2e4e18bd3"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.pdf",
+      "bytes": 19059,
+      "sha256": "bc24229e71a1e60717b962abb42a28cce4124e1eb852b07f80e0341130dfcb8a"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.png",
+      "bytes": 147184,
+      "sha256": "4476b7dbb83727cb780ed5c44361784200ecb01c2852073ca20ca6ccbf58c0dc"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.pdf",
+      "bytes": 18068,
+      "sha256": "43211edf5ca766070d3feca34d44e993765be8a95b7e4594c097088a6dd7d166"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.png",
+      "bytes": 267428,
+      "sha256": "679c696916c006ab620f6cd78bd0768c1f86d5aa878e72dee991c23a52427d09"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig7_spatial_response_case.pdf",
+      "bytes": 23125,
+      "sha256": "2dea7c8dcca643ae8e596428d995ac057ef0c2be54aefecbf2bb72c21b1d2e2e"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig7_spatial_response_case.png",
+      "bytes": 568148,
+      "sha256": "21e783ded5504db7f985755ca618b05fd48eb084b7ec906669d89c775bde1613"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.pdf",
+      "bytes": 20981,
+      "sha256": "149a2e3a9d2e7ec2adb3c3e24e96b09a75bb761364aaf1c13d4c884cc7af8db6"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.png",
+      "bytes": 329466,
+      "sha256": "314606f524d7410f4e1f4e093eeef68b307d66d552fc4311b88cf6c047bcf406"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.pdf",
+      "bytes": 22647,
+      "sha256": "cf7393279f1e478d21ed51a9efb9d2abc019aca95a33f6b2eb10084ce3e92b5e"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.png",
+      "bytes": 473584,
+      "sha256": "6de97d5206f4c45f306f4deed32e970f86b592472a6fd0b752f2316b1eeb640b"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.pdf",
+      "bytes": 21798,
+      "sha256": "24433b4f90c95552dbee65819a89c9339189bbf3202da9449556652c8cb6a7fc"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.png",
+      "bytes": 323645,
+      "sha256": "9a70c9229036ff8b024e08d63e28f88add4d2d67f2640dcfbdd1376e859c5b58"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.pdf",
+      "bytes": 21297,
+      "sha256": "4aea5e7b4cbbe02923dca1e21f3c509e03aa2d4830918bf6a4b159515b83652b"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.png",
+      "bytes": 454563,
+      "sha256": "4ebe1fc4443de1840e60af5eaf9ed4a7ae919e28ddbe3c27e285c96fe9aff8b7"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.pdf",
+      "bytes": 18801,
+      "sha256": "b85258441472d4addce4094ff69bc8a47ff4cc407dd8b685a04c2b59c9a3041b"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.png",
+      "bytes": 321583,
+      "sha256": "b36c6e5f629a2120e6957be4c5084fe8be22cc355af4357d4ac0f41c84678906"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.pdf",
+      "bytes": 17824,
+      "sha256": "711a7f8c41767cd61cabb5534cdbf4751786a06463b17b20e4753782fa29ac64"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.png",
+      "bytes": 258701,
+      "sha256": "7782336027c328f474f384705dc11a9ef3cffb499531a2d018b54bf90e89e938"
+    },
+    {
+      "path": "experiments/exp8_n1_security/figures/fig13_n1_security_validation.pdf",
+      "bytes": 20450,
+      "sha256": "f887153f5d2381cd1258343842bae9d37ec22545f5c2550fd29147aa0db74bf1"
+    },
+    {
+      "path": "experiments/exp8_n1_security/figures/fig13_n1_security_validation.png",
+      "bytes": 333644,
+      "sha256": "2e56b3db0b7c10f922858c2c7a0171c55cf34c456a087daa8b45ab8ac21878bb"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
+      "bytes": 21090,
+      "sha256": "090e7d1a3dcad86826c229e4bf453bbb7946c13c8b9fd74cf48a1566162d9a2b"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
+      "bytes": 347942,
+      "sha256": "ee47a6298b92557c159b2cfda0364e82f8c5766f11a2cf8dca736da5ba6b6ae2"
+    }
+  ],
+  "limitations": [
+    "BurstGPT exposes workload tokens but not facility power; token traces are scaled to an explicitly documented hyperscale capacity target.",
+    "MIT SuperCloud provides measured GPU energy for its own workload, which is independently aggregated and scaled; it is not claimed to be a co-located trace from the same operator.",
+    "The network tests use public IEEE RTS-24, IEEE-14, IEEE-30, IEEE-39, IEEE-118, and IEEE-300 benchmark cases, not confidential utility topology or market telemetry.",
+    "All 24 mappings of the four measured regional traces to the four declared IEEE-118 connection buses and three predeclared power penetrations are evaluated, but these public traces are not claimed to be co-located utility and facility measurements.",
+    "The final workload credit is constrained by a predeclared two-sided band around the selected single feasible projection; the upper side certifies false-credit noninferiority and the lower side bounds additional under-credit by the declared tolerance.",
+    "The complete N-1 panel certifies preventive feasibility for every finite non-islanding line outage in the lossless continuous DC model; it is not an AC voltage, transient-stability, or island-balancing certificate.",
+    "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
+    "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
+    "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
+    "The cross-network AC panel is a corrective power-flow diagnostic over native-case admissible outages; voltage and loading diagnostics are reported without being promoted to a preventive AC security certificate."
+  ]
+}

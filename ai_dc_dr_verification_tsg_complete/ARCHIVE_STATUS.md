@@ -1,23 +1,21 @@
-# Archive status
+# Archive and repository status
 
-This directory contains the recoverable contents of the uploaded archive
-`ai_dc_dr_verification_tsg_complete.tar(1).gz`.
+The uploaded `ai_dc_dr_verification_tsg_complete.tar(1).gz` stream was
+truncated and cannot by itself reproduce the study (`gzip: unexpected end of
+file`). The workspace contains the source code, processed arrays, all 18
+experiment directories, audit reports, tests, manuscript sources, editable
+figures, and generated results. It also contains partial copies of the raw
+inputs, but two large CSV files are truncated and fail the hashes recorded in
+the manifest.
 
-The uploaded gzip/tar stream ended prematurely (`gzip: unexpected end of file`;
-`tar: Unexpected EOF in archive`). The recovered snapshot contains 563 files,
-including the source code, processed data, manuscript sources/PDFs, figures,
-configuration files, and vendored Python dependencies.
+The expected raw-data sizes and SHA-256 hashes are retained in
+`data/processed/data_manifest.json`. Until the original full CSV files are
+restored, the generated results are a locked artifact snapshot rather than a
+locally reproducible end-to-end run. The repository should also be treated as
+a trace-driven benchmark, not as evidence from a co-located utility event. The
+network placement and workload-to-power scaling are declared scenario
+parameters, and the manuscript states this identification boundary explicitly.
 
-The following directories referenced by `README.md` were not present in the
-recoverable archive and therefore are not included here:
-
-- `data/raw/`
-- `experiments/`
-- `tests/`
-- `audit/`
-- `artifacts/`
-- `logs/`
-
-This snapshot should be treated as a partial source-and-manuscript archive,
-not as a complete end-to-end reproduction package, until the original archive
-is re-uploaded without truncation.
+Before publication, restore and hash-verify the original raw CSV files, verify
+their redistribution permissions, and use Git LFS for the BurstGPT file that
+exceeds GitHub's ordinary per-file limit.

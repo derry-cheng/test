@@ -22,6 +22,15 @@ CLASS_NAMES = ("realtime_inference", "elastic_inference", "batch_gpu")
 def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging.Logger) -> Path:
     out_dir = root / cfg["data"]["processed_dir"]
     out_dir.mkdir(parents=True, exist_ok=True)
+    raw_paths = [root / p for p in cfg["data"]["burstgpt_files"]]
+    scheduler_path = root / cfg["data"]["mit_scheduler"]
+    dcgm_path = root / cfg["data"]["mit_dcgm"]
+    pglib_path = root / cfg["data"]["pglib_case"]
+    _validate_declared_raw_sources(
+        root,
+        out_dir / "data_manifest.json",
+        [*raw_paths, scheduler_path, dcgm_path, pglib_path],
+    )
     output = out_dir / "workload_15min.npz"
     if output.exists() and not force:
         try:
@@ -33,10 +42,6 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         except (OSError, ValueError, zipfile.BadZipFile):
             logger.warning("Discarding incomplete processed workload archive: %s", output)
 
-    raw_paths = [root / p for p in cfg["data"]["burstgpt_files"]]
-    scheduler_path = root / cfg["data"]["mit_scheduler"]
-    dcgm_path = root / cfg["data"]["mit_dcgm"]
-    pglib_path = root / cfg["data"]["pglib_case"]
     for path in [*raw_paths, scheduler_path, dcgm_path, pglib_path]:
         if not path.exists() or path.stat().st_size == 0:
             raise FileNotFoundError(f"Required full dataset is missing: {path}")
@@ -194,6 +199,50 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
     ).to_csv(out_dir / "data_flow_audit.csv", index=False)
     logger.info("Processed workload written: %s; shape=%s; total=%.2f MWh", output, arrivals.shape, arrivals.sum())
     return output
+
+
+def _validate_declared_raw_sources(
+    root: Path, manifest_path: Path, configured_paths: list[Path]
+) -> None:
+    """Prevent stale processed results or truncation from entering a new run.
+
+    The locked artifacts may be inspected without the raw inputs, but any new
+    preprocessing pass must use the exact sources recorded by the previous
+    manifest. This check is intentionally fail-closed because silently
+    rebuilding the processed arrays from a partial CSV would invalidate every
+    downstream experiment while leaving the old manuscript numbers in place.
+    """
+    if not manifest_path.exists():
+        return
+    try:
+        declared = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Cannot read raw-source manifest: {manifest_path}") from exc
+    expected = {str(item["path"]): item for item in declared.get("sources", [])}
+    mismatches: list[str] = []
+    for path in configured_paths:
+        relative = str(path.relative_to(root))
+        source = expected.get(relative)
+        if source is None:
+            continue
+        if not path.exists():
+            mismatches.append(f"{relative}: missing")
+            continue
+        actual_size = path.stat().st_size
+        actual_hash = sha256(path)
+        if actual_size != int(source.get("bytes", -1)) or actual_hash != source.get("sha256"):
+            mismatches.append(
+                f"{relative}: expected {source.get('bytes')} bytes/{source.get('sha256')}, "
+                f"found {actual_size} bytes/{actual_hash}"
+            )
+    if mismatches:
+        joined = "\n".join(f"- {item}" for item in mismatches)
+        raise RuntimeError(
+            "Raw inputs do not match data/processed/data_manifest.json. "
+            "Restore the original files before preprocessing; the locked "
+            "processed artifacts will not be rebuilt from truncated inputs.\n"
+            + joined
+        )
 
 
 def _aggregate_burstgpt(

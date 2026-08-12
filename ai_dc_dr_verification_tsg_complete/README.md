@@ -1,17 +1,29 @@
 # AI Data-Center Demand-Response Verification
 
-This repository is the complete reproducible implementation for the study
+This repository is the source-and-artifact package for the study
 **“Security-Aware Workload-State Counterfactual Verification and Nodal Net-Value
 Settlement for Spatially Coupled AI Data Centers.”** It uses every valid row
 from the downloaded BurstGPT traces, all MIT SuperCloud jobs with measured DCGM
 energy and matching scheduler records, and multiple unmodified public
 transmission benchmarks.
 
-## One-command reproduction
+## Reproduction status and command
+
+The checked-in processed arrays, experiment outputs, manuscript, tests, and
+audit report come from the locked study run. The uploaded archive and the raw
+copies currently available in this workspace are incomplete: the second
+BurstGPT CSV and the scheduler CSV fail the sizes and SHA-256 hashes declared
+in `data/processed/data_manifest.json`. Consequently, a fresh raw-to-result
+run must not be claimed until those two original files are restored.
 
 ```bash
 ./run_all.sh --stage all --force-preprocess
 ```
+
+After the original raw inputs are restored, this command performs the full
+20-stage run. In the current snapshot, the independent audit is expected to
+stop at the raw-file hash checks; the existing generated results are retained
+for inspection and are not silently regenerated from truncated inputs.
 
 The unified command writes a timestamped-entry log to `logs/full_run.log`, continuously
 checkpoints long experiments, and produces an auditable run manifest in
@@ -57,7 +69,7 @@ budget balance, and stage-manifest isolation.
 
 ## Data integrity and identification scope
 
-Raw files remain under `data/raw`; hashes, row counts, preprocessing rules, held-out
+Raw-file paths remain under `data/raw`; expected hashes, row counts, preprocessing rules, held-out
 DCGM power-calibration performance, held-out per-job energy-ratio quantiles,
 temporal coverage, and scaling constants are recorded in
 `data/processed/data_manifest.json`. MIT scheduler submission timestamps
@@ -82,7 +94,7 @@ panels, primal workload constraints, SCED balance/line limits, matched informati
 sets, exact dependence-aware tests, native branch ratings, Shapley budget balance,
 and the expected output inventory.
 
-The complete compiled paper is `manuscript/main.pdf`, with source in
+The compiled paper and locked result artifacts are `manuscript/main.pdf`, with source in
 `manuscript/main.tex`. See also `manuscript/paper_outline_zh.md`, `manuscript/model_formulation.md`,
 `manuscript/formula_source_matrix.md`, `manuscript/theoretical_results.md`, and
 `manuscript/implementation_alignment.md` for the full equation/source/paper-to-code
