@@ -4,8 +4,8 @@ The complete working tree for this study is stored in nine Git blobs under
 `ai_dc_dr_verification_tsg_complete_FULL_ARCHIVE/`. The parts are ordered
 `part-000` through `part-008`.
 
-- Archive size: 72,569,839 bytes
-- Archive SHA-256: `8022d8abb982e1b1861df5fa88efc1c38b84dcaf7e4cfa02fe1966814b0d42e2`
+- Archive size: 72,568,844 bytes
+- Archive SHA-256: `4529ad188138e61ebec81a684fd000b2ecbf2a1c91b285cf1c9759ac1a629c7e`
 
 Reconstruct it after cloning:
 
@@ -22,5 +22,7 @@ source code, experiments, generated figures/results, audit records, tests,
 license notices, and all other files available in the workspace.
 
 The latest data stage and independent audit were run after restoration:
-238/238 audit checks passed. The study remains a trace-driven benchmark and
-does not claim co-located utility/facility telemetry.
+238/238 audit checks passed. The latest manuscript build has no unresolved
+cross-references or overfull boxes and contains 12 letter-size pages. The
+study remains a trace-driven benchmark and does not claim co-located
+utility/facility telemetry.
