@@ -39,7 +39,7 @@ own latest record under `artifacts/stage_runs/` and never overwrites
 
 The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`; the final checked workspace
-passes all 27 tests. The suite covers workload-flow feasibility, SCED balance
+passes all 28 tests. The suite covers workload-flow feasibility, SCED balance
 and line limits, N--1 enumeration, endpoint certificates, provenance joins,
 budget balance, and stage-manifest isolation.
 
