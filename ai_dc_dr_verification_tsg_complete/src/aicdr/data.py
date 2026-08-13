@@ -168,11 +168,18 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "downstream_role": "inference arrivals and observed service",
             },
             {
-                "stage": "MIT scheduler-telemetry join",
+                "stage": "MIT immutable scheduler-DCGM join",
                 "input_records": int(batch_stats["scheduler_rows"]),
+                "retained_records": int(batch_stats["full_positive_energy_joined_jobs"]),
+                "split_or_join_rule": "last scheduler record per immutable job ID with positive measured energy",
+                "downstream_role": "full-horizon job-level witness in Experiments 14 and 16",
+            },
+            {
+                "stage": "MIT common trace horizon filter",
+                "input_records": int(batch_stats["full_positive_energy_joined_jobs"]),
                 "retained_records": int(batch_stats["valid_joined_jobs"]),
-                "split_or_join_rule": "immutable job ID with positive measured energy",
-                "downstream_role": "batch arrivals and independent execution",
+                "split_or_join_rule": "aligned execution start before the common 121-day tensor horizon",
+                "downstream_role": "batch arrivals and independent execution for Experiments 1--13",
             },
             {
                 "stage": "DCGM power calibration",
@@ -355,6 +362,7 @@ def _aggregate_mit_jobs(
         & (jobs["time_end"] > jobs["time_start"])
         & (jobs["energy_j"] > 0)
     ].copy()
+    full_positive_energy_joined_jobs = int(len(jobs))
     # The MIT and BurstGPT releases each use their own relative clock. Preserve every
     # observed inter-arrival time while aligning the first eligible measured MIT job
     # with the beginning of the common counterfactual horizon.
@@ -394,7 +402,16 @@ def _aggregate_mit_jobs(
         "scheduler_rows": int(len(scheduler)),
         "dcgm_rows": int(len(dcgm)),
         "measured_unique_jobs": int(measured["id_job"].nunique()),
+        "full_positive_energy_joined_jobs": full_positive_energy_joined_jobs,
         "valid_joined_jobs": int(len(jobs)),
+        "jobs_excluded_by_common_trace_horizon": int(
+            full_positive_energy_joined_jobs - len(jobs)
+        ),
+        "common_trace_horizon_definition": (
+            "jobs whose aligned execution start is before the common BurstGPT/MIT "
+            "tensor horizon; the full immutable join is retained separately by "
+            "Experiments 14 and 16"
+        ),
         "time_origin_seconds": time_origin_s,
         "clipped_at_trace_horizon": int(clipped_jobs),
         "measured_energy_mwh_within_horizon": used_energy,

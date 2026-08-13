@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from csv import DictReader
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
@@ -119,9 +120,28 @@ def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
     capacity = np.genfromtxt(folder / "capacity_reconciliation.csv", delimiter=",", names=True)
     assert metadata["integrity_passed"] is True
     assert certificate["joined_positive_energy_jobs"] == 71128
+    assert not str(certificate["source_files"]["scheduler"]).startswith("/")
+    assert not str(certificate["source_files"]["dcgm"]).startswith("/")
     assert len(certificate["canonical_joined_ledger_sha256"]) == 64
     assert abs(float(certificate["raw_to_join_energy_residual_j"])) <= 1e-6
     assert np.all(capacity["observed_peak_mw"] <= 118.0 + 1e-8)
+
+
+def test_data_flow_distinguishes_full_join_from_common_tensor_window() -> None:
+    manifest = json.loads(
+        (ROOT / "data/processed/data_manifest.json").read_text(encoding="utf-8")
+    )
+    with (ROOT / "data/processed/data_flow_audit.csv").open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        rows = {
+            row["stage"]: int(row["retained_records"])
+            for row in DictReader(handle)
+        }
+    assert manifest["mit_supercloud"]["full_positive_energy_joined_jobs"] == 71128
+    assert manifest["mit_supercloud"]["valid_joined_jobs"] == 68664
+    assert rows["MIT immutable scheduler-DCGM join"] == 71128
+    assert rows["MIT common trace horizon filter"] == 68664
 
 
 def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:

@@ -1,0 +1,42 @@
+{
+  "certificate_type": "immutable scheduler/DCGM ledger provenance and capacity reconciliation",
+  "source_files": {
+    "scheduler": "data/raw/mit_supercloud/scheduler_data.csv",
+    "dcgm": "data/raw/mit_supercloud/dcgm_verified_full.csv"
+  },
+  "scheduler_rows": 287173,
+  "scheduler_unique_job_ids": 287069,
+  "scheduler_duplicate_rows_after_last_record_rule": 104,
+  "dcgm_rows": 96893,
+  "dcgm_unique_job_ids": 74849,
+  "joined_positive_energy_jobs": 71128,
+  "joined_positive_energy_fraction_of_scheduler_ids": 0.24777318345066865,
+  "temporal_order_fraction": 1.0,
+  "release_before_start_fraction": 1.0,
+  "start_before_end_fraction": 1.0,
+  "positive_energy_fraction": 1.0,
+  "positive_dcgm_energy_j": 9566449316.0,
+  "retained_join_energy_j": 9566446113.0,
+  "joined_energy_sum_j": 9566446113.0,
+  "raw_to_join_energy_residual_j": 0.0,
+  "canonical_joined_ledger_sha256": "fdf49ad75d301580595cabc24656db9d20da9f27ca33249b49095197246ce950",
+  "canonical_row_count": 71128,
+  "integrity_conditions": {
+    "one_to_one_scheduler_record_after_declared_last_record_rule": true,
+    "positive_energy_join_only": true,
+    "release_before_execution": true,
+    "release_before_start": true,
+    "start_before_end": true,
+    "raw_to_join_energy_conservation": true,
+    "no_synthetic_rows": true,
+    "no_imputation": true
+  },
+  "capacity_measurement": {
+    "interval_hours": 0.25,
+    "observed_profile_slots": 11616,
+    "configured_capacity_mw": 118.0,
+    "maximum_observed_peak_mw": 117.9357791795629,
+    "maximum_peak_to_configured_capacity_ratio": 0.9994557557590076,
+    "capacity_rows_are_observed_execution_envelope": true
+  }
+}

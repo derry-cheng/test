@@ -3,15 +3,15 @@
 This repository is the source-and-artifact package for the study
 **“Security-Aware Workload-State Counterfactual Verification and Nodal Net-Value
 Settlement for Spatially Coupled AI Data Centers.”** It uses every valid row
-from the downloaded BurstGPT traces, all MIT SuperCloud jobs with measured DCGM
-energy and matching scheduler records, and multiple unmodified public
-transmission benchmarks.
+from the downloaded BurstGPT traces, the complete MIT SuperCloud
+scheduler--DCGM join, its explicitly declared common 121-day tensor-window
+subset, and multiple unmodified public transmission benchmarks.
 
 ## Reproduction status and command
 
 The checked-in processed arrays, experiment outputs, manuscript, tests, and
-audit report come from the locked study run. The two raw files that were
-truncated in the uploaded archive have now been restored from their public
+audit report come from the locked study run. The two raw files that had been
+truncated in the uploaded archive have been restored from their public
 upstream releases and verified against the sizes and SHA-256 hashes declared
 in `data/processed/data_manifest.json`.
 
@@ -20,16 +20,16 @@ in `data/processed/data_manifest.json`.
 ```
 
 This command performs the full 20-stage run after the public raw inputs have
-been downloaded. The current workspace has completed the data stage and the
-independent audit reports 237/237 checks passed. Long-running experiment
-stages remain resumable through `--resume`.
+been restored. The latest independent audit reports 238/238 checks passed;
+long-running experiment stages remain resumable through `--resume`.
 
-The unified command writes a timestamped-entry log to `logs/full_run.log`, continuously
+The unified command writes a timestamped-entry log during execution, continuously
 checkpoints long experiments, and produces an auditable run manifest in
 `artifacts/run_manifest.json`, including the final status and per-stage timings.
-The final checked resume run is preserved in `logs/final_unified_run.log`; it
-completes all 20 stages and the independent audit reports the full output
-inventory, constraint certificates, information-boundary panel, and AC audit.
+The reproducibility-critical results of the latest raw-data, provenance, audit,
+and regression checks are summarized in `logs/current_validation.log` and
+`logs/final_tests.log`; stage-specific records are retained under
+`artifacts/stage_runs/`.
 Individual stages are also available through
 `--stage data|exp1|exp2|exp3|exp4|exp5|exp6|exp7|exp8|exp9|exp10|exp11|exp12|exp13|exp14|exp15|exp16|exp17|exp18|audit`.
 To preserve the completed all-stage evidence, a standalone stage writes its
@@ -38,7 +38,7 @@ own latest record under `artifacts/stage_runs/` and never overwrites
 
 The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`; the final checked workspace
-passes all 28 tests. The suite covers workload-flow feasibility, SCED balance
+passes all 29 tests. The suite covers workload-flow feasibility, SCED balance
 and line limits, N--1 enumeration, endpoint certificates, provenance joins,
 budget balance, and stage-manifest isolation.
 
@@ -71,8 +71,12 @@ budget balance, and stage-manifest isolation.
 Raw-file paths remain under `data/raw`; expected hashes, row counts, preprocessing rules, held-out
 DCGM power-calibration performance, held-out per-job energy-ratio quantiles,
 temporal coverage, and scaling constants are recorded in
-`data/processed/data_manifest.json`. The exact public download URLs and
-redistribution notes are recorded in `DATA.md`. MIT scheduler submission timestamps
+`data/processed/data_manifest.json`. The immutable scheduler--DCGM join contains
+71,128 positive-energy jobs. The common 121-day tensor window retains 68,664 of
+them for Experiments 1--13; the remaining 2,464 jobs remain in the full-horizon
+job-level witness used by Experiments 14 and 16. This distinction is recorded as
+separate rows in `data/processed/data_flow_audit.csv` and as separate manifest
+fields. MIT scheduler submission timestamps
 define queue arrivals, while independently measured DCGM execution defines the
 counterfactual scoring truth. BurstGPT request service remains trace-observed. The
 joint grid-coupled setting is a documented trace-driven benchmark: public traces do
@@ -98,6 +102,7 @@ The compiled paper and locked result artifacts are `manuscript/main.pdf`, with s
 `manuscript/main.tex`. See also `manuscript/paper_outline_zh.md`, `manuscript/model_formulation.md`,
 `manuscript/formula_source_matrix.md`, `manuscript/theoretical_results.md`, and
 `manuscript/implementation_alignment.md` for the full equation/source/paper-to-code
-mapping and `DATA.md` for data provenance and limitations. The final LaTeX build
-record is kept under `manuscript/build_final10_canonical/`; the source directory
-contains only the final PDF and reproducible manuscript sources.
+mapping and `DATA.md` for data provenance and limitations. The source directory
+contains only the final PDF and reproducible manuscript sources; the PDF was
+rebuilt from `manuscript/main.tex` with BibTeX and `latexmk` after the final
+sample-definition and cross-reference corrections.

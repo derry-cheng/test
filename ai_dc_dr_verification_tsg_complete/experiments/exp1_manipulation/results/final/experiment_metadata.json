@@ -1,0 +1,44 @@
+{
+  "reference_days": [
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59
+  ],
+  "event_day": 60,
+  "baseline_rule": "ten-day arithmetic mean",
+  "strategic_coefficient": "exact derivative of expected settlement: event_probability * DR_price / 10",
+  "optimization": "multi-day expected-profit workload-conservation LPs solved to global optimality by HiGHS",
+  "number_of_parameter_combinations": 56,
+  "theory_optimizer_boundary_agreement": 1.0,
+  "reference_service_shadow_prices_usd_per_mwh": [
+    3.0,
+    1.5,
+    3.3523356821860943,
+    3.3523356821860943,
+    1.5,
+    1.5,
+    1.5,
+    3.3523356821860943,
+    1.5,
+    3.0
+  ],
+  "critical_reference_incentive_usd_per_mwh": 1.5,
+  "threshold_certificate": "minimum HiGHS LP right-hand-side shadow price over the ten honest reference-day event-service constraints",
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ]
+}

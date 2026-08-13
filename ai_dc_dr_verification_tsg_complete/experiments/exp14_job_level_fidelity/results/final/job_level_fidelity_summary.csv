@@ -1,0 +1,10 @@
+metric,value
+joined_jobs,71128.0
+service_variables,1974690.0
+input_energy_mwh,2.6573461425
+reconstructed_energy_mwh,2.6573461425
+maximum_job_completion_residual_mwh,5.9969932665604464e-18
+maximum_slot_residual_mwh,9.351243737687476e-18
+minimum_capacity_slack_mwh,0.0
+capacity_mwh_per_region_slot,0.0016713052108980268
+solver_status,Optimization terminated successfully. (HiGHS Status 7: Optimal)

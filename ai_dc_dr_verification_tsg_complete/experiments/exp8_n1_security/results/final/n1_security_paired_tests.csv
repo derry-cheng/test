@@ -1,0 +1,5 @@
+baseline_quality,comparator,target,paired_days,block_length_days,blocks,observed_mean_difference,extreme_assignments,total_sign_assignments,minimum_attainable_two_sided_p,two_sided_exact_p_value,block_sum_lag1_autocorrelation,holm_adjusted_p_value
+Trace-Anchored Reference,Base-case exact net value,N-1 exact net value,54,3,18,191.79086154569924,2,262144,7.62939453125e-06,7.62939453125e-06,0.09723885768462494,3.0517578125e-05
+Trace-Anchored Reference,N-1 signed linear,N-1 exact net value,54,3,18,1.395888455765493,14012,262144,7.62939453125e-06,0.0534515380859375,-0.19492892780699997,0.12215423583984375
+Risk-Constrained Convex Verifier,Base-case exact net value,N-1 exact net value,54,3,18,52.38140667807501,10674,262144,7.62939453125e-06,0.04071807861328125,-0.5468604156619099,0.12215423583984375
+Risk-Constrained Convex Verifier,N-1 signed linear,N-1 exact net value,54,3,18,-0.12062971651071164,195650,262144,7.62939453125e-06,0.7463455200195312,0.03249411766666343,0.7463455200195312

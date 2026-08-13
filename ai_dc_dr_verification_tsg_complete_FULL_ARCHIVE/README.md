@@ -1,28 +1,24 @@
-# Full archive transport
+# Complete workspace archive transport
 
-The complete working tree for this study is stored in nine Git blobs under
-`ai_dc_dr_verification_tsg_complete_FULL_ARCHIVE/`. The parts are ordered
-`part-000` through `part-008`.
+The full reproducibility snapshot is stored as ordered Git blobs under this
+directory. The previous nine truncated transport parts were replaced.
 
-- Archive size: 72,568,844 bytes
-- Archive SHA-256: `4529ad188138e61ebec81a684fd000b2ecbf2a1c91b285cf1c9759ac1a629c7e`
+- Archive size: 64,601,281 bytes
+- Archive SHA-256: `cd274cea3e64bcd7215eafc61d42aebd8e75072e5029941e52f30351fe1bbb7e`
+- Parts: `part-0000` through `part-0157`
+- Part size: 409,600 bytes except the final part
 
-Reconstruct it after cloning:
+After cloning the branch, reconstruct the archive with:
 
 ```bash
-mkdir -p /tmp/aicdr-full-archive
-cat ai_dc_dr_verification_tsg_complete_FULL_ARCHIVE/part-* > /tmp/aicdr-full-archive/ai_dc_dr_verification_tsg_complete.tar.gz
-sha256sum /tmp/aicdr-full-archive/ai_dc_dr_verification_tsg_complete.tar.gz
-tar -xzf /tmp/aicdr-full-archive/ai_dc_dr_verification_tsg_complete.tar.gz
+mkdir -p /tmp/aicdr_archive_parts
+cp ai_dc_dr_verification_tsg_complete_FULL_ARCHIVE/part-* /tmp/aicdr_archive_parts/
+cat /tmp/aicdr_archive_parts/part-* > /tmp/ai_dc_dr_verification_tsg_complete.tar.gz
+sha256sum /tmp/ai_dc_dr_verification_tsg_complete.tar.gz
+tar -xzf /tmp/ai_dc_dr_verification_tsg_complete.tar.gz
 ```
 
-This archive is the complete source-of-truth snapshot for the current
-revision. It includes the restored public raw inputs, revised manuscript,
-source code, experiments, generated figures/results, audit records, tests,
-license notices, and all other files available in the workspace.
-
-The latest data stage and independent audit were run after restoration:
-238/238 audit checks passed. The latest manuscript build has no unresolved
-cross-references or overfull boxes and contains 12 letter-size pages. The
-study remains a trace-driven benchmark and does not claim co-located
-utility/facility telemetry.
+The extracted directory contains the source code, complete public raw inputs,
+processed data, all experiment outputs, manuscript sources and PDF, figures,
+tests, audit certificates, license notices, and the current validation log.
+Temporary render caches and failed historical run logs are excluded.

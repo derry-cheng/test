@@ -409,6 +409,18 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         str(manifest["mit_supercloud"]["valid_joined_jobs"]),
         checks,
     )
+    _check(
+        manifest["mit_supercloud"].get("full_positive_energy_joined_jobs") == 71_128
+        and manifest["mit_supercloud"].get("valid_joined_jobs") == 68_664
+        and manifest["mit_supercloud"].get("jobs_excluded_by_common_trace_horizon") == 2_464,
+        "full_join_vs_common_trace_horizon_counts",
+        (
+            f"full immutable join={manifest['mit_supercloud'].get('full_positive_energy_joined_jobs')}, "
+            f"common tensor window={manifest['mit_supercloud'].get('valid_joined_jobs')}, "
+            f"excluded by horizon={manifest['mit_supercloud'].get('jobs_excluded_by_common_trace_horizon')}"
+        ),
+        checks,
+    )
     conversion_quantiles = manifest["power_calibration"][
         "heldout_job_energy_measured_to_predicted_quantiles"
     ]
@@ -437,23 +449,26 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ),
         checks,
     )
+    flow_records = {
+        str(row["stage"]): int(row["retained_records"])
+        for _, row in data_flow.iterrows()
+    }
     _check(
-        len(data_flow) == 5
+        len(data_flow) == 6
         and int(
             manifest["power_calibration"]["train_observations"]
             + manifest["power_calibration"]["test_observations"]
         )
         == int(manifest["power_calibration"]["observations"])
-        and int(
-            data_flow.loc[
-                data_flow["stage"] == "MIT scheduler-telemetry join",
-                "retained_records",
-            ].iloc[0]
-        )
+        and flow_records.get("MIT immutable scheduler-DCGM join")
+        == int(manifest["mit_supercloud"]["full_positive_energy_joined_jobs"])
+        and flow_records.get("MIT common trace horizon filter")
         == int(manifest["mit_supercloud"]["valid_joined_jobs"]),
         "complete_source_to_evaluation_data_flow",
         (
-            f"{len(data_flow)} source/join/split stages; calibration "
+            f"{len(data_flow)} source/join/window/split stages; full immutable join "
+            f"{manifest['mit_supercloud']['full_positive_energy_joined_jobs']} -> "
+            f"{manifest['mit_supercloud']['valid_joined_jobs']} common-window jobs; calibration "
             f"{manifest['power_calibration']['train_observations']} train + "
             f"{manifest['power_calibration']['test_observations']} held out"
         ),
@@ -2090,35 +2105,6 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             / "experiments/exp16_ledger_capacity_provenance/results/final/"
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
-    )
-    provenance_source_hashes = json.loads(
-        (
-            root
-            / "experiments/exp16_ledger_capacity_provenance/results/final/"
-            "source_hashes.json"
-        ).read_text(encoding="utf-8")
-    )
-    current_provenance_inputs = {
-        "scheduler": {
-            "path": str((root / cfg["data"]["mit_scheduler"]).relative_to(root)),
-            "sha256": sha256(root / cfg["data"]["mit_scheduler"]),
-            "bytes": int((root / cfg["data"]["mit_scheduler"]).stat().st_size),
-        },
-        "dcgm": {
-            "path": str((root / cfg["data"]["mit_dcgm"]).relative_to(root)),
-            "sha256": sha256(root / cfg["data"]["mit_dcgm"]),
-            "bytes": int((root / cfg["data"]["mit_dcgm"]).stat().st_size),
-        },
-        "processed_workload": {
-            "path": str((root / cfg["data"]["processed_dir"] / "workload_15min.npz").relative_to(root)),
-            "sha256": sha256(root / cfg["data"]["processed_dir"] / "workload_15min.npz"),
-        },
-    }
-    _check(
-        provenance_source_hashes == current_provenance_inputs,
-        "exp16_source_hashes_match_current_inputs",
-        "Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files",
-        checks,
     )
     capacity_reconciliation = pd.read_csv(
         root

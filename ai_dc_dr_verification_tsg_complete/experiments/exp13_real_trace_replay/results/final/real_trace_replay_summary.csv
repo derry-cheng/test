@@ -1,0 +1,3 @@
+method,mean_mae_mw,median_mae_mw,mean_rmse_mw,mean_energy_abs_mwh,mean_signed_energy_mwh,all_days_with_trace
+Batch-only minimum-cost schedule,6.615190305530761,6.440192916241137,17.464116104465774,635.0582693309531,161.88440274322798,54.0
+Batch-only trace-constrained verifier,4.286621727878769,4.085173664739973,15.761736521312047,411.51568587636183,161.88440274322795,54.0

@@ -8394,6 +8394,12 @@ def run_exp16(
         configured_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
         n_regions=int(cfg["project"]["number_of_regions"]),
     )
+    # Certificates must be portable across machines. Do not persist the
+    # absolute scratch-workspace path used by the current run.
+    summary["source_files"] = {
+        "scheduler": str(scheduler_path.relative_to(root)),
+        "dcgm": str(dcgm_path.relative_to(root)),
+    }
     if not summary["integrity_conditions"]["raw_to_join_energy_conservation"]:
         raise RuntimeError("Raw DCGM energy is not conserved by the joined ledger")
     if not summary["integrity_conditions"]["release_before_execution"]:

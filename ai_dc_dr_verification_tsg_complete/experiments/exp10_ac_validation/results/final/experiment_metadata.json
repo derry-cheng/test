@@ -1,0 +1,37 @@
+{
+  "networks": [
+    "IEEE RTS 24-bus",
+    "IEEE 30-bus",
+    "IEEE 39-bus",
+    "IEEE 118-bus"
+  ],
+  "locked_days_per_network": 54,
+  "evaluation_interval": "maximum realized data-center demand among the eight declared event intervals on each locked day",
+  "model": "nonlinear AC optimal power flow with native active/reactive loads, voltage limits, generator reactive limits, and apparent-power branch ratings",
+  "data_center_power_factor": 0.95,
+  "load_multiplier": 1.0,
+  "peak_data_center_penetration": 0.06,
+  "ac_feasibility_tolerance": 1e-06,
+  "primal_dual_maximum_iterations": 300,
+  "all_ac_opfs_converged": true,
+  "ac_n1_networks": [
+    "IEEE 9-bus",
+    "IEEE 14-bus"
+  ],
+  "ac_n1_non_islanding_outages_by_network": {
+    "IEEE 9-bus": 6,
+    "IEEE 14-bus": 19
+  },
+  "ac_n1_outage_rule": "every finite non-islanding single-line outage; no loading screening or outcome-dependent selection",
+  "ac_n1_interpretation": "separate nonlinear AC OPF for each post-contingency state, which certifies corrective steady-state feasibility",
+  "all_ac_n1_opfs_converged": true,
+  "preventive_ac_network": "IEEE 9-bus",
+  "preventive_ac_peak_penetrations": [
+    0.03,
+    0.06,
+    0.09
+  ],
+  "preventive_ac_non_islanding_outages": 6,
+  "preventive_ac_interpretation": "one intact-network active dispatch is imposed identically on every non-reference generator in every outage; the reference generator supplies only contingency-dependent loss recourse, while reactive power and voltage are scenario recourse",
+  "all_preventive_ac_n1_opfs_converged": true
+}

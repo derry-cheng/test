@@ -1,0 +1,24 @@
+{
+  "network": "IEEE RTS 24-bus",
+  "public_case_source": "PYPOWER case24_ieee_rts",
+  "locked_days": 54,
+  "event_intervals_per_day": 8,
+  "base_case_branches": 38,
+  "credible_non_islanding_line_contingencies": 37,
+  "excluded_islanding_contingencies": 1,
+  "contingency_rule": "all finite non-islanding single-line outages; no screening",
+  "rating_rule": "native public continuous branch ratings for base and post-contingency constraints; no derating",
+  "load_multiplier": 0.9,
+  "peak_data_center_penetration": 0.06,
+  "baseline_qualities": [
+    "Trace-Anchored Reference",
+    "Risk-Constrained Convex Verifier"
+  ],
+  "mechanisms": [
+    "Base-case exact net value",
+    "N-1 signed linear",
+    "N-1 exact net value"
+  ],
+  "settlement_generator_segments": 10,
+  "independent_evaluation_generator_segments": 40
+}

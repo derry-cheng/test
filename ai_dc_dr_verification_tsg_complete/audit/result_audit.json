@@ -867,6 +867,11 @@
       "detail": "68664"
     },
     {
+      "name": "full_join_vs_common_trace_horizon_counts",
+      "passed": true,
+      "detail": "full immutable join=71128, common tensor window=68664, excluded by horizon=2464"
+    },
+    {
       "name": "heldout_power_conversion_scenarios_complete",
       "passed": true,
       "detail": "21,919 held-out jobs; measured-to-predicted energy factors=0.734154, 0.995724, 1.278023"
@@ -874,7 +879,7 @@
     {
       "name": "complete_source_to_evaluation_data_flow",
       "passed": true,
-      "detail": "5 source/join/split stages; calibration 66769 train + 28413 held out"
+      "detail": "6 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 66769 train + 28413 held out"
     },
     {
       "name": "processed_data_finite_nonnegative",
@@ -1180,11 +1185,6 @@
       "name": "complete_continuous_horizon_market_validation",
       "passed": true,
       "detail": "216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option"
-    },
-    {
-      "name": "exp16_source_hashes_match_current_inputs",
-      "passed": true,
-      "detail": "Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files"
     },
     {
       "name": "immutable_ledger_provenance_and_capacity_reconciliation",
@@ -1692,8 +1692,8 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
-      "bytes": 1754,
-      "sha256": "ec09f2fcf202b55e86e02cf666037c1396138efe9a2d533523770d7a23c16923"
+      "bytes": 1646,
+      "sha256": "1cf9bacad62ab227908086ec6f14e2c1558a7b650541cd6d4826df4a126e4f4b"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
@@ -2153,7 +2153,7 @@
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
       "bytes": 18666,
-      "sha256": "fd5b4215518660c9d2a4a0db2fd05cb6a88f52868651665a2d2b1622aadc7fb7"
+      "sha256": "04c71a53c41ec2e48b9a063c20d6f6632b2fa361c44a1749755a022e8d996971"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",

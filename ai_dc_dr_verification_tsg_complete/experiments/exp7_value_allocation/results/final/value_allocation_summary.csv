@@ -1,0 +1,9 @@
+baseline_quality,allocation_method,mean_participant_absolute_error_usd,mean_absolute_budget_residual_usd,max_absolute_budget_residual_usd,mean_absolute_total_value_error_usd
+Risk-Constrained Convex Verifier,Exact Shapley net value,101.57741339841299,1.9283957147169734e-14,1.900701818158268e-13,353.90583130398795
+Risk-Constrained Convex Verifier,Leave-one-out marginal,100.91617855690436,7.2805973681281975,60.97908862962504,352.00916340470843
+Risk-Constrained Convex Verifier,Nodal signed linear,102.23360662846211,2.8658435893883696,52.35078868263273,353.78561187861163
+Risk-Constrained Convex Verifier,Standalone avoided cost,102.5961662627178,7.385112103087118,60.97908862962504,357.3421326404891
+Trace-Anchored Reference,Exact Shapley net value,0.0,5.213936278609994e-14,2.2737367544323206e-13,4.8126112148936414e-14
+Trace-Anchored Reference,Leave-one-out marginal,2.2738212464744825,7.246980204772424,67.99223080068987,7.246980204772431
+Trace-Anchored Reference,Nodal signed linear,4.338616031890069,12.819345550965753,162.54635187973236,12.819345550965748
+Trace-Anchored Reference,Standalone avoided cost,2.306038821733824,7.79823871111842,70.304275788003,7.798238711118414

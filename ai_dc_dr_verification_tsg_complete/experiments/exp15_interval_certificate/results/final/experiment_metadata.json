@@ -1,0 +1,27 @@
+{
+  "audit_type": "independent endpoint audit of the locked payment-certified profile",
+  "interval": {
+    "lower_endpoint": 0.5844748596130233,
+    "upper_endpoint": 2.6930887095833507,
+    "source": "held-out per-job measured-to-predicted energy ratio q01 and q99"
+  },
+  "endpoint_dominance_theorem": "For each fixed profile, the optimal linear N-1 SCED value is convex in a scalar load-conversion factor; its worst-case value on a closed interval is attained at an endpoint. Endpoint margins therefore certify the candidate's worst-case cost against the reference; pointwise interior dominance is not inferred.",
+  "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
+  "external_transfer_comparator": "Feasible Quantile Projection",
+  "independent_evaluation_generator_segments": 40,
+  "locked_days": 54,
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "parallel_workers": 6,
+  "interval_certificate_valid": true,
+  "certificate_scope": "worst-case interval cost bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
+  "maximum_payment_cap_violation_usd": 1.6705598682165146e-08
+}

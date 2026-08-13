@@ -1,0 +1,35 @@
+{
+  "networks": [
+    "IEEE RTS 24-bus",
+    "IEEE 39-bus",
+    "PGLib IEEE 118-bus",
+    "IEEE 300-bus"
+  ],
+  "data_center_placement_rule": "four fixed, pre-declared bus indices per public benchmark; placement is invariant to all workload and settlement outcomes",
+  "network_parameter_rule": "all public-case thermal ratings retained exactly; no line derating or outcome-conditioned congestion construction",
+  "feasibility_design": "6% DC peak distributed equally over the four fixed sites",
+  "native_load_multipliers": [
+    0.9,
+    0.98,
+    1.02
+  ],
+  "peak_data_center_penetration": 0.06,
+  "baseline_qualities": [
+    "Trace-Anchored Reference",
+    "Risk-Constrained Convex Verifier"
+  ],
+  "settlement_mechanisms": [
+    "Uniform gross",
+    "Nodal gross",
+    "Uniform signed net",
+    "Nodal signed linear",
+    "Nodal exact net value"
+  ],
+  "nodal_net_value_rule": "signed SCED avoided cost; credits positive value and debits negative value",
+  "settlement_generator_segments": 10,
+  "independent_evaluation_generator_segments": 40,
+  "independent_cost_parameterization": "public benchmark quadratic costs at 10-segment settlement and 40-segment independent evaluation resolution; for PGLib IEEE-118, PYPOWER IEEE-118 quadratic curves are aligned by the identical 54 generator buses while PGLib topology, limits, and capacities are retained in both layers",
+  "settlement_schema_version": 6,
+  "estimator_checksum": "2acbb980472197539a865bdd457b5777669f0ca06cca13f5dfd82a053a2702c2",
+  "resolution_convergence": "complete 54-day IEEE RTS 24-bus 0.98-load boundary-cell panel at 10/40, 20/80, 40/160, and 80/320 settlement/evaluation segments"
+}

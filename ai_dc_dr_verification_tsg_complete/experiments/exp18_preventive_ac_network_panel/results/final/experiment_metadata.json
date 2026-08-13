@@ -1,0 +1,43 @@
+{
+  "experiment": "cross-network AC N-1 physical admissibility audit",
+  "networks": [
+    "IEEE RTS 24-bus",
+    "IEEE 30-bus",
+    "IEEE 39-bus",
+    "IEEE 118-bus"
+  ],
+  "fixed_locked_day": 61,
+  "fixed_event_slot": 64,
+  "locked_day_rule": "first locked test day",
+  "penetrations": [
+    0.03,
+    0.06,
+    0.09
+  ],
+  "methods": [
+    "Payment-Certified N-1 Verifier",
+    "Trace-Anchored Reference"
+  ],
+  "outages_by_network": {
+    "IEEE RTS 24-bus": 37,
+    "IEEE 30-bus": 38,
+    "IEEE 39-bus": 31,
+    "IEEE 118-bus": 177
+  },
+  "validation_trace_peak_mw": 290.45287693813873,
+  "load_multiplier": 0.55,
+  "power_factor": 0.95,
+  "all_declared_ac_admissible_nonislanding_outages_evaluated": true,
+  "ac_admissibility_rule": "connected topology plus finite native-case AC power-flow solution; the rule is evaluated before workload profiles and is independent of locked outcomes",
+  "shared_active_plan": false,
+  "active_plan_reference": "intact AC dispatch; contingency active recourse is solved and reported",
+  "test_outcomes_used_for_scaling": false,
+  "solver": "PYPOWER Newton AC power flow with the intact case as the deterministic reference",
+  "scope": "corrective AC power-flow diagnostics; no simultaneous preventive AC security-constrained OPF certificate is claimed",
+  "ac_limits_enforced": false,
+  "diagnostics_reported": [
+    "apparent line loading",
+    "voltage-limit deviation",
+    "non-reference active-generation recourse"
+  ]
+}

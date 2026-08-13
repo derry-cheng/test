@@ -1,0 +1,22 @@
+{
+  "participants": 4,
+  "participant_buses": [
+    15,
+    42,
+    80,
+    116
+  ],
+  "coalitions_per_interval_and_baseline": 16,
+  "allocation": "exact enumeration of every coalition; no permutation sampling or approximate Shapley estimator",
+  "characteristic_function": "signed SCED avoided cost as each coalition moves from baseline to actual demand while nonmembers remain at baseline",
+  "budget_balance": "Shapley efficiency: participant allocations sum exactly to the estimated grand-coalition value",
+  "settlement_schema_version": 6,
+  "estimator_checksum": "2acbb980472197539a865bdd457b5777669f0ca06cca13f5dfd82a053a2702c2",
+  "scaling_participants": 8,
+  "scaling_network": "IEEE RTS 24-bus",
+  "scaling_coalitions_per_interval": 256,
+  "scaling_locked_days": 54,
+  "maximum_exact_participants": 20,
+  "symmetry_reduction": "exact count-state Shapley summation for exchangeable contract slices within each of four electrical sites",
+  "portfolio_decomposition": "two contractual portfolios per site, with inference/batch shares fixed from pre-test public-trace arrivals"
+}

@@ -690,7 +690,9 @@ own feasibility status.
 Table~\ref{tab:data} reports the complete data inventory. BurstGPT contributes
 5,188,507 successful requests and observed token service
 \cite{wang2024burstgpt}. MIT Supercloud contributes scheduler submissions and
-independent Data Center GPU Manager energy for 68,664 joined jobs
+independent Data Center GPU Manager energy. The complete positive-energy
+scheduler--DCGM join contains 71,128 jobs, of which 68,664 start within the
+common 121-day tensor window used by Experiments 1--13
 \cite{samsi2021supercloud}. Submission time creates queue arrivals; measured
 execution intervals create scoring truth. A held-out GPU-power regression
 uses 28,413 observations and obtains $R^2=0.899$, mean absolute error (MAE)
@@ -1003,7 +1005,7 @@ interval-mechanism outcomes and 324 daily outcomes over the same 54 locked
 days. Native ratings, 0.90 native load, 6\% peak data-center penetration, and
 four fixed sites are held constant. A 10-segment security-aware settlement is
 scored by a separate 40-segment N--1 dispatch. The complete N--1 comparison
-released with Experiment 3 compares base-case exact, N--1 linear, and N--1
+released with Experiment 8 compares base-case exact, N--1 linear, and N--1
 exact value. With the trace-anchored
 counterfactual, their mean daily absolute errors are \$192.69, \$2.30, and
 \$0.90, respectively. The N--1 exact rule improves on base-case exact by

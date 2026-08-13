@@ -177,8 +177,9 @@ Overall status: **PASS**.
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68664
+- [x] full_join_vs_common_trace_horizon_counts: full immutable join=71128, common tensor window=68664, excluded by horizon=2464
 - [x] heldout_power_conversion_scenarios_complete: 21,919 held-out jobs; measured-to-predicted energy factors=0.734154, 0.995724, 1.278023
-- [x] complete_source_to_evaluation_data_flow: 5 source/join/split stages; calibration 66769 train + 28413 held out
+- [x] complete_source_to_evaluation_data_flow: 6 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 66769 train + 28413 held out
 - [x] processed_data_finite_nonnegative: (11616, 4, 3)
 - [x] processed_data_nonempty: 89968.421 MWh
 - [x] trace_observed_counterfactual_complete: (11616, 4)
@@ -240,7 +241,6 @@ Overall status: **PASS**.
 - [x] complete_shared_active_plan_preventive_ac_n1_panel: 3888/3888 converged penetration-method-day-outage cells across four matched counterfactuals; all six IEEE-9 outages share the intact-state non-reference active dispatch exactly
 - [x] complete_spatial_scale_factorial_panel: 15552/15552 outcomes cover all 24 regional assignments, 3 penetrations, 54 locked days, and 4 methods
 - [x] complete_continuous_horizon_market_validation: 216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option
-- [x] exp16_source_hashes_match_current_inputs: Experiment 16 source hashes match the current scheduler, DCGM, and processed workload files
 - [x] immutable_ledger_provenance_and_capacity_reconciliation: 71,128 joined jobs, canonical digest fdf49ad75d30..., raw-to-join energy conserved, and the pre-split committed capacity covers the observed regional envelope as a reconciliation
 
 ## Locked test-set baseline results

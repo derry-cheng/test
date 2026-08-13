@@ -7,3 +7,5 @@ __pycache__/
 *.swp
 manuscript/build_revision/
 manuscript/build_*_tmp/
+tmp/
+logs/full_run.log

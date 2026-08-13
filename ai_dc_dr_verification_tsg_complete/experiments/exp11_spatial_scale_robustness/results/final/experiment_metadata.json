@@ -1,0 +1,30 @@
+{
+  "network": "PGLib IEEE 118-bus",
+  "locked_days": 54,
+  "regional_traces": 4,
+  "declared_connection_buses_one_based": [
+    15,
+    42,
+    80,
+    116
+  ],
+  "complete_spatial_assignments": 24,
+  "peak_data_center_penetrations": [
+    0.03,
+    0.06,
+    0.09
+  ],
+  "native_load_multiplier": 0.9,
+  "counterfactual_methods": [
+    "Feasible Quantile Projection",
+    "Single Feasible Projection",
+    "Risk-Constrained Convex Verifier",
+    "Trace-Anchored Reference"
+  ],
+  "settlement_generator_segments": 10,
+  "independent_evaluation_generator_segments": 80,
+  "enumeration": "all 4! mappings crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
+  "profile_checksum": "00b2b6810c5517a4a50571c6722543ec3034b4cb01a6ee7bfd452bd8e286487e",
+  "expected_rows": 15552,
+  "parallel_workers": 9
+}

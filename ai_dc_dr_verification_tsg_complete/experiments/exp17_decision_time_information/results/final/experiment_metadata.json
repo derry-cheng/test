@@ -1,0 +1,12 @@
+{
+  "experiment": "event-gate information-boundary verification",
+  "locked_days": 54,
+  "event_gate_slot": 64,
+  "terminal_completion_index": 63,
+  "future_arrivals_removed_from_decision": true,
+  "target_source": "interval-online metadata gradient boosting",
+  "scoring_source": "locked trace-anchored execution and semi-synthetic response",
+  "selection_uses_locked_test_truth": false,
+  "all_decision_time_lp_solved": true,
+  "protocol_note": "The complete-ledger comparator is retained to quantify the cost of post-event information; it is not presented as an event-gate policy."
+}
