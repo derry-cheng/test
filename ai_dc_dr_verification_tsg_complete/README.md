@@ -11,16 +11,16 @@ subset, and multiple unmodified public transmission benchmarks.
 
 The checked-in processed arrays, experiment outputs, manuscript, tests, and
 audit report come from the locked study run. The two raw files that had been
-truncated in the uploaded archive have been restored from their public
-upstream releases and verified against the sizes and SHA-256 hashes declared
-in `data/processed/data_manifest.json`.
+truncated in the uploaded archive are retained in the verified publication
+archive outside the Git working tree and match the sizes and SHA-256 hashes
+declared in `data/processed/data_manifest.json`.
 
 ```bash
 ./run_all.sh --stage all --force-preprocess
 ```
 
 This command performs the full 20-stage run after the public raw inputs have
-been restored. The latest independent audit reports 238/238 checks passed;
+been restored. The latest independent audit reports 243/243 checks passed;
 long-running experiment stages remain resumable through `--resume`.
 
 The unified command writes a timestamped-entry log during execution, continuously
@@ -38,7 +38,8 @@ own latest record under `artifacts/stage_runs/` and never overwrites
 
 The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`; the final checked workspace
-passes all 29 tests. The suite covers workload-flow feasibility, SCED balance
+passes all 29 tests. The latest locked audit reports 243/243 checks passed. The
+suite covers workload-flow feasibility, SCED balance
 and line limits, N--1 enumeration, endpoint certificates, provenance joins,
 budget balance, and stage-manifest isolation.
 

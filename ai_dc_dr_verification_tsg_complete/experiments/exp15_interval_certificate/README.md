@@ -10,4 +10,9 @@ payment guarantee remains the pointwise contract; the endpoint result is
 reported as a worst-case interval bound, not as an unproved pointwise ordering
 of two value functions at every interior factor.
 
-The run writes endpoint certificates, interval summaries, certified profiles, metadata, checkpoints, and English figures under this directory.
+The run writes `interval_endpoint_certificates.csv` for the two independent
+40-segment endpoint replays and `payment_value_interval_certificates.csv` for
+the two validation-frozen workload endpoints. The latter is a contractual
+uncertainty interval; it does not use an oracle profile for selection or
+coverage claims. Summaries, certified profiles, metadata, checkpoints, and
+English figures are kept under this directory.

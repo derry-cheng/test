@@ -16,5 +16,5 @@ Data and provenance:
 Validation commands and results:
 - `./run_all.sh --stage data --force-preprocess`: completed
 - `./run_all.sh --stage exp16`: completed
-- `./run_all.sh --stage audit`: 238/238 checks passed
+- `./run_all.sh --stage audit`: 243/243 checks passed (audit-only mode uses the locked processed tensor; raw-source hashes remain enforced by data/full stages)
 - `PYTHONPATH=src:vendor python tests/run_tests.py`: 29/29 tests passed

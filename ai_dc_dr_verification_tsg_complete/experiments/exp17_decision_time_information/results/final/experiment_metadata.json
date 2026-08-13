@@ -8,5 +8,11 @@
   "scoring_source": "locked trace-anchored execution and semi-synthetic response",
   "selection_uses_locked_test_truth": false,
   "all_decision_time_lp_solved": true,
-  "protocol_note": "The complete-ledger comparator is retained to quantify the cost of post-event information; it is not presented as an event-gate policy."
+  "committed_ledger_safe_mode": {
+    "method": "Committed-ledger pointwise-safe verifier",
+    "future_arrivals_used_for_decision": false,
+    "event_upper_bound_mw": 6.0,
+    "certificate_scope": "pointwise event upper bound; no uncommitted work is credited"
+  },
+  "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable safe mode; the complete-ledger comparator quantifies the value of post-event information."
 }

@@ -6,7 +6,14 @@
 \usepackage{cite}
 \usepackage{xcolor}
 \usepackage{url}
+\renewcommand{\baselinestretch}{0.88}
 \emergencystretch=1em
+\setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
+\setlength{\floatsep}{4pt plus 1pt minus 1pt}
+\setlength{\intextsep}{5pt plus 1pt minus 1pt}
+\setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}
+\renewcommand{\arraystretch}{0.94}
 \newcommand{\RiskSafe}{risk-constrained verifier}
 \newcommand{\TailRisk}{tail-risk counterfactual}
 \newcommand{\PaymentSafe}{payment-certified verifier}
@@ -22,40 +29,27 @@ Nodal Net-Value Settlement for Spatially Coupled AI Data Centers}
 \begin{abstract}
 Artificial-intelligence (AI) data centers can provide demand response (DR),
 but a meter-only baseline cannot distinguish a realizable workload shift from
-strategic deferral, delayed rebound, or a transmission-feasible response. We
-present a security-aware workload-state verification and settlement framework
-that links the submitted job ledger, physical service state, and nodal network
-value. A sparse multi-period linear program enforces release, conservation,
-deadlines, capacity, migration, and cross-midnight completion. A
-validation-only convex selector and a two-sided pointwise credit band provide a
-test-independent false-credit and bounded-under-credit certificate. Signed
-dispatch-value differences,
-all-credible single-contingency (N--1) constraints, and exact coalition accounting
-then determine
-the value and its allocation. The study uses 5,188,507 BurstGPT requests,
-68,664 tensor-window MIT Supercloud jobs and 71,128 full-horizon positive-energy
-jobs with measured graphics processing unit (GPU) telemetry, 54 temporally
-locked days, and public transmission systems. Against the matched
-feasible-quantile reference, unsupported credited response falls from 2.026218
-to 1.910572 MWh/day (5.71\%, paired three-day-block 95\% interval
-[0.057, 0.534] MWh, Holm-adjusted $p=0.0156$); normalized root-mean-square
-error (nRMSE) falls from 0.353737 to 0.348412 (1.51\%, paired interval
-[0.0015, 0.0115], Holm-adjusted $p=0.0105$). In the
-trace-anchored mechanism-isolation layer, complete N--1 exact
-settlement reduces error from \$192.69 to \$0.90/day across all 37
-non-islanding IEEE Reliability Test System (RTS)-24 outages. This reduction is
-an evaluator-consistency diagnostic: when the workload verifier is scored
-end-to-end, the corresponding errors are \$207.67, \$155.25, and \$155.40/day
-for base-case exact, N--1 linear, and N--1 exact settlement, respectively. An
-independent real-execution replay covers every locked 15-minute slot, and a
-global job-level flow certificate exactly represents all 71,128 positive-energy
-joined jobs with maximum residual below $10^{-17}$ MWh. A continuous
-conversion-interval audit, nonlinear alternating-current (AC) checks across
-four public networks, a decision-time information-boundary audit, complete
-spatial permutations, and exact Shapley allocation provide separate evidence
-tiers for the claimed verification-to-payment chain. Because the public
-workload and transmission traces are not co-located with a utility event, the
-study is a trace-driven benchmark rather than a field intervention.
+strategic deferral, rebound, or a transmission-feasible response. We present a
+security-aware workload-state verifier and nodal settlement that link a
+committed job ledger, feasible service trajectories, and contingency-constrained
+network value. A sparse multi-period linear program enforces release,
+conservation, deadlines, capacity, migration, and cross-midnight completion.
+A validation-only convex quadratic program with a linear false-credit/CVaR
+epigraph and a two-sided event band gives an auditable risk contract; an
+event-gate mode never credits unsubmitted future work. Signed dispatch-value
+differences under finite non-islanding single-contingency (N--1) constraints
+determine payments, with exact coalition accounting for allocation. On
+5,188,507 BurstGPT requests and 71,128 positive-energy MIT Supercloud jobs,
+unsupported credited response falls from 2.026218 to 1.910590 MWh/day (5.71\%)
+and normalized root-mean-square error falls from 0.353737 to 0.348425 (1.50\%)
+over 54 locked days. Exact N--1 settlement reduces trace-anchored error from
+\$192.69 to \$0.90/day across 37 RTS-24 outages, while end-to-end errors are
+\$207.67, \$155.25, and \$155.40/day for base-case exact, N--1 linear, and N--1
+exact settlement. Independent replay covers every locked 15-minute slot and
+job-level residuals are below $10^{-17}$ MWh. Held-out conversion endpoints,
+four public AC networks, spatial permutations, and a workload-hull payment
+interval test the declared uncertainty boundary. The non-co-located public
+traces define a reproducible benchmark, not a utility field event.
 \end{abstract}
 
 \noindent\textbf{Index Terms---}AI data centers, counterfactual verification,
@@ -129,13 +123,13 @@ attainable spatial--temporal load trajectory rather than an unconstrained
 meter-only prediction, and its statistical performance is evaluated under an
 explicit false-credit/under-credit tradeoff. 3) We develop signed
 space--time nodal remuneration and a bilateral net-value contract under
-preventive N--1 dispatch, and extend the payment certificate from three finite
-telemetry quantiles to a held-out conversion interval by an endpoint theorem.
-The novelty is the coupling invariant that carries one committed workload
-state into physical verification and network valuation; the individual LP,
-dispatch, and allocation primitives are standard and are not claimed as new
-in isolation. The certificate is conditional on trusted scheduler and
-telemetry provenance: a cryptographic digest verifies record integrity after
+preventive N--1 dispatch, and map the feasible workload set into a payment
+uncertainty interval over held-out workload-to-power conversion. The novelty is
+the coupling invariant that carries one committed workload state into physical
+verification, network valuation, and a set-valued settlement rule; the
+individual LP, dispatch, and allocation primitives are standard and are not
+claimed as new in isolation. The certificate is conditional on trusted
+scheduler and telemetry provenance: a cryptographic digest verifies record integrity after
 commitment but does not authenticate semantically false fields.
 
 The remainder of the paper is organized as follows. Section~\ref{sec:model}
@@ -175,8 +169,8 @@ $\sum_{s,k}x_{skdt}\leq\bar P_d\dt$. Facility demand is
 For rolling window end $T^+$ and final event-day release $T^0$, the terminal
 state is not forced to consume unexpired future work. Instead,
 \begin{equation}
- y_{skT^+}=A_{sk,\max\{T^0,T^+-D_k\}},
- \label{eq:rollingterminal}
+y_{skT^+}=A_{sk,\max\{T^0,T^+-D_k\}},
+\label{eq:rollingterminal}
 \end{equation}
 which completes every job due inside the window and every event-day arrival,
 while retaining later real arrivals in the release constraints. The window
@@ -354,7 +348,7 @@ convex.
 
 The coefficients minimize validation squared error subject to both total and
 daily-tail false-credit budgets, where conditional value at risk (CVaR)
-measures the latter. Let $\ell^\star$ be the single candidate with
+measures the latter \cite{rockafellar2000cvar}. Let $\ell^\star$ be the single candidate with
 minimum worst contiguous-fold nRMSE and $B_j^{\rm ref}$ its validation false
 exposure on day $j$. For reserve $\beta\in(0,1]$,
 \begin{align}
@@ -362,9 +356,24 @@ exposure on day $j$. For reserve $\beta\in(0,1]$,
  {\rm CVaR}_{0.75}(F_j(\alpha))
  &\leq\beta{\rm CVaR}_{0.75}(B_j^{\rm ref}).\label{eq:cvar}
 \end{align}
-The empirical conditional-value-at-risk epigraph follows
-\cite{rockafellar2000cvar}. Four contiguous folds select $\beta$; infeasible
-reserves cannot be selected. A second exact projection targets $\bar p$ while
+For implementation, the positive part is not differentiated through a sort. For
+each event sample $n$ and validation day $j$, the program introduces
+$f_n\geq0$, a CVaR threshold $\nu\geq0$, and tail slacks $u_j\geq0$:
+ \begin{align}
+  f_n&\geq p^\alpha_n-\max\{p^0_n,p^1_n\},\qquad
+  F_j=\sum_{n\in j}f_n,\\
+  F_j-\nu-u_j&\leq0,\\
+  \nu+\frac{1}{0.25J}\sum_j u_j
+  &\leq\beta\,\mathrm{CVaR}_{0.75}(B_j^{\rm ref}).
+  \label{eq:riskepigraph}
+ \end{align}
+Together with the simplex equality, box bounds on $\alpha$, and the total
+budget in (\ref{eq:totalrisk}), these are linear constraints and the squared
+error objective is a convex quadratic program. A HiGHS feasibility solve is
+followed by a sparse trust-region solve; the reported KKT and primal residuals
+are below $10^{-8}$ in every fitted fold. Four contiguous folds select $\beta$
+using validation nRMSE, then risk ratio; held-out noninferiority is reported
+as an outcome and is not used as a hidden constraint. A second exact projection targets $\bar p$ while
 imposing, for every event sample,
 \begin{equation}
  p^{\rm safe}_{dt}\leq p^{(\ell^\star)}_{dt}. \label{eq:envelope}
@@ -390,6 +399,17 @@ credit for any unseen actual trajectory, while the lower inequality bounds the
 additional under-credit by at most $\varepsilon|\mathcal D||\mathcal E|\dt$
 relative to the selected reference. The selected single feasible projection
 proves nonemptiness, and the locked results report both margins explicitly.
+
+\paragraph{Decision-time information boundary.}
+The ex-post selector can use the complete submitted ledger because it is an
+offline settlement protocol. For an event-gate deployment, all arrivals after
+the gate are removed before optimization and terminal completion is required
+only for work due by the gate. We additionally solve a committed-ledger safe
+mode with $p_{dt}\leq P_d^{\rm fix}$ on the event slots. This mode is an exact
+workload LP, uses no future arrivals, and credits only service backed by the
+committed ledger; later arrivals become eligible only after commitment. It is
+reported separately from the information-boundary diagnostic and the ex-post
+benchmark.
 
 The cumulative state reduces the constraint-matrix nonzeros from
 $O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|^2)$ for explicit prefixes
@@ -562,6 +582,27 @@ objective and is not a selectable candidate; the quantile schedule is used
 only as an independent transfer comparator, not as the contractual payment
 cap.
 
+ The finite cap is complemented by a set-valued payment certificate. For a
+ realized counterfactual value, define
+ $\Delta V_\xi(p)=V_{N-1}(p,\xi)-V_{N-1}(p^{1,\xi})$ and let
+ $\mathcal P_{\rm seg}=\{p^{\rm ref},p^{\rm cert}\}$ denote the two
+ validation-frozen endpoints of the contractual segment. The induced interval is
+ \begin{equation}
+  \mathcal I_\xi=\left[
+  \min_{p\in\mathcal P_{\rm seg}}\Delta V_\xi(p),\;
+  \max_{p\in\mathcal P_{\rm seg}}\Delta V_\xi(p)\right].
+  \label{eq:paymentinterval}
+ \end{equation}
+ The selected reference payment is an element of $\mathcal I_\xi$ by
+ construction. The interval endpoints use only these two feasible segment
+ endpoints and the realized counterfactual needed for
+settlement; no oracle baseline is used to select or certify the interval. Thus
+(\ref{eq:paymentinterval}) makes uncertainty in the workload-to-power map
+visible to the contract instead of relabeling a single forecast as true value.
+It is not a lower-error claim: interval width is a reported uncertainty cost;
+the larger seven-profile hull remains the finite-scenario payment certificate
+in (\ref{eq:paymentcert}).
+
 \subsection{Participant allocation}
 
 For participants $N$, define $v(S)$ as signed dispatch value when coalition
@@ -669,7 +710,16 @@ only for the finite set $\Xi_3$ in Proposition 4. Experiment 15 evaluates
 both endpoints with an independent 40-segment N--1 solver and reports this
 distinction explicitly.
 
-\noindent\textit{Proposition 6 (provenance-bound workload witness):} Suppose the
+\noindent\textit{Proposition 6 (workload-segment payment interval):} For a fixed
+conversion factor and realized counterfactual, the endpoints in
+(\ref{eq:paymentinterval}) are the exact minimum and maximum payments over the
+declared two-endpoint feasible segment. This follows directly from the finite-set
+minimum and maximum; it is an exact uncertainty statement for that contractual
+segment, not an assertion that the segment contains every physically possible
+schedule. Experiment~15 reports endpoint width for both held-out conversion
+endpoints; no oracle baseline is used to select the segment.
+
+\noindent\textit{Proposition 7 (provenance-bound workload witness):} Suppose the
 canonical tuple in (\ref{eq:ledgerdigest}) is computed from the retained
 scheduler--DCGM join after the declared duplicate and positive-energy rules.
 If the certificate verifies one-to-one joining, release--execution ordering,
@@ -714,7 +764,7 @@ deadline horizon to the last observed scheduler completion and retains all
 Item & Declared use and count\\
 \midrule
 BurstGPT & 5,188,507 requests; 2.176 billion tokens; inference arrivals and observed service\\
-MIT scheduler & 287,173 rows; submission time, duration, GPU count, and queue state\\
+MIT scheduler & 287,069 rows; submission time, duration, GPU count, and queue state\\
 MIT GPU telemetry & 96,893 rows; 68,664 tensor-window jobs and 71,128 full-horizon positive-energy jobs; measured execution energy\\
 Time resolution & 15 min; 121 calendar days; 121 valid complete days\\
 Evaluation & 16 validation days followed by 54 untouched test days\\
@@ -726,22 +776,28 @@ Provenance & Immutable scheduler/DCGM join digest, raw-to-join energy conservati
 
 The public traces do not contain utility bus locations. Consequently, the
 four-region coupling is a trace-driven benchmark with fixed, predeclared bus
-placements and hyperscale conversion, not a utility field trial. Immutable
-row identifiers determine spatial partitions before any outcome is computed.
+placements and a declared workload-to-power conversion, not a utility field
+trial. Immutable row identifiers determine spatial partitions before any
+outcome is computed. Held-out measured-to-predicted job-energy ratios span
+0.5845--2.6931 (1st--99th percentiles); Experiments 9, 11, and 15 evaluate this
+interval rather than treating the 118-MW scale as a measured geographic fact.
 This design permits exact repeated mechanism comparisons but does not identify
 a particular operator's geography. Public PGLib and MATPOWER/PYPOWER cases
 provide topology, capacities, costs, and ratings
-\cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower}.
+\cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower}. The RTS-24
+benchmark follows the published system data \cite{grigg1999rts}.
 
 \subsection{Baselines, parameters, and inference}
 
-We compare High-5-of-10, ridge regression, gradient boosting, Extra Trees,
+Experiment 2 compares High-5-of-10, ridge regression, gradient boosting, Extra Trees,
 online metadata gradient boosting, equally informed post-event metadata
 gradient boosting, complete-ledger quantile boosting, pre-event synthetic
 control, the exact feasible projection of the complete-ledger quantile,
 the \TailRisk, the independently selected single feasible projection,
-the \RiskSafe, and the \PaymentSafe. The first eight are meter/statistical
-comparators; the remaining methods receive the declared ledger as appropriate.
+and the \RiskSafe. The first eight are meter/statistical comparators; the
+remaining methods receive the declared ledger as appropriate. The \PaymentSafe
+is evaluated separately in Experiments 9 and 15 because its N--1 payment
+certificate uses a different objective and a frozen candidate hull.
 An information-set
 audit verifies feature equality and confirms that no method observes execution
 truth.
@@ -815,9 +871,9 @@ single projection (Holm-adjusted $p=0.0001$); its nRMSE is 0.353 versus 0.350,
 and the block test does not reject equality. The \RiskSafe\ combines seven
 independently feasible candidates without degenerating to one candidate.
 Relative to the equally informed feasible-quantile projection, unsupported
-credit falls from 2.026218 to 1.910572 MWh/day, a 5.71\% reduction (paired
+credit falls from 2.026218 to 1.910590 MWh/day, a 5.71\% reduction (paired
 three-day moving-block 95\% interval [0.057200, 0.534363] MWh;
-Holm-adjusted $p=0.015625$), while nRMSE falls from 0.353737 to 0.348412
+Holm-adjusted $p=0.015625$), while nRMSE falls from 0.353737 to 0.348425
 (1.51\%, interval [0.001547, 0.011528], Holm-adjusted $p=0.010468$).
 The $F_1$ change is 0.485947 to 0.482752 (interval [-0.004470, 0.002890],
 Holm-adjusted $p=1.000000$), so the result is a selective reduction in
@@ -830,12 +886,18 @@ non-wire scheduling, proactive workload shifting, and aggregator coordination;
 its four 54-day means are retained in the baseline ledger rather than
 conflated with the proposed selector.
 
-The two-sided certificate in (\ref{eq:twosided}) is checked independently for
-all 54 locked days and every event cell. With the predeclared 1-MW band, the
-mean false-credit exposure is 1.910572 MWh/day and the mean under-credit is
-15.314000 MWh/day, compared with 15.244510 MWh/day for the selected single
-reference; every upper and lower pointwise margin is nonnegative. The
-RiskSafe therefore occupies a conservative point on an explicit
+The new risk fit is a convex quadratic program rather than a nonsmooth
+sorted-positive-part optimization: the selected reserve is $\beta=1$ after
+four contiguous validation folds, and the final fit has KKT stationarity
+$9.4\times10^{-10}$ and zero primal residual. On the locked test days, the
+final total false-credit exposure is 412.687 MWh-slot versus 422.677 for the
+single-projection reference, and its 75\% daily-tail exposure is 26.051 versus
+26.617 MWh-slot; both aggregate certificates are satisfied. The two-sided
+certificate in (\ref{eq:twosided}) is checked independently for all 54 locked
+days and every event cell. With the predeclared 1-MW band, the mean false-credit
+exposure is 1.910590 MWh/day and the mean under-credit is 15.313968 MWh/day,
+compared with 15.244514 MWh/day for the selected single reference; every upper
+and lower pointwise margin is nonnegative. The RiskSafe therefore occupies a conservative point on an explicit
 false-credit/under-credit frontier: relative to feasible quantile it reduces
 false credit by 5.71\% but increases under-credit by 0.089 MWh/day and does
 not improve $F_1$. The pointwise envelope prevents arbitrary downward
@@ -951,123 +1013,75 @@ simultaneous negative component that gross payment discards.
 
 \subsection{Cross-network and N--1 security evidence}
 
-Experiment 5 contains 6,480 outcomes: four public networks, three native-load
-multipliers, two counterfactual qualities, five mechanisms, and all 54 days.
-No branch is derated and all data-center buses are fixed before outcomes are
-observed. Congestion arises endogenously in three of 12 network-load cells.
-In the trace-anchored mechanism-isolation layer, exact value reduces absolute
-error relative to signed-linear settlement in all 12 cells, with a mean
-improvement of \$1.92/day; ten of the twelve Holm-adjusted temporal-block tests
-are below 0.05. In the end-to-end workload-verifier layer, exact value improves
-five of the twelve cells, while the seven remaining differences have the
-opposite sign; the across-cell mean improvement is only \$0.016/day. This
-separation retains the global value-consistency claim of Proposition 3 without
-treating a trace-anchored mechanism effect as end-to-end baseline dominance or
-attributing counterfactual estimation error to the settlement rule.
+Experiment 5 contains 6,480 outcomes over four public networks, three
+native-load multipliers, two counterfactual qualities, five mechanisms, and 54
+days. Congestion arises endogenously in three of 12 network-load cells. Exact
+value improves trace-anchored absolute error in all 12 cells (mean
+\$1.92/day; ten Holm-adjusted block tests below 0.05), but improves only five
+end-to-end workload cells (across-cell mean \$0.016/day). This separation
+supports Proposition 3 without converting a trace diagnostic into an
+end-to-end dominance claim.
 
-The near-affine RTS-24, 0.98-load boundary cell is additionally recomputed on
-all 54 days at settlement/evaluation segment pairs 10/40, 20/80, 40/160, and
-80/320. Its mean signed-linear-minus-exact error differences are
-$-0.01695$, $-0.02730$, $-0.01938$, and $-0.01740$~USD/day, respectively;
-the four differences remain below $0.03$~USD/day in magnitude. This convergence
-identifies a locally affine dispatch region
-rather than a favorable discretization. The end-to-end cell effects,
-mechanism-isolation errors, and resolution convergence are retained in the
-experiment output.
+The near-affine RTS-24, 0.98-load cell is recomputed on all 54 days at
+10/40, 20/80, 40/160, and 80/320 settlement/evaluation segments. The four
+signed-linear-minus-exact differences are $-0.01695$, $-0.02730$, $-0.01938$,
+and $-0.01740$ USD/day, all below $0.03$ in magnitude, confirming local
+affinity rather than a discretization artifact.
 
-Experiment 6 tests whether the workload constraints remain consequential when
-physical slack is changed. The complete factorial crosses capacity multipliers
-$0.55,0.70,0.85,1.00,1.20$ with deadline multipliers
-$0.25,0.50,1.00$ over all 54 locked days, giving 810 globally solved
-schedules. Capacity-binding share reaches 0.0411 and deadline-binding share
-0.9118; the corresponding mean false-credit exposures are 2.641, 2.225, 1.971,
-1.832, and 1.941 MWh across the capacity levels. Every retained schedule
-satisfies the release, deadline, conservation, and capacity constraints, so the
-stress panel measures sensitivity of the verifier rather than feasibility repair.
+Experiment 6 crosses capacity multipliers
+$0.55,0.70,0.85,1.00,1.20$ and deadline multipliers
+$0.25,0.50,1.00$ over 54 days (810 globally solved schedules). Capacity- and
+deadline-binding shares reach 0.0411 and 0.9118; mean false-credit exposure
+across capacity levels is 2.641, 2.225, 1.971, 1.832, and 1.941 MWh. Every
+schedule satisfies the declared workload constraints.
 
-Experiment 7 evaluates exact budget-balanced allocation. The four-participant
-panel enumerates all 16 coalitions for every locked day and compares exact
-Shapley net value with leave-one-out, standalone avoided-cost, and signed-linear
-allocations. For the trace reference, exact Shapley has zero mean participant
-error and a maximum budget residual below $2.3\times10^{-13}$ dollars; the
-workload-verifier error is $107.28$ while the exact budget residual remains
-$1.6\times10^{-13}$ dollars. The eight-participant panel enumerates all 256
-coalitions and reports the signed site-level values, and the symmetric scaling
-panel reaches 20 participants with 1,296 evaluated states and maximum budget
-residual $2.98\times10^{-13}$ dollars. The complete constraint-stress and
-allocation panels are retained in the experiment output.
+Experiment 7 enumerates all 16 coalitions for four participants and all 256 for
+eight. Trace-reference Shapley error is zero with maximum budget residual
+$2.3\times10^{-13}$ dollars; workload-verifier error is $107.28$ while its
+budget residual is $1.6\times10^{-13}$. The exchangeable scaling panel reaches
+20 participants (1,296 states; residual $2.98\times10^{-13}$), confirming exact
+budget balance rather than permutation sampling.
 
-Experiment 8 closes the security gap by enforcing (\ref{eq:n1}) for every
-finite non-islanding outage in RTS-24 \cite{grigg1999rts}. The public case has
-38 lines: all 37 non-islanding single-line outages are included and the one
-islanding outage is explicitly reported. The full panel contains 2,592
-interval-mechanism outcomes and 324 daily outcomes over the same 54 locked
-days. Native ratings, 0.90 native load, 6\% peak data-center penetration, and
-four fixed sites are held constant. A 10-segment security-aware settlement is
-scored by a separate 40-segment N--1 dispatch. The complete N--1 comparison
-released with Experiment 8 compares base-case exact, N--1 linear, and N--1
-exact value. With the trace-anchored
-counterfactual, their mean daily absolute errors are \$192.69, \$2.30, and
-\$0.90, respectively. The N--1 exact rule improves on base-case exact by
-\$191.79/day (54-day three-day-block exact sign test, Holm-adjusted
-$p=3.1\times10^{-5}$); its additional \$1.40/day reduction relative to N--1
-linear is not significant after Holm correction ($p=0.122$). Under the
-workload verifier, the corresponding errors are \$207.67, \$155.25, and
-\$155.40; the linear-to-exact difference is \$0.14/day and nonsignificant
-($p=0.690$), showing that counterfactual
-error, not value linearization, is then dominant. The independent evaluator finds
-maximum post-contingency utilization 1.000 p.u. in every retained outcome.
-Table~\ref{tab:settlement} retains both counterfactual qualities rather than reporting
-only the mechanism-isolation reference. The overpayment column is signed:
-positive values indicate payment above independently evaluated security value.
+Experiment 8 enforces (\ref{eq:n1}) for all 37 non-islanding outages of RTS-24
+(the single islanding line is reported separately). Over 54 locked days and
+2,592 interval-mechanism outcomes, native ratings, 0.90 load, 6\% penetration,
+and four fixed sites are held constant; a 10-segment certificate is scored by
+an independent 40-segment N--1 dispatch. Trace-anchored mean errors for
+base-case exact, N--1 linear, and N--1 exact are \$192.69, \$2.30, and \$0.90
+per day; the last improves on base-case exact by \$191.79/day
+(Holm-adjusted $p=3.1\times10^{-5}$), whereas its \$1.40/day advantage over
+N--1 linear is not significant ($p=0.122$). Workload-verifier errors are
+\$207.67, \$155.25, and \$155.40 (linear-to-exact $p=0.690$), showing that
+counterfactual error dominates value linearization. Maximum post-contingency
+utilization is 1.000 p.u.; signed overpayment is retained in Table~\ref{tab:settlement}.
 
-Experiment 9 tests the finite-scenario payment claim in
-(\ref{eq:paymentdominance}). All 54
-daily lexicographic program pairs attain global optimality. The candidate hull
-contains six first-stage projections and the matched feasible-quantile
-comparator, while the contractual payment cap is anchored to the validation-
-selected single feasible projection; the \RiskSafe\ remains an external target.
-The held-out conversion
-factors are 0.734, 0.996, and 1.278, which form $\Xi_3$. Across all
-$54\times3=162$ daily scenario certificates, maximum positive cap violation is
-zero and mean cap margins are \$0.596, \$0.809, and \$1.038/day.
-The payment-target candidate is selected as $\rho=1$ by an independent
-validation-only N--1 payment-MAE panel containing 384 cells; neither this
-selection nor the power scale uses locked-test payment or peak outcomes.
-Independent 40-segment mean absolute errors for the \PaymentSafe\ are
-reported against both the selected single projection and the external
-feasible-quantile transfer comparator. Thus the independent finer-cost
-evaluator need not inherit the within-model error ordering, while
-(\ref{eq:paymentdominance}) preserves the minimum trajectory deviation and
-certifies the declared-market samplewise cap relative to the selected single
-projection;
-averaged over the held-out $q_{10}$, $q_{50}$, and $q_{90}$ scenarios, the
-corresponding errors are \$156.370/day for the \PaymentSafe{},
-\$155.605/day for the selected single projection, and \$155.703/day for the
-feasible-quantile comparator (the \RiskSafe{} is \$155.562/day). These values
-are independent scoring results, not replacements for the deterministic cap.
+Experiment 9 tests (\ref{eq:paymentdominance}). All 54 daily lexicographic
+program pairs attain global optimality; the seven-profile candidate hull is
+anchored to the validation-selected single projection, with \RiskSafe\ external.
+The held-out factors 0.734, 0.996, and 1.278 form $\Xi_3$; all 162 certificates
+have zero positive cap violation and mean margins \$0.596, \$0.809, and
+\$1.038/day. A 384-cell validation-only N--1 panel selects $\rho=1$ without
+locked-test payment or peak outcomes. Independent 40-segment errors are
+\$156.370/day for \PaymentSafe, \$155.605 for the selected single projection,
+\$155.703 for feasible quantile, and \$155.562 for \RiskSafe. These scores do
+not replace the deterministic cap.
 The maximum post-contingency loading remains 1.000 p.u. Experiment 15
 separately audits the closed held-out conversion interval and is interpreted
-through Proposition 5. The cap is therefore a contractual upper bound under
-the declared market model; it is not evidence that the payment-certified
+through Proposition 5. Its two-endpoint feasible payment segment has mean
+width \$0.545543/day at $q_{01}$ and \$4.065188/day at $q_{99}$ (maximum widths
+\$14.483473 and \$128.381395/day). This interval is an explicit uncertainty
+cost, not a lower-error claim. The cap is therefore a contractual upper bound
+under the declared market model; it is not evidence that the payment-certified
 profile has lower independent prediction error than every comparator.
 
-Experiment 10 replaces the linear network with nonlinear AC optimal power flow
-\cite{zimmerman2011matpower}. Its 864 outcomes cross RTS-24, IEEE-30, IEEE-39,
-and IEEE-118 over 54 days and four workload-feasible counterfactuals. Native
-active/reactive loads, 0.95 power factor, 6\% peak penetration, voltage,
-reactive-generation, and apparent-power limits are retained. Every OPF
-converges with zero voltage violation and at most 1.000-p.u. branch loading;
-the payment guarantee remains scoped to (\ref{eq:paymentcert}). The complete
-corrective panel adds 5,400 OPFs over all 6 IEEE-9 and 19 IEEE-14 non-islanding
-line outages, but does not claim a shared preventive plan. The distinct
-preventive panel fixes every intact non-reference active output across all six
-IEEE-9 outages as in (\ref{eq:acplan}). All 3,888 cells (54 days, four
-counterfactuals, and 3\%/6\%/9\% penetration) converge with zero plan deviation
-and voltage violation; maximum loading is 0.876/0.899/0.923 p.u. This verifies
-the declared shared-active-plan claim without contingency screening. The
-intact, corrective, and shared-plan AC panels are retained in the experiment
-output.
+Experiment 10 replaces the linear network with nonlinear AC OPF
+\cite{zimmerman2011matpower}. Across RTS-24, IEEE-30, IEEE-39, and IEEE-118,
+all 864 base outcomes converge with zero voltage violation and at most 1.000-p.u.
+loading; the payment guarantee remains scoped to (\ref{eq:paymentcert}). The
+corrective panel adds 5,400 OPFs over IEEE-9/14 non-islanding outages. A shared
+active plan is then fixed across all six IEEE-9 outages as in
+(\ref{eq:acplan}); its 3,888 cells converge with zero plan deviation and
+maximum loadings 0.876/0.899/0.923 p.u.
 
 Experiment 11 removes fixed trace placement and power scale by crossing all
 $4!=24$ region-to-bus mappings, 3\%, 6\%, and 9\% peak penetrations, four
@@ -1082,28 +1096,27 @@ and \$4.06/MWh.
 The corresponding panels separate the conversion-scenario cap, shared-active-
 plan AC envelope, and spatial-scale transfer from the base-case accuracy
 results, so these claims are not conflated with the trace-anchored mechanism
-isolation result. The complete assignment--penetration panel is retained in
-the experiment output.
+isolation result. Experiment 16 adds a direct calibration sensitivity: held-out
+measured-to-predicted energy ratios are 0.5845, 0.7342, 0.9957, 1.2780, and
+2.6931 at the 1st, 10th, 50th, 90th, and 99th percentiles. Applied to the
+flexible MIT batch envelope, the direct q90 and q99 scales exceed the 118-MW
+commitment; the released sensitivity file reports the capacity-safe clipped
+factor (about 1.0005 at those endpoints) separately from the validation-frozen
+3\%--9\% network panel. This
+is a calibration bound, not a claim that public traces identify a field
+geography. The complete assignment--penetration panel is retained in the
+experiment output.
 
-Experiment 12 removes the daily reset from the final market validation. Each
-locked event is embedded in 1,216 observed slots (608 pre-event, 96 event-day,
-and 512 recovery slots). Only the eight submitted event intervals are
-projected; all other decisions are endogenous. Across 216 method--day outcomes,
-the maximum event-window L1 residual is
-$6.0\times10^{-6}$ MW and the maximum absolute cycle-energy residual is
-$3.0\times10^{-6}$ MWh. Complete-cycle accounting gives a mean absolute
-remuneration error of \$0.084761 per event for \PaymentSafe, compared with
-\$0.053170 for the feasible-quantile reference, \$0.241926 for \RiskSafe, and
-\$0.084761 for the single projection; the event-only errors are respectively
-\$8.091153, \$11.655725, \$11.186565, and \$10.763272.
-At the predeclared site and \$150/MWh service price, mean verified capacity is
-13.902285 MWh; all 54 transaction surpluses are positive (mean \$2,034.810894,
-minimum \$3.685837). Equation (\ref{eq:nashcontract}) therefore activates every
-contract with minimum participant/operator utility \$1.842918; maximum site and
-bilateral budget residuals are $1.42\times10^{-14}$ and zero dollars. The
-Table~\ref{tab:rolling} condenses the complete-cycle accounting and residual
-bounds; the full time-resolved diagnostic is provided with the supplementary
-results.
+Experiment 12 removes the daily reset: each event is embedded in 1,216 slots
+(608 pre-event, 96 event, 512 recovery), with only the eight event intervals
+projected. Across 216 method--day outcomes, maximum event L1 and cycle-energy
+residuals are $6.0\times10^{-6}$ MW and $3.0\times10^{-6}$ MWh. Complete-cycle
+MAE is \$0.084761/event for \PaymentSafe, \$0.053170 for feasible quantile,
+\$0.241926 for \RiskSafe, and \$0.084761 for single projection; event-only MAE
+is \$8.091153, \$11.655725, \$11.186565, and \$10.763272. Mean verified
+capacity is 13.902285 MWh at \$150/MWh; all 54 Nash contracts activate (mean
+surplus \$2,034.810894; minimum utility \$1.842918), with site residual below
+$1.42\times10^{-14}$. Table~\ref{tab:rolling} reports the cycle certificate.
 
 \begin{table}[t]
 \centering
@@ -1128,18 +1141,14 @@ Positive contracts & \multicolumn{4}{c}{54/54} \\
 
 \subsection{Independent trace and deployment-boundary audits}
 
-The independent audit tier separates measured execution from the
-semi-synthetic intervention. Across all 54 locked days, replaying the
-immutable MIT scheduler/DCGM execution intervals reduces mean slot MAE from
-6.615 to 4.287 MW and mean absolute energy discrepancy from 635.058 to
-411.516 MWh, with 100\% slot coverage. This is an observational fidelity
-check, not a causal utility-event estimate. A separate sparse job-level flow
-LP retains all 71,128 positive-energy joined jobs and 1,974,690 service
-variables; it reconstructs 2.657346 MWh with maximum job and aggregate-slot
-residuals of $6.0\times10^{-18}$ and $9.4\times10^{-18}$ MWh. The observed
+The independent audit separates measured execution from the semi-synthetic
+intervention. Replaying immutable MIT scheduler/DCGM intervals over 54 days
+gives slot MAE 4.287 versus 6.615 MW for the batch-only trace and 100\% slot
+coverage; this is observational fidelity, not a causal event. A sparse flow LP
+retains all 71,128 positive-energy jobs (1,974,690 service variables),
+reconstructs 2.657346 MWh, and has residuals below $10^{-17}$ MWh. The observed
 regional peak is 117.936 MW against the precommitted 118-MW nameplate. These
-results establish ledger fidelity and capacity coverage, not authenticity of
-untrusted semantic fields.
+results establish ledger fidelity, not semantic-field authenticity.
 
 \begin{table}[t]
 \centering
@@ -1168,44 +1177,51 @@ The held-out conversion-interval audit evaluates $q_{01}=0.5845$ and
 $q_{99}=2.6931$ with an independent 40-segment evaluator. Endpoint margins are
 \$0.545543/day and \$4.065188/day, with maximum cap violation
 $1.7\times10^{-8}$ USD; Proposition 5 therefore certifies only the worst-case
-cost over the declared closed interval. The decision-time audit removes all
-post-gate arrivals and changes nRMSE from 0.348412 to 0.525448 and credit
-recall from 0.389559 to 0.041674. Finally, 1,698 declared AC corrective
-recourse rows are solved across four public networks and three validation-scaled
-penetrations. These are model and information-boundary audits, not a
-preventive AC security-constrained OPF certificate or a field-event result.
+cost over the declared closed interval. The two-endpoint feasible payment
+segment has mean widths of \$0.545543/day and \$4.065188/day at these endpoints,
+respectively. The decision-time audit removes all post-gate arrivals: the
+truncated-ledger diagnostic changes nRMSE from 0.348425 to 0.525448 and credit
+recall from 0.389559 to 0.041674, whereas the committed-ledger pointwise-safe
+mode has zero false-credit exposure and a zero event-credit recall by design
+because it does not credit uncommitted future work. Finally, 1,698 declared AC
+corrective recourse rows are solved across four public networks and three
+validation-scaled penetrations. These are model and information-boundary
+audits, not a preventive AC security-constrained OPF certificate or a
+field-event result.
 
 \section{Conclusion}\label{sec:conclusion}
 
 This paper develops a provenance-bound workload-state verifier and a
 security-aware nodal settlement for spatially coupled AI data centers. The
 cumulative state enforces release, deadline, conservation, migration, and
-capacity constraints; the two-sided credit band limits unsupported credited
-response and bounds additional under-credit; and signed N--1 value accounts
-for rebound and congestion. Across 54 locked days, false-credit exposure falls
-from 2.026218 to 1.910572 MWh/day relative to the matched feasible-quantile
-reference, while nRMSE falls from 0.353737 to 0.348412. The same comparison
-increases under-credit from 15.225 to 15.314 MWh/day and does not improve
-$F_1$, so the empirical result is a risk tradeoff rather than uniform
-predictive dominance. The trace-anchored mechanism-isolation panel reduces
-N--1 exact-settlement error from \$192.69 to \$0.90/day, whereas the
-end-to-end workload-verifier errors remain \$207.67, \$155.25, and
-\$155.40/day for the three settlement variants. The job-level witness
-preserves 71,128 measured jobs with machine-precision residuals, and the
-provenance certificate binds the witness to the immutable scheduler/DCGM join
-and reconciles the precommitted 118-MW nameplate with the observed regional
-envelope. The decision-time panel quantifies the information cost of removing
-post-gate arrivals, while the cross-network AC audit evaluates every declared
-native-case admissible outage on four public systems with validation-only power
-scaling. The public traces provide reproducible workload and network evidence
-rather than a utility field intervention. Deployment therefore requires a
-signed operator ledger, co-located facility telemetry, topology access, and a
-preapproved workload-to-power conversion; these requirements define the next
-intertemporal AC and utility-event validation stage.
+capacity constraints; the convex risk program uses an explicit linear
+false-credit/CVaR epigraph; the two-sided credit band limits unsupported
+credited response and bounds additional under-credit; and signed N--1 value
+accounts for rebound and congestion. Across 54 locked days, false-credit
+exposure falls from 2.026218 to 1.910590 MWh/day relative to the matched
+feasible-quantile reference, while nRMSE falls from 0.353737 to 0.348425. The
+same comparison increases under-credit from 15.225 to 15.314 MWh/day and does
+not improve $F_1$, so the empirical result is a risk tradeoff rather than
+uniform predictive dominance. The trace-anchored mechanism-isolation panel
+reduces N--1 exact-settlement error from \$192.69 to \$0.90/day, whereas the
+end-to-end workload-verifier errors remain \$207.67, \$155.25, and \$155.40/day
+for the three settlement variants. The job-level witness preserves 71,128
+measured jobs with machine-precision residuals, and the provenance certificate
+binds the witness to the immutable scheduler/DCGM join and reconciles the
+precommitted 118-MW nameplate with the observed regional envelope. The
+committed-ledger event-gate mode has zero false-credit exposure but credits no
+uncommitted future work; the interval payment audit reports the resulting
+conversion uncertainty instead of hiding it. Held-out calibration sensitivity
+and the cross-network AC audit evaluate the declared capacity and topology
+boundaries. The public traces provide reproducible workload and network
+evidence rather than a utility field intervention. Deployment therefore
+requires a signed operator ledger, co-located facility telemetry, topology
+access, and a capacity-safe workload-to-power conversion; these requirements
+define the next intertemporal AC and utility-event validation stage.
 
 \bibliographystyle{ieeetr}
 \begingroup
-\fontsize{7.5pt}{8.2pt}\selectfont
+\fontsize{6.5pt}{7.1pt}\selectfont
 \bibliography{references}
 \endgroup
 

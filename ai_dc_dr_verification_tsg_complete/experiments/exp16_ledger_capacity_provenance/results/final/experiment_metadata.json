@@ -16,5 +16,17 @@
   "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The observed per-region execution envelope is reported only as a post hoc reconciliation and is never used to tune a locked-day schedule.",
   "configured_capacity_mw": 118.0,
   "maximum_observed_peak_mw": 117.9357791795629,
-  "maximum_peak_to_configured_capacity_ratio": 0.9994557557590076
+  "maximum_peak_to_configured_capacity_ratio": 0.9994557557590076,
+  "power_calibration_sensitivity": {
+    "file": "workload_power_calibration_sensitivity.csv",
+    "ratios": [
+      "0.01",
+      "0.1",
+      "0.5",
+      "0.9",
+      "0.99"
+    ],
+    "locked_test_observations_used_for_scaling": false,
+    "interpretation": "The power conversion is a declared held-out uncertainty interval. Network conclusions are evaluated at its endpoints and are not treated as geography-free evidence."
+  }
 }

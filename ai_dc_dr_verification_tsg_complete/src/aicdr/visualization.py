@@ -391,11 +391,18 @@ def plot_exp15_interval_certificate(
     endpoints: pd.DataFrame,
     folder: Path,
     cfg: dict[str, Any],
+    intervals: pd.DataFrame | None = None,
 ) -> None:
-    """Visualize endpoint costs certifying the full conversion interval."""
+    """Visualize endpoint costs and the workload-hull payment interval."""
     configure_style(cfg)
     shown = endpoints.copy()
-    fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.7), constrained_layout=True)
+    ncols = 3 if intervals is not None and not intervals.empty else 2
+    fig, axes = plt.subplots(
+        1,
+        ncols,
+        figsize=(13.0 if ncols == 3 else 10.4, 3.7),
+        constrained_layout=True,
+    )
     sns.scatterplot(
         data=shown,
         x="reference_cost_usd",
@@ -421,6 +428,19 @@ def plot_exp15_interval_certificate(
     axes[1].set_xlabel("Held-out conversion interval endpoint")
     axes[1].set_ylabel("Reference minus certified cost ($)")
     axes[1].legend(fontsize=6.5, title_fontsize=6.5)
+    if ncols == 3:
+        sns.boxplot(
+            data=intervals,
+            x="endpoint",
+            y="payment_interval_width_usd",
+            color=COLORS["sky"],
+            width=0.55,
+            fliersize=2,
+            ax=axes[2],
+        )
+        axes[2].set_title("(c) Workload-hull payment uncertainty")
+        axes[2].set_xlabel("Held-out conversion endpoint")
+        axes[2].set_ylabel("Interval width ($/day)")
     save_figure(fig, folder, "fig21_interval_payment_certificate")
 
 
@@ -1888,17 +1908,19 @@ def plot_exp17_decision_time(
     )
     order = [
         "Decision-time truncated-ledger verifier",
+        "Committed-ledger pointwise-safe verifier",
         "Complete-ledger risk-constrained verifier",
     ]
     labels = {
         order[0]: "Decision-time\ntruncated ledger",
-        order[1]: "Complete-ledger\nrisk verifier",
+        order[1]: "Committed-ledger\nsafe mode",
+        order[2]: "Complete-ledger\nrisk verifier",
     }
     summary["label"] = summary["method"].map(labels)
     summary["order"] = summary["method"].map({name: i for i, name in enumerate(order)})
     summary = summary.sort_values("order")
     fig, axes = plt.subplots(1, 3, figsize=(11.8, 3.5), constrained_layout=True)
-    colors = [COLORS["orange"], COLORS["blue"]]
+    colors = [COLORS["orange"], COLORS["green"], COLORS["blue"]]
     for axis, metric, ylabel, title in zip(
         axes,
         ["nrmse", "false_response_mwh", "credit_recall"],

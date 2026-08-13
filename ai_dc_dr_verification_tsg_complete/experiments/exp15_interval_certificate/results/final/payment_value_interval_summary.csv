@@ -1,0 +1,3 @@
+endpoint,conversion_scale_factor,mean_interval_width_usd,maximum_interval_width_usd,oracle_coverage,locked_day_count
+q01,0.5844748596130233,0.5455432232667119,14.483472599938978,,54
+q99,2.6930887095833507,4.0651876485305065,128.38139454957854,,54

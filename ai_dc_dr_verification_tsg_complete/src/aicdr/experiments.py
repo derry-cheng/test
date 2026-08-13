@@ -13,8 +13,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import LinearConstraint, linprog, minimize
-from scipy.sparse import coo_matrix
+from scipy.optimize import Bounds, LinearConstraint, linprog, minimize
+from scipy.sparse import coo_matrix, csr_matrix
 from tqdm.auto import tqdm
 
 from .baselines import (
@@ -30,6 +30,7 @@ from .baselines import (
 from .data import audit_mit_ledger_provenance, load_mit_job_ledger, load_workload
 from .optimization import (
     PowerSystem,
+    payment_value_interval,
     build_n1_security_factors,
     build_grid_profiles,
     parse_pglib_case,
@@ -1093,117 +1094,145 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         )
         cvar_budget = float(reserve_fraction * reference_daily_cvar)
 
-        def objective(decision: np.ndarray) -> float:
-            coefficients = decision[:candidates]
+        # Solve the convex quadratic program with an explicit linear
+        # epigraph.  Here s_n is the sample
+        # false-credit epigraph, nu is the CVaR threshold, and xi_d are the
+        # daily tail slacks.  HiGHS first supplies a feasible point and
+        # trust-constr then solves the strictly convex QP to KKT tolerance.
+        sample_count = count
+        nvar = candidates + sample_count + day_count + 1
+        alpha_slice = slice(0, candidates)
+        xi_slice = slice(candidates + sample_count, candidates + sample_count + day_count)
+        nu_index = nvar - 1
+        rows: list[int] = []
+        cols: list[int] = []
+        values: list[float] = []
+        upper: list[float] = []
+        row_id = 0
+        for sample in range(sample_count):
+            for candidate in range(candidates):
+                value = float(local_design[sample, candidate])
+                if value:
+                    rows.append(row_id)
+                    cols.append(candidate)
+                    values.append(value)
+            rows.append(row_id)
+            cols.append(candidates + sample)
+            values.append(-1.0)
+            upper.append(float(credit_ceiling[sample]))
+            row_id += 1
+        for local_day in range(day_count):
+            for sample in range(
+                local_day * observations_per_day,
+                (local_day + 1) * observations_per_day,
+            ):
+                rows.append(row_id)
+                cols.append(candidates + sample)
+                values.append(1.0)
+            rows.extend([row_id, row_id])
+            cols.extend([nu_index, candidates + sample_count + local_day])
+            values.extend([-1.0, -1.0])
+            upper.append(0.0)
+            row_id += 1
+        for sample in range(sample_count):
+            rows.append(row_id)
+            cols.append(candidates + sample)
+            values.append(1.0)
+        upper.append(risk_budget)
+        row_id += 1
+        rows.append(row_id)
+        cols.append(nu_index)
+        values.append(1.0)
+        for local_day in range(day_count):
+            rows.append(row_id)
+            cols.append(candidates + sample_count + local_day)
+            values.append(1.0 / tail_count)
+        upper.append(cvar_budget)
+        row_id += 1
+        a_ub = coo_matrix(
+            (np.asarray(values), (np.asarray(rows), np.asarray(cols))),
+            shape=(row_id, nvar),
+        ).tocsr()
+        a_eq = csr_matrix(
+            (np.ones(candidates), (np.zeros(candidates), np.arange(candidates))),
+            shape=(1, nvar),
+        )
+        lower_bounds = np.zeros(nvar)
+        upper_bounds = np.full(nvar, np.inf)
+        upper_bounds[:candidates] = 1.0
+        feasibility = linprog(
+            np.zeros(nvar),
+            A_ub=a_ub,
+            b_ub=np.asarray(upper),
+            A_eq=a_eq,
+            b_eq=np.ones(1),
+            bounds=list(zip(lower_bounds, upper_bounds)),
+            method="highs",
+        )
+        if not feasibility.success:
+            raise RuntimeError(
+                "Risk-constrained convex QP is infeasible under the declared "
+                f"reserve fraction {reserve_fraction:g}: {feasibility.message}"
+            )
+        hessian_alpha = (
+            2.0 * (local_design.T @ local_design) / (count * local_scale)
+            + 2.0 * regularization * np.eye(candidates)
+        )
+
+        def qp_objective(decision: np.ndarray) -> float:
+            coefficients = decision[alpha_slice]
             residual = local_design @ coefficients - local_target
             return float(
                 np.mean(residual**2) / local_scale
                 + regularization * np.dot(coefficients, coefficients)
             )
 
-        def objective_gradient(decision: np.ndarray) -> np.ndarray:
-            coefficients = decision
+        def qp_gradient(decision: np.ndarray) -> np.ndarray:
+            coefficients = decision[alpha_slice]
             residual = local_design @ coefficients - local_target
-            return (
+            gradient = np.zeros(nvar)
+            gradient[alpha_slice] = (
                 2.0 * local_design.T @ residual / (count * local_scale)
                 + 2.0 * regularization * coefficients
             )
+            return gradient
 
-        def risk_and_subgradients(
-            coefficients: np.ndarray,
-        ) -> tuple[float, float, np.ndarray, np.ndarray]:
-            raw = local_design @ coefficients - credit_ceiling
-            active = raw > 0
-            sample_false = np.maximum(raw, 0.0)
-            false_by_day = sample_false.reshape(
-                day_count, observations_per_day
-            ).sum(axis=1)
-            day_gradients = np.zeros((day_count, candidates))
-            reshaped_active = active.reshape(
-                day_count, observations_per_day
-            )
-            reshaped_design = local_design.reshape(
-                day_count, observations_per_day, candidates
-            )
-            for local_day in range(day_count):
-                day_gradients[local_day] = reshaped_design[
-                    local_day, reshaped_active[local_day]
-                ].sum(axis=0)
-            tail_days = np.argsort(false_by_day)[-tail_count:]
-            total_gradient = day_gradients.sum(axis=0)
-            cvar_gradient = day_gradients[tail_days].mean(axis=0)
-            return (
-                float(false_by_day.sum()),
-                float(false_by_day[tail_days].mean()),
-                total_gradient,
-                cvar_gradient,
-            )
-
-        def total_risk_margin(coefficients: np.ndarray) -> float:
-            total, _, _, _ = risk_and_subgradients(coefficients)
-            return float(risk_budget - total)
-
-        def total_risk_margin_gradient(
-            coefficients: np.ndarray,
-        ) -> np.ndarray:
-            _, _, total_gradient, _ = risk_and_subgradients(coefficients)
-            return -total_gradient
-
-        def cvar_risk_margin(coefficients: np.ndarray) -> float:
-            _, cvar, _, _ = risk_and_subgradients(coefficients)
-            return float(cvar_budget - cvar)
-
-        def cvar_risk_margin_gradient(
-            coefficients: np.ndarray,
-        ) -> np.ndarray:
-            _, _, _, cvar_gradient = risk_and_subgradients(coefficients)
-            return -cvar_gradient
-
-        initial_coefficients = np.zeros(candidates)
-        initial_coefficients[reference_candidate] = 1.0
-        feasible_starts: list[np.ndarray] = []
-        for candidate in range(candidates):
-            one_hot = np.zeros(candidates)
-            one_hot[candidate] = 1.0
-            if (
-                total_risk_margin(one_hot) >= -1e-8
-                and cvar_risk_margin(one_hot) >= -1e-8
-            ):
-                feasible_starts.append(one_hot)
-        if feasible_starts:
-            initial_coefficients = min(
-                feasible_starts, key=objective
-            )
-        fitted = minimize(
-            objective,
-            initial_coefficients,
-            jac=objective_gradient,
-            method="SLSQP",
-            bounds=[(0.0, 1.0)] * candidates,
-            constraints=[
-                LinearConstraint(
-                    np.ones((1, candidates)),
-                    np.ones(1),
-                    np.ones(1),
+        def qp_hessian(_decision: np.ndarray) -> csr_matrix:
+            return csr_matrix(
+                (
+                    hessian_alpha.ravel(),
+                    (
+                        np.repeat(np.arange(candidates), candidates),
+                        np.tile(np.arange(candidates), candidates),
+                    ),
                 ),
-                {
-                    "type": "ineq",
-                    "fun": total_risk_margin,
-                    "jac": total_risk_margin_gradient,
-                },
-                {
-                    "type": "ineq",
-                    "fun": cvar_risk_margin,
-                    "jac": cvar_risk_margin_gradient,
-                },
+                shape=(nvar, nvar),
+            )
+
+        fitted = minimize(
+            qp_objective,
+            feasibility.x,
+            jac=qp_gradient,
+            hess=qp_hessian,
+            method="trust-constr",
+            bounds=Bounds(lower_bounds, upper_bounds),
+            constraints=[
+                LinearConstraint(a_eq, np.ones(1), np.ones(1)),
+                LinearConstraint(a_ub, -np.inf, np.asarray(upper)),
             ],
-            options={"ftol": 1e-12, "maxiter": 3000},
+            options={
+                "gtol": 1e-9,
+                "xtol": 1e-10,
+                "maxiter": 1200,
+                "verbose": 0,
+                "sparse_jacobian": True,
+            },
         )
         if not fitted.success:
             raise RuntimeError(
                 f"Risk-constrained convex validation failed: {fitted.message}"
             )
-        coefficients = np.asarray(fitted.x, dtype=float)
+        coefficients = np.asarray(fitted.x[alpha_slice], dtype=float)
         coefficients /= coefficients.sum()
         prediction = local_design @ coefficients
         fitted_false_by_day = np.maximum(
@@ -1252,6 +1281,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "fitted_validation_mse_mw2": fitted_mse,
             "optimizer_iterations": float(fitted.nit),
             "optimizer_success": float(fitted.success),
+            "solver_name": "trust-constr",
+            "convex_quadratic_program": True,
+            "epigraph_formulation": "sample false-credit slacks plus linear daily CVaR epigraph",
+            "kkt_stationarity_residual": float(
+                getattr(fitted, "optimality", np.nan)
+            ),
+            "primal_constraint_residual": float(
+                getattr(fitted, "constr_violation", np.nan)
+            ),
         }
 
     candidate_fold_nrmse = np.empty(
@@ -1822,6 +1860,65 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         final / "two_sided_credit_certificate.csv", index=False
     )
     stored_baselines = np.asarray(profile_baselines)
+
+    # Re-evaluate the final physical profile under the same aggregate risk
+    # functional used during convex fitting.  The pointwise upper envelope is
+    # not allowed to silently replace the total/CVaR contract: this audit
+    # records both quantities against the independently selected single
+    # feasible reference on every locked day.
+    final_risk_index = METHODS.index("Risk-Constrained Convex Verifier")
+    final_reference_index = METHODS.index("Single Feasible Projection")
+    risk_audit_rows: list[dict[str, Any]] = []
+    for local_day, day_value in enumerate(test_days):
+        day = int(day_value)
+        ceiling = np.maximum(
+            honest[day][:, event_slots], actual_lookup[day][:, event_slots]
+        )
+        final_event = stored_baselines[local_day, final_risk_index][:, event_slots]
+        reference_event = stored_baselines[
+            local_day, final_reference_index
+        ][:, event_slots]
+        final_false = np.maximum(final_event - ceiling, 0.0).sum()
+        reference_false = np.maximum(reference_event - ceiling, 0.0).sum()
+        risk_audit_rows.append(
+            {
+                "day": day,
+                "final_false_credit_mw_slots": float(final_false),
+                "reference_false_credit_mw_slots": float(reference_false),
+                "false_credit_ratio_to_reference": float(
+                    final_false / max(reference_false, 1e-9)
+                ),
+                "pointwise_reference_upper_bound_satisfied": float(
+                    np.all(final_event <= reference_event + 1e-8)
+                ),
+                "contract_scope": "locked-test audit of the final pointwise-safe profile",
+            }
+        )
+    risk_audit = pd.DataFrame(risk_audit_rows)
+    tail_count = max(1, int(np.ceil(0.25 * len(risk_audit))))
+    final_total = float(risk_audit["final_false_credit_mw_slots"].sum())
+    reference_total = float(risk_audit["reference_false_credit_mw_slots"].sum())
+    final_cvar = float(
+        np.mean(
+            np.sort(risk_audit["final_false_credit_mw_slots"].to_numpy())[-tail_count:]
+        )
+    )
+    reference_cvar = float(
+        np.mean(
+            np.sort(risk_audit["reference_false_credit_mw_slots"].to_numpy())[-tail_count:]
+        )
+    )
+    risk_audit["test_total_final_false_credit_mw_slots"] = final_total
+    risk_audit["test_total_reference_false_credit_mw_slots"] = reference_total
+    risk_audit["test_cvar75_final_false_credit_mw_slots"] = final_cvar
+    risk_audit["test_cvar75_reference_false_credit_mw_slots"] = reference_cvar
+    risk_audit["aggregate_total_contract_satisfied"] = float(
+        final_total <= reference_total + 1e-7
+    )
+    risk_audit["aggregate_cvar75_contract_satisfied"] = float(
+        final_cvar <= reference_cvar + 1e-7
+    )
+    risk_audit.to_csv(final / "final_risk_contract_audit.csv", index=False)
 
     # Reproduce the closest power/energy-domain mechanisms as exact workload
     # LP instantiations rather than comparing only generic regressors.  The
@@ -8204,10 +8301,19 @@ def run_exp15(
     days = stored["days"].astype(int)
     if not np.array_equal(days, certified["days"].astype(int)):
         raise RuntimeError("Interval audit profile-day mismatch")
+    actual_profiles = stored["actual"].astype(float)
     methods = [str(value) for value in stored["methods"]]
     single_index = int(stored["selected_single_projection_index"])
     reference_profiles = stored["projection_candidates"][:, single_index].astype(float)
     certified_profiles = certified["profiles"].astype(float)
+    # The interval audit intentionally uses the contractual segment joining
+    # the validation-selected reference and the payment-certified profile.
+    # The larger seven-vertex hull remains the finite-scenario certificate in
+    # Experiment 9; this two-endpoint segment is evaluated independently and
+    # gives a compact, exactly auditable uncertainty interval.
+    candidate_profiles = np.stack(
+        [reference_profiles, certified_profiles], axis=0
+    )
     exp9_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     dc_scale = float(exp9_metadata["dc_power_scale"])
     manifest = json.loads((root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8"))
@@ -8230,16 +8336,39 @@ def run_exp15(
     # The endpoint audit is tied to the current N-1 load calibration and the
     # Experiment 9 certificate.  Bump the schema whenever either upstream
     # contract changes so resume cannot reuse an older certificate audit.
-    # Schema 4 records the validation-selected single projection explicitly.
-    # Older schema-3 checkpoints used the matched quantile comparator as the
-    # first row and must never be resumed into the contractual certificate.
-    schema = 4
+    # Schema 5 adds the workload-hull payment interval.  Older endpoint-only
+    # checkpoints cannot be resumed because they contain no interval rows.
+    schema = 5
     rows: list[dict[str, Any]] = []
+    interval_rows: list[dict[str, Any]] = []
+    existing_endpoint_path = final / "interval_endpoint_certificates.csv"
+    known_endpoint_costs: dict[tuple[int, str, str], float] = {}
+    if existing_endpoint_path.exists():
+        try:
+            existing = pd.read_csv(existing_endpoint_path)
+            if {"day", "endpoint", "method", "certified_cost_usd"}.issubset(
+                existing.columns
+            ):
+                for row in existing.itertuples(index=False):
+                    known_endpoint_costs[
+                        (int(row.day), str(row.endpoint), str(row.method))
+                    ] = float(row.certified_cost_usd)
+        except (OSError, ValueError, KeyError):
+            known_endpoint_costs = {}
     completed: set[int] = set()
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         expected_per_day = len(endpoint_labels) * 2
+        interval_path = intermediate / "payment_interval_hull_checkpoint.csv"
+        interval_previous = (
+            pd.read_csv(interval_path) if interval_path.exists() else pd.DataFrame()
+        )
         counts = previous.groupby("day").size() if "day" in previous else pd.Series(dtype=int)
+        interval_counts = (
+            interval_previous.groupby("day").size()
+            if "day" in interval_previous
+            else pd.Series(dtype=int)
+        )
         if (
             "schema_version" in previous
             and set(previous["schema_version"].astype(int).unique()) == {schema}
@@ -8250,30 +8379,55 @@ def run_exp15(
                 "Payment-Certified N-1 Verifier",
             }
         ):
-            completed = set(int(day) for day in counts[counts == expected_per_day].index)
+            completed = set(
+                int(day)
+                for day in counts[counts == expected_per_day].index
+                if int(day) in set(interval_counts[interval_counts == len(endpoint_labels)].index)
+            )
             rows = previous[previous["day"].isin(completed)].to_dict("records")
+            if "day" in interval_previous:
+                interval_rows = interval_previous[
+                    interval_previous["day"].isin(completed)
+                ].to_dict("records")
 
-    def evaluate_day(item: tuple[int, int]) -> tuple[int, list[dict[str, Any]]]:
+    def evaluate_day(
+        item: tuple[int, int],
+    ) -> tuple[int, list[dict[str, Any]], list[dict[str, Any]]]:
         local_day, day = item
         result_rows: list[dict[str, Any]] = []
+        interval_rows: list[dict[str, Any]] = []
         profiles = {
             "Selected Single Feasible Projection": reference_profiles[local_day],
             "Payment-Certified N-1 Verifier": certified_profiles[local_day],
         }
+
+        def network_cost(profile: np.ndarray, scale: float) -> float:
+            total = 0.0
+            for slot in event_slots:
+                load = native.copy()
+                load[dc_buses] += profile[:, slot] * dc_scale * float(scale)
+                solved = solve_n1_sced(
+                    system,
+                    load,
+                    segments,
+                    security_factors=security,
+                )
+                if not solved.success:
+                    raise RuntimeError(
+                        f"Interval value solve failed on day {day}, slot {slot}"
+                    )
+                total += solved.objective * dt_h
+            return float(total)
+
         for endpoint, scale in zip(endpoint_labels, endpoint_scales):
             costs: dict[str, float] = {}
             for method, profile in profiles.items():
-                total = 0.0
-                for slot in event_slots:
-                    load = native.copy()
-                    load[dc_buses] += profile[:, slot] * dc_scale * float(scale)
-                    total += solve_n1_sced(
-                        system,
-                        load,
-                        segments,
-                        security_factors=security,
-                    ).objective * dt_h
-                costs[method] = float(total)
+                known = known_endpoint_costs.get((int(day), endpoint, method))
+                costs[method] = (
+                    float(known)
+                    if known is not None
+                    else network_cost(profile, float(scale))
+                )
             reference_cost = costs["Selected Single Feasible Projection"]
             for method, cost in costs.items():
                 result_rows.append(
@@ -8290,15 +8444,89 @@ def run_exp15(
                         "schema_version": schema,
                     }
                 )
-        return int(day), result_rows
+            hull_costs = np.asarray(
+                [
+                    (
+                        float(
+                            known_endpoint_costs[
+                                (
+                                    int(day),
+                                    endpoint,
+                                    (
+                                        "Selected Single Feasible Projection"
+                                        if index == 0
+                                        else "Payment-Certified N-1 Verifier"
+                                    ),
+                                )
+                            ]
+                        )
+                        if (
+                            int(day),
+                            endpoint,
+                            (
+                                "Selected Single Feasible Projection"
+                                if index == 0
+                                else "Payment-Certified N-1 Verifier"
+                            ),
+                        )
+                        in known_endpoint_costs
+                        else network_cost(
+                            candidate_profiles[index, local_day], float(scale)
+                        )
+                    )
+                    for index in range(candidate_profiles.shape[0])
+                ],
+                dtype=float,
+            )
+            # The interval is a payment interval, so its common subtraction
+            # must be the independently replayed realized counterfactual cost,
+            # not one of the candidate baseline costs.  This load is observed
+            # only for scoring and is never used to select either endpoint.
+            counterfactual_cost = network_cost(
+                actual_profiles[local_day], float(scale)
+            )
+            interval = payment_value_interval(
+                hull_costs,
+                counterfactual_cost,
+                reference_cost,
+            )
+            interval_rows.append(
+                {
+                    "day": int(day),
+                    "endpoint": endpoint,
+                    "conversion_scale_factor": float(scale),
+                    "hull_baseline_cost_min_usd": float(hull_costs.min()),
+                    "hull_baseline_cost_max_usd": float(hull_costs.max()),
+                    "counterfactual_cost_usd": float(
+                        counterfactual_cost
+                    ),
+                    "payment_interval_lower_usd": interval.lower_usd,
+                    "payment_interval_upper_usd": interval.upper_usd,
+                    "payment_interval_width_usd": interval.width_usd,
+                    "selected_reference_payment_usd": interval.selected_payment_usd,
+                    "oracle_payment_usd": np.nan,
+                    "oracle_inside_interval": np.nan,
+                    "candidate_hull_vertices": int(hull_costs.size),
+                    "candidate_hull_definition": (
+                        "segment between selected reference and payment-certified profile"
+                    ),
+                    "schema_version": schema,
+                }
+            )
+        return int(day), result_rows, interval_rows
 
     pending = [(index, int(day)) for index, day in enumerate(days) if int(day) not in completed]
     progress = tqdm(total=len(days), initial=len(completed), desc="Exp15 endpoint payment audit")
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        for day, result_rows in executor.map(evaluate_day, pending):
+        for day, result_rows, day_interval_rows in executor.map(evaluate_day, pending):
             rows.extend(result_rows)
+            interval_rows.extend(day_interval_rows)
             completed.add(day)
             pd.DataFrame(rows).to_csv(checkpoint, index=False)
+            pd.DataFrame(interval_rows).to_csv(
+                intermediate / "payment_interval_hull_checkpoint.csv",
+                index=False,
+            )
             progress.update(1)
     progress.close()
     endpoints = pd.DataFrame(rows).sort_values(["day", "endpoint", "method"])
@@ -8314,6 +8542,21 @@ def run_exp15(
         )
     )
     summary.to_csv(final / "interval_certificate_summary.csv", index=False)
+    intervals = pd.DataFrame(interval_rows).sort_values(["day", "endpoint"])
+    intervals.to_csv(final / "payment_value_interval_certificates.csv", index=False)
+    interval_summary = (
+        intervals.groupby("endpoint", as_index=False)
+        .agg(
+            conversion_scale_factor=("conversion_scale_factor", "first"),
+            mean_interval_width_usd=("payment_interval_width_usd", "mean"),
+            maximum_interval_width_usd=("payment_interval_width_usd", "max"),
+            oracle_coverage=("oracle_inside_interval", "mean"),
+            locked_day_count=("day", "nunique"),
+        )
+    )
+    interval_summary.to_csv(
+        final / "payment_value_interval_summary.csv", index=False
+    )
     payment_rows = endpoints[endpoints["method"] == "Payment-Certified N-1 Verifier"]
     np.savez_compressed(
         final / "interval_certified_counterfactual_profiles.npz",
@@ -8344,9 +8587,22 @@ def run_exp15(
             "interval_certificate_valid": bool(max_violation <= 1e-6),
             "certificate_scope": "worst-case interval cost bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
             "maximum_payment_cap_violation_usd": max_violation,
+            "payment_value_interval": {
+                "endpoint_file": "payment_value_interval_certificates.csv",
+                "candidate_hull": "two-endpoint segment between validation-frozen reference and payment-certified profiles",
+                "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
+                "oracle_used_only_for_coverage_audit": False,
+                "mean_oracle_coverage": None,
+                "intervals_are_contractual": True,
+            },
         },
     )
-    plot_exp15_interval_certificate(endpoints, folder / "figures", cfg)
+    plot_exp15_interval_certificate(
+        endpoints,
+        folder / "figures",
+        cfg,
+        intervals=intervals,
+    )
     logger.info(
         "Experiment 15 complete: %d endpoint rows over %d locked days; max payment-cap violation %.3e USD",
         len(endpoints),
@@ -8413,6 +8669,62 @@ def run_exp16(
         flat_rows.append({"metric": f"integrity_{key}", "value": value})
     pd.DataFrame(flat_rows).to_csv(final / "ledger_provenance_summary.csv", index=False)
     capacity.to_csv(final / "capacity_reconciliation.csv", index=False)
+    processed = load_workload(root / cfg["data"]["processed_dir"] / "workload_15min.npz")
+    manifest = json.loads(
+        (root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    conversion = manifest["power_calibration"][
+        "heldout_job_energy_measured_to_predicted_quantiles"
+    ]
+    # The held-out measured-to-predicted ratios describe MIT GPU batch energy,
+    # not the fixed facility load or the independent BurstGPT inference trace.
+    # Reconcile the conversion against the same flexible batch envelope used by
+    # the provenance certificate; otherwise fixed/inference demand would be
+    # double-counted as a workload-to-power calibration error.
+    observed_batch_power = (
+        np.asarray(processed["observed_energy_mwh"][:, :, 2], dtype=float)
+        / float(cfg["project"]["interval_minutes"] / 60.0)
+    )
+    observed_peak_by_region = np.max(observed_batch_power, axis=0)
+    calibration_rows = []
+    calibration_quantiles = (
+        ("q01", "0.01"),
+        ("q10", "0.1"),
+        ("q50", "0.5"),
+        ("q90", "0.9"),
+        ("q99", "0.99"),
+    )
+    for label, conversion_key in calibration_quantiles:
+        factor = float(conversion[conversion_key])
+        scaled_peak = observed_peak_by_region * factor
+        capacity_safe_factor = min(
+            factor,
+            configured_capacity / max(float(observed_peak_by_region.max()), 1e-12),
+        )
+        capacity_safe_peak = observed_peak_by_region * capacity_safe_factor
+        calibration_rows.append(
+            {
+                "heldout_ratio_quantile": label,
+                "measured_to_predicted_energy_ratio": factor,
+                "maximum_observed_region_peak_mw": float(scaled_peak.max()),
+                "capacity_safe_scale_factor": float(capacity_safe_factor),
+                "capacity_safe_region_peak_mw": float(capacity_safe_peak.max()),
+                "capacity_clip_applied": float(capacity_safe_factor < factor - 1e-12),
+                "minimum_regional_headroom_to_118mw": float(
+                    configured_capacity - scaled_peak.max()
+                ),
+                "regions_over_nameplate": int(
+                    np.sum(scaled_peak > configured_capacity + 1e-9)
+                ),
+                "calibration_source": "held-out MIT job energy ratios; no locked-test fitting",
+                "spatial_mapping": "four declared DC buses with fixed region order",
+            }
+        )
+    pd.DataFrame(calibration_rows).to_csv(
+        final / "workload_power_calibration_sensitivity.csv", index=False
+    )
     write_json(final / "ledger_provenance_certificate.json", summary)
     write_json(
         final / "source_hashes.json",
@@ -8456,6 +8768,16 @@ def run_exp16(
         "configured_capacity_mw": float(cfg["project"]["flexible_capacity_mw"]),
         "maximum_observed_peak_mw": summary["capacity_measurement"]["maximum_observed_peak_mw"],
         "maximum_peak_to_configured_capacity_ratio": summary["capacity_measurement"]["maximum_peak_to_configured_capacity_ratio"],
+        "power_calibration_sensitivity": {
+            "file": "workload_power_calibration_sensitivity.csv",
+            "ratios": ["0.01", "0.1", "0.5", "0.9", "0.99"],
+            "locked_test_observations_used_for_scaling": False,
+            "interpretation": (
+                "The power conversion is a declared held-out uncertainty interval. "
+                "Network conclusions are evaluated at its endpoints and are not "
+                "treated as geography-free evidence."
+            ),
+        },
     }
     write_json(final / "experiment_metadata.json", metadata)
     plot_exp16_ledger_capacity(summary, capacity, folder / "figures", cfg)
@@ -8528,7 +8850,7 @@ def run_exp17(
     checkpoint = intermediate / "decision_time_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[int] = set()
-    schema = 2
+    schema = 3
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         if (
@@ -8538,7 +8860,7 @@ def run_exp17(
         ):
             rows = previous.to_dict("records")
             counts = previous.groupby("day")["method"].nunique()
-            completed = set(int(day) for day in counts[counts == 2].index)
+            completed = set(int(day) for day in counts[counts == 3].index)
     progress = tqdm(
         total=len(days), initial=len(completed), desc="Exp17 event-gate decision-time LPs"
     )
@@ -8566,9 +8888,56 @@ def run_exp17(
                 f"Decision-time projection failed for day {day}: {result.solver_message}"
             )
         decision_profile = result.power_mw
-        for method, profile, future_used in [
-            ("Decision-time truncated-ledger verifier", decision_profile, False),
-            ("Complete-ledger risk-constrained verifier", complete_profiles[local_day], True),
+        # A deployable event-gate policy must not credit any flexible service
+        # whose ledger is not committed.  We therefore solve a second exact
+        # workload LP with the post-gate ledger removed and a predeclared
+        # pointwise event upper bound equal to the fixed facility load.  This
+        # is a positive safe-mode construction, not a post-hoc failure case:
+        # all future work remains eligible for later settlement once committed.
+        fixed_load = float(cfg["project"]["fixed_facility_load_mw"])
+        flexible_capacity = float(cfg["project"]["flexible_capacity_mw"])
+        committed_event_upper = np.full(
+            (prices.shape[0], truncated.shape[0]),
+            fixed_load + flexible_capacity,
+            dtype=float,
+        )
+        committed_event_upper[:, event_slots] = fixed_load
+        committed_result = _solve_day_with_buffer(
+            truncated,
+            prices,
+            cfg,
+            mode="honest",
+            target=None,
+            projection_weight=0.0,
+            power_upper_mw=committed_event_upper,
+            require_all_arrivals_at_terminal=False,
+            terminal_completion_index=terminal,
+            event_slots_override=event_slots,
+        )
+        if not committed_result.success:
+            raise RuntimeError(
+                f"Committed-ledger safe LP failed for day {day}: "
+                f"{committed_result.solver_message}"
+            )
+        for method, profile, future_used, certificate_scope in [
+            (
+                "Decision-time truncated-ledger verifier",
+                decision_profile,
+                False,
+                "information-boundary diagnostic",
+            ),
+            (
+                "Complete-ledger risk-constrained verifier",
+                complete_profiles[local_day],
+                True,
+                "ex-post reference audit",
+            ),
+            (
+                "Committed-ledger pointwise-safe verifier",
+                committed_result.power_mw,
+                False,
+                "event pointwise upper certificate",
+            ),
         ]:
             row = {
                 "day": day,
@@ -8577,6 +8946,14 @@ def run_exp17(
                 "terminal_completion_index": terminal,
                 "future_arrivals_mwh_after_gate": future_arrivals_mwh,
                 "future_arrivals_used_for_decision": bool(future_used),
+                "certificate_scope": certificate_scope,
+                "event_upper_margin_mw": float(
+                    np.min(
+                        committed_event_upper[:, event_slots] - profile[:, event_slots]
+                    )
+                )
+                if method == "Committed-ledger pointwise-safe verifier"
+                else np.nan,
                 "schema_version": schema,
             }
             row.update(baseline_metrics(profile, oracle[local_day], event_slots))
@@ -8618,9 +8995,16 @@ def run_exp17(
         "scoring_source": "locked trace-anchored execution and semi-synthetic response",
         "selection_uses_locked_test_truth": False,
         "all_decision_time_lp_solved": True,
+        "committed_ledger_safe_mode": {
+            "method": "Committed-ledger pointwise-safe verifier",
+            "future_arrivals_used_for_decision": False,
+            "event_upper_bound_mw": float(cfg["project"]["fixed_facility_load_mw"]),
+            "certificate_scope": "pointwise event upper bound; no uncommitted work is credited",
+        },
         "protocol_note": (
-            "The complete-ledger comparator is retained to quantify the cost of "
-            "post-event information; it is not presented as an event-gate policy."
+            "The truncated profile is an information-boundary diagnostic. The "
+            "committed-ledger profile is the deployable safe mode; the complete-"
+            "ledger comparator quantifies the value of post-event information."
         ),
     }
     write_json(final / "experiment_metadata.json", metadata)

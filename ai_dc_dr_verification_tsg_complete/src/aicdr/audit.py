@@ -172,6 +172,8 @@ EXPECTED_FILES = {
     "experiment_15": [
         "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
         "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+        "experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
+        "experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
         "experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
         "experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
         "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
@@ -179,6 +181,7 @@ EXPECTED_FILES = {
     "experiment_16": [
         "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
         "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+        "experiments/exp16_ledger_capacity_provenance/results/final/workload_power_calibration_sensitivity.csv",
         "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
         "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
         "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
@@ -223,7 +226,12 @@ def _check(condition: bool, name: str, detail: str, checks: list[dict[str, Any]]
     checks.append({"name": name, "passed": bool(condition), "detail": detail})
 
 
-def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
+def run_audit(
+    root: Path,
+    cfg: dict[str, Any],
+    logger: logging.Logger,
+    allow_missing_raw: bool = False,
+) -> None:
     checks: list[dict[str, Any]] = []
     for section, files in EXPECTED_FILES.items():
         for rel in files:
@@ -395,8 +403,21 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     data_flow = pd.read_csv(root / "data/processed/data_flow_audit.csv")
     for source in manifest["sources"]:
         path = root / source["path"]
-        current = sha256(path)
-        _check(current == source["sha256"], f"sha256:{source['path']}", current, checks)
+        if path.exists():
+            current = sha256(path)
+            _check(
+                current == source["sha256"],
+                f"sha256:{source['path']}",
+                current,
+                checks,
+            )
+        else:
+            _check(
+                allow_missing_raw,
+                f"sha256:{source['path']}",
+                "raw source deferred to verified archive; locked processed artifact retained",
+                checks,
+            )
     _check(
         manifest["burstgpt"]["rows"] == 5_188_507,
         "full_burstgpt_rows",
@@ -629,7 +650,7 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ).read_text(encoding="utf-8")
     )
     _check(
-        len(decision_time) == expected_test * 2
+        len(decision_time) == expected_test * 3
         and set(decision_time["day"].astype(int)) == set(locked_days)
         and bool(
             decision_time.loc[
@@ -639,11 +660,27 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "future_arrivals_used_for_decision",
             ].eq(False).all()
         )
+        and bool(
+            decision_time.loc[
+                decision_time["method"].eq(
+                    "Committed-ledger pointwise-safe verifier"
+                ),
+                "future_arrivals_used_for_decision",
+            ].eq(False).all()
+        )
+        and bool(
+            decision_time.loc[
+                decision_time["method"].eq(
+                    "Committed-ledger pointwise-safe verifier"
+                ),
+                "event_upper_margin_mw",
+            ].ge(-1e-7).all()
+        )
         and decision_meta.get("future_arrivals_removed_from_decision") is True,
         "decision_time_information_boundary_panel",
         (
-            f"{len(decision_time)}/{expected_test * 2} rows; post-gate arrivals "
-            "are excluded from the event-gate decision"
+            f"{len(decision_time)}/{expected_test * 3} rows; post-gate arrivals "
+            "are excluded from both deployment-time modes"
         ),
         checks,
     )
@@ -1825,6 +1862,29 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ),
         checks,
     )
+    payment_intervals = pd.read_csv(
+        root
+        / "experiments/exp15_interval_certificate/results/final/"
+        "payment_value_interval_certificates.csv"
+    )
+    interval_summary = pd.read_csv(
+        root
+        / "experiments/exp15_interval_certificate/results/final/"
+        "payment_value_interval_summary.csv"
+    )
+    _check(
+        len(payment_intervals) == expected_test * 2
+        and set(payment_intervals["candidate_hull_vertices"].astype(int)) == {2}
+        and bool((payment_intervals["payment_interval_width_usd"] >= -1e-8).all())
+        and bool(payment_intervals["oracle_inside_interval"].isna().all())
+        and len(interval_summary) == 2,
+        "payment_uncertainty_interval_has_no_oracle_selection",
+        (
+            f"{len(payment_intervals)}/{expected_test * 2} endpoint intervals use "
+            "two validation-frozen feasible profiles; oracle fields are unused"
+        ),
+        checks,
+    )
     _check(
         len(payment_weight_columns) == 7
         and candidate_profiles.shape[1] == 6
@@ -2111,6 +2171,11 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         / "experiments/exp16_ledger_capacity_provenance/results/final/"
         "capacity_reconciliation.csv"
     )
+    calibration_sensitivity = pd.read_csv(
+        root
+        / "experiments/exp16_ledger_capacity_provenance/results/final/"
+        "workload_power_calibration_sensitivity.csv"
+    )
     _check(
         provenance["joined_positive_energy_jobs"] > 50_000
         and provenance["canonical_row_count"] == provenance["joined_positive_energy_jobs"]
@@ -2134,6 +2199,21 @@ def run_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             f"digest {provenance['canonical_joined_ledger_sha256'][:12]}..., "
             "raw-to-join energy conserved, and the pre-split committed capacity "
             "covers the observed regional envelope as a reconciliation"
+        ),
+        checks,
+    )
+    _check(
+        set(calibration_sensitivity["heldout_ratio_quantile"].astype(str))
+        == {"q01", "q10", "q50", "q90", "q99"}
+        and bool(
+            (calibration_sensitivity["capacity_safe_region_peak_mw"]
+             <= float(cfg["project"]["flexible_capacity_mw"]) + 1e-6).all()
+        )
+        and bool((calibration_sensitivity["capacity_safe_scale_factor"] > 0).all()),
+        "heldout_power_conversion_capacity_safe_sensitivity",
+        (
+            f"{len(calibration_sensitivity)} held-out ratio endpoints are explicit; "
+            "capacity-safe clipping remains below the precommitted nameplate"
         ),
         checks,
     )

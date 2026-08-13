@@ -67,6 +67,63 @@ class PaymentCertifiedResult:
     first_stage_optimal_l1_mw: float = np.nan
 
 
+@dataclass(frozen=True)
+class PaymentIntervalResult:
+    """Set-valued settlement payment induced by a feasible workload hull.
+
+    ``baseline_costs_usd`` are evaluated by the same secure network-value
+    model for every vertex profile that was frozen before the locked test
+    period.  Subtracting one realized counterfactual cost therefore maps the
+    workload-feasible power set into an explicit payment interval rather than
+    treating a single baseline forecast as ground truth.
+    """
+
+    lower_usd: float
+    upper_usd: float
+    width_usd: float
+    selected_payment_usd: float
+    oracle_payment_usd: float = np.nan
+    oracle_inside: bool = False
+
+
+def payment_value_interval(
+    baseline_costs_usd: np.ndarray,
+    counterfactual_cost_usd: float,
+    selected_baseline_cost_usd: float,
+    oracle_baseline_cost_usd: float | None = None,
+) -> PaymentIntervalResult:
+    """Map a workload-feasible baseline hull to a certified payment interval.
+
+    The interval is contractual: it is computed only from the predeclared
+    candidate hull and the realized counterfactual network value.  The oracle
+    argument is optional and is used solely for an independent coverage audit.
+    No oracle quantity participates in the interval endpoints.
+    """
+    costs = np.asarray(baseline_costs_usd, dtype=float).reshape(-1)
+    if costs.size == 0 or not np.isfinite(costs).all():
+        raise ValueError("baseline_costs_usd must be a non-empty finite array")
+    counterfactual = float(counterfactual_cost_usd)
+    lower = float(costs.min() - counterfactual)
+    upper = float(costs.max() - counterfactual)
+    selected = float(selected_baseline_cost_usd - counterfactual)
+    if selected < lower - 1e-7 or selected > upper + 1e-7:
+        raise ValueError("selected baseline cost is outside the declared hull")
+    if oracle_baseline_cost_usd is None:
+        oracle_payment = np.nan
+        inside = False
+    else:
+        oracle_payment = float(oracle_baseline_cost_usd - counterfactual)
+        inside = bool(lower - 1e-7 <= oracle_payment <= upper + 1e-7)
+    return PaymentIntervalResult(
+        lower_usd=lower,
+        upper_usd=upper,
+        width_usd=float(upper - lower),
+        selected_payment_usd=selected,
+        oracle_payment_usd=oracle_payment,
+        oracle_inside=inside,
+    )
+
+
 def parse_pglib_case(path: Path) -> PowerSystem:
     text = path.read_text(encoding="utf-8")
     base_match = re.search(r"mpc\.baseMVA\s*=\s*([0-9.eE+-]+)", text)

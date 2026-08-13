@@ -23,5 +23,13 @@
   "parallel_workers": 6,
   "interval_certificate_valid": true,
   "certificate_scope": "worst-case interval cost bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
-  "maximum_payment_cap_violation_usd": 1.6705598682165146e-08
+  "maximum_payment_cap_violation_usd": 1.669104676693678e-08,
+  "payment_value_interval": {
+    "endpoint_file": "payment_value_interval_certificates.csv",
+    "candidate_hull": "two-endpoint segment between validation-frozen reference and payment-certified profiles",
+    "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
+    "oracle_used_only_for_coverage_audit": false,
+    "mean_oracle_coverage": null,
+    "intervals_are_contractual": true
+  }
 }

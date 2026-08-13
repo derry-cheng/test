@@ -107,7 +107,15 @@ def run_pipeline(
         ("exp16", lambda: run_exp16(root, cfg, logger)),
         ("exp17", lambda: run_exp17(root, cfg, logger, resume=resume)),
         ("exp18", lambda: run_exp18(root, cfg, logger, resume=resume)),
-        ("audit", lambda: run_audit(root, cfg, logger)),
+        (
+            "audit",
+            lambda: run_audit(
+                root,
+                cfg,
+                logger,
+                allow_missing_raw=(stage == "audit"),
+            ),
+        ),
     ]
     if resume_all_run:
         # The canonical manifest predates the two new information-boundary and
@@ -168,8 +176,24 @@ def run_pipeline(
         "exp17",
         "exp18",
         "audit",
-    }:
+    } and stage != "audit":
         preprocess_all(root, cfg, False, logger)
+    elif stage == "audit":
+        # The audit is intentionally runnable from the compact source/artifact
+        # package after raw inputs have been moved to the verified archive.  It
+        # consumes the locked processed tensor and checks its manifest-bound
+        # outputs; explicit data/full runs still call ``preprocess_all`` and
+        # fail closed when a declared raw file is absent or mismatched.
+        processed = root / cfg["data"]["processed_dir"] / "workload_15min.npz"
+        if not processed.exists():
+            raise FileNotFoundError(
+                "Locked processed workload is missing; restore the verified "
+                "raw archive before running the audit."
+            )
+        logger.info(
+            "Audit-only stage uses the locked processed workload; raw-source "
+            "validation remains enforced by data/full stages."
+        )
     for name, function in functions:
         if name not in selected:
             continue

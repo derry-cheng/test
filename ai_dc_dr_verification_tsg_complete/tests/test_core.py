@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from aicdr.data import _validate_declared_raw_sources, load_workload
 from aicdr.baselines import exact_block_sign_test
@@ -76,6 +77,11 @@ def test_interval_endpoint_audit_is_complete_and_within_solver_tolerance() -> No
     assert metadata["external_transfer_comparator"] == "Feasible Quantile Projection"
     assert "selected single feasible" in metadata["profile_source"].lower()
     assert float(metadata["maximum_payment_cap_violation_usd"]) <= 1e-6
+    interval = pd.read_csv(folder / "payment_value_interval_certificates.csv")
+    assert len(interval) == 54 * 2
+    assert set(interval["candidate_hull_vertices"]) == {2}
+    assert np.all(interval["payment_interval_width_usd"] >= -1e-8)
+    assert interval["oracle_inside_interval"].isna().all()
 
 
 def test_payment_target_is_frozen_on_validation_and_two_sided_band_is_complete() -> None:
@@ -111,6 +117,18 @@ def test_payment_target_is_frozen_on_validation_and_two_sided_band_is_complete()
     assert len(band) == CFG["experiments"]["test_days"]
     assert np.all(band["pointwise_upper_bound_satisfied"] == 1)
     assert np.all(band["pointwise_lower_bound_satisfied"] == 1)
+    risk = np.genfromtxt(
+        ROOT
+        / "experiments/exp2_baseline_verification/results/final/"
+        "final_risk_contract_audit.csv",
+        delimiter=",",
+        names=True,
+        dtype=None,
+        encoding="utf-8",
+    )
+    assert len(risk) == CFG["experiments"]["test_days"]
+    assert np.all(risk["aggregate_total_contract_satisfied"] == 1)
+    assert np.all(risk["aggregate_cvar75_contract_satisfied"] == 1)
 
 
 def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
@@ -125,6 +143,23 @@ def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
     assert len(certificate["canonical_joined_ledger_sha256"]) == 64
     assert abs(float(certificate["raw_to_join_energy_residual_j"])) <= 1e-6
     assert np.all(capacity["observed_peak_mw"] <= 118.0 + 1e-8)
+    calibration = np.genfromtxt(
+        folder / "workload_power_calibration_sensitivity.csv",
+        delimiter=",",
+        names=True,
+        dtype=None,
+        encoding="utf-8",
+    )
+    assert len(calibration) == 5
+    assert set(calibration["heldout_ratio_quantile"]) == {
+        "q01",
+        "q10",
+        "q50",
+        "q90",
+        "q99",
+    }
+    assert np.all(calibration["capacity_safe_region_peak_mw"] <= 118.0 + 1e-8)
+    assert np.all(calibration["capacity_safe_scale_factor"] > 0)
 
 
 def test_data_flow_distinguishes_full_join_from_common_tensor_window() -> None:
@@ -154,11 +189,17 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
         dtype=None,
         encoding="utf-8",
     )
-    assert len(decision) == CFG["experiments"]["test_days"] * 2
+    assert len(decision) == CFG["experiments"]["test_days"] * 3
     truncated = decision[
         decision["method"] == "Decision-time truncated-ledger verifier"
     ]
     assert np.all(truncated["future_arrivals_used_for_decision"] == 0)
+    committed = decision[
+        decision["method"] == "Committed-ledger pointwise-safe verifier"
+    ]
+    assert len(committed) == CFG["experiments"]["test_days"]
+    assert np.all(committed["future_arrivals_used_for_decision"] == 0)
+    assert np.all(committed["event_upper_margin_mw"] >= -1e-8)
     ac = np.genfromtxt(
         ROOT
         / "experiments/exp18_preventive_ac_network_panel/results/final/"
