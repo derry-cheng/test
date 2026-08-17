@@ -62,9 +62,9 @@ budget balance, and stage-manifest isolation.
 | Cross-day feasibility and delayed recovery do not rely on a zero-arrival buffer | A 1,216-slot continuous real-arrival horizon, two-stage lexicographic event-window embedding, endogenous recovery, complete-cycle nodal remuneration, and an individually rational budget-balanced bilateral contract | `exp12_rolling_market_validation` |
 | Public execution replay is separated from causal counterfactual identification | All 54 locked days are replayed from immutable MIT scheduler/DCGM execution intervals; the trace-constrained batch flow is observational only | `exp13_real_trace_replay` |
 | Aggregate divisible flow is checked against exact job-level feasibility | One global sparse release/deadline LP retains all 71,128 positive-energy joined jobs, reconstructs the measured profile, and reports machine-precision job and slot residuals | `exp14_job_level_fidelity` |
-| Telemetry conversion uncertainty is audited beyond three finite quantiles | The locked payment profile is independently evaluated at held-out q01/q99 endpoints under all 37 non-islanding outages; convex value geometry gives a worst-case interval cost bound | `exp15_interval_certificate` |
+| Telemetry conversion uncertainty is audited beyond three finite quantiles | The locked payment profile is independently evaluated over q01 to the precommitted-capacity-safe q99 endpoint under all 37 non-islanding outages; convex value geometry and an exact joint LP give a continuous-segment interval bound | `exp15_interval_certificate` |
 | The job-level witness is bound to immutable source records and the study capacity covers the measured regional envelope | Canonical SHA-256 digest, one-to-one scheduler/DCGM join, raw-to-join energy conservation, temporal-order checks, and complete observed per-region capacity reconciliation | `exp16_ledger_capacity_provenance` |
-| A deployment-time verifier cannot use future arrivals that are unavailable at the decision gate | The same exact workload LP is evaluated with all post-gate arrivals removed and compared with the complete-ledger information upper bound on every locked day | `exp17_decision_time_information` |
+| A deployment-time verifier cannot use future arrivals that are unavailable at the decision gate | The same exact workload LP and a refit causal metadata target use a current-day ledger masked after the predeclared gate; the complete-ledger result is retained only as an information upper bound | `exp17_decision_time_information` |
 | AC network transfer is auditable without overclaiming a preventive AC certificate | Every declared native-case admissible outage is solved as an AC corrective diagnostic on RTS-24/30/39/118 at three validation-only penetrations; voltage and loading deviations are reported explicitly | `exp18_preventive_ac_network_panel` |
 
 ## Data integrity and identification scope
@@ -103,7 +103,7 @@ The compiled paper and locked result artifacts are `manuscript/main.pdf`, with s
 `manuscript/main.tex`. See also `manuscript/paper_outline_zh.md`, `manuscript/model_formulation.md`,
 `manuscript/formula_source_matrix.md`, `manuscript/theoretical_results.md`, and
 `manuscript/implementation_alignment.md` for the full equation/source/paper-to-code
-mapping and `DATA.md` for data provenance and limitations. The source directory
-contains only the final PDF and reproducible manuscript sources; the PDF was
-rebuilt from `manuscript/main.tex` with BibTeX and `latexmk` after the final
-sample-definition and cross-reference corrections.
+mapping and `DATA.md` for data provenance and limitations. The manuscript
+directory contains the final PDF and reproducible manuscript sources; the PDF
+was rebuilt from `manuscript/main.tex` with BibTeX and two final `pdflatex`
+passes after the sample-definition and cross-reference corrections.

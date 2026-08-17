@@ -72,9 +72,11 @@ class PaymentIntervalResult:
     """Set-valued settlement payment induced by a feasible workload hull.
 
     ``baseline_costs_usd`` are evaluated by the same secure network-value
-    model for every vertex profile that was frozen before the locked test
-    period.  Subtracting one realized counterfactual cost therefore maps the
-    workload-feasible power set into an explicit payment interval rather than
+    model for the frozen segment vertices.  When
+    ``segment_minimum_baseline_cost_usd`` is supplied, it is the exact minimum
+    from the joint segment LP; the convex value function makes the vertex
+    maximum exact. Subtracting one realized counterfactual cost therefore maps
+    the declared workload segment into an explicit payment interval rather than
     treating a single baseline forecast as ground truth.
     """
 
@@ -86,11 +88,89 @@ class PaymentIntervalResult:
     oracle_inside: bool = False
 
 
+def _sced_structure(system: PowerSystem, segments: int) -> dict[str, Any]:
+    """Build the load-independent SCED matrices once per system/resolution.
+
+    Cross-network panels solve the same public network for many loads.  The
+    generator segment costs, PTDF incidence, sparse inequality matrix, and
+    bounds are invariant across those solves; caching them removes repeated
+    matrix construction without changing the LP itself.  A copied
+    ``PowerSystem`` receives its own cache, so contingency or rating changes
+    cannot leak into another system instance.
+    """
+    if segments <= 0:
+        raise ValueError("segments must be positive")
+    cache = getattr(system, "_sced_structure_cache", None)
+    if cache is None:
+        cache = {}
+        setattr(system, "_sced_structure_cache", cache)
+    cached = cache.get(int(segments))
+    if cached is not None:
+        return cached
+
+    active = system.gen[:, 7] > 0
+    gen = system.gen[active]
+    gencost = system.gencost[active]
+    gen_bus = system.gen_bus[active]
+    pmax = gen[:, 8]
+    pmin = gen[:, 9]
+    widths: list[float] = []
+    costs: list[float] = []
+    segment_gen: list[int] = []
+    fixed_cost = 0.0
+    for g in range(len(gen)):
+        model = int(gencost[g, 0])
+        if model != 2:
+            raise ValueError("Only polynomial PGLib generator costs are supported")
+        ncoef = int(gencost[g, 3])
+        coeff = gencost[g, 4 : 4 + ncoef]
+        if ncoef == 3:
+            a, b, c0 = coeff
+        elif ncoef == 2:
+            a, b, c0 = 0.0, coeff[0], coeff[1]
+        else:
+            a, b, c0 = 0.0, 0.0, coeff[-1] if len(coeff) else 0.0
+        fixed_cost += a * pmin[g] ** 2 + b * pmin[g] + c0
+        width = max(0.0, pmax[g] - pmin[g]) / segments
+        for s in range(segments):
+            midpoint = pmin[g] + (s + 0.5) * width
+            widths.append(width)
+            costs.append(2.0 * a * midpoint + b)
+            segment_gen.append(g)
+
+    widths_a = np.asarray(widths)
+    c = np.asarray(costs)
+    cg = np.zeros((system.bus.shape[0], len(gen)))
+    cg[gen_bus, np.arange(len(gen))] = 1.0
+    hgen = system.ptdf @ cg
+    hseg = hgen[:, np.asarray(segment_gen)]
+    rate = system.branch[:, 5].copy()
+    rate[rate <= 0] = 1e6
+    aub = vstack([csr_matrix(hseg), csr_matrix(-hseg)], format="csr")
+    structure = {
+        "active": active,
+        "pmin": pmin,
+        "widths": widths_a,
+        "costs": c,
+        "segment_gen": np.asarray(segment_gen, dtype=int),
+        "fixed_cost": float(fixed_cost),
+        "cg": cg,
+        "hseg": hseg,
+        "aub": aub,
+        "aeq": csr_matrix(np.ones((1, len(c)))),
+        "bounds": list(zip(np.zeros(len(widths_a)), widths_a)),
+        "rate": rate,
+    }
+    cache[int(segments)] = structure
+    return structure
+
+
 def payment_value_interval(
     baseline_costs_usd: np.ndarray,
     counterfactual_cost_usd: float,
     selected_baseline_cost_usd: float,
     oracle_baseline_cost_usd: float | None = None,
+    segment_minimum_baseline_cost_usd: float | None = None,
 ) -> PaymentIntervalResult:
     """Map a workload-feasible baseline hull to a certified payment interval.
 
@@ -103,7 +183,20 @@ def payment_value_interval(
     if costs.size == 0 or not np.isfinite(costs).all():
         raise ValueError("baseline_costs_usd must be a non-empty finite array")
     counterfactual = float(counterfactual_cost_usd)
-    lower = float(costs.min() - counterfactual)
+    # The lower endpoint must cover the declared continuous segment, not only
+    # its two vertices.  When supplied, ``segment_minimum_baseline_cost_usd``
+    # is the optimum of the exact joint LP over the segment parameter.  The
+    # upper endpoint remains the maximum of the vertices because the secure
+    # SCED value is convex in the affine load profile.
+    if segment_minimum_baseline_cost_usd is None:
+        lower_baseline = float(costs.min())
+    else:
+        lower_baseline = float(segment_minimum_baseline_cost_usd)
+        if not np.isfinite(lower_baseline):
+            raise ValueError("segment_minimum_baseline_cost_usd must be finite")
+        if lower_baseline > float(costs.min()) + 1e-6:
+            raise ValueError("segment minimum cannot exceed a declared endpoint cost")
+    lower = float(lower_baseline - counterfactual)
     upper = float(costs.max() - counterfactual)
     selected = float(selected_baseline_cost_usd - counterfactual)
     if selected < lower - 1e-7 or selected > upper + 1e-7:
@@ -181,68 +274,37 @@ def power_system_from_ppc(ppc: dict[str, Any]) -> PowerSystem:
 
 
 def solve_sced(system: PowerSystem, load_mw: np.ndarray, segments: int = 10) -> SCEDResult:
-    active = system.gen[:, 7] > 0
-    gen = system.gen[active]
-    gencost = system.gencost[active]
-    gen_bus = system.gen_bus[active]
-    pmax = gen[:, 8]
-    pmin = gen[:, 9]
-    widths: list[float] = []
-    costs: list[float] = []
-    segment_gen: list[int] = []
-    fixed_cost = 0.0
-    for g in range(len(gen)):
-        model = int(gencost[g, 0])
-        if model != 2:
-            raise ValueError("Only polynomial PGLib generator costs are supported")
-        ncoef = int(gencost[g, 3])
-        coeff = gencost[g, 4 : 4 + ncoef]
-        if ncoef == 3:
-            a, b, c0 = coeff
-        elif ncoef == 2:
-            a, b, c0 = 0.0, coeff[0], coeff[1]
-        else:
-            a, b, c0 = 0.0, 0.0, coeff[-1] if len(coeff) else 0.0
-        fixed_cost += a * pmin[g] ** 2 + b * pmin[g] + c0
-        width = max(0.0, pmax[g] - pmin[g]) / segments
-        for s in range(segments):
-            midpoint = pmin[g] + (s + 0.5) * width
-            widths.append(width)
-            costs.append(2.0 * a * midpoint + b)
-            segment_gen.append(g)
-
-    widths_a = np.asarray(widths)
-    c = np.asarray(costs)
-    nvar = len(c)
-    cg = np.zeros((system.bus.shape[0], len(gen)))
-    cg[gen_bus, np.arange(len(gen))] = 1.0
-    hgen = system.ptdf @ cg
-    hseg = hgen[:, np.asarray(segment_gen)]
-    fixed_injection = cg @ pmin - load_mw
+    structure = _sced_structure(system, int(segments))
+    load = np.asarray(load_mw, dtype=float)
+    if load.shape != (system.bus.shape[0],):
+        raise ValueError("load_mw must have one entry per bus")
+    pmin = structure["pmin"]
+    fixed_injection = structure["cg"] @ pmin - load
     fixed_flow = system.ptdf @ fixed_injection
-    rate = system.branch[:, 5].copy()
-    rate[rate <= 0] = 1e6
-    aub = np.vstack([hseg, -hseg])
+    rate = structure["rate"]
     bub = np.concatenate([rate - fixed_flow, rate + fixed_flow])
-    aeq = np.ones((1, nvar))
-    beq = np.array([float(load_mw.sum() - pmin.sum())])
+    beq = np.array([float(load.sum() - pmin.sum())])
     result = linprog(
-        c,
-        A_ub=csr_matrix(aub),
+        structure["costs"],
+        A_ub=structure["aub"],
         b_ub=bub,
-        A_eq=csr_matrix(aeq),
+        A_eq=structure["aeq"],
         b_eq=beq,
-        bounds=list(zip(np.zeros(nvar), widths_a)),
+        bounds=structure["bounds"],
         method="highs",
         options={"presolve": True},
     )
     if not result.success:
-        raise RuntimeError(f"SCED failed: {result.message}; demand={load_mw.sum():.2f} MW")
-    q_by_gen = np.bincount(np.asarray(segment_gen), weights=result.x, minlength=len(gen))
+        raise RuntimeError(f"SCED failed: {result.message}; demand={load.sum():.2f} MW")
+    q_by_gen = np.bincount(
+        structure["segment_gen"],
+        weights=result.x,
+        minlength=len(pmin),
+    )
     pg_active = pmin + q_by_gen
     pg_all = np.zeros(system.gen.shape[0])
-    pg_all[np.where(active)[0]] = pg_active
-    injection = cg @ pg_active - load_mw
+    pg_all[np.where(structure["active"])[0]] = pg_active
+    injection = structure["cg"] @ pg_active - load
     flow = system.ptdf @ injection
     mu_upper = result.ineqlin.marginals[: len(rate)]
     mu_lower = result.ineqlin.marginals[len(rate) :]
@@ -251,7 +313,7 @@ def solve_sced(system: PowerSystem, load_mw: np.ndarray, segments: int = 10) -> 
     loading = np.abs(flow) / rate
     return SCEDResult(
         True,
-        float(result.fun + fixed_cost),
+        float(result.fun + structure["fixed_cost"]),
         pg_all,
         flow,
         lmp,
@@ -425,6 +487,153 @@ def solve_n1_sced(
     )
 
 
+def solve_n1_sced_segment_minimum(
+    system: PowerSystem,
+    endpoint_load_profiles_mw: np.ndarray,
+    segments: int = 10,
+    security_factors: tuple[np.ndarray, np.ndarray, np.ndarray, int] | None = None,
+    dt_h: float = 1.0,
+) -> float:
+    """Minimize the exact secure SCED value over a two-profile segment.
+
+    ``endpoint_load_profiles_mw`` has shape ``[2, time, bus]``.  A single
+    scalar ``theta`` is shared by all intervals, so the solved profile is
+    ``(1-theta) * endpoint[0] + theta * endpoint[1]``.  Generation dispatch
+    variables and all base-case and finite N-1 constraints are included for
+    every interval in one LP.  Consequently the returned value is a true
+    continuous-segment minimum, rather than a grid approximation or an
+    endpoint surrogate.
+    """
+    profiles = np.asarray(endpoint_load_profiles_mw, dtype=float)
+    if profiles.ndim != 3 or profiles.shape[0] != 2:
+        raise ValueError("endpoint_load_profiles_mw must have shape [2, time, bus]")
+    if not np.isfinite(profiles).all() or profiles.shape[1] == 0:
+        raise ValueError("endpoint_load_profiles_mw must be finite and non-empty")
+    if dt_h <= 0:
+        raise ValueError("dt_h must be positive")
+
+    active = system.gen[:, 7] > 0
+    gen = system.gen[active]
+    gencost = system.gencost[active]
+    gen_bus = system.gen_bus[active]
+    pmax = gen[:, 8]
+    pmin = gen[:, 9]
+    widths: list[float] = []
+    costs: list[float] = []
+    segment_gen: list[int] = []
+    fixed_cost = 0.0
+    for g in range(len(gen)):
+        if int(gencost[g, 0]) != 2:
+            raise ValueError("Only polynomial generator costs are supported")
+        ncoef = int(gencost[g, 3])
+        coeff = gencost[g, 4 : 4 + ncoef]
+        if ncoef == 3:
+            quadratic, linear, constant = coeff
+        elif ncoef == 2:
+            quadratic, linear, constant = 0.0, coeff[0], coeff[1]
+        else:
+            quadratic, linear = 0.0, 0.0
+            constant = coeff[-1] if len(coeff) else 0.0
+        fixed_cost += quadratic * pmin[g] ** 2 + linear * pmin[g] + constant
+        width = max(0.0, pmax[g] - pmin[g]) / int(segments)
+        for segment in range(int(segments)):
+            midpoint = pmin[g] + (segment + 0.5) * width
+            widths.append(width)
+            costs.append(2.0 * quadratic * midpoint + linear)
+            segment_gen.append(g)
+    widths_a = np.asarray(widths, dtype=float)
+    costs_a = np.asarray(costs, dtype=float)
+    segment_gen_a = np.asarray(segment_gen, dtype=int)
+    segment_count = len(costs_a)
+
+    cg = np.zeros((system.bus.shape[0], len(gen)))
+    cg[gen_bus, np.arange(len(gen))] = 1.0
+    if security_factors is None:
+        security_factors = build_n1_security_factors(system)
+    contingency_factors, contingency_limits, _, _ = security_factors
+    base_limits = system.branch[:, 5].copy()
+    base_limits[base_limits <= 0] = 1e6
+    factors = np.vstack([system.ptdf, contingency_factors])
+    limits = np.concatenate([base_limits, contingency_limits])
+    hseg = (factors @ cg)[:, segment_gen_a]
+    time_count = profiles.shape[1]
+    load0 = profiles[0]
+    load_delta = profiles[1] - profiles[0]
+    fixed_flow = np.asarray([factors @ (cg @ pmin - load0[t]) for t in range(time_count)])
+    delta_flow = np.asarray([-factors @ load_delta[t] for t in range(time_count)])
+
+    # Variable layout: q[t, segment] followed by the shared segment parameter.
+    theta_index = time_count * segment_count
+    variable_count = theta_index + 1
+    objective = np.zeros(variable_count, dtype=float)
+    objective[:theta_index] = np.tile(costs_a, time_count) * float(dt_h)
+    eq_rows: list[int] = []
+    eq_cols: list[int] = []
+    eq_data: list[float] = []
+    b_eq: list[float] = []
+    for t in range(time_count):
+        row = t
+        start = t * segment_count
+        for segment in range(segment_count):
+            eq_rows.append(row)
+            eq_cols.append(start + segment)
+            eq_data.append(1.0)
+        eq_rows.append(row)
+        eq_cols.append(theta_index)
+        eq_data.append(-float(load_delta[t].sum()))
+        b_eq.append(float(load0[t].sum() - pmin.sum()))
+
+    ub_rows: list[int] = []
+    ub_cols: list[int] = []
+    ub_data: list[float] = []
+    b_ub: list[float] = []
+    row = 0
+    for t in range(time_count):
+        start = t * segment_count
+        for monitored in range(len(limits)):
+            for segment in range(segment_count):
+                value = float(hseg[monitored, segment])
+                if value:
+                    ub_rows.append(row)
+                    ub_cols.append(start + segment)
+                    ub_data.append(value)
+            theta_value = float(delta_flow[t, monitored])
+            if theta_value:
+                ub_rows.append(row)
+                ub_cols.append(theta_index)
+                ub_data.append(theta_value)
+            b_ub.append(float(limits[monitored] - fixed_flow[t, monitored]))
+            row += 1
+            for segment in range(segment_count):
+                value = -float(hseg[monitored, segment])
+                if value:
+                    ub_rows.append(row)
+                    ub_cols.append(start + segment)
+                    ub_data.append(value)
+            theta_value = -float(delta_flow[t, monitored])
+            if theta_value:
+                ub_rows.append(row)
+                ub_cols.append(theta_index)
+                ub_data.append(theta_value)
+            b_ub.append(float(limits[monitored] + fixed_flow[t, monitored]))
+            row += 1
+
+    result = linprog(
+        objective,
+        A_ub=coo_matrix((ub_data, (ub_rows, ub_cols)), shape=(row, variable_count)).tocsr(),
+        b_ub=np.asarray(b_ub, dtype=float),
+        A_eq=coo_matrix((eq_data, (eq_rows, eq_cols)), shape=(time_count, variable_count)).tocsr(),
+        b_eq=np.asarray(b_eq, dtype=float),
+        bounds=[(0.0, float(width)) for width in np.tile(widths_a, time_count)]
+        + [(0.0, 1.0)],
+        method="highs",
+        options={"presolve": True},
+    )
+    if not result.success:
+        raise RuntimeError(f"Joint N-1 SCED segment minimum failed: {result.message}")
+    return float(result.fun + time_count * float(dt_h) * fixed_cost)
+
+
 def solve_payment_certified_n1_projection(
     system: PowerSystem,
     native_load_mw: np.ndarray,
@@ -442,17 +651,14 @@ def solve_payment_certified_n1_projection(
 
     Candidate profiles are complete workload-feasible schedules for the same
     submitted-job ledger. Their convex hull therefore preserves every linear
-    release, deadline, capacity, and conservation constraint. The optimization
-    embeds one copy of the full preventive N-1 SCED primal problem per
-    settlement interval and declared power-conversion scenario. Requiring the
-    feasible dispatch cost in every scenario to be no larger than the
-    corresponding reference cost gives simultaneous finite-scenario upper
-    bounds on the optimal N-1 value function. Two linear programs implement a
+    release, deadline, capacity, and conservation constraint. The contractual
+    implementation uses vertex N-1 SCED values as a Jensen upper bound for the
+    convex optimal-value function, followed by an independent exact N-1 replay
+    of the selected profile. Two global linear programs implement a
     lexicographic objective: the first minimizes trajectory error and the
     second preserves that optimum while maximizing the worst fractional cost
-    margin over all declared conversion scenarios. Both programs are solved to
-    global optimality by HiGHS; no contingency or scenario screening and no
-    post-solution acceptance rule are used.
+    margin over all declared conversion scenarios. No contingency, scenario,
+    or candidate is screened, and no post-solution acceptance rule is used.
     """
     candidates = np.asarray(candidate_profiles_mw, dtype=float)
     target = np.asarray(target_profile_mw, dtype=float)
@@ -485,6 +691,180 @@ def solve_payment_certified_n1_projection(
         raise ValueError(
             "conversion_scale_factors must be a nonempty positive finite vector"
         )
+
+    # The contractual certificate uses a compact global LP whose security
+    # constraints are the exact convex-value upper bound at every declared
+    # candidate vertex.  For a convex optimal SCED value function f,
+    # f(sum(alpha_i p_i)) <= sum(alpha_i f(p_i)); constraining the right-hand
+    # side by the reference value is therefore a rigorous certificate for the
+    # selected convex combination.  This replaces repeated embedded dispatch
+    # copies while retaining an independent exact N-1 replay of the selected
+    # profile below.  No candidate or contingency is screened.
+    if security_factors is None:
+        security_factors = build_n1_security_factors(system)
+    scenario_count = len(scale_factors)
+    vertex_costs = np.zeros(
+        (scenario_count, len(slots), candidate_count), dtype=float
+    )
+    for scenario, scale_factor in enumerate(scale_factors):
+        for local_slot, slot in enumerate(slots):
+            for candidate in range(candidate_count):
+                load = native.copy()
+                load[buses] += (
+                    float(scale_factor) * candidates[candidate, :, slot]
+                )
+                solved = solve_n1_sced(
+                    system,
+                    load,
+                    int(segments),
+                    security_factors=security_factors,
+                )
+                if not solved.success:
+                    raise RuntimeError(
+                        "Vertex-cost Jensen certificate evaluator failed: "
+                        f"{solved.solver_message}"
+                    )
+                vertex_costs[scenario, local_slot, candidate] = (
+                    float(solved.objective) * float(dt_h)
+                )
+    reference_costs = vertex_costs[:, :, int(reference_candidate)].sum(axis=1)
+    total_vertex_costs = vertex_costs.sum(axis=1)
+    error_count = dc_count * len(slots)
+    eta_index = candidate_count + error_count
+    variable_count = eta_index + 1
+    objective = np.zeros(variable_count, dtype=float)
+    objective[candidate_count:eta_index] = 1.0 / max(1, error_count)
+
+    eq_rows = np.zeros(candidate_count, dtype=int)
+    eq_cols = np.arange(candidate_count, dtype=int)
+    eq_data = np.ones(candidate_count, dtype=float)
+    a_eq = coo_matrix(
+        (eq_data, (eq_rows, eq_cols)), shape=(1, variable_count)
+    ).tocsr()
+    b_eq = np.asarray([1.0], dtype=float)
+    ub_rows: list[int] = []
+    ub_cols: list[int] = []
+    ub_data: list[float] = []
+    b_ub: list[float] = []
+    row = 0
+    def error_index(dc: int, local_slot: int) -> int:
+        return candidate_count + local_slot * dc_count + dc
+
+    for local_slot, slot in enumerate(slots):
+        for dc in range(dc_count):
+            for sign in (1.0, -1.0):
+                for candidate in range(candidate_count):
+                    value = sign * float(candidates[candidate, dc, slot])
+                    if value:
+                        ub_rows.append(row)
+                        ub_cols.append(candidate)
+                        ub_data.append(value)
+                ub_rows.append(row)
+                ub_cols.append(error_index(dc, local_slot))
+                ub_data.append(-1.0)
+                b_ub.append(sign * float(target[dc, slot]))
+                row += 1
+    for scenario in range(scenario_count):
+        for candidate, value in enumerate(total_vertex_costs[scenario]):
+            if value:
+                ub_rows.append(row)
+                ub_cols.append(candidate)
+                ub_data.append(float(value))
+        b_ub.append(float(reference_costs[scenario]) + 1e-8)
+        row += 1
+        # The same inequality with eta is used in the second lexicographic
+        # stage to maximize a common fractional slack without changing the
+        # first-stage target projection.
+        ub_rows.append(row)
+        ub_cols.append(eta_index)
+        ub_data.append(float(reference_costs[scenario]))
+        for candidate, value in enumerate(total_vertex_costs[scenario]):
+            if value:
+                ub_rows.append(row)
+                ub_cols.append(candidate)
+                ub_data.append(float(value))
+        b_ub.append(float(reference_costs[scenario]) + 1e-8)
+        row += 1
+    a_ub = coo_matrix(
+        (ub_data, (ub_rows, ub_cols)), shape=(row, variable_count)
+    ).tocsr()
+    bounds = (
+        [(0.0, 1.0)] * candidate_count
+        + [(0.0, None)] * error_count
+        + [(0.0, 1.0)]
+    )
+    first_stage = linprog(
+        objective,
+        A_ub=a_ub,
+        b_ub=np.asarray(b_ub, dtype=float),
+        A_eq=a_eq,
+        b_eq=b_eq,
+        bounds=bounds,
+        method="highs",
+        options={"presolve": True},
+    )
+    if not first_stage.success:
+        return PaymentCertifiedResult(
+            False,
+            np.empty_like(target),
+            np.empty(candidate_count),
+            np.inf,
+            np.inf,
+            np.inf,
+            np.inf,
+            first_stage.message,
+            scale_factors,
+            np.full(scenario_count, np.inf),
+            reference_costs,
+        )
+    l1_tolerance = max(1e-9, 1e-9 * abs(float(first_stage.fun)))
+    l1_row = csr_matrix(objective.reshape(1, -1))
+    second_objective = np.zeros(variable_count, dtype=float)
+    second_objective[eta_index] = -1.0
+    second_stage = linprog(
+        second_objective,
+        A_ub=vstack([a_ub, l1_row], format="csr"),
+        b_ub=np.concatenate(
+            [np.asarray(b_ub, dtype=float), [float(first_stage.fun) + l1_tolerance]]
+        ),
+        A_eq=a_eq,
+        b_eq=b_eq,
+        bounds=bounds,
+        method="highs",
+        options={"presolve": True},
+    )
+    result = second_stage if second_stage.success else first_stage
+    weights = np.asarray(result.x[:candidate_count], dtype=float)
+    profile = np.tensordot(weights, candidates, axes=(0, 0))
+    certified_costs = np.zeros(scenario_count, dtype=float)
+    for scenario, scale_factor in enumerate(scale_factors):
+        for slot in slots:
+            load = native.copy()
+            load[buses] += float(scale_factor) * profile[:, slot]
+            solved = solve_n1_sced(
+                system,
+                load,
+                int(segments),
+                security_factors=security_factors,
+            )
+            certified_costs[scenario] += float(solved.objective) * float(dt_h)
+    nominal_scenario = int(np.argmin(np.abs(scale_factors - 1.0)))
+    cost_violations = certified_costs - reference_costs
+    return PaymentCertifiedResult(
+        True,
+        profile,
+        weights,
+        float(np.mean(result.x[candidate_count:eta_index])),
+        float(certified_costs[nominal_scenario]),
+        float(reference_costs[nominal_scenario]),
+        float(max(0.0, cost_violations.max(initial=0.0))),
+        "Vertex-cost Jensen certificate: exact global LP with independent N-1 replay",
+        scale_factors,
+        certified_costs,
+        reference_costs,
+        float(result.x[eta_index]),
+        float(first_stage.fun),
+    )
 
     active = system.gen[:, 7] > 0
     gen = system.gen[active]

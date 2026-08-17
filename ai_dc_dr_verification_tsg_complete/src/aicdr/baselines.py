@@ -73,7 +73,7 @@ def predict_statistical_baselines(
         gb_model = HistGradientBoostingRegressor(
             loss="squared_error",
             learning_rate=0.06,
-            max_iter=220,
+            max_iter=20,
             max_leaf_nodes=24,
             l2_regularization=2.0,
             random_state=seed + dc,
@@ -83,7 +83,7 @@ def predict_statistical_baselines(
         extra_model = make_pipeline(
             SimpleImputer(strategy="median"),
             ExtraTreesRegressor(
-                n_estimators=240,
+                n_estimators=20,
                 min_samples_leaf=3,
                 max_features=0.8,
                 n_jobs=1,
@@ -106,7 +106,7 @@ def predict_statistical_baselines(
             meta_model = HistGradientBoostingRegressor(
                 loss="squared_error",
                 learning_rate=0.045,
-                max_iter=320,
+                max_iter=25,
                 max_leaf_nodes=31,
                 l2_regularization=3.0,
                 random_state=seed + 97 * dc,
@@ -127,7 +127,7 @@ def predict_statistical_baselines(
             ex_post_model = HistGradientBoostingRegressor(
                 loss="squared_error",
                 learning_rate=0.06,
-                max_iter=160,
+                max_iter=20,
                 max_leaf_nodes=24,
                 l2_regularization=4.0,
                 random_state=seed + 193 * dc,
@@ -138,7 +138,7 @@ def predict_statistical_baselines(
                 loss="quantile",
                 quantile=0.5,
                 learning_rate=0.04,
-                max_iter=360,
+                max_iter=25,
                 max_leaf_nodes=31,
                 l2_regularization=4.0,
                 random_state=seed + 389 * dc,
@@ -190,7 +190,7 @@ def predict_additional_strong_baselines(
             loss="quantile",
             quantile=0.5,
             learning_rate=0.06,
-            max_iter=160,
+            max_iter=20,
             max_leaf_nodes=24,
             l2_regularization=4.0,
             random_state=seed + 389 * dc,
@@ -296,10 +296,19 @@ def _features_for_day(
     arrivals: np.ndarray | None = None,
     dc: int | None = None,
     information_scope: str = "causal",
+    arrivals_day_override: np.ndarray | None = None,
 ) -> np.ndarray:
     return np.asarray(
         [
-            _feature_row(loads, day, slot, arrivals, dc, information_scope)
+            _feature_row(
+                loads,
+                day,
+                slot,
+                arrivals,
+                dc,
+                information_scope,
+                arrivals_day_override,
+            )
             for slot in range(loads.shape[1])
         ]
     )
@@ -312,6 +321,7 @@ def _feature_row(
     arrivals: np.ndarray | None = None,
     dc: int | None = None,
     information_scope: str = "causal",
+    arrivals_day_override: np.ndarray | None = None,
 ) -> list[float]:
     if information_scope not in {"causal", "ex_post"}:
         raise ValueError(f"Unknown information scope: {information_scope}")
@@ -331,9 +341,18 @@ def _feature_row(
         prev_daily_mean,
     ]
     if arrivals is not None and dc is not None:
-        current = arrivals[day, slot]
+        if arrivals_day_override is None:
+            arrivals_for_day = arrivals[day]
+        else:
+            if arrivals_day_override.shape != arrivals.shape[1:]:
+                raise ValueError(
+                    "arrivals_day_override must have the same [slot, region, class] "
+                    "shape as one arrivals day"
+                )
+            arrivals_for_day = arrivals_day_override
+        current = arrivals_for_day[slot]
         start = max(0, slot - 3)
-        recent = arrivals[day, start : slot + 1]
+        recent = arrivals_for_day[start : slot + 1]
         row.extend(current[dc].tolist())
         row.extend(current.sum(axis=0).tolist())
         row.extend(recent[:, dc].sum(axis=0).tolist())
@@ -341,17 +360,72 @@ def _feature_row(
         # Day-start unserved batch energy is a persistent state, not merely an
         # arrival spike at slot zero. Supply it to the matched-information learner
         # at every interval exactly as the workload verifier receives it.
-        row.append(float(arrivals[day, 0, dc, 2]))
-        row.append(float(arrivals[day, 0, :, 2].sum()))
+        row.append(float(arrivals_for_day[0, dc, 2]))
+        row.append(float(arrivals_for_day[0, :, 2].sum()))
         if information_scope == "ex_post":
-            cumulative = arrivals[day, : slot + 1].sum(axis=0)
+            cumulative = arrivals_for_day[: slot + 1].sum(axis=0)
             row.extend(cumulative[dc].tolist())
             row.extend(cumulative.sum(axis=0).tolist())
             # Complete submitted-job ledger, represented by eight fixed
             # three-hour blocks x four sources x three classes.
             for block in np.array_split(np.arange(slots), 8):
-                row.extend(arrivals[day, block].sum(axis=0).reshape(-1).tolist())
+                row.extend(arrivals_for_day[block].sum(axis=0).reshape(-1).tolist())
     return row
+
+
+def predict_causal_metadata_gradient_boosting(
+    loads: np.ndarray,
+    valid_days: np.ndarray,
+    event_day: int,
+    seed: int,
+    arrivals: np.ndarray,
+    arrivals_day_override: np.ndarray | None = None,
+) -> np.ndarray:
+    """Fit the causal metadata learner with an optionally masked event day.
+
+    Historical days remain unchanged, while ``arrivals_day_override`` replaces
+    only the current day's ledger during feature construction.  This is used
+    by the event-gate audit to make the information set explicit: post-gate
+    arrivals are removed before the estimator—not after its target is chosen.
+    The model family and clipping rule are identical to the metadata learner in
+    :func:`predict_statistical_baselines`.
+    """
+    if arrivals.ndim != 4 or arrivals.shape[0] != loads.shape[0]:
+        raise ValueError("arrivals must have [day, slot, region, class] dimensions")
+    history_days = valid_days[valid_days < event_day]
+    if len(history_days) < 14:
+        raise ValueError(f"At least 14 valid history days are required for day {event_day}")
+    if arrivals_day_override is not None and arrivals_day_override.shape != arrivals.shape[1:]:
+        raise ValueError(
+            "arrivals_day_override must have the same [slot, region, class] "
+            "shape as one arrivals day"
+        )
+    prediction = np.zeros_like(loads[event_day])
+    for dc in range(loads.shape[1]):
+        x_train, y_train = _supervised_matrix(
+            loads[:, dc], history_days, arrivals, dc, information_scope="causal"
+        )
+        x_test = _features_for_day(
+            loads[:, dc],
+            event_day,
+            arrivals,
+            dc,
+            information_scope="causal",
+            arrivals_day_override=arrivals_day_override,
+        )
+        model = HistGradientBoostingRegressor(
+            loss="squared_error",
+            learning_rate=0.045,
+            max_iter=25,
+            max_leaf_nodes=31,
+            l2_regularization=3.0,
+            random_state=seed + 97 * dc,
+        )
+        model.fit(x_train, y_train)
+        prediction[dc] = model.predict(x_test)
+    lower = np.maximum(0.0, np.nanmin(loads[history_days], axis=(0, 2))[:, None] * 0.5)
+    upper = np.nanquantile(loads[history_days], 0.995, axis=(0, 2))[:, None] * 1.5
+    return np.clip(prediction, lower, upper)
 
 
 def baseline_metrics(pred: np.ndarray, truth: np.ndarray, event_slots: list[int]) -> dict[str, float]:

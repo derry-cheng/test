@@ -35,8 +35,11 @@
     "interval_hours": 0.25,
     "observed_profile_slots": 11616,
     "configured_capacity_mw": 118.0,
-    "maximum_observed_peak_mw": 117.9357791795629,
-    "maximum_peak_to_configured_capacity_ratio": 0.9994557557590076,
-    "capacity_rows_are_observed_execution_envelope": true
+    "batch_scale_to_benchmark_envelope": 15350.071019866877,
+    "maximum_raw_execution_peak_mw": 0.006685220843592108,
+    "maximum_scaled_benchmark_peak_mw": 102.6186147326332,
+    "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.8696492773951966,
+    "capacity_rows_are_scaled_benchmark_envelope": true,
+    "raw_execution_is_unscaled_source_measurement": true
   }
 }

@@ -1,5 +1,5 @@
 endpoint,method,conversion_scale_factor,mean_margin_usd,minimum_margin_usd,maximum_payment_cap_violation_usd,locked_day_count
-q01,Payment-Certified N-1 Verifier,0.5844748596130233,0.5455432232667119,0.0,0.0,54
+q01,Payment-Certified N-1 Verifier,0.5844748596130233,13.947661646532113,-1.4842953532934189e-09,1.4842953532934189e-09,54
 q01,Selected Single Feasible Projection,0.5844748596130233,0.0,0.0,0.0,54
-q99,Payment-Certified N-1 Verifier,2.6930887095833507,4.065187647912319,-1.669104676693678e-08,1.669104676693678e-08,54
-q99,Selected Single Feasible Projection,2.6930887095833507,0.0,0.0,0.0,54
+q99-cap,Payment-Certified N-1 Verifier,1.1498888413904444,27.21030088736195,-2.8958311304450035e-09,2.8958311304450035e-09,54
+q99-cap,Selected Single Feasible Projection,1.1498888413904444,0.0,0.0,0.0,54

@@ -1,5 +1,5 @@
 baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,net_system_response_mwh
-Aggregator-coordination workload schedule,zhang2024aggregator,event_response,54,0.5518133640748212,0.0,0.0,0.0
-Incentive-compatible spatial DR LP,chen2021incentive,strategic_reference,54,2.108404299526114,89.84636716692224,0.2057946008224112,53.16721842490219
-Price-responsive non-wire workload LP,cao2022flexibility,honest_operator_schedule,54,0.3609149511081032,2.318623543943854,0.4438580565474876,0.1929587672281969
-Proactive workload-shift projection,zhang2023receding,single_feasible_projection,54,0.3497844688620764,1.9568362301773192,0.4849542024434167,0.34241830417472
+Aggregator-coordination workload schedule,zhang2024aggregator,event_response,54,0.5174138327202691,0.0,0.0,0.0
+Incentive-compatible spatial DR LP,chen2021incentive,strategic_reference,54,3.0634543555100247,114.57246924101875,0.13735542037609508,85.84699333699284
+Price-responsive non-wire workload LP,cao2022flexibility,honest_operator_schedule,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,0.09750714120635863
+Proactive workload-shift projection,zhang2023receding,single_feasible_projection,54,0.34520898049151033,1.8492111356968033,0.44155765212298137,0.2811930906640722

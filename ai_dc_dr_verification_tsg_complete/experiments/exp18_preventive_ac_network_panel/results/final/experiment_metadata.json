@@ -24,7 +24,7 @@
     "IEEE 39-bus": 31,
     "IEEE 118-bus": 177
   },
-  "validation_trace_peak_mw": 290.45287693813873,
+  "validation_trace_peak_mw": 252.92852185302465,
   "load_multiplier": 0.55,
   "power_factor": 0.95,
   "all_declared_ac_admissible_nonislanding_outages_evaluated": true,

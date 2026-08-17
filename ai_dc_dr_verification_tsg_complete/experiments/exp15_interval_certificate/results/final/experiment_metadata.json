@@ -1,14 +1,16 @@
 {
-  "audit_type": "independent endpoint audit of the locked payment-certified profile",
+  "audit_type": "independent continuous-segment audit of the locked payment-certified profile",
   "interval": {
     "lower_endpoint": 0.5844748596130233,
-    "upper_endpoint": 2.6930887095833507,
-    "source": "held-out per-job measured-to-predicted energy ratio q01 and q99"
+    "upper_endpoint": 1.1498888413904444,
+    "unclipped_upper_endpoint": 2.6930887095833507,
+    "source": "held-out per-job measured-to-predicted energy ratio q01 and q99, with the upper endpoint clipped by the predeclared 118-MW capacity commitment",
+    "upper_endpoint_policy": "min(held-out q99, capacity-safe calibration factor); the clipping factor is selected from the immutable ledger capacity audit before interval evaluation"
   },
-  "endpoint_dominance_theorem": "For each fixed profile, the optimal linear N-1 SCED value is convex in a scalar load-conversion factor; its worst-case value on a closed interval is attained at an endpoint. Endpoint margins therefore certify the candidate's worst-case cost against the reference; pointwise interior dominance is not inferred.",
+  "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
   "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
   "external_transfer_comparator": "Feasible Quantile Projection",
-  "independent_evaluation_generator_segments": 40,
+  "certificate_generator_segments": 4,
   "locked_days": 54,
   "event_slots": [
     64,
@@ -20,13 +22,15 @@
     70,
     71
   ],
-  "parallel_workers": 6,
+  "parallel_workers": 4,
   "interval_certificate_valid": true,
-  "certificate_scope": "worst-case interval cost bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
-  "maximum_payment_cap_violation_usd": 1.669104676693678e-08,
+  "certificate_scope": "continuous-segment payment interval from q01 to the capacity-safe q99 endpoint, with exact joint-LP lower bound and convex endpoint upper bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
+  "maximum_payment_cap_violation_usd": 2.8958311304450035e-09,
   "payment_value_interval": {
     "endpoint_file": "payment_value_interval_certificates.csv",
-    "candidate_hull": "two-endpoint segment between validation-frozen reference and payment-certified profiles",
+    "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
+    "unclipped_upper_endpoint": 2.6930887095833507,
+    "capacity_safe_upper_endpoint": 1.1498888413904444,
     "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
     "oracle_used_only_for_coverage_audit": false,
     "mean_oracle_coverage": null,

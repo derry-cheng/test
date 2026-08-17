@@ -24,7 +24,7 @@
   "settlement_generator_segments": 10,
   "independent_evaluation_generator_segments": 80,
   "enumeration": "all 4! mappings crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
-  "profile_checksum": "00b2b6810c5517a4a50571c6722543ec3034b4cb01a6ee7bfd452bd8e286487e",
+  "profile_checksum": "cb9f1901d28f3a3d7d43c9a755b9b9a91086df67c7ac481852e4e722f5541b72",
   "expected_rows": 15552,
   "parallel_workers": 9
 }

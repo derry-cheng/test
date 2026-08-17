@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from csv import DictReader
 from tempfile import TemporaryDirectory
@@ -56,6 +57,21 @@ def test_observational_replay_covers_every_locked_day_and_slot() -> None:
     assert metadata["trace_coverage"].startswith("100 percent")
 
 
+def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
+    folder = ROOT / "experiments/exp17_decision_time_information/results/final"
+    metadata = json.loads(
+        (folder / "experiment_metadata.json").read_text(encoding="utf-8")
+    )
+    assert metadata["target_future_arrivals_used_for_decision"] is False
+    assert "post-gate arrivals masked" in metadata["target_source"]
+    comparison = pd.read_csv(folder / "decision_time_comparison.csv")
+    assert set(comparison["schema_version"].astype(int)) == {4}
+    assert not comparison.loc[
+        comparison["method"] == "Decision-time truncated-ledger verifier",
+        "future_arrivals_used_for_decision",
+    ].any()
+
+
 def test_job_level_flow_certificate_has_machine_precision_residuals() -> None:
     folder = ROOT / "experiments/exp14_job_level_fidelity/results/final"
     summary = np.genfromtxt(folder / "job_level_fidelity_summary.csv", delimiter=",", names=True, dtype=None, encoding="utf-8")
@@ -70,7 +86,7 @@ def test_interval_endpoint_audit_is_complete_and_within_solver_tolerance() -> No
     folder = ROOT / "experiments/exp15_interval_certificate/results/final"
     rows = np.genfromtxt(folder / "interval_endpoint_certificates.csv", delimiter=",", names=True, dtype=None, encoding="utf-8")
     assert len(rows) == 216
-    assert set(rows["endpoint"]) == {"q01", "q99"}
+    assert set(rows["endpoint"]) == {"q01", "q99-cap"}
     assert set(rows["method"]) == {"Selected Single Feasible Projection", "Payment-Certified N-1 Verifier"}
     metadata = json.loads((folder / "experiment_metadata.json").read_text(encoding="utf-8"))
     assert metadata["interval_certificate_valid"] is True
@@ -80,6 +96,10 @@ def test_interval_endpoint_audit_is_complete_and_within_solver_tolerance() -> No
     interval = pd.read_csv(folder / "payment_value_interval_certificates.csv")
     assert len(interval) == 54 * 2
     assert set(interval["candidate_hull_vertices"]) == {2}
+    assert np.all(
+        interval["continuous_segment_minimum_baseline_cost_usd"]
+        <= interval["hull_baseline_cost_min_usd"] + 1e-6
+    )
     assert np.all(interval["payment_interval_width_usd"] >= -1e-8)
     assert interval["oracle_inside_interval"].isna().all()
 
@@ -142,7 +162,7 @@ def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
     assert not str(certificate["source_files"]["dcgm"]).startswith("/")
     assert len(certificate["canonical_joined_ledger_sha256"]) == 64
     assert abs(float(certificate["raw_to_join_energy_residual_j"])) <= 1e-6
-    assert np.all(capacity["observed_peak_mw"] <= 118.0 + 1e-8)
+    assert np.all(capacity["scaled_benchmark_peak_mw"] <= 118.0 + 1e-8)
     calibration = np.genfromtxt(
         folder / "workload_power_calibration_sensitivity.csv",
         delimiter=",",
@@ -295,6 +315,39 @@ def test_preprocessing_fails_closed_on_raw_manifest_mismatch() -> None:
             assert "input.csv" in message
         else:
             raise AssertionError("mismatched raw input was accepted")
+
+
+def test_preprocessing_rejects_undeclared_raw_manifest_path() -> None:
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        declared = root / "data/raw/declared.csv"
+        undeclared = root / "data/raw/undeclared.csv"
+        declared.parent.mkdir(parents=True)
+        declared.write_bytes(b"declared input\n")
+        undeclared.write_bytes(b"another input\n")
+        manifest = root / "data/processed/data_manifest.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(
+            json.dumps(
+                {
+                    "sources": [
+                        {
+                            "path": "data/raw/declared.csv",
+                            "bytes": declared.stat().st_size,
+                            "sha256": hashlib.sha256(declared.read_bytes()).hexdigest(),
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        try:
+            _validate_declared_raw_sources(root, manifest, [declared, undeclared])
+        except RuntimeError as exc:
+            assert "not declared in locked manifest" in str(exc)
+            assert "undeclared.csv" in str(exc)
+        else:
+            raise AssertionError("undeclared raw input was accepted")
 
 
 def test_workload_lp_conserves_energy_and_capacity() -> None:

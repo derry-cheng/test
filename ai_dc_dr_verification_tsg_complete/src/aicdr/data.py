@@ -64,8 +64,20 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
     q = float(cfg["data"]["percentile_for_scaling"])
     inf_raw_power = inference.sum(axis=(1, 2)) / dt_h
     batch_raw_power = batch_observed.sum(axis=1) / dt_h
-    positive_inf = inf_raw_power[inf_raw_power > 0]
-    positive_batch = batch_raw_power[batch_raw_power > 0]
+    day_index = np.arange(n_slots) // slots_per_day
+    slot_index = np.arange(n_slots) % slots_per_day
+    n_days = n_slots // slots_per_day
+    day_coverage = np.bincount(
+        day_index, weights=valid_slots.astype(float), minlength=int(day_index.max()) + 1
+    )
+    valid_days = np.where(day_coverage >= 0.95 * slots_per_day)[0]
+    scaling_fit_days = int(cfg["data"].get("scaling_fit_days", 40))
+    if scaling_fit_days <= 0:
+        raise ValueError("data.scaling_fit_days must be positive")
+    fit_days = valid_days[:scaling_fit_days]
+    fit_mask = np.isin(day_index, fit_days)
+    positive_inf = inf_raw_power[fit_mask & (inf_raw_power > 0)]
+    positive_batch = batch_raw_power[fit_mask & (batch_raw_power > 0)]
     if len(positive_inf) == 0 or len(positive_batch) == 0:
         raise RuntimeError("Real workload aggregation produced no positive observations")
     inf_scale = float(cfg["data"]["inference_peak_target_mw"] / np.quantile(positive_inf, q))
@@ -81,16 +93,11 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
     observed_energy[:, :, :2] = inference
     observed_energy[:, :, 2] = batch_observed
     observed_power = float(cfg["project"]["fixed_facility_load_mw"]) + observed_energy.sum(axis=2) / dt_h
-    day_index = np.arange(n_slots) // slots_per_day
-    slot_index = np.arange(n_slots) % slots_per_day
     batch_balance = np.cumsum(batch_arrivals - batch_observed, axis=0)
     batch_balance = np.maximum(batch_balance, 0.0)
-    n_days = n_slots // slots_per_day
     initial_batch_backlog = np.zeros((n_days, n_regions), dtype=np.float64)
     for day in range(1, n_days):
         initial_batch_backlog[day] = batch_balance[day * slots_per_day - 1]
-    day_coverage = np.bincount(day_index, weights=valid_slots.astype(float), minlength=int(day_index.max()) + 1)
-    valid_days = np.where(day_coverage >= 0.95 * slots_per_day)[0]
 
     # A complete preprocessing pass can take several minutes.  Write the
     # compressed archive through an open file handle and atomically replace the
@@ -144,6 +151,9 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
             "inference_scale_mwh_per_token": inf_scale,
             "batch_hyperscale_multiplier": batch_scale,
             "scaling_quantile": q,
+            "scaling_fit_days": scaling_fit_days,
+            "scaling_fit_day_ids": fit_days.tolist(),
+            "scaling_scope": "first complete days before validation/test split; frozen before all downstream experiments",
             "valid_days": valid_days.tolist(),
             "missing_trace_days": sorted(set(range(int(day_index.max()) + 1)) - set(valid_days.tolist())),
             "total_arrival_mwh": float(arrivals.sum()),
@@ -231,6 +241,7 @@ def _validate_declared_raw_sources(
         relative = str(path.relative_to(root))
         source = expected.get(relative)
         if source is None:
+            mismatches.append(f"{relative}: not declared in locked manifest")
             continue
         if not path.exists():
             mismatches.append(f"{relative}: missing")
@@ -688,28 +699,41 @@ def audit_mit_ledger_provenance(
     execution_order = joined["time_start"] < joined["time_end"]
     dt_h = float(interval_minutes) / 60.0
     observed_batch = np.asarray(processed_workload["observed_energy_mwh"][:, :, 2], dtype=float)
+    batch_scale = float(np.asarray(processed_workload.get("batch_scale", 1.0)).reshape(-1)[0])
+    if not np.isfinite(batch_scale) or batch_scale <= 0:
+        raise ValueError("Processed batch_scale must be positive and finite")
     slots_per_day = int(processed_workload["observed_energy_mwh"].shape[0] // max(1, len(processed_workload.get("valid_days", []))))
     if slots_per_day <= 0:
         slots_per_day = 96
-    observed_power = observed_batch / dt_h
+    # The processed trace is deliberately scaled to the declared benchmark
+    # envelope.  Preserve the raw execution scale for provenance so the
+    # post-hoc reconciliation cannot be misread as a measured 118-MW utility
+    # peak.
+    scaled_benchmark_power = observed_batch / dt_h
+    raw_execution_power = scaled_benchmark_power / batch_scale
     capacity_rows: list[dict[str, Any]] = []
     for region in range(int(n_regions)):
-        values = observed_power[:, region]
+        scaled_values = scaled_benchmark_power[:, region]
+        raw_values = raw_execution_power[:, region]
         capacity_rows.append(
             {
                 "region": int(region),
                 "configured_flexible_capacity_mw": float(configured_capacity_mw),
-                "observed_p50_mw": float(np.quantile(values, 0.50)),
-                "observed_p95_mw": float(np.quantile(values, 0.95)),
-                "observed_p99_mw": float(np.quantile(values, 0.99)),
-                "observed_peak_mw": float(np.max(values)),
-                "capacity_excess_peak_mw": float(max(0.0, np.max(values) - configured_capacity_mw)),
-                "slots_above_configured_capacity": int(np.sum(values > configured_capacity_mw + 1e-9)),
-                "observed_slots": int(values.size),
+                "raw_execution_p50_mw": float(np.quantile(raw_values, 0.50)),
+                "raw_execution_p95_mw": float(np.quantile(raw_values, 0.95)),
+                "raw_execution_p99_mw": float(np.quantile(raw_values, 0.99)),
+                "raw_execution_peak_mw": float(np.max(raw_values)),
+                "scaled_benchmark_p50_mw": float(np.quantile(scaled_values, 0.50)),
+                "scaled_benchmark_p95_mw": float(np.quantile(scaled_values, 0.95)),
+                "scaled_benchmark_p99_mw": float(np.quantile(scaled_values, 0.99)),
+                "scaled_benchmark_peak_mw": float(np.max(scaled_values)),
+                "capacity_excess_peak_mw": float(max(0.0, np.max(scaled_values) - configured_capacity_mw)),
+                "slots_above_configured_capacity": int(np.sum(scaled_values > configured_capacity_mw + 1e-9)),
+                "observed_slots": int(scaled_values.size),
             }
         )
     capacity = pd.DataFrame(capacity_rows)
-    all_slots = int(observed_power.shape[0])
+    all_slots = int(scaled_benchmark_power.shape[0])
     summary: dict[str, Any] = {
         "certificate_type": "immutable scheduler/DCGM ledger provenance and capacity reconciliation",
         "source_files": {
@@ -751,11 +775,14 @@ def audit_mit_ledger_provenance(
             "interval_hours": dt_h,
             "observed_profile_slots": all_slots,
             "configured_capacity_mw": float(configured_capacity_mw),
-            "maximum_observed_peak_mw": float(capacity["observed_peak_mw"].max()),
-            "maximum_peak_to_configured_capacity_ratio": float(
-                capacity["observed_peak_mw"].max() / max(float(configured_capacity_mw), 1e-12)
+            "batch_scale_to_benchmark_envelope": batch_scale,
+            "maximum_raw_execution_peak_mw": float(capacity["raw_execution_peak_mw"].max()),
+            "maximum_scaled_benchmark_peak_mw": float(capacity["scaled_benchmark_peak_mw"].max()),
+            "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": float(
+                capacity["scaled_benchmark_peak_mw"].max() / max(float(configured_capacity_mw), 1e-12)
             ),
-            "capacity_rows_are_observed_execution_envelope": True,
+            "capacity_rows_are_scaled_benchmark_envelope": True,
+            "raw_execution_is_unscaled_source_measurement": True,
         },
     }
     return summary, capacity

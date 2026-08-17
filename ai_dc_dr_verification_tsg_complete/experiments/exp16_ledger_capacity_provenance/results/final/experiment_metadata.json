@@ -13,10 +13,11 @@
     "locked_test_observations_used_for_selection": false,
     "measured_envelope_is_reconciliation_only": true
   },
-  "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The observed per-region execution envelope is reported only as a post hoc reconciliation and is never used to tune a locked-day schedule.",
+  "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The raw MIT execution peak is reported separately from the scaled benchmark envelope used for the declared study scale; neither is used to tune a locked-day schedule.",
   "configured_capacity_mw": 118.0,
-  "maximum_observed_peak_mw": 117.9357791795629,
-  "maximum_peak_to_configured_capacity_ratio": 0.9994557557590076,
+  "maximum_raw_execution_peak_mw": 0.006685220843592108,
+  "maximum_scaled_benchmark_peak_mw": 102.6186147326332,
+  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.8696492773951966,
   "power_calibration_sensitivity": {
     "file": "workload_power_calibration_sensitivity.csv",
     "ratios": [

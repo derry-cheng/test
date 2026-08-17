@@ -499,9 +499,9 @@ def plot_exp16_ledger_capacity(
     displayed = capacity.copy()
     x = np.arange(len(displayed))
     width = 0.20
-    axes[2].bar(x - width, displayed["observed_p95_mw"], width, label="Observed P95", color=COLORS["sky"])
-    axes[2].bar(x, displayed["observed_p99_mw"], width, label="Observed P99", color=COLORS["orange"])
-    axes[2].bar(x + width, displayed["observed_peak_mw"], width, label="Observed peak", color=COLORS["red"])
+    axes[2].bar(x - width, displayed["scaled_benchmark_p95_mw"], width, label="Scaled benchmark P95", color=COLORS["sky"])
+    axes[2].bar(x, displayed["scaled_benchmark_p99_mw"], width, label="Scaled benchmark P99", color=COLORS["orange"])
+    axes[2].bar(x + width, displayed["scaled_benchmark_peak_mw"], width, label="Scaled benchmark peak", color=COLORS["red"])
     axes[2].axhline(
         float(displayed["configured_flexible_capacity_mw"].iloc[0]),
         color=COLORS["black"],
@@ -511,7 +511,7 @@ def plot_exp16_ledger_capacity(
     )
     axes[2].set_xticks(x, [f"Region {int(v)}" for v in displayed["region"]])
     axes[2].set_ylabel("Flexible power (MW)")
-    axes[2].set_title("(c) Measured capacity envelope")
+    axes[2].set_title("(c) Scaled benchmark envelope; raw replay reported separately")
     axes[2].legend(fontsize=7, loc="upper left")
     save_figure(fig, folder, "fig22_ledger_capacity_provenance")
 
@@ -1912,9 +1912,9 @@ def plot_exp17_decision_time(
         "Complete-ledger risk-constrained verifier",
     ]
     labels = {
-        order[0]: "Decision-time\ntruncated ledger",
-        order[1]: "Committed-ledger\nsafe mode",
-        order[2]: "Complete-ledger\nrisk verifier",
+        order[0]: "Gate-truncated\nledger",
+        order[1]: "Committed-safe\nmode",
+        order[2]: "Complete-ledger\nrisk",
     }
     summary["label"] = summary["method"].map(labels)
     summary["order"] = summary["method"].map({name: i for i, name in enumerate(order)})
@@ -1930,7 +1930,7 @@ def plot_exp17_decision_time(
         axis.bar(summary["label"], summary[metric], color=colors, edgecolor="white")
         axis.set_title(title)
         axis.set_ylabel(ylabel)
-        axis.tick_params(axis="x", rotation=0)
+        axis.tick_params(axis="x", rotation=0, labelsize=8.5)
         if metric == "credit_recall":
             axis.set_ylim(0.0, 1.0)
     save_figure(fig, folder, "fig23_decision_time_information")

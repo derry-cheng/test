@@ -7,5 +7,18 @@ __pycache__/
 *.swp
 manuscript/build_revision/
 manuscript/build_*_tmp/
+manuscript/*.aux
+manuscript/*.bbl
+manuscript/*.blg
+manuscript/*.log
+manuscript/*.out
 tmp/
 logs/full_run.log
+
+# The raw public releases are restored locally for reproduction but are not
+# committed to the source package.  Their sizes and SHA-256 digests are pinned
+# in data/processed/data_manifest.json and DATA.md.
+data/raw/**/*.csv
+
+# Atomic figure writers may leave a temporary file after an interrupted run.
+**/.[!.]*.tmp

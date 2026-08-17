@@ -168,15 +168,15 @@ Overall status: **PASS**.
 - [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.png: exists and non-empty
 - [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
 - [x] canonical_unified_manifest_preserved: 20/20 stages recorded; canonical request=all; audit status=completed
-- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4005x1189; fig23_decision_time_information.png=3808x1157; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4039x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4347x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
+- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=3813x1157; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4036x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4335x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
 - [x] model_formula_citation_traceability: 28/28 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
 - [x] maximum_two_sources_per_citation_group: 41 in-text citation groups checked
 - [x] complete_manuscript_bibliography: 32 verified bibliography entries; 32 unique in-text citations; uncited=[]; missing=[]
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68664
@@ -184,10 +184,10 @@ Overall status: **PASS**.
 - [x] heldout_power_conversion_scenarios_complete: 21,919 held-out jobs; measured-to-predicted energy factors=0.734154, 0.995724, 1.278023
 - [x] complete_source_to_evaluation_data_flow: 6 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 66769 train + 28413 held out
 - [x] processed_data_finite_nonnegative: (11616, 4, 3)
-- [x] processed_data_nonempty: 89968.421 MWh
+- [x] processed_data_nonempty: 68641.934 MWh
 - [x] trace_observed_counterfactual_complete: (11616, 4)
 - [x] locked_days_have_complete_history_and_future_coverage: days 45--114; 6 future days available for the 512-slot deadline
-- [x] workload_conservation: max gap=1.776e-15 MWh
+- [x] workload_conservation: max gap=7.105e-15 MWh
 - [x] data_center_capacity: violation=0.000e+00 MW
 - [x] deadline_feasibility: violation=0.000e+00 MWh
 - [x] sced_power_balance: gap=0.000e+00 MW
@@ -196,19 +196,19 @@ Overall status: **PASS**.
 - [x] strategic_threshold_theory_matches_optimizer: 56/56 price-probability cells
 - [x] locked_test_set_complete: 648/648 outcomes
 - [x] two_sided_credit_band_certificate: 54/54 locked days satisfy the predeclared lower and upper physical credit band
-- [x] decision_time_information_boundary_panel: 162/162 rows; post-gate arrivals are excluded from both deployment-time modes
+- [x] decision_time_information_boundary_panel: 162/162 rows; post-gate arrivals are excluded from both deployment-time modes and the causal target
 - [x] cross_network_ac_n1_admissibility_panel: 1698 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
 - [x] closest_literature_baseline_panel: 216/216 exact same-ledger comparator outcomes covering incentive-compatible, non-wire, proactive-shift, and frequency-regulation mechanisms
 - [x] cross_experiment_locked_day_identity: 10/10 main panels use the identical locked days 61--114; mismatches=[]
 - [x] dependence_robust_exact_block_tests: 18 pre-declared 3-day blocks, exact sign randomization, attainable-p audit, and Holm family-wise correction
 - [x] tail_risk_counterfactual_estimator_comparison: tail-risk feasible counterfactual improves credit F1 against the single feasible projection, while its nRMSE difference is retained and nonsignificant over 18 exact temporal blocks
-- [x] closest_feasible_baseline_comparison: risk verifier has no greater mean nRMSE and significantly lower false-credit exposure than the complete-ledger feasible-quantile projection
+- [x] closest_feasible_baseline_comparison: risk verifier has significantly lower mean false-credit exposure than the complete-ledger feasible-quantile projection; the higher mean nRMSE is retained as an explicit tradeoff (0.345019 versus 0.321370)
 - [x] matched_effect_sizes_with_dependence_robust_intervals: false-credit improvement over feasible quantile has a positive three-day moving-block 95% interval, while all single-projection effects are contained in their dependence-aware intervals
 - [x] complete_independent_intervention_panel: 864/864 rows; all matched interventions are evaluated without a comparator-derived cap
 - [x] independent_pointwise_risk_envelope: locked test false-credit is compared to the feasible-quantile reference, while the LP cap and risk budget are anchored to the independent Metadata projection rho=0.3 candidate
 - [x] risk_constrained_validation_dominance: convex verifier has no larger validation MSE and satisfies both total and daily-tail CVaR false-credit budgets
 - [x] nested_daily_risk_reserve_selection: 16 reserve-fold cells; selected reserve=1.00
-- [x] exact_pointwise_risk_envelope_selection: 6 globally solved envelope projections; selected weight=3
+- [x] exact_pointwise_risk_envelope_selection: 6 globally solved envelope projections; selected weight=0.03
 - [x] matched_post_event_information_protocol: statistical, single-projection, and convex verifiers share the full ledger and never observe execution truth
 - [x] complete_predeclared_projection_validation: 7 pre-declared validation candidates
 - [x] convex_projection_simplex: 7 coefficients; sum=1.000000000000
@@ -217,12 +217,12 @@ Overall status: **PASS**.
 - [x] exact_sparse_complexity_scaling: log-log nonzero slope=1.0025
 - [x] complete_settlement_factorial_panel: 3510/3510 rows; 65/65 complete cells
 - [x] paired_settlement_factor_decomposition: 702 locked day-baseline rows and 52 one-factor paired summaries separate signed netting, locational pricing, and exact valuation
-- [x] independent_high_resolution_value_evaluator: 10-segment settlement versus 80-segment evaluation; trace-reference max non-circular error=11.129670 USD/day
+- [x] independent_high_resolution_value_evaluator: 10-segment settlement versus 80-segment evaluation; trace-reference max non-circular error=9.688038 USD/day
 - [x] complete_settlement_mechanism_block_tests: 52 paired mechanism tests; Holm correction within each baseline-method family
-- [x] global_polyhedral_value_certificate: 5616 interval-baseline certificates; maximum subgradient-inequality violation 2.029e-11 USD
+- [x] global_polyhedral_value_certificate: 5616 interval-baseline certificates; maximum subgradient-inequality violation 2.180e-11 USD
 - [x] complete_cross_network_panel: 6480/6480 rows; 120/120 complete cells across 4 networks
-- [x] cross_network_paired_mechanism_inference: 24 paired exact block tests; positive estimated-baseline linear-minus-exact effect in 9/12 cells; minimum effect -0.058248 USD/day; sign-mixed end-to-end effects are retained, while the trace-anchored reference must remain nonnegative in every cell
-- [x] complete_cross_network_resolution_convergence: 4 complete 54-day resolution levels; highest two mean effects=-0.014411, -0.010558 USD/day; final step=0.003853 versus initial step=0.010797 USD/day, and every 95% interval contains zero
+- [x] cross_network_paired_mechanism_inference: 24 paired exact block tests; positive estimated-baseline linear-minus-exact effect in 12/12 cells; minimum effect 0.008485 USD/day; all estimated-baseline effects are nonnegative, while the trace-anchored reference must remain nonnegative in every cell
+- [x] complete_cross_network_resolution_convergence: 4 complete 54-day resolution levels; highest two mean effects=0.025515, 0.030576 USD/day; final step=0.005061 versus initial step=0.010946 USD/day, and every 95% interval contains zero
 - [x] native_rating_congestion_identification: 3/12 network-loading cells exhibit endogenous congestion
 - [x] native_ratings_and_predeclared_sites: all thermal-rating factors equal 1.0; fixed-site specifications invariant in 4 networks
 - [x] nodal_price_effect_identified: at least one cross-network cell has a nonzero uniform-versus-nodal error contrast
@@ -231,14 +231,14 @@ Overall status: **PASS**.
 - [x] complete_exact_eight_participant_scaling: 3456/3456 participant-interval outcomes; all 256 coalitions enumerated per interval
 - [x] exact_group_symmetric_20_participant_scaling: 1080/1080 site-day-size outcomes; exact count-state summation through 20 participants
 - [x] allocation_mechanism_identification: non-efficient marginal allocation rules exhibit a nonzero budget residual
-- [x] complete_binding_constraint_panel: 810/810 rows; 15/15 complete cells; max capacity binding=0.138
+- [x] complete_binding_constraint_panel: 810/810 rows; 15/15 complete cells; max capacity binding=0.099
 - [x] complete_n1_security_panel: 2592/2592 interval-mechanism outcomes; all 37 non-islanding line outages enforced
-- [x] n1_mechanism_identification: trace-reference N-1 exact MAE=0.903 USD versus base-case exact MAE=192.693 USD and N-1 linear MAE=2.298 USD
-- [x] scenario_robust_exact_n1_payment_noninferiority_certificate: 54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=0.000e+00 USD
+- [x] n1_mechanism_identification: trace-reference N-1 exact MAE=1.018 USD versus base-case exact MAE=165.288 USD and N-1 linear MAE=2.253 USD
+- [x] scenario_robust_exact_n1_payment_noninferiority_certificate: 54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=3.827e-09 USD
 - [x] complete_independent_payment_model_transfer_evaluation: 648 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4
 - [x] independent_endpoint_certificate_uses_selected_single_reference: 216/216 endpoint rows compare the payment-certified profile with the preselected single feasible reference; the quantile profile remains external
 - [x] payment_uncertainty_interval_has_no_oracle_selection: 108/108 endpoint intervals use two validation-frozen feasible profiles; oracle fields are unused
-- [x] independent_nondegenerate_payment_candidate_hull: six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference and the risk verifier is an external target with minimum maximum-distance 14.034 MW; 34 distinct daily optimal weight vectors
+- [x] independent_nondegenerate_payment_candidate_hull: six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference and the risk verifier is an external target with minimum maximum-distance 25.232 MW; 9 distinct daily optimal weight vectors
 - [x] validation_only_payment_target_selection: seven workload-feasible candidates ranked on 384 independent validation N-1 payment cells; the selected target and DC scale are frozen before locked test evaluation
 - [x] complete_nonlinear_ac_opf_panel: 864/864 converged network-day-method outcomes with AC voltage and apparent-power limits enforced
 - [x] complete_nonlinear_ac_n1_panel: 5400/5400 converged method-day-outage AC OPFs across all 6 IEEE-9 and 19 IEEE-14 non-islanding line outages
@@ -252,362 +252,362 @@ Overall status: **PASS**.
 
 | method | nrmse | false_response_ratio | false_response_mwh | credit_precision | credit_recall | credit_f1 | bias_mw |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Ex-post Metadata Gradient Boosting | 1.9681 | 0.8077 | 91.1074 | 0.1923 | 0.8098 | 0.2988 | 7.4287 |
-| Ex-post Quantile Gradient Boosting | 1.8912 | 0.7821 | 87.2229 | 0.2179 | 0.8040 | 0.3235 | 7.1313 |
-| Extra Trees | 2.1728 | 0.8282 | 100.9200 | 0.1718 | 0.7718 | 0.2629 | 8.8941 |
-| Feasible Quantile Projection | 0.3537 | 0.1264 | 2.0262 | 0.8736 | 0.3929 | 0.4859 | -1.1114 |
-| Gradient Boosting | 2.1915 | 0.8340 | 103.3778 | 0.1660 | 0.7423 | 0.2556 | 9.2177 |
-| High-5-of-10 | 2.6529 | 0.8556 | 118.8203 | 0.1444 | 0.7476 | 0.2303 | 10.3626 |
-| Metadata Gradient Boosting | 2.1234 | 0.8238 | 98.6813 | 0.1762 | 0.8032 | 0.2752 | 8.3354 |
-| Ridge | 1.8452 | 0.7880 | 90.5822 | 0.2120 | 0.8968 | 0.3208 | 9.0821 |
-| Risk-Constrained Convex Verifier | 0.3484 | 0.1163 | 1.9106 | 0.8837 | 0.3896 | 0.4828 | -1.1574 |
-| Single Feasible Projection | 0.3498 | 0.1222 | 1.9568 | 0.8778 | 0.3920 | 0.4850 | -1.1167 |
-| Synthetic Control | 1.8933 | 0.8188 | 88.1847 | 0.1812 | 0.6839 | 0.2701 | 6.0003 |
-| Tail-Risk Feasible Counterfactual | 0.3532 | 0.1976 | 4.1786 | 0.8024 | 0.4503 | 0.5126 | -0.9573 |
+| Ex-post Metadata Gradient Boosting | 2.1237 | 0.8348 | 91.6033 | 0.1652 | 0.8688 | 0.2674 | 9.2494 |
+| Ex-post Quantile Gradient Boosting | 0.9445 | 0.4892 | 24.1563 | 0.5108 | 0.8102 | 0.5316 | 0.3078 |
+| Extra Trees | 3.3356 | 0.8928 | 132.9709 | 0.1072 | 0.7261 | 0.1768 | 13.0340 |
+| Feasible Quantile Projection | 0.3214 | 0.1922 | 2.9175 | 0.8078 | 0.4379 | 0.5080 | -0.9680 |
+| Gradient Boosting | 2.3514 | 0.8471 | 97.0571 | 0.1529 | 0.8409 | 0.2459 | 9.4688 |
+| High-5-of-10 | 4.2144 | 0.9169 | 172.7089 | 0.0831 | 0.7226 | 0.1439 | 17.7745 |
+| Metadata Gradient Boosting | 2.1329 | 0.8361 | 90.5894 | 0.1639 | 0.8669 | 0.2645 | 9.0619 |
+| Ridge | 2.7724 | 0.8528 | 110.6662 | 0.1472 | 0.8297 | 0.2351 | 11.6048 |
+| Risk-Constrained Convex Verifier | 0.3450 | 0.1437 | 1.8263 | 0.8563 | 0.3534 | 0.4412 | -0.9785 |
+| Single Feasible Projection | 0.3452 | 0.1441 | 1.8492 | 0.8559 | 0.3539 | 0.4416 | -0.9738 |
+| Synthetic Control | 2.5520 | 0.8672 | 101.8351 | 0.1328 | 0.6503 | 0.2063 | 8.8606 |
+| Tail-Risk Feasible Counterfactual | 0.3308 | 0.1634 | 2.5235 | 0.8366 | 0.4077 | 0.4842 | -0.9105 |
 
 ## Projection candidate validation
 
 | candidate_index | projection_weight | validation_score | validation_score_std | event_window_deviation_from_optimization_only_mw | validation_credit_precision | validation_credit_recall | validation_credit_f1 | mean_contiguous_fold_nrmse | max_contiguous_fold_nrmse | selected_single_projection | candidate_type | ensemble_weight | selected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0.03000 | 0.48607 | 0.32650 | 6.10259 | 0.83186 | 0.31732 | 0.42987 | 0.53563 | 0.83219 | False | metadata projection | 0.33438 | True |
-| 2 | 0.10000 | 0.48607 | 0.32650 | 6.10259 | 0.83186 | 0.31732 | 0.42987 | 0.53563 | 0.83219 | False | metadata projection | 0.33438 | True |
-| 3 | 0.30000 | 0.48555 | 0.29380 | 5.85540 | 0.79981 | 0.37702 | 0.48422 | 0.53406 | 0.77795 | True | metadata projection | 0.19930 | True |
-| 4 | 1.00000 | 0.76284 | 0.28749 | 8.43813 | 0.48545 | 0.53027 | 0.46604 | 0.82660 | 1.03700 | False | metadata projection | 0.04293 | True |
-| 5 | 3.00000 | 1.28092 | 0.59736 | 11.81086 | 0.32504 | 0.61881 | 0.40270 | 1.31586 | 1.59029 | False | metadata projection | 0.07402 | True |
-| 6 | 10.00000 | 1.77948 | 0.77885 | 15.99572 | 0.23610 | 0.68568 | 0.33621 | 1.73566 | 2.08394 | False | metadata projection | 0.01497 | True |
-| 6 | 0.30000 | 0.48808 | nan | nan | nan | nan | 0.48256 | nan | 0.68054 | False | feasible quantile projection | 0.00001 | True |
+| 1 | 0.03000 | 0.48309 | 0.31911 | 5.33742 | 0.81503 | 0.28109 | 0.38675 | 0.53945 | 0.83596 | False | metadata projection | 0.31390 | True |
+| 2 | 0.10000 | 0.48309 | 0.31911 | 5.33742 | 0.81503 | 0.28109 | 0.38675 | 0.53945 | 0.83596 | False | metadata projection | 0.31390 | True |
+| 3 | 0.30000 | 0.48634 | 0.30283 | 5.14402 | 0.78258 | 0.34029 | 0.44293 | 0.54433 | 0.82591 | True | metadata projection | 0.00001 | True |
+| 4 | 1.00000 | 0.78049 | 0.45043 | 6.61277 | 0.52756 | 0.47463 | 0.45652 | 0.85843 | 1.25644 | False | metadata projection | 0.03867 | True |
+| 5 | 3.00000 | 1.33323 | 0.66261 | 9.48856 | 0.36742 | 0.59564 | 0.40061 | 1.42633 | 1.68136 | False | metadata projection | 0.04143 | True |
+| 6 | 10.00000 | 1.88254 | 0.88937 | 13.38139 | 0.26331 | 0.70522 | 0.34004 | 1.87155 | 2.35240 | False | metadata projection | 0.00067 | True |
+| 6 | 1.00000 | 0.47066 | nan | nan | nan | nan | 0.52200 | nan | 0.68764 | False | feasible quantile projection | 0.29141 | True |
 
 ## Settlement results
 
 | baseline_method | mechanism | payment_usd | realized_value_usd | absolute_error_usd | overpayment_ratio |
 | --- | --- | --- | --- | --- | --- |
-| Ex-post Metadata Gradient Boosting | Nodal exact net value | 2672.984 | 358.377 | 2327.400 | 0.816 |
-| Ex-post Metadata Gradient Boosting | Nodal gross | 4412.629 | 358.377 | 4054.252 | 0.918 |
-| Ex-post Metadata Gradient Boosting | Nodal signed linear | 2691.706 | 358.377 | 2345.978 | 0.821 |
-| Ex-post Metadata Gradient Boosting | Uniform gross | 4412.924 | 358.377 | 4054.546 | 0.918 |
-| Ex-post Metadata Gradient Boosting | Uniform signed net | 2692.002 | 358.377 | 2346.263 | 0.821 |
-| Ex-post Quantile Gradient Boosting | Nodal exact net value | 2581.548 | 358.377 | 2269.608 | 0.778 |
-| Ex-post Quantile Gradient Boosting | Nodal gross | 4264.026 | 358.377 | 3905.648 | 0.904 |
-| Ex-post Quantile Gradient Boosting | Nodal signed linear | 2598.523 | 358.377 | 2284.652 | 0.780 |
-| Ex-post Quantile Gradient Boosting | Uniform gross | 4264.305 | 358.377 | 3905.928 | 0.904 |
-| Ex-post Quantile Gradient Boosting | Uniform signed net | 2598.805 | 358.377 | 2284.916 | 0.781 |
-| Extra Trees | Nodal exact net value | 3132.654 | 358.377 | 2969.324 | 0.780 |
-| Extra Trees | Nodal gross | 4778.493 | 358.377 | 4420.116 | 0.921 |
-| Extra Trees | Nodal signed linear | 3155.592 | 358.377 | 2987.665 | 0.781 |
-| Extra Trees | Uniform gross | 4778.792 | 358.377 | 4420.415 | 0.921 |
-| Extra Trees | Uniform signed net | 3155.895 | 358.377 | 2987.892 | 0.781 |
-| Feasible Quantile Projection | Nodal exact net value | 13.732 | 358.377 | 522.638 | 0.155 |
-| Feasible Quantile Projection | Nodal gross | 586.802 | 358.377 | 635.464 | 0.425 |
-| Feasible Quantile Projection | Nodal signed linear | 15.263 | 358.377 | 523.627 | 0.164 |
-| Feasible Quantile Projection | Uniform gross | 587.295 | 358.377 | 635.948 | 0.425 |
-| Feasible Quantile Projection | Uniform signed net | 15.104 | 358.377 | 523.457 | 0.203 |
-| Gradient Boosting | Nodal exact net value | 3234.958 | 358.377 | 2932.252 | 0.783 |
-| Gradient Boosting | Nodal gross | 4870.751 | 358.377 | 4512.373 | 0.922 |
-| Gradient Boosting | Nodal signed linear | 3259.524 | 358.377 | 2952.959 | 0.786 |
-| Gradient Boosting | Uniform gross | 4871.046 | 358.377 | 4512.669 | 0.922 |
-| Gradient Boosting | Uniform signed net | 3259.823 | 358.377 | 2953.198 | 0.786 |
-| High-5-of-10 | Nodal exact net value | 3590.326 | 358.377 | 3301.917 | 0.833 |
-| High-5-of-10 | Nodal gross | 5480.032 | 358.377 | 5121.654 | 0.933 |
-| High-5-of-10 | Nodal signed linear | 3622.704 | 358.377 | 3331.901 | 0.834 |
-| High-5-of-10 | Uniform gross | 5480.380 | 358.377 | 5122.002 | 0.933 |
-| High-5-of-10 | Uniform signed net | 3623.063 | 358.377 | 3332.212 | 0.834 |
-| Metadata Gradient Boosting | Nodal exact net value | 2957.110 | 358.377 | 2645.570 | 0.825 |
-| Metadata Gradient Boosting | Nodal gross | 4704.778 | 358.377 | 4346.401 | 0.921 |
-| Metadata Gradient Boosting | Nodal signed linear | 2976.658 | 358.377 | 2665.093 | 0.830 |
-| Metadata Gradient Boosting | Uniform gross | 4705.084 | 358.377 | 4346.707 | 0.921 |
-| Metadata Gradient Boosting | Uniform signed net | 2976.965 | 358.377 | 2665.386 | 0.830 |
-| Ridge | Nodal exact net value | 3190.214 | 358.377 | 2881.296 | 0.830 |
-| Ridge | Nodal gross | 4471.852 | 358.377 | 4113.475 | 0.922 |
-| Ridge | Nodal signed linear | 3217.048 | 358.377 | 2907.937 | 0.836 |
-| Ridge | Uniform gross | 4472.107 | 358.377 | 4113.730 | 0.922 |
-| Ridge | Uniform signed net | 3217.301 | 358.377 | 2908.180 | 0.836 |
-| Risk-Constrained Convex Verifier | Nodal exact net value | 3.256 | 358.377 | 522.499 | 0.138 |
-| Risk-Constrained Convex Verifier | Nodal gross | 574.199 | 358.377 | 631.137 | 0.421 |
-| Risk-Constrained Convex Verifier | Nodal signed linear | 5.338 | 358.377 | 523.840 | 0.148 |
-| Risk-Constrained Convex Verifier | Uniform gross | 574.668 | 358.377 | 631.598 | 0.421 |
-| Risk-Constrained Convex Verifier | Uniform signed net | 4.965 | 358.377 | 523.458 | 0.186 |
-| Single Feasible Projection | Nodal exact net value | 11.780 | 358.377 | 522.729 | 0.151 |
-| Single Feasible Projection | Nodal gross | 582.724 | 358.377 | 635.418 | 0.421 |
-| Single Feasible Projection | Nodal signed linear | 13.863 | 358.377 | 524.070 | 0.160 |
-| Single Feasible Projection | Uniform gross | 583.208 | 358.377 | 635.892 | 0.421 |
-| Single Feasible Projection | Uniform signed net | 13.504 | 358.377 | 523.701 | 0.199 |
-| Synthetic Control | Nodal exact net value | 2226.651 | 358.377 | 2023.345 | 0.727 |
-| Synthetic Control | Nodal gross | 4196.238 | 358.377 | 3837.861 | 0.903 |
-| Synthetic Control | Nodal signed linear | 2242.720 | 358.377 | 2035.707 | 0.729 |
-| Synthetic Control | Uniform gross | 4196.518 | 358.377 | 3838.141 | 0.903 |
-| Synthetic Control | Uniform signed net | 2243.012 | 358.377 | 2035.917 | 0.729 |
-| Tail-Risk Feasible Counterfactual | Nodal exact net value | 60.393 | 358.377 | 472.729 | 0.221 |
-| Tail-Risk Feasible Counterfactual | Nodal gross | 750.861 | 358.377 | 728.716 | 0.466 |
-| Tail-Risk Feasible Counterfactual | Nodal signed linear | 61.906 | 358.377 | 473.617 | 0.215 |
-| Tail-Risk Feasible Counterfactual | Uniform gross | 751.052 | 358.377 | 728.897 | 0.466 |
-| Tail-Risk Feasible Counterfactual | Uniform signed net | 61.974 | 358.377 | 473.652 | 0.215 |
-| Trace-Anchored Reference | Nodal exact net value | 356.354 | 358.377 | 2.344 | 0.000 |
-| Trace-Anchored Reference | Nodal gross | 1099.661 | 358.377 | 741.699 | 0.594 |
-| Trace-Anchored Reference | Nodal signed linear | 362.102 | 358.377 | 6.004 | 0.022 |
-| Trace-Anchored Reference | Uniform gross | 1099.684 | 358.377 | 741.722 | 0.594 |
-| Trace-Anchored Reference | Uniform signed net | 362.112 | 358.377 | 6.011 | 0.059 |
+| Ex-post Metadata Gradient Boosting | Nodal exact net value | 3195.705 | 312.936 | 2882.769 | 0.889 |
+| Ex-post Metadata Gradient Boosting | Nodal gross | 4277.571 | 312.936 | 3964.635 | 0.926 |
+| Ex-post Metadata Gradient Boosting | Nodal signed linear | 3210.299 | 312.936 | 2897.363 | 0.890 |
+| Ex-post Metadata Gradient Boosting | Uniform gross | 4277.860 | 312.936 | 3964.923 | 0.926 |
+| Ex-post Metadata Gradient Boosting | Uniform signed net | 3210.587 | 312.936 | 2897.651 | 0.890 |
+| Ex-post Quantile Gradient Boosting | Nodal exact net value | 404.127 | 312.936 | 1468.268 | 0.459 |
+| Ex-post Quantile Gradient Boosting | Nodal gross | 1551.190 | 312.936 | 1293.399 | 0.760 |
+| Ex-post Quantile Gradient Boosting | Nodal signed linear | 413.638 | 312.936 | 1468.731 | 0.460 |
+| Ex-post Quantile Gradient Boosting | Uniform gross | 1551.275 | 312.936 | 1293.481 | 0.760 |
+| Ex-post Quantile Gradient Boosting | Uniform signed net | 413.723 | 312.936 | 1468.788 | 0.460 |
+| Extra Trees | Nodal exact net value | 4381.131 | 312.936 | 4095.680 | 0.937 |
+| Extra Trees | Nodal gross | 5888.288 | 312.936 | 5575.351 | 0.945 |
+| Extra Trees | Nodal signed linear | 4476.903 | 312.936 | 4191.439 | 0.937 |
+| Extra Trees | Uniform gross | 5837.395 | 312.936 | 5524.458 | 0.945 |
+| Extra Trees | Uniform signed net | 4421.103 | 312.936 | 4135.624 | 0.938 |
+| Feasible Quantile Projection | Nodal exact net value | 11.332 | 312.936 | 442.303 | 0.124 |
+| Feasible Quantile Projection | Nodal gross | 534.669 | 312.936 | 549.310 | 0.459 |
+| Feasible Quantile Projection | Nodal signed linear | 12.479 | 312.936 | 442.263 | 0.125 |
+| Feasible Quantile Projection | Uniform gross | 534.772 | 312.936 | 549.406 | 0.459 |
+| Feasible Quantile Projection | Uniform signed net | 12.167 | 312.936 | 441.934 | 0.162 |
+| Gradient Boosting | Nodal exact net value | 3263.298 | 312.936 | 2994.724 | 0.883 |
+| Gradient Boosting | Nodal gross | 4459.075 | 312.936 | 4146.138 | 0.933 |
+| Gradient Boosting | Nodal signed linear | 3278.175 | 312.936 | 3009.571 | 0.884 |
+| Gradient Boosting | Uniform gross | 4459.387 | 312.936 | 4146.450 | 0.933 |
+| Gradient Boosting | Uniform signed net | 3278.492 | 312.936 | 3009.877 | 0.884 |
+| High-5-of-10 | Nodal exact net value | 5920.771 | 312.936 | 5607.834 | 0.947 |
+| High-5-of-10 | Nodal gross | 8277.693 | 312.936 | 7964.756 | 0.956 |
+| High-5-of-10 | Nodal signed linear | 6777.955 | 312.936 | 6465.018 | 0.950 |
+| High-5-of-10 | Uniform gross | 7684.860 | 312.936 | 7371.924 | 0.954 |
+| High-5-of-10 | Uniform signed net | 6161.604 | 312.936 | 5848.668 | 0.949 |
+| Metadata Gradient Boosting | Nodal exact net value | 3136.321 | 312.936 | 2823.384 | 0.884 |
+| Metadata Gradient Boosting | Nodal gross | 4232.578 | 312.936 | 3919.641 | 0.921 |
+| Metadata Gradient Boosting | Nodal signed linear | 3149.960 | 312.936 | 2837.024 | 0.885 |
+| Metadata Gradient Boosting | Uniform gross | 4232.867 | 312.936 | 3919.931 | 0.921 |
+| Metadata Gradient Boosting | Uniform signed net | 3150.250 | 312.936 | 2837.314 | 0.885 |
+| Ridge | Nodal exact net value | 3936.687 | 312.936 | 3628.484 | 0.913 |
+| Ridge | Nodal gross | 5000.435 | 312.936 | 4687.498 | 0.935 |
+| Ridge | Nodal signed linear | 3965.235 | 312.936 | 3656.529 | 0.916 |
+| Ridge | Uniform gross | 4999.837 | 312.936 | 4686.900 | 0.935 |
+| Ridge | Uniform signed net | 3964.585 | 312.936 | 3655.874 | 0.916 |
+| Risk-Constrained Convex Verifier | Nodal exact net value | 9.367 | 312.936 | 454.238 | 0.163 |
+| Risk-Constrained Convex Verifier | Nodal gross | 417.265 | 312.936 | 501.324 | 0.398 |
+| Risk-Constrained Convex Verifier | Nodal signed linear | 9.801 | 312.936 | 454.366 | 0.164 |
+| Risk-Constrained Convex Verifier | Uniform gross | 417.463 | 312.936 | 501.511 | 0.398 |
+| Risk-Constrained Convex Verifier | Uniform signed net | 9.557 | 312.936 | 454.116 | 0.200 |
+| Single Feasible Projection | Nodal exact net value | 10.847 | 312.936 | 454.191 | 0.165 |
+| Single Feasible Projection | Nodal gross | 418.745 | 312.936 | 501.700 | 0.398 |
+| Single Feasible Projection | Nodal signed linear | 11.281 | 312.936 | 454.320 | 0.166 |
+| Single Feasible Projection | Uniform gross | 418.943 | 312.936 | 501.888 | 0.398 |
+| Single Feasible Projection | Uniform signed net | 11.037 | 312.936 | 454.069 | 0.203 |
+| Synthetic Control | Nodal exact net value | 3075.486 | 312.936 | 2794.322 | 0.862 |
+| Synthetic Control | Nodal gross | 4581.831 | 312.936 | 4268.895 | 0.920 |
+| Synthetic Control | Nodal signed linear | 3141.501 | 312.936 | 2859.517 | 0.863 |
+| Synthetic Control | Uniform gross | 4544.896 | 312.936 | 4231.959 | 0.920 |
+| Synthetic Control | Uniform signed net | 3100.265 | 312.936 | 2818.277 | 0.864 |
+| Tail-Risk Feasible Counterfactual | Nodal exact net value | 29.673 | 312.936 | 431.722 | 0.209 |
+| Tail-Risk Feasible Counterfactual | Nodal gross | 501.044 | 312.936 | 536.256 | 0.433 |
+| Tail-Risk Feasible Counterfactual | Nodal signed linear | 30.069 | 312.936 | 431.743 | 0.209 |
+| Tail-Risk Feasible Counterfactual | Uniform gross | 501.149 | 312.936 | 536.352 | 0.433 |
+| Tail-Risk Feasible Counterfactual | Uniform signed net | 29.864 | 312.936 | 431.520 | 0.209 |
+| Trace-Anchored Reference | Nodal exact net value | 310.897 | 312.936 | 2.230 | 0.002 |
+| Trace-Anchored Reference | Nodal gross | 868.403 | 312.936 | 555.910 | 0.573 |
+| Trace-Anchored Reference | Nodal signed linear | 314.571 | 312.936 | 3.953 | 0.009 |
+| Trace-Anchored Reference | Uniform gross | 868.416 | 312.936 | 555.923 | 0.573 |
+| Trace-Anchored Reference | Uniform signed net | 314.577 | 312.936 | 3.956 | 0.046 |
 
 ## Paired settlement-factor decomposition
 
 | baseline_method | factor | mean_error_reduction_usd | median_error_reduction_usd | paired_days | block_length_days | blocks | observed_mean_difference | extreme_assignments | total_sign_assignments | minimum_attainable_two_sided_p | two_sided_exact_p_value | block_sum_lag1_autocorrelation |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Risk-Constrained Convex Verifier | gross_to_signed_error_reduction_usd | 107.2970 | -29.7934 | 54 | 3 | 18 | 107.2970 | 47242 | 262144 | 0.0000 | 0.1802 | -0.6880 |
-| Risk-Constrained Convex Verifier | uniform_to_nodal_error_reduction_usd | -0.3825 | -0.0011 | 54 | 3 | 18 | -0.3825 | 131388 | 262144 | 0.0000 | 0.5012 | -0.0323 |
-| Risk-Constrained Convex Verifier | linear_to_exact_error_reduction_usd | 1.3409 | -0.0000 | 54 | 3 | 18 | 1.3409 | 94928 | 262144 | 0.0000 | 0.3621 | -0.0849 |
-| Risk-Constrained Convex Verifier | uniform_gross_to_exact_error_reduction_usd | 109.0984 | -29.7938 | 54 | 3 | 18 | 109.0984 | 47148 | 262144 | 0.0000 | 0.1799 | -0.6814 |
-| Trace-Anchored Reference | gross_to_signed_error_reduction_usd | 735.6949 | 641.3881 | 54 | 3 | 18 | 735.6949 | 2 | 262144 | 0.0000 | 0.0000 | -0.1241 |
-| Trace-Anchored Reference | uniform_to_nodal_error_reduction_usd | 0.0062 | 0.0009 | 54 | 3 | 18 | 0.0062 | 93172 | 262144 | 0.0000 | 0.3554 | 0.3781 |
-| Trace-Anchored Reference | linear_to_exact_error_reduction_usd | 3.6605 | -0.1039 | 54 | 3 | 18 | 3.6605 | 11458 | 262144 | 0.0000 | 0.0437 | -0.2163 |
-| Trace-Anchored Reference | uniform_gross_to_exact_error_reduction_usd | 739.3781 | 642.1057 | 54 | 3 | 18 | 739.3781 | 2 | 262144 | 0.0000 | 0.0000 | -0.1286 |
+| Risk-Constrained Convex Verifier | gross_to_signed_error_reduction_usd | 46.9578 | -23.5317 | 54 | 3 | 18 | 46.9578 | 108380 | 262144 | 0.0000 | 0.4134 | -0.6667 |
+| Risk-Constrained Convex Verifier | uniform_to_nodal_error_reduction_usd | -0.2503 | -0.0005 | 54 | 3 | 18 | -0.2503 | 5744 | 262144 | 0.0000 | 0.0219 | -0.0628 |
+| Risk-Constrained Convex Verifier | linear_to_exact_error_reduction_usd | 0.1285 | -0.0000 | 54 | 3 | 18 | 0.1285 | 186086 | 262144 | 0.0000 | 0.7099 | -0.0215 |
+| Risk-Constrained Convex Verifier | uniform_gross_to_exact_error_reduction_usd | 47.2736 | -23.5323 | 54 | 3 | 18 | 47.2736 | 108412 | 262144 | 0.0000 | 0.4136 | -0.6646 |
+| Trace-Anchored Reference | gross_to_signed_error_reduction_usd | 551.9574 | 451.9675 | 54 | 3 | 18 | 551.9574 | 2 | 262144 | 0.0000 | 0.0000 | -0.2213 |
+| Trace-Anchored Reference | uniform_to_nodal_error_reduction_usd | 0.0032 | -0.0003 | 54 | 3 | 18 | 0.0032 | 123902 | 262144 | 0.0000 | 0.4726 | 0.2946 |
+| Trace-Anchored Reference | linear_to_exact_error_reduction_usd | 1.7231 | -0.2023 | 54 | 3 | 18 | 1.7231 | 72072 | 262144 | 0.0000 | 0.2749 | -0.1439 |
+| Trace-Anchored Reference | uniform_gross_to_exact_error_reduction_usd | 553.6931 | 451.7300 | 54 | 3 | 18 | 553.6931 | 2 | 262144 | 0.0000 | 0.0000 | -0.2220 |
 
 ## Cross-network robustness
 
 | network | load_multiplier | baseline_quality | mechanism | mean_absolute_error_usd | median_normalized_error | mean_overpayment_usd | congestion_share |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 1930.899 | 1.000 | 304.945 | 0.000 |
-| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 2329.194 | 0.950 | 1559.317 | 0.000 |
-| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 1931.005 | 1.000 | 305.185 | 0.000 |
-| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 2329.194 | 0.950 | 1559.317 | 0.000 |
-| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 1931.005 | 1.000 | 305.185 | 0.000 |
-| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 5.607 | 0.002 | 5.192 | 0.000 |
-| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 2750.609 | 1.385 | 2750.609 | 0.000 |
-| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 9.333 | 0.002 | 9.201 | 0.000 |
-| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 2750.609 | 1.385 | 2750.609 | 0.000 |
-| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 9.333 | 0.002 | 9.201 | 0.000 |
-| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 2190.475 | 1.000 | 345.560 | 0.000 |
-| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 2644.423 | 0.949 | 1771.869 | 0.000 |
-| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 2190.442 | 1.000 | 345.605 | 0.000 |
-| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 2644.423 | 0.949 | 1771.869 | 0.000 |
-| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 2190.442 | 1.000 | 345.605 | 0.000 |
-| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 11.607 | 0.006 | 11.281 | 0.000 |
-| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 3130.354 | 1.393 | 3130.354 | 0.000 |
-| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 14.333 | 0.006 | 14.096 | 0.000 |
-| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 3130.354 | 1.393 | 3130.354 | 0.000 |
-| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 14.333 | 0.006 | 14.096 | 0.000 |
-| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 2312.435 | 1.000 | 363.912 | 0.000 |
-| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 2788.483 | 0.950 | 1866.217 | 0.000 |
-| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 2312.498 | 1.000 | 364.059 | 0.000 |
-| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 2788.483 | 0.950 | 1866.217 | 0.000 |
-| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 2312.498 | 1.000 | 364.059 | 0.000 |
-| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 7.046 | 0.002 | 6.811 | 0.000 |
-| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 3295.971 | 1.385 | 3295.971 | 0.000 |
-| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 10.349 | 0.003 | 10.335 | 0.000 |
-| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 3295.971 | 1.385 | 3295.971 | 0.000 |
-| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 10.349 | 0.003 | 10.335 | 0.000 |
-| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 159.167 | 1.000 | 25.501 | 0.000 |
-| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 192.502 | 0.950 | 129.152 | 0.000 |
-| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 159.292 | 1.000 | 25.629 | 0.000 |
-| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 192.502 | 0.950 | 129.152 | 0.000 |
-| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 159.292 | 1.000 | 25.629 | 0.000 |
-| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 1.039 | 0.004 | 0.163 | 0.000 |
-| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 225.987 | 1.374 | 225.961 | 0.000 |
-| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 2.214 | 0.005 | 1.753 | 0.000 |
-| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 225.987 | 1.374 | 225.961 | 0.000 |
-| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 2.214 | 0.005 | 1.753 | 0.000 |
-| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 194.749 | 1.000 | 31.644 | 0.000 |
-| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 236.960 | 0.949 | 160.025 | 0.000 |
-| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 194.733 | 1.000 | 31.671 | 0.000 |
-| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 236.960 | 0.949 | 160.025 | 0.000 |
-| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 194.733 | 1.000 | 31.671 | 0.000 |
-| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 1.302 | 0.007 | 1.086 | 0.000 |
-| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 280.526 | 1.396 | 280.526 | 0.000 |
-| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 3.226 | 0.007 | 3.148 | 0.000 |
-| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 280.526 | 1.396 | 280.526 | 0.000 |
-| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 3.226 | 0.007 | 3.148 | 0.000 |
-| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 222.477 | 1.000 | 38.718 | 0.016 |
-| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 276.461 | 0.950 | 189.556 | 0.016 |
-| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 222.655 | 1.000 | 39.003 | 0.016 |
-| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 274.720 | 0.950 | 187.816 | 0.016 |
-| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 221.966 | 1.000 | 38.268 | 0.016 |
-| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 2.697 | 0.012 | 0.464 | 0.016 |
-| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 320.302 | 1.381 | 319.864 | 0.016 |
-| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 8.383 | 0.013 | 7.235 | 0.016 |
-| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 320.107 | 1.381 | 319.669 | 0.016 |
-| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 8.312 | 0.013 | 7.164 | 0.016 |
-| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 105.656 | 1.000 | 16.860 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 127.967 | 0.950 | 85.986 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 105.666 | 1.000 | 16.890 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 127.967 | 0.950 | 85.986 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 105.666 | 1.000 | 16.890 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 0.158 | 0.001 | 0.011 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 150.977 | 1.381 | 150.970 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 0.977 | 0.002 | 0.923 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 150.977 | 1.381 | 150.970 | 0.000 |
-| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 0.977 | 0.002 | 0.923 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 328.405 | 1.000 | 51.869 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 396.772 | 0.950 | 266.145 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 328.346 | 1.000 | 51.870 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 396.772 | 0.950 | 266.145 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 328.346 | 1.000 | 51.870 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 0.510 | 0.002 | 0.285 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 469.193 | 1.393 | 469.181 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 1.491 | 0.002 | 1.431 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 469.193 | 1.393 | 469.181 | 0.000 |
-| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 1.491 | 0.002 | 1.431 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 346.972 | 1.000 | 54.389 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 417.890 | 0.950 | 279.278 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 347.004 | 1.000 | 54.427 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 417.890 | 0.950 | 279.278 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 347.004 | 1.000 | 54.427 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 0.280 | 0.001 | 0.156 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 492.958 | 1.383 | 492.958 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 0.893 | 0.001 | 0.861 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 492.958 | 1.383 | 492.958 | 0.000 |
-| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 0.893 | 0.001 | 0.861 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 342.649 | 1.000 | 54.074 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 414.642 | 0.949 | 278.492 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 342.664 | 1.000 | 54.091 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 414.646 | 0.949 | 278.496 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 342.664 | 1.000 | 54.092 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 2.970 | 0.009 | 2.822 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 492.954 | 1.406 | 492.954 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 3.368 | 0.010 | 3.245 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 492.958 | 1.406 | 492.958 | 0.000 |
-| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 3.369 | 0.010 | 3.246 | 0.000 |
-| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 388.702 | 1.000 | 61.422 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 468.343 | 0.950 | 313.395 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 388.771 | 1.000 | 61.498 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 468.343 | 0.950 | 313.395 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 388.771 | 1.000 | 61.499 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 2.182 | 0.006 | 0.813 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 551.572 | 1.398 | 551.571 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 2.898 | 0.005 | 2.261 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 551.572 | 1.398 | 551.571 | 1.000 |
-| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 2.898 | 0.005 | 2.261 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 414.396 | 1.000 | 65.762 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 502.327 | 0.949 | 337.704 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 414.488 | 1.000 | 65.885 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 502.372 | 0.949 | 337.753 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 414.436 | 1.000 | 65.837 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 3.003 | 0.007 | 2.858 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 596.055 | 1.401 | 596.055 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 3.956 | 0.007 | 3.917 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 596.072 | 1.401 | 596.072 | 1.000 |
-| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 3.961 | 0.007 | 3.922 | 1.000 |
+| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 1984.254 | 1.000 | 326.225 | 0.000 |
+| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 2194.024 | 0.939 | 1326.470 | 0.000 |
+| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 1984.325 | 1.000 | 326.329 | 0.000 |
+| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 2194.024 | 0.939 | 1326.470 | 0.000 |
+| IEEE 300-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 1984.325 | 1.000 | 326.329 | 0.000 |
+| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 6.338 | 0.002 | 6.162 | 0.000 |
+| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 2449.096 | 1.360 | 2449.096 | 0.000 |
+| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 10.105 | 0.002 | 10.091 | 0.000 |
+| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 2449.096 | 1.360 | 2449.096 | 0.000 |
+| IEEE 300-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 10.105 | 0.002 | 10.091 | 0.000 |
+| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 2251.082 | 1.000 | 369.676 | 0.000 |
+| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 2490.401 | 0.939 | 1507.113 | 0.000 |
+| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 2251.151 | 1.000 | 369.761 | 0.000 |
+| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 2490.401 | 0.939 | 1507.113 | 0.000 |
+| IEEE 300-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 2251.151 | 1.000 | 369.761 | 0.000 |
+| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 12.280 | 0.006 | 12.158 | 0.000 |
+| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 2787.923 | 1.368 | 2787.923 | 0.000 |
+| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 15.312 | 0.006 | 15.204 | 0.000 |
+| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 2787.923 | 1.368 | 2787.923 | 0.000 |
+| IEEE 300-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 15.312 | 0.006 | 15.204 | 0.000 |
+| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 2376.548 | 1.000 | 389.133 | 0.000 |
+| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 2626.196 | 0.939 | 1586.673 | 0.000 |
+| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 2376.572 | 1.000 | 389.208 | 0.000 |
+| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 2626.196 | 0.939 | 1586.673 | 0.000 |
+| IEEE 300-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 2376.572 | 1.000 | 389.208 | 0.000 |
+| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 8.000 | 0.003 | 7.863 | 0.000 |
+| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 2934.905 | 1.362 | 2934.905 | 0.000 |
+| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 11.374 | 0.004 | 11.335 | 0.000 |
+| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 2934.905 | 1.362 | 2934.905 | 0.000 |
+| IEEE 300-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 11.374 | 0.004 | 11.335 | 0.000 |
+| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 163.598 | 1.000 | 27.466 | 0.000 |
+| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 181.554 | 0.939 | 110.132 | 0.000 |
+| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 163.654 | 1.000 | 27.534 | 0.000 |
+| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 181.554 | 0.939 | 110.132 | 0.000 |
+| IEEE 39-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 163.654 | 1.000 | 27.534 | 0.000 |
+| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 1.050 | 0.003 | 0.201 | 0.000 |
+| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 201.023 | 1.345 | 200.993 | 0.000 |
+| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 2.173 | 0.003 | 1.778 | 0.000 |
+| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 201.023 | 1.345 | 200.993 | 0.000 |
+| IEEE 39-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 2.173 | 0.003 | 1.778 | 0.000 |
+| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 200.150 | 1.000 | 34.071 | 0.000 |
+| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 223.272 | 0.939 | 136.555 | 0.000 |
+| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 200.163 | 1.000 | 34.095 | 0.000 |
+| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 223.256 | 0.939 | 136.540 | 0.000 |
+| IEEE 39-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 200.142 | 1.000 | 34.074 | 0.000 |
+| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 1.635 | 0.007 | 1.272 | 0.000 |
+| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 249.572 | 1.373 | 249.572 | 0.000 |
+| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 3.682 | 0.007 | 3.523 | 0.000 |
+| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 249.572 | 1.373 | 249.572 | 0.000 |
+| IEEE 39-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 3.682 | 0.007 | 3.523 | 0.000 |
+| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 229.766 | 1.000 | 43.183 | 0.016 |
+| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 266.066 | 0.940 | 168.332 | 0.016 |
+| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 230.401 | 1.000 | 43.852 | 0.016 |
+| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 262.845 | 0.940 | 165.112 | 0.016 |
+| IEEE 39-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 229.369 | 1.000 | 42.662 | 0.016 |
+| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 2.930 | 0.013 | 0.700 | 0.016 |
+| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 286.126 | 1.376 | 285.778 | 0.016 |
+| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 9.212 | 0.013 | 8.152 | 0.016 |
+| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 286.126 | 1.376 | 285.778 | 0.016 |
+| IEEE 39-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 9.212 | 0.013 | 8.152 | 0.016 |
+| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 108.637 | 1.000 | 18.074 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 120.543 | 0.939 | 73.198 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 108.660 | 1.000 | 18.109 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 120.543 | 0.939 | 73.198 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 108.660 | 1.000 | 18.109 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 0.199 | 0.002 | 0.031 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 134.418 | 1.354 | 134.404 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 1.068 | 0.003 | 1.011 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 134.418 | 1.354 | 134.404 | 0.000 |
+| IEEE RTS 24-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 1.068 | 0.003 | 1.011 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 337.704 | 1.000 | 55.403 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 373.602 | 0.939 | 226.179 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 337.715 | 1.000 | 55.444 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 373.602 | 0.939 | 226.179 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 337.715 | 1.000 | 55.444 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 0.572 | 0.001 | 0.218 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 417.687 | 1.363 | 417.652 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 1.575 | 0.002 | 1.432 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 417.687 | 1.363 | 417.652 | 0.000 |
+| IEEE RTS 24-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 1.575 | 0.002 | 1.432 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 356.650 | 1.000 | 58.157 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 393.643 | 0.939 | 237.334 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 356.658 | 1.000 | 58.170 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 393.643 | 0.939 | 237.334 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 356.658 | 1.000 | 58.170 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 0.318 | 0.001 | 0.217 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 438.595 | 1.356 | 438.595 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 0.848 | 0.001 | 0.818 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 438.595 | 1.356 | 438.595 | 0.000 |
+| IEEE RTS 24-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 0.848 | 0.001 | 0.818 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal exact net value | 352.177 | 1.000 | 57.763 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal gross | 390.120 | 0.938 | 236.612 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Nodal signed linear | 352.198 | 1.000 | 57.784 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform gross | 390.123 | 0.938 | 236.615 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Risk-Constrained Convex Verifier | Uniform signed net | 352.198 | 1.000 | 57.784 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal exact net value | 3.002 | 0.009 | 2.851 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal gross | 438.957 | 1.377 | 438.957 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Nodal signed linear | 3.375 | 0.010 | 3.246 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Uniform gross | 438.960 | 1.377 | 438.960 | 0.000 |
+| PGLib IEEE 118-bus | 0.900 | Trace-Anchored Reference | Uniform signed net | 3.376 | 0.009 | 3.247 | 0.000 |
+| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal exact net value | 400.113 | 1.000 | 66.047 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal gross | 442.183 | 0.939 | 267.148 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Nodal signed linear | 400.221 | 1.000 | 66.180 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform gross | 442.245 | 0.939 | 267.211 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Risk-Constrained Convex Verifier | Uniform signed net | 400.133 | 1.000 | 66.092 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal exact net value | 2.321 | 0.006 | 0.772 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal gross | 490.437 | 1.358 | 490.415 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Nodal signed linear | 3.231 | 0.005 | 2.269 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Uniform gross | 490.437 | 1.358 | 490.415 | 1.000 |
+| PGLib IEEE 118-bus | 0.980 | Trace-Anchored Reference | Uniform signed net | 3.231 | 0.005 | 2.269 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal exact net value | 426.870 | 1.000 | 71.454 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal gross | 474.493 | 0.939 | 289.051 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Nodal signed linear | 427.598 | 1.000 | 72.316 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform gross | 474.862 | 0.939 | 289.425 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Risk-Constrained Convex Verifier | Uniform signed net | 427.337 | 1.000 | 72.058 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal exact net value | 3.216 | 0.007 | 3.039 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal gross | 532.020 | 1.376 | 532.020 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Nodal signed linear | 5.413 | 0.008 | 5.381 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Uniform gross | 532.032 | 1.376 | 532.032 | 1.000 |
+| PGLib IEEE 118-bus | 1.020 | Trace-Anchored Reference | Uniform signed net | 5.416 | 0.008 | 5.384 | 1.000 |
 
 ## Binding-constraint stress test
 
 | capacity_multiplier | deadline_multiplier | day | capacity_binding_share | deadline_binding_share | estimator_schema_version | mae_mw | rmse_mw | nrmse | nmae | normalization_mean_truth_mw | bias_mw | max_abs_error_mw | paid_response_mwh | oracle_response_mwh | false_response_mwh | false_response_ratio | underestimation_mwh | credit_precision | credit_recall | credit_f1 | net_system_response_mwh |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.5500 | 0.2500 | 87.5000 | 0.0411 | 0.9118 | 3.0000 | 3.2794 | 4.7593 | 0.3389 | 0.2341 | 14.3314 | -1.1075 | 15.9391 | 15.7160 | 28.1302 | 2.6455 | 0.1375 | 15.0597 | 0.8625 | 0.3941 | 0.4814 | 0.4159 |
-| 0.5500 | 0.5000 | 87.5000 | 0.0411 | 0.9013 | 3.0000 | 3.2794 | 4.7593 | 0.3389 | 0.2341 | 14.3314 | -1.1075 | 15.9391 | 15.7160 | 28.1302 | 2.6455 | 0.1375 | 15.0597 | 0.8625 | 0.3941 | 0.4814 | 0.4159 |
-| 0.5500 | 1.0000 | 87.5000 | 0.0411 | 0.8738 | 3.0000 | 3.2794 | 4.7593 | 0.3389 | 0.2341 | 14.3314 | -1.1075 | 15.9391 | 15.7160 | 28.1302 | 2.6455 | 0.1375 | 15.0597 | 0.8625 | 0.3941 | 0.4814 | 0.4159 |
-| 0.7000 | 0.2500 | 87.5000 | 0.0280 | 0.9118 | 3.0000 | 3.2910 | 4.8252 | 0.3419 | 0.2345 | 14.3314 | -1.1421 | 16.6726 | 15.1220 | 28.1302 | 2.2274 | 0.1306 | 15.2356 | 0.8694 | 0.3920 | 0.4823 | 0.1395 |
-| 0.7000 | 0.5000 | 87.5000 | 0.0280 | 0.9013 | 3.0000 | 3.2910 | 4.8252 | 0.3419 | 0.2345 | 14.3314 | -1.1421 | 16.6726 | 15.1220 | 28.1302 | 2.2274 | 0.1306 | 15.2356 | 0.8694 | 0.3920 | 0.4823 | 0.1395 |
-| 0.7000 | 1.0000 | 87.5000 | 0.0280 | 0.8738 | 3.0000 | 3.2910 | 4.8252 | 0.3419 | 0.2345 | 14.3314 | -1.1421 | 16.6726 | 15.1220 | 28.1302 | 2.2274 | 0.1306 | 15.2356 | 0.8694 | 0.3920 | 0.4823 | 0.1395 |
-| 0.8500 | 0.2500 | 87.5000 | 0.0203 | 0.9118 | 3.0000 | 3.2934 | 4.9605 | 0.3481 | 0.2347 | 14.3314 | -1.1421 | 17.6559 | 14.8673 | 28.1302 | 1.9727 | 0.1253 | 15.2356 | 0.8747 | 0.3920 | 0.4846 | 0.1395 |
-| 0.8500 | 0.5000 | 87.5000 | 0.0203 | 0.9013 | 3.0000 | 3.2934 | 4.9605 | 0.3481 | 0.2347 | 14.3314 | -1.1421 | 17.6559 | 14.8673 | 28.1302 | 1.9727 | 0.1253 | 15.2356 | 0.8747 | 0.3920 | 0.4846 | 0.1395 |
-| 0.8500 | 1.0000 | 87.5000 | 0.0203 | 0.8738 | 3.0000 | 3.2934 | 4.9605 | 0.3481 | 0.2347 | 14.3314 | -1.1421 | 17.6559 | 14.8673 | 28.1302 | 1.9727 | 0.1253 | 15.2356 | 0.8747 | 0.3920 | 0.4846 | 0.1395 |
-| 1.0000 | 0.2500 | 87.5000 | 0.0151 | 0.9118 | 3.0000 | 3.3040 | 5.0521 | 0.3521 | 0.2351 | 14.3314 | -1.1419 | 18.1490 | 14.6872 | 28.1302 | 1.8343 | 0.1221 | 15.2773 | 0.8779 | 0.3911 | 0.4854 | 0.1410 |
-| 1.0000 | 0.5000 | 87.5000 | 0.0151 | 0.9013 | 3.0000 | 3.3040 | 5.0521 | 0.3521 | 0.2351 | 14.3314 | -1.1419 | 18.1490 | 14.6872 | 28.1302 | 1.8343 | 0.1221 | 15.2773 | 0.8779 | 0.3911 | 0.4854 | 0.1410 |
-| 1.0000 | 1.0000 | 87.5000 | 0.0151 | 0.8738 | 3.0000 | 3.3040 | 5.0521 | 0.3521 | 0.2351 | 14.3314 | -1.1419 | 18.1490 | 14.6872 | 28.1302 | 1.8343 | 0.1221 | 15.2773 | 0.8779 | 0.3911 | 0.4854 | 0.1410 |
-| 1.2000 | 0.2500 | 87.5000 | 0.0105 | 0.9118 | 3.0000 | 3.3040 | 5.0689 | 0.3529 | 0.2351 | 14.3314 | -1.1419 | 18.5861 | 14.7965 | 28.1302 | 1.9436 | 0.1246 | 15.2773 | 0.8754 | 0.3911 | 0.4841 | 0.1410 |
-| 1.2000 | 0.5000 | 87.5000 | 0.0105 | 0.9013 | 3.0000 | 3.3040 | 5.0689 | 0.3529 | 0.2351 | 14.3314 | -1.1419 | 18.5861 | 14.7965 | 28.1302 | 1.9436 | 0.1246 | 15.2773 | 0.8754 | 0.3911 | 0.4841 | 0.1410 |
-| 1.2000 | 1.0000 | 87.5000 | 0.0105 | 0.8738 | 3.0000 | 3.3040 | 5.0689 | 0.3529 | 0.2351 | 14.3314 | -1.1419 | 18.5861 | 14.7965 | 28.1302 | 1.9436 | 0.1246 | 15.2773 | 0.8754 | 0.3911 | 0.4841 | 0.1410 |
+| 0.5500 | 0.2500 | 87.5000 | 0.0334 | 0.9118 | 3.0000 | 2.6795 | 3.8382 | 0.3007 | 0.2129 | 12.0798 | -1.1237 | 12.4930 | 12.9282 | 22.2880 | 2.7004 | 0.1759 | 12.0602 | 0.8241 | 0.4126 | 0.4805 | -0.9182 |
+| 0.5500 | 0.5000 | 87.5000 | 0.0334 | 0.9013 | 3.0000 | 2.6789 | 3.8372 | 0.3007 | 0.2128 | 12.0798 | -1.1237 | 12.4930 | 12.9324 | 22.2880 | 2.6980 | 0.1757 | 12.0535 | 0.8243 | 0.4128 | 0.4807 | -0.9182 |
+| 0.5500 | 1.0000 | 87.5000 | 0.0334 | 0.8738 | 3.0000 | 2.6795 | 3.8372 | 0.3007 | 0.2129 | 12.0798 | -1.1237 | 12.4721 | 12.9170 | 22.2880 | 2.7004 | 0.1760 | 12.0713 | 0.8240 | 0.4122 | 0.4802 | -0.9182 |
+| 0.7000 | 0.2500 | 87.5000 | 0.0227 | 0.9118 | 3.0000 | 2.6812 | 3.9412 | 0.3065 | 0.2129 | 12.0798 | -1.1237 | 13.4031 | 12.6312 | 22.2880 | 2.4066 | 0.1687 | 12.0634 | 0.8313 | 0.4125 | 0.4839 | -0.9182 |
+| 0.7000 | 0.5000 | 87.5000 | 0.0227 | 0.9013 | 3.0000 | 2.6806 | 3.9418 | 0.3065 | 0.2128 | 12.0798 | -1.1237 | 13.4031 | 12.6278 | 22.2880 | 2.4041 | 0.1685 | 12.0643 | 0.8315 | 0.4124 | 0.4839 | -0.9182 |
+| 0.7000 | 1.0000 | 87.5000 | 0.0227 | 0.8738 | 3.0000 | 2.6824 | 3.9423 | 0.3066 | 0.2130 | 12.0798 | -1.1237 | 13.3822 | 12.6310 | 22.2880 | 2.4115 | 0.1690 | 12.0685 | 0.8310 | 0.4122 | 0.4836 | -0.9182 |
+| 0.8500 | 0.2500 | 87.5000 | 0.0159 | 0.9118 | 3.0000 | 2.6988 | 4.0467 | 0.3126 | 0.2139 | 12.0798 | -1.1213 | 13.9499 | 12.4945 | 22.2880 | 2.3022 | 0.1659 | 12.0957 | 0.8341 | 0.4116 | 0.4847 | -0.8989 |
+| 0.8500 | 0.5000 | 87.5000 | 0.0159 | 0.9013 | 3.0000 | 2.6982 | 4.0482 | 0.3127 | 0.2138 | 12.0798 | -1.1213 | 13.9708 | 12.5022 | 22.2880 | 2.2997 | 0.1656 | 12.0854 | 0.8344 | 0.4120 | 0.4851 | -0.8989 |
+| 0.8500 | 1.0000 | 87.5000 | 0.0159 | 0.8738 | 3.0000 | 2.7000 | 4.0497 | 0.3128 | 0.2140 | 12.0798 | -1.1213 | 13.9708 | 12.5166 | 22.2880 | 2.3071 | 0.1660 | 12.0784 | 0.8340 | 0.4122 | 0.4851 | -0.8989 |
+| 1.0000 | 0.2500 | 87.5000 | 0.0117 | 0.9118 | 3.0000 | 2.6988 | 4.0553 | 0.3131 | 0.2139 | 12.0798 | -1.1213 | 14.2777 | 12.4892 | 22.2880 | 2.2982 | 0.1658 | 12.0969 | 0.8342 | 0.4115 | 0.4847 | -0.8989 |
+| 1.0000 | 0.5000 | 87.5000 | 0.0117 | 0.9013 | 3.0000 | 2.6982 | 4.0570 | 0.3132 | 0.2138 | 12.0798 | -1.1213 | 14.2985 | 12.4995 | 22.2880 | 2.2957 | 0.1654 | 12.0842 | 0.8346 | 0.4121 | 0.4852 | -0.8989 |
+| 1.0000 | 1.0000 | 87.5000 | 0.0117 | 0.8738 | 3.0000 | 2.6985 | 4.0576 | 0.3132 | 0.2139 | 12.0798 | -1.1213 | 14.2985 | 12.5077 | 22.2880 | 2.2969 | 0.1654 | 12.0772 | 0.8346 | 0.4123 | 0.4854 | -0.8989 |
+| 1.2000 | 0.2500 | 87.5000 | 0.0087 | 0.9118 | 3.0000 | 2.6988 | 4.0927 | 0.3155 | 0.2139 | 12.0798 | -1.1213 | 14.7356 | 12.6109 | 22.2880 | 2.4075 | 0.1693 | 12.0845 | 0.8307 | 0.4121 | 0.4833 | -0.8989 |
+| 1.2000 | 0.5000 | 87.5000 | 0.0087 | 0.9013 | 3.0000 | 2.6985 | 4.0938 | 0.3155 | 0.2139 | 12.0798 | -1.1213 | 14.7356 | 12.6157 | 22.2880 | 2.4062 | 0.1691 | 12.0784 | 0.8309 | 0.4122 | 0.4835 | -0.8989 |
+| 1.2000 | 1.0000 | 87.5000 | 0.0087 | 0.8738 | 3.0000 | 2.6985 | 4.0938 | 0.3155 | 0.2139 | 12.0798 | -1.1213 | 14.7356 | 12.6157 | 22.2880 | 2.4062 | 0.1691 | 12.0784 | 0.8309 | 0.4122 | 0.4835 | -0.8989 |
 
 ## Exact multi-participant value allocation
 
 | baseline_quality | allocation_method | mean_participant_absolute_error_usd | mean_absolute_budget_residual_usd | max_absolute_budget_residual_usd | mean_absolute_total_value_error_usd |
 | --- | --- | --- | --- | --- | --- |
-| Risk-Constrained Convex Verifier | Exact Shapley net value | 101.5774 | 0.0000 | 0.0000 | 353.9058 |
-| Risk-Constrained Convex Verifier | Leave-one-out marginal | 100.9162 | 7.2806 | 60.9791 | 352.0092 |
-| Risk-Constrained Convex Verifier | Nodal signed linear | 102.2336 | 2.8658 | 52.3508 | 353.7856 |
-| Risk-Constrained Convex Verifier | Standalone avoided cost | 102.5962 | 7.3851 | 60.9791 | 357.3421 |
+| Risk-Constrained Convex Verifier | Exact Shapley net value | 92.5191 | 0.0000 | 0.0000 | 306.0661 |
+| Risk-Constrained Convex Verifier | Leave-one-out marginal | 92.7148 | 22.9814 | 1106.3335 | 326.4203 |
+| Risk-Constrained Convex Verifier | Nodal signed linear | 88.0916 | 0.7420 | 25.3297 | 305.7781 |
+| Risk-Constrained Convex Verifier | Standalone avoided cost | 92.9111 | 23.0101 | 1106.3335 | 297.4515 |
 | Trace-Anchored Reference | Exact Shapley net value | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
-| Trace-Anchored Reference | Leave-one-out marginal | 2.2738 | 7.2470 | 67.9922 | 7.2470 |
-| Trace-Anchored Reference | Nodal signed linear | 4.3386 | 12.8193 | 162.5464 | 12.8193 |
-| Trace-Anchored Reference | Standalone avoided cost | 2.3060 | 7.7982 | 70.3043 | 7.7982 |
+| Trace-Anchored Reference | Leave-one-out marginal | 0.6640 | 1.9721 | 19.0041 | 1.9721 |
+| Trace-Anchored Reference | Nodal signed linear | 2.4368 | 8.0559 | 116.3197 | 8.0559 |
+| Trace-Anchored Reference | Standalone avoided cost | 0.6803 | 2.0216 | 18.2290 | 2.0216 |
 
 ## Complete N-1 security-aware settlement
 
 | baseline_quality | mechanism | mean_absolute_error_usd | median_absolute_error_usd | mean_overpayment_usd | mean_payment_usd | mean_realized_n1_value_usd | maximum_post_contingency_loading |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Risk-Constrained Convex Verifier | Base-case exact net value | 207.5251 | 126.3627 | 156.7248 | 0.7926 | -105.1319 | 1.0000 |
-| Risk-Constrained Convex Verifier | N-1 exact net value | 155.1437 | 113.2993 | 36.7303 | -186.8148 | -105.1319 | 1.0000 |
-| Risk-Constrained Convex Verifier | N-1 signed linear | 155.0230 | 112.5041 | 37.3166 | -185.5218 | -105.1319 | 1.0000 |
-| Trace-Anchored Reference | Base-case exact net value | 192.6935 | 98.5047 | 185.2088 | 72.5922 | -105.1319 | 1.0000 |
-| Trace-Anchored Reference | N-1 exact net value | 0.9026 | 0.8219 | 0.0120 | -106.0104 | -105.1319 | 1.0000 |
-| Trace-Anchored Reference | N-1 signed linear | 2.2985 | 0.6119 | 2.0779 | -103.2745 | -105.1319 | 1.0000 |
+| Risk-Constrained Convex Verifier | Base-case exact net value | 192.9781 | 121.7505 | 134.2852 | 2.1665 | -73.4257 | 1.0000 |
+| Risk-Constrained Convex Verifier | N-1 exact net value | 159.4832 | 116.4653 | 38.3713 | -156.1663 | -73.4257 | 1.0000 |
+| Risk-Constrained Convex Verifier | N-1 signed linear | 159.5142 | 115.9647 | 38.9619 | -155.0162 | -73.4257 | 1.0000 |
+| Trace-Anchored Reference | Base-case exact net value | 165.2880 | 85.2083 | 156.6165 | 74.5193 | -73.4257 | 1.0000 |
+| Trace-Anchored Reference | N-1 exact net value | 1.0178 | 0.9790 | 0.0069 | -74.4297 | -73.4257 | 1.0000 |
+| Trace-Anchored Reference | N-1 signed linear | 2.2530 | 0.5885 | 1.9695 | -71.7399 | -73.4257 | 1.0000 |
 
 ## Scenario-robust N-1 payment certificate
 
 | conversion_scenario | conversion_scale_factor | counterfactual_method | mean_payment_usd | mean_realized_value_usd | mean_absolute_error_usd | mean_overpayment_usd | maximum_post_contingency_loading |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| q10 | 0.7342 | Feasible Quantile Projection | -135.2360 | -76.2536 | 113.8132 | 27.4154 | 1.0000 |
-| q10 | 0.7342 | Payment-Certified N-1 Verifier | -136.1515 | -76.2536 | 114.3165 | 27.2093 | 1.0000 |
-| q10 | 0.7342 | Risk-Constrained Convex Verifier | -136.7991 | -76.2536 | 113.7268 | 26.5907 | 1.0000 |
-| q10 | 0.7342 | Single Feasible Projection | -135.5559 | -76.2536 | 113.7575 | 27.2276 | 1.0000 |
-| q50 | 0.9957 | Feasible Quantile Projection | -183.8867 | -104.6624 | 154.6133 | 37.6945 | 1.0000 |
-| q50 | 0.9957 | Payment-Certified N-1 Verifier | -185.1282 | -104.6624 | 155.2808 | 37.4075 | 1.0000 |
-| q50 | 0.9957 | Risk-Constrained Convex Verifier | -186.0088 | -104.6624 | 154.4787 | 36.5662 | 1.0000 |
-| q50 | 0.9957 | Single Feasible Projection | -184.3189 | -104.6624 | 154.5212 | 37.4324 | 1.0000 |
-| q90 | 1.2780 | Feasible Quantile Projection | -236.6478 | -136.3066 | 198.6828 | 49.1708 | 1.0000 |
-| q90 | 1.2780 | Payment-Certified N-1 Verifier | -238.2828 | -136.3066 | 199.5121 | 48.7680 | 1.0000 |
-| q90 | 1.2780 | Risk-Constrained Convex Verifier | -239.4151 | -136.3066 | 198.4805 | 47.6860 | 1.0000 |
-| q90 | 1.2780 | Single Feasible Projection | -237.2443 | -136.3066 | 198.5369 | 48.7996 | 1.0000 |
+| q10 | 0.7342 | Feasible Quantile Projection | -142.3448 | -59.8285 | 138.9900 | 28.2368 | 1.0000 |
+| q10 | 0.7342 | Payment-Certified N-1 Verifier | -145.2914 | -59.8285 | 141.9366 | 28.2368 | 1.0000 |
+| q10 | 0.7342 | Risk-Constrained Convex Verifier | -128.2378 | -59.8285 | 131.0399 | 31.3153 | 1.0000 |
+| q10 | 0.7342 | Single Feasible Projection | -127.9646 | -59.8285 | 131.0316 | 31.4477 | 1.0000 |
+| q50 | 0.9957 | Feasible Quantile Projection | -193.9601 | -82.5630 | 189.0998 | 38.8514 | 1.0000 |
+| q50 | 0.9957 | Payment-Certified N-1 Verifier | -197.9336 | -82.5630 | 193.0733 | 38.8514 | 1.0000 |
+| q50 | 0.9957 | Risk-Constrained Convex Verifier | -174.5203 | -82.5630 | 178.0943 | 43.0685 | 1.0000 |
+| q50 | 0.9957 | Single Feasible Projection | -174.1497 | -82.5630 | 178.0829 | 43.2481 | 1.0000 |
+| q90 | 1.2780 | Feasible Quantile Projection | -249.8611 | -108.3053 | 242.7635 | 50.6038 | 1.0000 |
+| q90 | 1.2780 | Payment-Certified N-1 Verifier | -254.9343 | -108.3053 | 247.8367 | 50.6038 | 1.0000 |
+| q90 | 1.2780 | Risk-Constrained Convex Verifier | -224.6296 | -108.3053 | 228.6828 | 56.1792 | 1.0000 |
+| q90 | 1.2780 | Single Feasible Projection | -224.1519 | -108.3053 | 228.6685 | 56.4109 | 1.0000 |
 
 ## Validation-frozen payment target selection
 
-| candidate_index | candidate_name | mean_validation_payment_mae_usd | validation_cells | selected |
-| --- | --- | --- | --- | --- |
-| 3 | Projection rho=1 | 53.6311 | 384 | True |
-| 4 | Projection rho=3 | 59.3470 | 384 | False |
-| 6 | Feasible Quantile Projection | 64.6893 | 384 | False |
-| 2 | Projection rho=0.3 | 65.1398 | 384 | False |
-| 0 | Projection rho=0.03 | 70.3217 | 384 | False |
-| 1 | Projection rho=0.1 | 70.3217 | 384 | False |
-| 5 | Projection rho=10 | 78.1599 | 384 | False |
+| candidate_index | candidate_name | mean_validation_payment_mae_usd | validation_cells | selected | candidate_checksum |
+| --- | --- | --- | --- | --- | --- |
+| 6 | Feasible Quantile Projection | 53.4708 | 384 | True | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 3 | Projection rho=1 | 55.5653 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 4 | Projection rho=3 | 64.0555 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 2 | Projection rho=0.3 | 65.1271 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 0 | Projection rho=0.03 | 70.5223 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 1 | Projection rho=0.1 | 70.5223 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
+| 5 | Projection rho=10 | 92.9437 | 384 | False | 0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0 |
 
 ## Nonlinear AC out-of-model validation
 
 | network | counterfactual_method | mean_absolute_error_usd_per_h | mean_overpayment_usd_per_h | maximum_apparent_line_loading | maximum_voltage_violation_pu |
 | --- | --- | --- | --- | --- | --- |
-| IEEE 118-bus | Feasible Quantile Projection | 938.3462 | 810.6601 | 0.0421 | 0.0000 |
-| IEEE 118-bus | Payment-Certified N-1 Verifier | 899.3529 | 772.2511 | 0.0421 | 0.0000 |
-| IEEE 118-bus | Risk-Constrained Convex Verifier | 895.5394 | 767.6414 | 0.0421 | 0.0000 |
-| IEEE 118-bus | Single Feasible Projection | 902.8701 | 776.0207 | 0.0421 | 0.0000 |
-| IEEE 30-bus | Feasible Quantile Projection | 4.1100 | 3.5483 | 1.0000 | 0.0000 |
-| IEEE 30-bus | Payment-Certified N-1 Verifier | 3.9509 | 3.3908 | 1.0000 | 0.0000 |
-| IEEE 30-bus | Risk-Constrained Convex Verifier | 3.9335 | 3.3700 | 1.0000 | 0.0000 |
-| IEEE 30-bus | Single Feasible Projection | 3.9655 | 3.4064 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Feasible Quantile Projection | 505.0174 | 436.8159 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Payment-Certified N-1 Verifier | 483.6718 | 415.6597 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Risk-Constrained Convex Verifier | 481.4573 | 413.0352 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Single Feasible Projection | 485.5532 | 417.6724 | 1.0000 | 0.0000 |
-| IEEE RTS 24-bus | Feasible Quantile Projection | 796.3916 | 688.8471 | 0.9396 | 0.0000 |
-| IEEE RTS 24-bus | Payment-Certified N-1 Verifier | 763.3773 | 656.3919 | 0.9383 | 0.0000 |
-| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 760.0764 | 652.3916 | 0.9383 | 0.0000 |
-| IEEE RTS 24-bus | Single Feasible Projection | 766.3377 | 659.5632 | 0.9383 | 0.0000 |
+| IEEE 118-bus | Feasible Quantile Projection | 763.6594 | 628.9813 | 0.0422 | 0.0000 |
+| IEEE 118-bus | Payment-Certified N-1 Verifier | 806.7824 | 677.6089 | 0.0422 | 0.0000 |
+| IEEE 118-bus | Risk-Constrained Convex Verifier | 963.9089 | 843.2970 | 0.0422 | 0.0000 |
+| IEEE 118-bus | Single Feasible Projection | 964.6491 | 844.0854 | 0.0422 | 0.0000 |
+| IEEE 30-bus | Feasible Quantile Projection | 3.3206 | 2.7261 | 1.0000 | 0.0000 |
+| IEEE 30-bus | Payment-Certified N-1 Verifier | 3.5214 | 2.9527 | 1.0000 | 0.0000 |
+| IEEE 30-bus | Risk-Constrained Convex Verifier | 4.2145 | 3.6834 | 1.0000 | 0.0000 |
+| IEEE 30-bus | Single Feasible Projection | 4.2176 | 3.6867 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Feasible Quantile Projection | 410.5336 | 338.6147 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Payment-Certified N-1 Verifier | 433.9645 | 365.0807 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Risk-Constrained Convex Verifier | 520.8031 | 456.4160 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Single Feasible Projection | 521.2022 | 456.8420 | 1.0000 | 0.0000 |
+| IEEE RTS 24-bus | Feasible Quantile Projection | 647.6314 | 534.0655 | 0.9410 | 0.0000 |
+| IEEE RTS 24-bus | Payment-Certified N-1 Verifier | 684.0717 | 575.1825 | 0.9410 | 0.0000 |
+| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 818.4998 | 717.0665 | 0.9414 | 0.0000 |
+| IEEE RTS 24-bus | Single Feasible Projection | 819.1245 | 717.7308 | 0.9414 | 0.0000 |
 
 ## Complete nonlinear AC post-contingency validation
 
 | network | counterfactual_method | maximum_apparent_line_loading | maximum_voltage_violation_pu | minimum_voltage_pu | maximum_voltage_pu | evaluated_outages | locked_days |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| IEEE 14-bus | Feasible Quantile Projection | 0.01815 | 0.00000 | 0.97323 | 1.06000 | 19 | 54 |
-| IEEE 14-bus | Payment-Certified N-1 Verifier | 0.01814 | 0.00000 | 0.97323 | 1.06000 | 19 | 54 |
-| IEEE 14-bus | Risk-Constrained Convex Verifier | 0.01814 | 0.00000 | 0.97325 | 1.06000 | 19 | 54 |
-| IEEE 14-bus | Single Feasible Projection | 0.01814 | 0.00000 | 0.97323 | 1.06000 | 19 | 54 |
-| IEEE 9-bus | Feasible Quantile Projection | 0.87707 | 0.00000 | 0.94321 | 1.10000 | 6 | 54 |
-| IEEE 9-bus | Payment-Certified N-1 Verifier | 0.87749 | 0.00000 | 0.94319 | 1.10000 | 6 | 54 |
-| IEEE 9-bus | Risk-Constrained Convex Verifier | 0.87703 | 0.00000 | 0.94322 | 1.10000 | 6 | 54 |
-| IEEE 9-bus | Single Feasible Projection | 0.87749 | 0.00000 | 0.94319 | 1.10000 | 6 | 54 |
+| IEEE 14-bus | Feasible Quantile Projection | 0.01815 | 0.00000 | 0.97334 | 1.06000 | 19 | 54 |
+| IEEE 14-bus | Payment-Certified N-1 Verifier | 0.01815 | 0.00000 | 0.97334 | 1.06000 | 19 | 54 |
+| IEEE 14-bus | Risk-Constrained Convex Verifier | 0.01815 | 0.00000 | 0.97334 | 1.06000 | 19 | 54 |
+| IEEE 14-bus | Single Feasible Projection | 0.01815 | 0.00000 | 0.97334 | 1.06000 | 19 | 54 |
+| IEEE 9-bus | Feasible Quantile Projection | 0.87625 | 0.00000 | 0.94328 | 1.10000 | 6 | 54 |
+| IEEE 9-bus | Payment-Certified N-1 Verifier | 0.87625 | 0.00000 | 0.94328 | 1.10000 | 6 | 54 |
+| IEEE 9-bus | Risk-Constrained Convex Verifier | 0.88156 | 0.00000 | 0.94328 | 1.10000 | 6 | 54 |
+| IEEE 9-bus | Single Feasible Projection | 0.88156 | 0.00000 | 0.94328 | 1.10000 | 6 | 54 |
 
 ## Complete spatial-assignment and power-scale robustness
 
 | peak_dc_penetration | counterfactual_method | mean_absolute_error_usd | median_absolute_error_usd | maximum_absolute_error_usd | mean_overpayment_usd | maximum_line_loading | maximum_lmp_spread_usd_per_mwh | assignments | locked_days |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.0300 | Feasible Quantile Projection | 95.4758 | 34.9222 | 678.0849 | 82.4117 | 0.9651 | 0.0000 | 24 | 54 |
-| 0.0300 | Risk-Constrained Convex Verifier | 91.2617 | 33.0945 | 623.9904 | 78.1622 | 0.9647 | 0.0000 | 24 | 54 |
-| 0.0300 | Single Feasible Projection | 92.0088 | 33.0945 | 628.6517 | 79.0130 | 0.9665 | 0.0000 | 24 | 54 |
-| 0.0300 | Trace-Anchored Reference | 0.2294 | 0.1091 | 1.8853 | 0.1339 | 0.9043 | 0.0000 | 24 | 54 |
-| 0.0600 | Feasible Quantile Projection | 191.8167 | 70.0673 | 1365.5703 | 165.6007 | 1.0000 | 0.0021 | 24 | 54 |
-| 0.0600 | Risk-Constrained Convex Verifier | 183.2457 | 66.4304 | 1254.6608 | 156.9514 | 1.0000 | 0.0021 | 24 | 54 |
-| 0.0600 | Single Feasible Projection | 184.7498 | 66.4304 | 1264.2063 | 158.6660 | 1.0000 | 0.0021 | 24 | 54 |
-| 0.0600 | Trace-Anchored Reference | 0.6996 | 0.1361 | 6.5057 | 0.2253 | 0.9930 | 0.0000 | 24 | 54 |
-| 0.0900 | Feasible Quantile Projection | 289.1879 | 105.2141 | 2067.4782 | 249.7440 | 1.0000 | 4.0645 | 24 | 54 |
-| 0.0900 | Risk-Constrained Convex Verifier | 276.2540 | 99.8524 | 1899.6093 | 236.6907 | 1.0000 | 3.8822 | 24 | 54 |
-| 0.0900 | Single Feasible Projection | 278.5421 | 99.8524 | 1914.0068 | 239.2952 | 1.0000 | 4.0645 | 24 | 54 |
-| 0.0900 | Trace-Anchored Reference | 1.3764 | 0.3015 | 12.7399 | 0.3797 | 1.0000 | 0.0021 | 24 | 54 |
+| 0.0300 | Feasible Quantile Projection | 84.3359 | 29.9028 | 756.6081 | 71.8436 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0300 | Risk-Constrained Convex Verifier | 100.2201 | 33.5644 | 765.8542 | 87.9297 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0300 | Single Feasible Projection | 100.2705 | 33.5644 | 765.8542 | 87.9836 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0300 | Trace-Anchored Reference | 32.3196 | 11.1524 | 235.6536 | 28.6144 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0600 | Feasible Quantile Projection | 169.7153 | 59.9659 | 1526.1267 | 144.6566 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0600 | Risk-Constrained Convex Verifier | 201.5092 | 67.3604 | 1544.6190 | 176.8469 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0600 | Single Feasible Projection | 201.6099 | 67.3604 | 1544.6190 | 176.9546 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0600 | Trace-Anchored Reference | 65.6832 | 22.5838 | 484.2177 | 58.1915 | 1.0000 | 0.1442 | 24 | 54 |
+| 0.0900 | Feasible Quantile Projection | 249.2167 | 89.4642 | 2313.9429 | 211.5020 | 1.0000 | 16.9626 | 24 | 54 |
+| 0.0900 | Risk-Constrained Convex Verifier | 296.9506 | 98.9517 | 2343.2309 | 259.8484 | 1.0000 | 20.1363 | 24 | 54 |
+| 0.0900 | Single Feasible Projection | 297.1017 | 98.9517 | 2343.2309 | 260.0100 | 1.0000 | 20.1363 | 24 | 54 |
+| 0.0900 | Trace-Anchored Reference | 100.5972 | 34.0619 | 1593.6164 | 85.1134 | 1.0000 | 0.1442 | 24 | 54 |
 
 ## Continuous-horizon space-time market validation
 
@@ -620,27 +620,27 @@ Overall status: **PASS**.
 
 ## Dependence-robust paired tests
 
-- High-5-of-10 | nrmse: comparator-minus-proposed mean difference 2.3045, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- High-5-of-10 | false_response_ratio: comparator-minus-proposed mean difference 0.7393, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- High-5-of-10 | credit_f1: comparator-minus-proposed mean difference 0.2525, two-sided exact block-sign p=1.526e-05, Holm-adjusted p=0.0001068 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference 1.7749, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.7075, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.2076, two-sided exact block-sign p=0.000885, Holm-adjusted p=0.00531 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference 1.6197, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.6914, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.1840, two-sided exact block-sign p=0.00502, Holm-adjusted p=0.02008 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | nrmse: comparator-minus-proposed mean difference 1.5428, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.6658, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.1592, two-sided exact block-sign p=0.0241, Holm-adjusted p=0.0723 (18 nonoverlapping blocks).
-- Synthetic Control | nrmse: comparator-minus-proposed mean difference 1.5448, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Synthetic Control | false_response_ratio: comparator-minus-proposed mean difference 0.7025, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Synthetic Control | credit_f1: comparator-minus-proposed mean difference 0.2126, two-sided exact block-sign p=0.0008926, Holm-adjusted p=0.00531 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | nrmse: comparator-minus-proposed mean difference 0.0053, two-sided exact block-sign p=0.004074, Holm-adjusted p=0.008148 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0102, two-sided exact block-sign p=0.0625, Holm-adjusted p=0.125 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | credit_f1: comparator-minus-proposed mean difference -0.0032, two-sided exact block-sign p=0.1493, Holm-adjusted p=0.1493 (18 nonoverlapping blocks).
-- Single Feasible Projection | nrmse: comparator-minus-proposed mean difference 0.0014, two-sided exact block-sign p=0.01357, Holm-adjusted p=0.01357 (18 nonoverlapping blocks).
-- Single Feasible Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0059, two-sided exact block-sign p=0.3391, Holm-adjusted p=0.3391 (18 nonoverlapping blocks).
-- Single Feasible Projection | credit_f1: comparator-minus-proposed mean difference -0.0022, two-sided exact block-sign p=0.05859, Holm-adjusted p=0.1172 (18 nonoverlapping blocks).
+- High-5-of-10 | nrmse: comparator-minus-proposed mean difference 3.8694, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- High-5-of-10 | false_response_ratio: comparator-minus-proposed mean difference 0.7732, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- High-5-of-10 | credit_f1: comparator-minus-proposed mean difference 0.2974, two-sided exact block-sign p=2.289e-05, Holm-adjusted p=0.0001373 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference 1.7879, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.6924, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.1768, two-sided exact block-sign p=0.005585, Holm-adjusted p=0.02234 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference 1.7786, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.6910, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.1738, two-sided exact block-sign p=0.008575, Holm-adjusted p=0.02573 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | nrmse: comparator-minus-proposed mean difference 0.5995, two-sided exact block-sign p=0.0001907, Holm-adjusted p=0.0005722 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.3455, two-sided exact block-sign p=3.052e-05, Holm-adjusted p=9.155e-05 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | credit_f1: comparator-minus-proposed mean difference -0.0904, two-sided exact block-sign p=0.06455, Holm-adjusted p=0.1291 (18 nonoverlapping blocks).
+- Synthetic Control | nrmse: comparator-minus-proposed mean difference 2.2070, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Synthetic Control | false_response_ratio: comparator-minus-proposed mean difference 0.7235, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Synthetic Control | credit_f1: comparator-minus-proposed mean difference 0.2350, two-sided exact block-sign p=0.0009384, Holm-adjusted p=0.004692 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | nrmse: comparator-minus-proposed mean difference -0.0236, two-sided exact block-sign p=0.2838, Holm-adjusted p=0.5469 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0485, two-sided exact block-sign p=0.009247, Holm-adjusted p=0.01849 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | credit_f1: comparator-minus-proposed mean difference -0.0668, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Single Feasible Projection | nrmse: comparator-minus-proposed mean difference 0.0002, two-sided exact block-sign p=0.2734, Holm-adjusted p=0.5469 (18 nonoverlapping blocks).
+- Single Feasible Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0004, two-sided exact block-sign p=0.08838, Holm-adjusted p=0.08838 (18 nonoverlapping blocks).
+- Single Feasible Projection | credit_f1: comparator-minus-proposed mean difference -0.0003, two-sided exact block-sign p=0.2954, Holm-adjusted p=0.2954 (18 nonoverlapping blocks).
 
 ## Scope and limitations
 

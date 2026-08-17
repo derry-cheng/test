@@ -49,11 +49,12 @@ distribution or a replacement for the measured scoring trace.
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The
-complete observed regional batch envelope has peaks 70.637, 112.439, 117.936,
-and 43.051 MW. The flexible nameplate of 118 MW is committed before the
-validation/test split; Experiment 16 reconciles this predeclared value against
-the observed envelope and verifies that it covers every observed region-slot.
-Locked outcomes do not select the nameplate.
+raw execution peaks are at most 0.006685 MW per region; after the train-fitted
+batch scaling used for the benchmark, the regional peaks are 61.463, 97.836,
+102.619, and 37.460 MW. The flexible nameplate of 118 MW is committed before
+the validation/test split; Experiment 16 reconciles this predeclared value
+against the scaled benchmark envelope and verifies that it covers every
+observed region-slot. Locked outcomes do not select the nameplate.
 
 The locked-day selector requires both the declared 40-day historical
 information set and the complete 512-slot future deadline window. The final 16

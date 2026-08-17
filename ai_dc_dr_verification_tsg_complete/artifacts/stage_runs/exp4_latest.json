@@ -1,25 +1,25 @@
 {
-  "started_utc": "2026-08-09T17:00:24.810291+00:00",
+  "started_utc": "2026-08-16T17:04:40.537222+00:00",
   "stage_requested": "exp4",
   "resume": true,
   "environment": {
-    "python": "3.12.13 (main, Mar  3 2026, 14:59:34) [Clang 21.1.4 ]",
+    "python": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
     "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
     "processor_count": 9,
     "numpy": "2.3.5",
     "pandas": "2.2.3",
     "scipy": "1.17.0",
     "scikit_learn": "1.8.0",
-    "git_commit": null
+    "git_commit": "3bb0d725e6d7037f61e852fd0897228e822d2d68"
   },
   "stages": {
     "exp4": {
-      "started_utc": "2026-08-09T17:00:24.814212+00:00",
+      "started_utc": "2026-08-16T17:04:40.725059+00:00",
       "status": "completed",
-      "finished_utc": "2026-08-09T17:00:33.646860+00:00",
-      "elapsed_seconds": 8.832648
+      "finished_utc": "2026-08-16T17:04:47.035898+00:00",
+      "elapsed_seconds": 6.310839
     }
   },
-  "finished_utc": "2026-08-09T17:00:33.647119+00:00",
+  "finished_utc": "2026-08-16T17:04:47.036151+00:00",
   "status": "completed"
 }

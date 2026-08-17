@@ -23,6 +23,7 @@ data:
   inference_peak_target_mw: 145.0
   batch_peak_target_mw: 65.0
   percentile_for_scaling: 0.99
+  scaling_fit_days: 40
 
 workload:
   classes: [realtime_inference, elastic_inference, batch_gpu]
@@ -77,6 +78,10 @@ experiments:
   cross_network_resolution_workers: 4
   n1_load_multiplier: 0.9
   n1_dc_peak_penetration: 0.06
+  n1_security_parallel_workers: 6
+  # Independent nonlinear AC contingency cases are evaluated in a bounded
+  # thread pool; the case set and solver formulation are unchanged.
+  ac_n1_workers: 1
   ac_load_multiplier: 1.0
   ac_dc_peak_penetration: 0.06
   ac_data_center_power_factor: 0.95
@@ -94,13 +99,19 @@ experiments:
   # before the 3%/6%/9% data-center penetration is added.
   spatial_scale_native_load_multiplier: 0.90
   spatial_scale_parallel_workers: 9
-  payment_certificate_parallel_workers: 2
+  payment_certificate_parallel_workers: 6
+  # The contractual certificate generator uses an exact four-segment
+  # piecewise-linear value model.  The locked evaluation is independently
+  # replayed at n1_evaluation_generator_segments=40.
+  payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 6
-  payment_evaluation_parallel_workers: 6
-  # The endpoint audit evaluates the locked profile with all N-1 constraints
-  # at 40 dispatch segments. Four threads are safe for the independent
-  # evaluator; daily checkpoints preserve restartability.
-  interval_certificate_parallel_workers: 6
+  payment_evaluation_parallel_workers: 8
+  # The continuous payment interval is certified by an exact joint LP using
+  # the same four-segment value model as the contractual Experiment 9
+  # certificate. Independent 40-segment replay remains reported in Exp9;
+  # daily Exp15 checkpoints preserve restartability.
+  interval_certificate_generator_segments: 4
+  interval_certificate_parallel_workers: 4
   # The final credit trajectory is constrained on both sides of the
   # validation-selected single feasible projection.  This is a predeclared
   # physical band, not a post-hoc rule: it bounds additional under-credit by

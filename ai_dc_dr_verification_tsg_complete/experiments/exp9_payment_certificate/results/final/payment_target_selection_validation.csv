@@ -1,8 +1,8 @@
-candidate_index,candidate_name,mean_validation_payment_mae_usd,validation_cells,selected
-3,Projection rho=1,53.631056827234524,384,True
-4,Projection rho=3,59.347045246045376,384,False
-6,Feasible Quantile Projection,64.68928782732955,384,False
-2,Projection rho=0.3,65.13978559807094,384,False
-0,Projection rho=0.03,70.32168040098877,384,False
-1,Projection rho=0.1,70.32168040098877,384,False
-5,Projection rho=10,78.15991412767492,384,False
+candidate_index,candidate_name,mean_validation_payment_mae_usd,validation_cells,selected,candidate_checksum
+6,Feasible Quantile Projection,53.47080820896543,384,True,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+3,Projection rho=1,55.56529140657424,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+4,Projection rho=3,64.0554687504449,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+2,Projection rho=0.3,65.12708172397586,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+0,Projection rho=0.03,70.52234974847168,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+1,Projection rho=0.1,70.52234974847168,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
+5,Projection rho=10,92.94369803989429,384,False,0da32ae68e32dcca5f87bf3587984a1b3caac3c6702e32f6b95781c9a96496d0
