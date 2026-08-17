@@ -1,14 +1,4 @@
-# Experiment 17: Event-Gate Decision-Time Information
+YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíßnÓ¢Ö¥¢ëiºÙbë5# Experiment 17: Event-Gate Decision-Time Information
 
 This experiment evaluates the workload-state verifier under the information
-available at the first declared event interval. Every arrival after the event
-gate is removed from the optimization input, and the terminal equality is
-relaxed only for work that is not yet due. The complete-ledger verifier is
-reported as a separate information-rich comparator. A third
-`Committed-ledger pointwise-safe verifier` credits only the submitted ledger
-and imposes a fixed event upper bound, so it is a deployment safety mode rather
-than a predictive-performance claim. The locked execution trace is used only
-for scoring; it is never supplied to any decision.
-
-Outputs are written to `results/intermediate/` and `results/final/`, with the
-English visualization `figures/fig23_decision_time_information.png` and PDF.
+available at the fiÛní¢G§²ÚîÆ­yÒ&Rw&—GFVâFò&W7VÇG2ö–çFW&ÖVF–FRöæB&W7VÇG2öf–æÂöÂv—F‚F†P¤VævÆ—6‚f—7VÆ—¦F–öâf–wW&W2öf–s#5öFV6—6–öå÷F–ÖUö–æf÷&ÖF–öâçævæBDbà 

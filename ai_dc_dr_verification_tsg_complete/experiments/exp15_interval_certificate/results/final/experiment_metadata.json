@@ -1,39 +1,4 @@
-{
+YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíïŞ“¢Ö¥¢ëiºÙbë5{
   "audit_type": "independent continuous-segment audit of the locked payment-certified profile",
   "interval": {
-    "lower_endpoint": 0.5844748596130233,
-    "upper_endpoint": 1.1498888413904444,
-    "unclipped_upper_endpoint": 2.6930887095833507,
-    "source": "held-out per-job measured-to-predicted energy ratio q01 and q99, with the upper endpoint clipped by the predeclared 118-MW capacity commitment",
-    "upper_endpoint_policy": "min(held-out q99, capacity-safe calibration factor); the clipping factor is selected from the immutable ledger capacity audit before interval evaluation"
-  },
-  "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
-  "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
-  "external_transfer_comparator": "Feasible Quantile Projection",
-  "certificate_generator_segments": 4,
-  "locked_days": 54,
-  "event_slots": [
-    64,
-    65,
-    66,
-    67,
-    68,
-    69,
-    70,
-    71
-  ],
-  "parallel_workers": 4,
-  "interval_certificate_valid": true,
-  "certificate_scope": "continuous-segment payment interval from q01 to the capacity-safe q99 endpoint, with exact joint-LP lower bound and convex endpoint upper bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
-  "maximum_payment_cap_violation_usd": 2.8958311304450035e-09,
-  "payment_value_interval": {
-    "endpoint_file": "payment_value_interval_certificates.csv",
-    "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
-    "unclipped_upper_endpoint": 2.6930887095833507,
-    "capacity_safe_upper_endpoint": 1.1498888413904444,
-    "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
-    "oracle_used_only_for_coverage_audit": false,
-    "mean_oracle_coverage": null,
-    "intervals_are_contractual": true
-  }
-}
+    "lower_endpoint": 0.584474859613ëŞ­¢G§²ÚîÆ­yÖ÷&–ær"À¢&÷&6ÆU÷W6VEööæÇ•öf÷%ö6÷fW&vUöVF—B#¢G'VRÀ¢&ÖVåö÷&6ÆUö6÷fW&vR#¢ãsCsCsCsCsCrÀ¢&–çFW'fÇ5ö&Uö6öçG&7GVÂ#¢G'VP¢Ğ§
