@@ -464,6 +464,16 @@ def response_metrics(
     recall = matched / max(true_positive, 1e-9)
     return {
         "paid_response_mwh": float(paid),
+        # ``paid_response_mwh`` is the gross credit implied by the submitted
+        # counterfactual.  Settlement is completed after the event meter is
+        # available, so the payable amount is the pointwise intersection with
+        # the metered response relative to the precommitted no-event baseline.
+        # In locked evaluation ``oracle_baseline`` is that no-event profile and
+        # is read only after the event for scoring; it never enters a decision.
+        # Keeping both quantities prevents a forecast credit from being
+        # mistaken for a cash transfer.
+        "meter_capped_response_mwh": float(matched),
+        "meter_capped_false_response_mwh": 0.0,
         "oracle_response_mwh": float(true_positive),
         "false_response_mwh": float(false),
         "false_response_ratio": float(false / max(paid, 1e-9)),

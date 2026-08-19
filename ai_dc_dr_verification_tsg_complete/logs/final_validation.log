@@ -1,2 +1,7 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíÛ^¢Ö¥¢ëiºÙbë52026-08-17 18:55:19,757 | INFO | aicdr | Unified run started; stage=audit, resume=False
-2026-08-17 18:55:19,761 | INFO | aicdr | Audit-only stage uses×^-¢G§²ÚîÆ­yÒÂ”ädòÂ–6G"ÂVæ–f–VB—VÆ–æR&öw&W73¢RãRƒó#7FvW26ö×ÆWFVB£##bÓ‚Órƒ£SS£#Ã#3BÂ”ädòÂ–6G"ÂVæ–f–VB'Vâ6ö×ÆWFVB7V66W76gVÆÇ
+2026-08-17 18:55:19,757 | INFO | aicdr | Unified run started; stage=audit, resume=False
+2026-08-17 18:55:19,761 | INFO | aicdr | Audit-only stage uses the locked processed workload; raw-source validation remains enforced by data/full stages.
+2026-08-17 18:55:19,761 | INFO | aicdr | ===== START STAGE AUDIT =====
+2026-08-17 18:55:20,231 | INFO | aicdr | Audit complete: 255/255 checks passed
+2026-08-17 18:55:20,234 | INFO | aicdr | ===== END STAGE AUDIT (0.5 s) =====
+2026-08-17 18:55:20,234 | INFO | aicdr | Unified pipeline progress: 5.0% (1/20 stages completed)
+2026-08-17 18:55:20,234 | INFO | aicdr | Unified run completed successfully

@@ -1,2 +1,10 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíçn“¢Ö¥¢ëiºÙbë5split,comparison,nrmse_change,false_response_change_mwh,credit_f1_change,interpretation
-validation,unconstrained convex ensemble vs single reference,-ãn­¢G§²ÚîÆ­yÒ&VfW&Væ6RÂÓãƒ“ƒ#C“#s“s2ÂÓã##ƒƒ“#Ccsƒ3#CcCbÂÓã33sƒ“S“Cƒƒ33“sc2ÆFF—F–öæÂW†7Bv÷&¶ÆöBÅv—F‚6VÆV7FVBö–çGv—6RWfVçBVçfVÆ÷P 
+split,comparison,nrmse_change,false_response_change_mwh,credit_f1_change,interpretation
+validation,unconstrained convex ensemble vs single reference,-0.053016317732849316,3.2520638605946157,0.10050592357350313,convex risk fit before pointwise event envelope
+validation,total-budget-only ensemble vs single reference,-0.05947286258912976,-0.0022420807374974316,0.06806826991637543,convex risk fit before pointwise event envelope
+validation,CVaR-only ensemble vs single reference,-0.05805910660906066,1.9985155389648073,0.10189249142343199,convex risk fit before pointwise event envelope
+validation,total+CVaR ensemble vs single reference,-0.05946154723389491,-0.0004726920564772641,0.06795885318000033,convex risk fit before pointwise event envelope
+test,unconstrained convex ensemble vs single reference,-0.01120648124716278,2.830298447136431,0.04982225871603585,convex risk fit before pointwise event envelope
+test,total-budget-only ensemble vs single reference,-0.014411542838841995,0.6735625875040949,0.04273546928897659,convex risk fit before pointwise event envelope
+test,CVaR-only ensemble vs single reference,-0.013879995877683182,1.9491525466624406,0.05559796412176188,convex risk fit before pointwise event envelope
+test,total+CVaR ensemble vs single reference,-0.014413965221237224,0.6742851313102263,0.042661055971769446,convex risk fit before pointwise event envelope
+test,final pointwise-envelope verifier vs single reference,-0.0001898002491207973,-0.022889246781324646,-0.00033789594818339763,additional exact workload LP with selected pointwise event envelope

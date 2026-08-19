@@ -107,7 +107,7 @@ let
 \[
 B_j^{\mathrm{ref}}
 =\sum_{n\in\mathcal V_j}[p_n^{(\ell^\star)}
--\max\{p_n^{\mathrm{obs}},p_n^{\mathrm{actual}}\}]_+.
+-\max\{p_n^{\mathrm{obs}},p_n^{1}\}]_+.
 \]
 
 For a pre-declared reserve \(\beta\in(0,1]\), define
@@ -158,7 +158,9 @@ monotone,
 
 for every sample and every possible unseen \(c_n\). Summing proves daily and
 full-panel false-credit-MWh noninferiority on the locked test set without using
-test labels. The lower inequality also gives
+test labels. The statement is relative to the selected workload-feasible
+reference; it does not make that reference a distribution-free estimate of an
+arbitrary operator's no-event meter. The lower inequality also gives
 \[
 [c_n-p_n^{\mathrm{safe}}]_+
 \leq[c_n-p_n^{(\ell^\star)}]_++\varepsilon,

@@ -1,6 +1,37 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíç®Ó¢Ö¥¢ëiºÙbë5{
+{
   "experiment": "event-gate information-boundary verification",
   "locked_days": 54,
   "event_gate_slot": 64,
   "terminal_completion_index": 63,
-  "ã®í¢G§²ÚîÆ­yÖ–væ÷7F–2âF†R6öÖÖ—GFVBÖÆVFvW"&öf–ÆR—2F†RFWÆ÷–&ÆR6fRÖöFS²F†R6ö×ÆWFRÖÆVFvW"6ö×&F÷"VçF–f–W2F†RfÇVRöb÷7BÖWfVçB–æf÷&ÖF–öââ §
+  "future_arrivals_removed_from_decision": true,
+  "target_source": "interval-online metadata gradient boosting refit with the current-day post-gate arrivals masked before feature construction",
+  "target_future_arrivals_used_for_decision": false,
+  "causal_reserve_planning": {
+    "daily_file": "causal_reserve_validation_daily.csv",
+    "summary_file": "causal_reserve_validation_summary.csv",
+    "candidate_quantiles": [
+      0.55,
+      0.6,
+      0.65,
+      0.7
+    ],
+    "selected_quantile": 0.6,
+    "cap_quantile": 0.75,
+    "validation_false_credit_budget_mwh": 0.25,
+    "future_arrivals_used_for_payment": false,
+    "interpretation": "The empirical reserve is a pre-gate planning envelope. It can reserve capacity for future arrivals, but the event-gate payment profile is solved on the committed ledger and cannot credit the reserved jobs before a later commitment checkpoint."
+  },
+  "scoring_source": "locked trace-anchored execution and semi-synthetic response",
+  "meter_cap_scoring_note": "For the locked audit, the trace-anchored no-event profile is used only after the event to score the meter-capped settlement rule; it is not supplied to target fitting, gate decisions, or any workload optimization. Production deployment substitutes a precommitted no-event contract profile.",
+  "selection_uses_locked_test_truth": false,
+  "all_decision_time_lp_solved": true,
+  "committed_ledger_safe_mode": {
+    "method": "Committed-ledger rolling-service verifier",
+    "future_arrivals_used_for_decision": false,
+    "event_upper_bound_source": "physical flexible-capacity bound",
+    "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
+    "rolling_commitment": true,
+    "settlement_rule": "meter-capped-after-event; gross forecast credit is not paid above the pointwise metered response"
+  },
+  "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."
+}

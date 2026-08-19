@@ -48,6 +48,30 @@ data-center scheduling foundations in \cite{liu2013dcdr,adnan2012geographical}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters rather than facts inferred from those papers.
 
+For an event window, \(p^0\) is the no-event counterfactual, \(p^1\) is the
+declared workload-feasible event trajectory, and \(p^{\mathrm{obs}}\) is the
+execution meter used only after the event for locked scoring. A submitted
+counterfactual \(\widehat p^0\) creates gross forecast credit
+
+\[
+F=\Delta t\sum_{d,t\in\mathcal E}
+\left[\widehat p^0_{dt}-\max\{p^{\mathrm{obs}}_{dt},p^1_{dt}\}\right]_+.
+\]
+
+The settlement rule is distinct from this gross risk metric. After the event
+meter closes, the payable response is
+
+\[
+Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
+\min\left\{[\widehat p^0_{dt}-p^{\mathrm{obs}}_{dt}]_+,
+[p^0_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
+\]
+
+In locked evaluation, \(p^0\) is the trace-anchored no-event profile read only
+after the event; production deployment substitutes a precommitted no-event
+contract profile. Neither profile enters target fitting, gate decisions, or
+workload optimization.
+
 Define cumulative arrivals and cumulative service as
 
 \[
@@ -196,7 +220,7 @@ worst contiguous-fold validation nRMSE. For validation sample \(n\), define the
 maximum non-false-credit baseline
 
 \[
-c_n=\max\{p_n^{\mathrm{obs}},p_n^{\mathrm{actual}}\}
+c_n=\max\{p_n^{\mathrm{obs}},p_n^{1}\}
 \]
 
 and the day-specific reference false-credit exposure
@@ -264,7 +288,7 @@ p_{dt}(x^{\mathrm{safe}})
 \]
 
 The single projection is a feasible point, so this envelope problem cannot be
-empty. For any unseen observed/actual pair, monotonicity of the positive part
+empty. For any realized meter/scoring pair, monotonicity of the positive part
 gives samplewise and daily
 
 \[
@@ -273,7 +297,8 @@ gives samplewise and daily
 \]
 
 Thus the final schedule is both workload feasible and deterministically
-noninferior in false-credit MWh to the independent single projection. The
+noninferior in false-credit MWh to the independent single projection, relative
+to that selected workload-feasible reference. The
 six-point penalty grid and reserve grid are pre-declared experimental design
 choices, not externally sourced physical laws.
 

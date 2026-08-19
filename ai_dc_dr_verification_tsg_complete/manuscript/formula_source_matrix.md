@@ -11,7 +11,7 @@
 | P2 | 累计状态约束 \(y_{skt}\le A_{skt}\)、\(y_{skt}\ge A_{sk,t-D_k}\) | 原创等价改写 | 基础期限调度见 \cite{adnan2012geographical} | 本文必须证明累计状态形式与逐任务释放—期限可行性等价，并报告终端守恒条件。 |
 | M3b | 连续滚动终端条件 \(y_{skT^+}=A_{sk,\max\{T^0,T^+-D_k\}}\) 与两阶段词典序轨迹嵌入 | 采用并扩展 | 滚动时域数据中心调度依据 \cite{zhang2023receding}；最优面与绝对值上图依据 \cite{boyd2004convex} | 窗口保留全部真实未来到达，不补零、不循环复制；第一阶段只最小化轨迹 L1 距离，第二阶段在该最优面最小化运行成本，数值容差必须显式审计。 |
 | C2 | 可行解凸组合仍可行 | 采用并实例化 | 凸集与仿射约束的标准性质 \cite{boyd2004convex} | 引用支撑一般性质；本文还必须逐项确认六个投影共享同一到达量和同一线性可行域。 |
-| P2.2 | 总暴露—日尾部条件风险约束与点式安全包络 | 原创方法与推论 | 凸二次规划与正部函数依据 \cite{boyd2004convex}；条件风险价值依据 \cite{rockafellar2000cvar} | 验证问题同时约束总虚假信用与日级 75% 条件风险价值；\(\beta\) 只通过连续时间折叠选择。最终再解一个带 \(p^{\rm safe}_{dt}\le p^{(\ell^\star)}_{dt}\) 事件上界的完整任务规划，由正部函数单调性得到对任意未知执行轨迹的虚假信用 MWh 非劣保证；双侧带的下界与额外欠信用上界见 P2.2b，不使用测试标签。 |
+| P2.2 | 总暴露—日尾部条件风险约束与点式安全包络 | 原创方法与推论 | 凸二次规划与正部函数依据 \cite{boyd2004convex}；条件风险价值依据 \cite{rockafellar2000cvar} | 验证问题同时约束总虚假信用与日级 75% 条件风险价值；\(\beta\) 只通过连续时间折叠选择。最终再解一个带 \(p^{\rm safe}_{dt}\le p^{(\ell^\star)}_{dt}\) 事件上界的完整任务规划，由正部函数单调性得到相对于所选工作负载可行参考的逐点虚假信用 MWh 非劣保证；这不等同于对任意运营商无事件电表的分布无关预测覆盖。双侧带的下界与额外欠信用上界见 P2.2b，不使用测试标签。 |
 | M4 | 直流 SCED：节点平衡、线路潮流、机组上下限和分段线性成本 | 采用 | MATPOWER/PYPOWER 的网络与二次成本模型 \cite{zimmerman2011matpower}；PGLib 标准测试数据 \cite{babaeinejadsarookolaee2021pglib} | 这是无损直流近似，不得外推为交流可行性。两层均保留 PGLib 拓扑、容量和线路额定值，并按完全一致的 54 个机组节点使用公开 PYPOWER IEEE-118 二次成本；市场结算使用 10 段，独立评分重新求解 80 段，二者不能混称为同一“精确真值”。 |
 | P2.2b | 双侧信用带 \(p^{(\ell^\star)}-\varepsilon\leq p^{\rm safe}\leq p^{(\ell^\star)}\) | 原创方法与推论 | 正部函数单调性与凸可行域依据 \cite{boyd2004convex} | 事件上界保留虚假信用非劣性；固定 \(\varepsilon\) 的下界排除零信用退化，并将额外欠信用上界为 \(\varepsilon|\mathcal D||\mathcal E|\Delta t\)。命题 2 和实验 2 同时审计两侧点式裕度。 |
 | M4b | N--1 线路故障后潮流 \(f_\ell^{(k)}=(H_\ell+L_{\ell k}H_k)(C_gg-p)\) | 采用并完整实例化 | 直流潮流与 PTDF/LODF 定义 \cite{stott2009dc}；基于 LODF 的安全约束调度 \cite{tejada2018lodf}；N--1 规划准则 \cite{nerc2020tpl} | 第 8 个实验同时加入全部有限的非孤岛单线路故障约束，不做故障筛选、线路降额或结果条件化选择；孤岛故障由于单参考节点 PTDF 无法表示而单独报告。公开 RTS-24 数据依据 \cite{grigg1999rts}。 |
@@ -33,7 +33,7 @@
 
 ## 正文公式标签逐一追踪
 
-下表与 `main.tex` 中全部 24 个带编号公式标签一一对应。“本文推导”表示不能用外部文献替代证明，正文必须给出命题、假设与证明；“标准模型”或“标准工具”表示正文首次使用时必须引用所列来源。
+下表与 `main.tex` 中全部 30 个带编号公式标签一一对应。“本文推导”表示不能用外部文献替代证明，正文必须给出命题、假设与证明；“标准模型”或“标准工具”表示正文首次使用时必须引用所列来源。
 
 | 正文标签 | 对应条目 | 依据或证明位置 |
 |---|---|---|
@@ -44,6 +44,7 @@
 | `eq:power` | M3 | 计算服务到设施功率的线性映射依据数据中心负荷调度模型 \cite{liu2013dcdr,cao2022flexibility}。 |
 | `eq:rollingterminal` | M3b | 滚动时域状态保留依据 \cite{zhang2023receding}；本文针对真实未来到达给出终端等式并由命题 2 审计可行性。 |
 | `eq:falsecredit` | M1、P2.2 | 历史基线与事件响应语境依据 \cite{caiso2017baseline}；正部暴露定义及其点式非劣保证由命题 2 证明。 |
+| `eq:meter_cap` | P2.3 | 本文结算定义：提交的 gross forecast credit 在事件计量闭合后与预承诺 no-event profile 相交；锁定审计中的 trace-anchored no-event profile 仅用于事后评分，不进入目标拟合、事件门决策或工作负载优化。 |
 | `eq:profit` | M2 | 基线内生操纵问题依据 \cite{wang2022baseline}；十参考日确定性等价式是本文场景化改写。 |
 | `eq:threshold` | P1 | 线性规划灵敏度依据 \cite{boyd2004convex}；充分必要条件由命题 1 证明。 |
 | `eq:sced` | M4 | 标准无损直流经济调度、网络模型与公开参数依据 \cite{stott2009dc,zimmerman2011matpower,babaeinejadsarookolaee2021pglib}。 |
@@ -51,8 +52,10 @@
 | `eq:projection` | C2、P2.2 | 绝对值上图与凸投影依据 \cite{boyd2004convex}；工作负载可行域保持性由命题 2 证明。 |
 | `eq:totalrisk` | P2.2 | 正部凸约束依据 \cite{boyd2004convex}；风险预算构造为本文方法。 |
 | `eq:cvar` | P2.2 | 条件风险价值及其经验上图依据 \cite{rockafellar2000cvar}；与总暴露的联合约束为本文方法。 |
-| `eq:envelope` | P2.2 | 点式安全包络为本文方法；对任意执行轨迹的虚假信用非劣性由命题 2 证明。 |
+| `eq:riskepigraph` | P2.2 | CVaR 的阈值与尾部松弛上图依据 \cite{rockafellar2000cvar,boyd2004convex}；线性化实现和验证期预算为本文方法。 |
+| `eq:envelope` | P2.2 | 点式安全包络为本文方法；相对于所选工作负载可行参考的虚假信用非劣性由命题 2 证明。 |
 | `eq:twosided` | P2.2b | 双侧信用带为本文方法；固定 \(\varepsilon\) 的下界防止零信用退化，并由命题 2 同时给出虚假信用非劣性与额外欠信用上界。 |
+| `eq:causalreserve` | P2.4 | 仅使用历史日的经验分位数 reserve 是本文的决策时间规划定义；它不进入事件支付资格，候选分位数与验证期 false-credit budget 在实验设置中预先声明。 |
 | `eq:bregman` | P3 | 凸值函数次梯度不等式依据 \cite{boyd2004convex}；在有符号节点价值中的具体结论由命题 3 证明。 |
 | `eq:spacetime` | M5b | 虚拟链路与时空补偿依据 \cite{zhang2020virtuallinks,zhang2022remunerating}。 |
 | `eq:capacityservice` | M5c | 需求响应容量信用与事后个体理性依据 \cite{satchidanandan2023twostage,chen2021incentive}。 |
@@ -61,6 +64,7 @@
 | `eq:n1` | M4b | PTDF/LODF 与预防性安全约束依据 \cite{stott2009dc,tejada2018lodf,nerc2020tpl}。 |
 | `eq:paymentcert` | P4 | SCED 原始可行域和线性规划上图依据 \cite{zimmerman2011matpower,boyd2004convex}；以验证期选定的单一可行投影为合同参考、以可行分位投影为外部转账比较的多换算场景词典序证书为本文方法。 |
 | `eq:paymentdominance` | P4 | 本文确定性推论；由 `eq:paymentcert` 的可行调度上界和同场景实际成本相消得到，完整证明见命题 4。参考对象是验证期选定的单一可行投影，不是分位投影。 |
+| `eq:paymentinterval` | P5 | 连续 workload-hull 支付区间是本文的确定性值函数定义与命题 5；有限换算场景和闭区间端点由验证期锁定候选 profile 生成，不宣称概率覆盖。 |
 | `eq:shapley` | M6、M6b | Shapley 定义、效率和组合权重依据 \cite{shapley1953value}；有符号调度特征函数为本文实例化。 |
 | `eq:acplan` | M4c | 交流最优潮流与公开测试系统依据 \cite{zimmerman2011matpower}；跨事故固定非参考机组有功计划是本文预防性验证边界。 |
 

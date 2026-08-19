@@ -1,2 +1,3 @@
-YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éí×oS¢Ö¥¢ëiºÙbë5baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,migration_mwh
-Wan--Li DC-ST joint spatio-temporal ledger schedule,wan20ÛÛh‘éì¶»§q«^tÜàØÌĞÔÈÜØäÜÈÔÔ)]…¸´µ1¤µPÑ•µÁ½É…°µ½¹±ä±•‘•ÈÍ¡•‘Õ±”±İ…¸ÈÀÈÙÍÕŒ±•á…Ñ}±•‘•É}±À°ÔĞ°À¸ÌÜÀÄÀÌäÜäÌÔÄÌÔÀà°Ä¸ÔĞäÈÀÔàØàÌàÈÄÔÀØ°À¸ĞÄÄÀÈäØĞÈÈÄÄàĞÔÔ°À¸À
+baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,migration_mwh
+Wan--Li DC-ST joint spatio-temporal ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,4.3278634527697255
+Wan--Li DC-T temporal-only ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,0.0
