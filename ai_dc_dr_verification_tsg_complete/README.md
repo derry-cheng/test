@@ -48,7 +48,7 @@ balance, and stage-manifest isolation.
 |---|---|---|
 | Conventional DR baselines create an incentive to inflate event-window consumption | Ten-reference-day expected-profit equilibrium over the complete price × call-probability grid | `exp1_manipulation` |
 | Statistical baselines can credit load shifting rather than physical system reduction | Locked 16-day validation / 54-day test evaluation against trace-anchored execution | `exp2_baseline_verification` |
-| Workload telemetry improves verification beyond an equally informed statistical learner | Complete-ledger learner, independent single projection, total-plus-tail-risk convex ensemble, and a final exact pointwise risk-envelope LP | `exp2_baseline_verification` |
+| Workload telemetry improves verification beyond an equally informed statistical learner | Complete-ledger learner, independent single projection, total-plus-tail-risk convex ensemble, and a final exact pointwise risk-envelope LP; contract-capped payment is audited against a frozen baseline | `exp2_baseline_verification` |
 | Gross MW payments can diverge from grid value in a congested network | Full 12-estimator-plus-trace-reference × 5-settlement factorial; 10-segment market payments are scored by an independent 80-segment SCED evaluator, with paired day-level decomposition of signed netting, locational pricing, and exact value | `exp3_nodal_settlement` |
 | Spatial migration can turn a local reduction into a remote rebound | Ex-post case selected by a pre-declared gross-minus-net offset rule | `exp4_case_study` |
 | Value alignment generalizes across network size and loading without constructed congestion | IEEE RTS 24, IEEE 39, PGLib IEEE 118, and IEEE 300 × native-load multipliers 0.90/0.98/1.02 × five settlement mechanisms, retaining every public thermal rating | `exp5_network_robustness` |
@@ -60,7 +60,7 @@ balance, and stage-manifest isolation.
 | Spatial placement and trace-to-power scaling do not determine the result | Complete \(4!\) regional-trace-to-bus assignment set × three predeclared peak penetrations × all locked days, evaluated with independent settlement and truth objectives | `exp11_spatial_scale_robustness` |
 | Cross-day feasibility and delayed recovery do not rely on a zero-arrival buffer | A 1,216-slot continuous real-arrival horizon, two-stage lexicographic event-window embedding, endogenous recovery, complete-cycle nodal remuneration, and an individually rational budget-balanced bilateral contract | `exp12_rolling_market_validation` |
 | Public execution replay is separated from causal counterfactual identification | All 54 locked days are replayed from immutable MIT scheduler/DCGM execution intervals; the trace-constrained batch flow is observational only | `exp13_real_trace_replay` |
-| Aggregate divisible flow is checked against exact job-level feasibility | One global sparse release/deadline LP retains all 71,128 positive-energy joined jobs, reconstructs the measured profile, and reports machine-precision job and slot residuals | `exp14_job_level_fidelity` |
+| Aggregate counterfactual flow is tied to task-level evidence | One global sparse release/deadline LP retains all 71,128 positive-energy joined jobs and reports machine-precision residuals; a separate fixed-interval witness checks runtime, GPU count, release, deadline, and native power without claiming nonpreemptive feasibility for an unobserved counterfactual | `exp14_job_level_fidelity` |
 | Telemetry conversion uncertainty is audited beyond three finite quantiles | The locked payment profile is independently evaluated over q01 to the precommitted-capacity-safe q99 endpoint under all 37 non-islanding outages; convex value geometry and an exact joint LP give a continuous-segment interval bound | `exp15_interval_certificate` |
 | The job-level witness is bound to immutable source records and the study capacity covers the measured regional envelope | Canonical SHA-256 digest, one-to-one scheduler/DCGM join, raw-to-join energy conservation, temporal-order checks, and complete observed per-region capacity reconciliation | `exp16_ledger_capacity_provenance` |
 | A deployment-time verifier cannot use future arrivals that are unavailable at the decision gate | The same exact workload LP and a refit causal metadata target mask the current-day ledger after the predeclared gate; committed-ledger payment is separated from a validation-selected causal reserve used only for capacity planning | `exp17_decision_time_information` |
@@ -82,6 +82,10 @@ counterfactual scoring truth. BurstGPT request service remains trace-observed. T
 joint grid-coupled setting is a documented trace-driven benchmark: public traces do
 not expose real data-center geography, so four-region placement and hyperscale
 conversion are experimental scenario parameters rather than field measurements.
+The preprocessing rule assigns records by workload signature (class, GPU count,
+runtime, submission time, and energy) with a deterministic round-robin
+stratification; identifier values only break ties. Experiment 11 evaluates all
+24 region-to-bus permutations at all declared penetrations.
 The 118-MW flexible nameplate is committed before the validation/test split.
 Experiment 16 reconciles it post hoc with the maximum observed regional
 MIT/DCGM batch envelope and stores the exact quantiles, peak values, source
@@ -90,8 +94,9 @@ nameplate.
 
 ## Repository structure
 
-Each of the eighteen experiments has its own `run.py`, `results/intermediate`, `results/final`, and
-`figures` directory. Figures are emitted as journal-quality English PNG and vector
+Each experiment has a documented README, a shared implementation under `src/aicdr`,
+and `results/intermediate`, `results/final`, and `figures` directories when its
+stage is run. Figures are emitted as journal-quality English PNG and vector
 PDF files; the manuscript's framework and method-detail diagrams are maintained
 as editable Draw.io sources plus SVG/PDF exports. `audit/result_audit.json` independently checks raw-file hashes, complete
 panels, primal workload constraints, SCED balance/line limits, matched information

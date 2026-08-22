@@ -44,7 +44,7 @@
 | `eq:power` | M3 | 计算服务到设施功率的线性映射依据数据中心负荷调度模型 \cite{liu2013dcdr,cao2022flexibility}。 |
 | `eq:rollingterminal` | M3b | 滚动时域状态保留依据 \cite{zhang2023receding}；本文针对真实未来到达给出终端等式并由命题 2 审计可行性。 |
 | `eq:falsecredit` | M1、P2.2 | 历史基线与事件响应语境依据 \cite{caiso2017baseline}；正部暴露定义及其点式非劣保证由命题 2 证明。 |
-| `eq:meter_cap` | P2.3 | 本文结算定义：提交的 gross forecast credit 在事件计量闭合后与预承诺 no-event profile 相交；锁定审计中的 trace-anchored no-event profile 仅用于事后评分，不进入目标拟合、事件门决策或工作负载优化。 |
+| `eq:meter_cap` | P2.3 | 本文可部署结算定义：提交的 gross forecast credit 在事件计量闭合后与冻结合同 no-event profile 的 credit 相交；trace-anchored no-event profile 仅用于事后 oracle overpayment/underpayment 诊断，不进入目标拟合、事件门决策或工作负载优化。 |
 | `eq:profit` | M2 | 基线内生操纵问题依据 \cite{wang2022baseline}；十参考日确定性等价式是本文场景化改写。 |
 | `eq:threshold` | P1 | 线性规划灵敏度依据 \cite{boyd2004convex}；充分必要条件由命题 1 证明。 |
 | `eq:sced` | M4 | 标准无损直流经济调度、网络模型与公开参数依据 \cite{stott2009dc,zimmerman2011matpower,babaeinejadsarookolaee2021pglib}。 |

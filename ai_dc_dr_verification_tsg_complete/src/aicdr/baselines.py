@@ -450,30 +450,50 @@ def response_metrics(
     actual: np.ndarray,
     event_slots: list[int],
     dt_h: float,
+    contract_baseline: np.ndarray | None = None,
 ) -> dict[str, float]:
+    """Score a submitted counterfactual and its observable settlement.
+
+    ``oracle_baseline`` is deliberately diagnostic: it is available only in
+    the locked replay after the event and must never be used to form a
+    contract or a decision.  ``contract_baseline`` is the frozen baseline that
+    was committed before the event.  The deployable settlement is therefore
+    the pointwise intersection of the submitted credit and the contract credit
+    after the event meter closes.  If the caller omits ``contract_baseline`` we
+    use the submitted baseline as a backwards-compatible contract, which is
+    the only observable choice for legacy callers and avoids silently
+    reintroducing the unavailable oracle into payment.
+    """
+    if contract_baseline is None:
+        contract_baseline = predicted_baseline
     pred_response = predicted_baseline[:, event_slots] - actual[:, event_slots]
+    contract_response = contract_baseline[:, event_slots] - actual[:, event_slots]
     true_response = oracle_baseline[:, event_slots] - actual[:, event_slots]
     predicted_credit = np.clip(pred_response, 0, None)
+    contract_credit = np.clip(contract_response, 0, None)
     true_credit = np.clip(true_response, 0, None)
+    payable_credit = np.minimum(predicted_credit, contract_credit)
     paid = predicted_credit.sum() * dt_h
+    payable = payable_credit.sum() * dt_h
     true_positive = true_credit.sum() * dt_h
     matched = np.minimum(predicted_credit, true_credit).sum() * dt_h
     false = np.clip(predicted_credit - true_credit, 0, None).sum() * dt_h
     under = np.clip(true_credit - predicted_credit, 0, None).sum() * dt_h
+    oracle_overpayment = np.clip(payable_credit - true_credit, 0, None).sum() * dt_h
+    oracle_underpayment = np.clip(true_credit - payable_credit, 0, None).sum() * dt_h
     precision = matched / max(paid, 1e-9)
     recall = matched / max(true_positive, 1e-9)
     return {
         "paid_response_mwh": float(paid),
-        # ``paid_response_mwh`` is the gross credit implied by the submitted
-        # counterfactual.  Settlement is completed after the event meter is
-        # available, so the payable amount is the pointwise intersection with
-        # the metered response relative to the precommitted no-event baseline.
-        # In locked evaluation ``oracle_baseline`` is that no-event profile and
-        # is read only after the event for scoring; it never enters a decision.
-        # Keeping both quantities prevents a forecast credit from being
-        # mistaken for a cash transfer.
-        "meter_capped_response_mwh": float(matched),
-        "meter_capped_false_response_mwh": 0.0,
+        "contract_capped_response_mwh": float(payable),
+        "meter_capped_response_mwh": float(payable),
+        # This is an offline audit against the unavailable oracle, not a
+        # deployment-time input.  It is intentionally computed rather than
+        # hard-coded to zero so a contract baseline that overstates response is
+        # visible to the reviewer.
+        "meter_capped_false_response_mwh": float(oracle_overpayment),
+        "meter_capped_underpayment_mwh": float(oracle_underpayment),
+        "oracle_matched_response_mwh": float(matched),
         "oracle_response_mwh": float(true_positive),
         "false_response_mwh": float(false),
         "false_response_ratio": float(false / max(paid, 1e-9)),

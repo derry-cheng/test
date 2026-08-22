@@ -30,8 +30,10 @@ measurement. BurstGPT token volume and measured GPU energy are therefore separat
 scaled so their empirical 99th-percentile aggregate powers equal the declared
 scenario targets in `configs/default.yaml`. The original observations, ordering,
 burstiness, job durations, energy, and class mix are preserved. Four regions are
-assigned by a deterministic multiplicative hash of immutable row/job IDs because
-neither dataset provides usable multi-site geography.
+assigned by a deterministic feature-stratified round-robin rule over workload
+class, GPU count, runtime, submission time, and energy; identifiers only break
+exact ties. Neither dataset provides usable multi-site geography, so the labels
+are declared scenario factors and all 24 region-to-bus permutations are audited.
 
 The exact hashes, row counts, empirical quantiles, inferred scale factors, missing
 trace days, valid evaluation days, and held-out DCGM calibration diagnostics are

@@ -1936,7 +1936,7 @@ def plot_exp17_decision_time(
         [
             "Event-window nRMSE",
             "Gross unsupported credit (MWh/day)",
-            "Meter-capped payable (MWh/day)",
+            "Contract-capped payable (MWh/day)",
             "Credit recall",
         ],
         [

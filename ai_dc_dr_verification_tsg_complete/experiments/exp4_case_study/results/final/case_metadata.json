@@ -1,7 +1,7 @@
 {
-  "selected_day": 69,
+  "selected_day": 87,
   "selection_rule": "largest gross-minus-net spatial response offset in the locked test set",
-  "spatial_offset_mw_intervals": 98.16394162070573,
+  "spatial_offset_mw_intervals": 95.08716390193732,
   "event_slots": [
     64,
     65,

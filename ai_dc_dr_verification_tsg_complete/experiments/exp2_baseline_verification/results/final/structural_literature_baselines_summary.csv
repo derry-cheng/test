@@ -1,3 +1,3 @@
 baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,migration_mwh
-Wan--Li DC-ST joint spatio-temporal ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,4.3278634527697255
-Wan--Li DC-T temporal-only ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,0.0
+Wan--Li DC-ST joint spatio-temporal ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3734240155050314,4.215377980583373,0.4228604729138123,4.3278634527697255
+Wan--Li DC-T temporal-only ledger schedule,wan2026scuc,exact_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.0

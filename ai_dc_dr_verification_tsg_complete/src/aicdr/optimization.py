@@ -194,8 +194,21 @@ def payment_value_interval(
         lower_baseline = float(segment_minimum_baseline_cost_usd)
         if not np.isfinite(lower_baseline):
             raise ValueError("segment_minimum_baseline_cost_usd must be finite")
-        if lower_baseline > float(costs.min()) + 1e-6:
-            raise ValueError("segment minimum cannot exceed a declared endpoint cost")
+        endpoint_minimum = float(costs.min())
+        # The joint LP contains the endpoint solutions as feasible vertices,
+        # so any positive excess is numerical noise rather than a valid
+        # violation of the convex-hull certificate.  Clamp only at a tight
+        # scale-aware tolerance; a materially larger excess still indicates a
+        # formulation or data error and must remain fatal.
+        excess = lower_baseline - endpoint_minimum
+        tolerance = max(1.0e-5, 1.0e-9 * max(1.0, abs(endpoint_minimum)))
+        if excess > tolerance:
+            raise ValueError(
+                "segment minimum cannot exceed a declared endpoint cost "
+                f"(excess={excess:.3e}, tolerance={tolerance:.3e})"
+            )
+        if excess > 0.0:
+            lower_baseline = endpoint_minimum
     lower = float(lower_baseline - counterfactual)
     upper = float(costs.max() - counterfactual)
     selected = float(selected_baseline_cost_usd - counterfactual)

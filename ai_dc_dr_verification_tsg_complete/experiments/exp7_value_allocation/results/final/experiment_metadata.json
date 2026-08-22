@@ -11,7 +11,7 @@
   "characteristic_function": "signed SCED avoided cost as each coalition moves from baseline to actual demand while nonmembers remain at baseline",
   "budget_balance": "Shapley efficiency: participant allocations sum exactly to the estimated grand-coalition value",
   "settlement_schema_version": 6,
-  "estimator_checksum": "4e34bffdd2dd88657bb7fb55f284cf0521153c917c774c543a2e903a5e5e05ff",
+  "estimator_checksum": "bb53c649b88195cc52c1a972bd4cd92d7903b8c284794c803fbd45149fb57e7c",
   "scaling_participants": 8,
   "scaling_network": "IEEE RTS 24-bus",
   "scaling_coalitions_per_interval": 256,

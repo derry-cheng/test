@@ -22,7 +22,7 @@
     "interpretation": "The empirical reserve is a pre-gate planning envelope. It can reserve capacity for future arrivals, but the event-gate payment profile is solved on the committed ledger and cannot credit the reserved jobs before a later commitment checkpoint."
   },
   "scoring_source": "locked trace-anchored execution and semi-synthetic response",
-  "meter_cap_scoring_note": "For the locked audit, the trace-anchored no-event profile is used only after the event to score the meter-capped settlement rule; it is not supplied to target fitting, gate decisions, or any workload optimization. Production deployment substitutes a precommitted no-event contract profile.",
+  "meter_cap_scoring_note": "The deployed settlement uses the submitted baseline, the frozen precommitted no-event contract profile, and the closed event meter. For the locked audit, the trace-anchored no-event profile is used only after the event to diagnose oracle overpayment and underpayment; it is not supplied to target fitting, gate decisions, workload optimization, or payment formation.",
   "selection_uses_locked_test_truth": false,
   "all_decision_time_lp_solved": true,
   "committed_ledger_safe_mode": {
@@ -31,7 +31,7 @@
     "event_upper_bound_source": "physical flexible-capacity bound",
     "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
     "rolling_commitment": true,
-    "settlement_rule": "meter-capped-after-event; gross forecast credit is not paid above the pointwise metered response"
+    "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response"
   },
   "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."
 }

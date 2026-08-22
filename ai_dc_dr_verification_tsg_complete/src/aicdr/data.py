@@ -19,6 +19,62 @@ from .utils import sha256, write_json
 CLASS_NAMES = ("realtime_inference", "elastic_inference", "batch_gpu")
 
 
+def _balanced_trace_region_labels(frame: pd.DataFrame, n_regions: int) -> np.ndarray:
+    """Assign a reproducible region *scenario* without hashing identifiers.
+
+    The public BurstGPT and MIT releases do not expose utility locations.  A
+    row-identifier hash would therefore create a visually convenient but
+    irreproducible pseudo-geography.  This rule first sorts immutable records
+    by observed workload signature and then distributes each stratum in a
+    round-robin cycle.  It preserves the marginal mix of workload classes,
+    runtimes, GPU counts, and energy across the declared regions while making
+    clear that the labels are contractual scenario factors, not measured
+    locations.  All location-to-bus permutations are evaluated downstream.
+    """
+    if n_regions <= 0:
+        raise ValueError("n_regions must be positive")
+    required = {"id_job", "energy_j", "time_submit_aligned", "time_end_aligned", "time_start_aligned"}
+    if not required.issubset(frame.columns):
+        missing = sorted(required.difference(frame.columns))
+        raise ValueError(f"missing columns for deterministic region scenario: {missing}")
+    work = frame.copy()
+    job_type = work.get("job_type", pd.Series("", index=work.index)).fillna("").astype(str)
+    gres = work.get("gres_req", pd.Series("", index=work.index)).fillna("").astype(str)
+    job_type_codes = pd.Categorical(job_type).codes
+    gres_codes = pd.Categorical(gres).codes
+    runtime = np.maximum(
+        work["time_end_aligned"].to_numpy(dtype=float)
+        - work["time_start_aligned"].to_numpy(dtype=float),
+        0.0,
+    )
+    gpu_count = work.get("measured_gpus", pd.Series(0, index=work.index)).to_numpy(dtype=float)
+    energy = work["energy_j"].to_numpy(dtype=float)
+    submit = work["time_submit_aligned"].to_numpy(dtype=float)
+    ids = work["id_job"].to_numpy(dtype=np.int64)
+    order = np.lexsort((ids, energy, runtime, submit, gpu_count, gres_codes, job_type_codes))
+    labels = np.empty(len(work), dtype=np.int64)
+    labels[order] = np.arange(len(work), dtype=np.int64) % int(n_regions)
+    return labels
+
+
+def _balanced_request_region_labels(
+    timestamp: np.ndarray,
+    model: pd.Series,
+    log_type: pd.Series,
+    row_ids: np.ndarray,
+    n_regions: int,
+) -> np.ndarray:
+    """Deterministic feature-stratified regions for request traces."""
+    if n_regions <= 0:
+        raise ValueError("n_regions must be positive")
+    model_codes = pd.Categorical(model.fillna("").astype(str)).codes
+    log_codes = pd.Categorical(log_type.fillna("").astype(str)).codes
+    order = np.lexsort((row_ids, timestamp, log_codes, model_codes))
+    labels = np.empty(len(row_ids), dtype=np.int64)
+    labels[order] = np.arange(len(row_ids), dtype=np.int64) % int(n_regions)
+    return labels
+
+
 def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging.Logger) -> Path:
     out_dir = root / cfg["data"]["processed_dir"]
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -147,7 +203,10 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         "processing": {
             "interval_seconds": interval_s,
             "regions": n_regions,
-            "spatial_mapping": "deterministic multiplicative hash of immutable request/job row identifier",
+            "spatial_mapping": (
+                "feature-stratified round-robin workload scenario over immutable "
+                "request/job records; no physical geography is inferred"
+            ),
             "inference_scale_mwh_per_token": inf_scale,
             "batch_hyperscale_multiplier": batch_scale,
             "scaling_quantile": q,
@@ -314,8 +373,16 @@ def _aggregate_burstgpt(
             tokens = pd.to_numeric(chunk["Total tokens"], errors="coerce").fillna(0).to_numpy(dtype=float)
             good = np.isfinite(timestamp) & (timestamp >= 0) & np.isfinite(tokens) & (tokens > 0)
             row_ids = global_row + np.arange(len(chunk), dtype=np.int64)
-            # Multiplicative hashing gives a deterministic, balanced experimental region assignment.
-            regions = ((row_ids * np.int64(2654435761) + np.int64(1013904223)) % n_regions).astype(int)
+            # Public request traces have no utility geography.  Use the
+            # declared feature-stratified scenario rule and evaluate every
+            # downstream region-to-bus permutation instead of hashing IDs.
+            regions = _balanced_request_region_labels(
+                timestamp,
+                chunk["Model"],
+                chunk["Log Type"],
+                row_ids,
+                n_regions,
+            )
             classes = np.where(chunk["Log Type"].astype(str).str.contains("Conversation", case=False), 0, 1)
             slots = (timestamp // interval_s).astype(np.int64, copy=False)
             for k in (0, 1):
@@ -382,6 +449,7 @@ def _aggregate_mit_jobs(
     jobs["time_start_aligned"] = jobs["time_start"] - time_origin_s
     jobs["time_end_aligned"] = jobs["time_end"] - time_origin_s
     jobs = jobs[jobs["time_start_aligned"] < n_slots * interval_s].copy()
+    jobs["region"] = _balanced_trace_region_labels(jobs, n_regions)
     arrivals = np.zeros((n_slots, n_regions), dtype=np.float64)
     observed = np.zeros((n_slots, n_regions), dtype=np.float64)
     used_energy = 0.0
@@ -392,7 +460,7 @@ def _aggregate_mit_jobs(
         if end <= start:
             continue
         duration = float(row.time_end_aligned - row.time_start_aligned)
-        region = int(int(row.id_job) % n_regions)
+        region = int(row.region)
         first = int(start // interval_s)
         last = int(np.ceil(end / interval_s)) - 1
         energy_mwh = float(row.energy_j) / 3.6e9
@@ -603,7 +671,10 @@ def load_mit_job_ledger(
     jobs["start_slot"] = jobs["start_slot"].clip(lower=0, upper=n_slots - 1)
     jobs["deadline_slot"] = jobs["deadline_slot"].clip(lower=1, upper=n_slots)
     jobs["energy_mwh"] = jobs["energy_j"].to_numpy(dtype=float) / 3.6e9
-    jobs["region"] = jobs["id_job"].astype(np.int64) % int(n_regions)
+    jobs["time_submit_aligned"] = jobs["time_submit"].to_numpy(dtype=float) - origin
+    jobs["time_start_aligned"] = jobs["time_start"].to_numpy(dtype=float) - origin
+    jobs["time_end_aligned"] = jobs["time_end"].to_numpy(dtype=float) - origin
+    jobs["region"] = _balanced_trace_region_labels(jobs, n_regions)
     jobs["within_horizon"] = (
         (jobs["submit_slot_raw"] < int(n_slots))
         & (jobs["start_slot"] < int(n_slots))

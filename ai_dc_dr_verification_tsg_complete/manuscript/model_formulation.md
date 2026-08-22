@@ -64,13 +64,13 @@ meter closes, the payable response is
 \[
 Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
 \min\left\{[\widehat p^0_{dt}-p^{\mathrm{obs}}_{dt}]_+,
-[p^0_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
+[p^{\mathrm{con}}_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
 \]
 
 In locked evaluation, \(p^0\) is the trace-anchored no-event profile read only
-after the event; production deployment substitutes a precommitted no-event
-contract profile. Neither profile enters target fitting, gate decisions, or
-workload optimization.
+after the event for oracle diagnostics. The deployable quantity \(p^{\rm con}\)
+is frozen before the event and is the only baseline used in payment formation;
+neither baseline enters target fitting, gate decisions, or workload optimization.
 
 Define cumulative arrivals and cumulative service as
 

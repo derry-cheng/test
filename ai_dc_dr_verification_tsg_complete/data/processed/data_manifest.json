@@ -122,9 +122,9 @@
   "processing": {
     "interval_seconds": 900,
     "regions": 4,
-    "spatial_mapping": "deterministic multiplicative hash of immutable request/job row identifier",
+    "spatial_mapping": "feature-stratified round-robin workload scenario over immutable request/job records; no physical geography is inferred",
     "inference_scale_mwh_per_token": 1.4126396590124032e-05,
-    "batch_hyperscale_multiplier": 15350.071019866877,
+    "batch_hyperscale_multiplier": 15350.07101986688,
     "scaling_quantile": 0.99,
     "scaling_fit_days": 40,
     "scaling_fit_day_ids": [
@@ -295,9 +295,9 @@
     ],
     "missing_trace_days": [],
     "total_arrival_mwh": 68641.93421041212,
-    "total_observed_execution_mwh": 68590.65661516428,
+    "total_observed_execution_mwh": 68590.65661516429,
     "counterfactual_reference": "trace-anchored no-event execution reference; the demand-response intervention is generated separately by the declared event scheduling optimization",
     "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
-    "maximum_initial_batch_backlog_mwh": 170.99697191368392
+    "maximum_initial_batch_backlog_mwh": 115.70546058698775
   }
 }

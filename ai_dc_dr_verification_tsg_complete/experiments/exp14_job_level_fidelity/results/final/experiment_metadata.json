@@ -11,17 +11,19 @@
   "release_rule": "scheduler time_submit aligned to the first measured execution start",
   "deadline_rule": "observed scheduler time_end; no imputed deadline",
   "capacity_rule": "empirical observed per-region execution envelope is imposed for the all-job feasibility witness; declared flexible capacity is retained only as a separately reported study-scale comparison",
-  "model_capacity_mwh_per_region_slot": 0.0019218152125693448,
+  "model_capacity_mwh_per_region_slot": 0.0019218152125693442,
   "observed_capacity_mwh_per_region_slot": [
-    0.001001018708886839,
-    0.0015934154096519137,
-    0.0016713052108980268,
-    0.0006100880426145512
+    0.0009954214805826089,
+    0.0016820235885219002,
+    0.002172206655583202,
+    0.0007030317841835824
   ],
   "model_capacity_vs_observed": {
-    "model_capacity_exceeds_observed_for_all_regions": true,
-    "observed_peak_to_model_capacity_ratio": 0.8696492773951966
+    "model_capacity_exceeds_observed_for_all_regions": false,
+    "observed_peak_to_model_capacity_ratio": 1.1302890316281244
   },
-  "optimization": "one global feasibility LP; all positive-energy joined jobs retained; no sampling and no heuristic scheduling",
-  "objective": "zero feasibility objective subject to exact job energy and aggregate measured-profile equalities"
+  "optimization": "one global aggregate energy-flow feasibility LP; all positive-energy joined jobs retained; no sampling and no heuristic scheduling",
+  "objective": "zero feasibility objective subject to exact job energy and aggregate measured-profile equalities",
+  "task_level_scope": "The aggregate counterfactual is preemptive energy flow. The same immutable ledger is additionally checked with a fixed contiguous nonpreemptive measured-interval witness retaining runtime and GPU count in job_interval_witness_summary.csv. No task-level claim is inferred for an unobserved counterfactual schedule.",
+  "job_interval_witness": "exact measured interval replay; release, deadline, runtime, GPU count, and native power are checked without imputation"
 }

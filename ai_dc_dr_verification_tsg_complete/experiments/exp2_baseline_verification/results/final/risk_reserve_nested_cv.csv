@@ -1,17 +1,17 @@
 reserve_fraction,fold,held_out_days,held_out_nrmse,held_out_false_credit_mw_slots,held_out_reference_false_credit_mw_slots,held_out_false_credit_ratio_to_reference,held_out_risk_noninferior,solver_status,selected_reserve_fraction
-0.6,1,45;46;47;48,0.22549816010490226,5.80704786087662,0.12956680511155838,44.81894769170769,0.0,optimal,False
-0.6,2,49;50;51;52,0.45375005493912735,18.781588688303206,49.09902819621807,0.3825246522852745,1.0,optimal,False
-0.6,3,53;54;55;56,0.5314857540094738,70.9575956468767,113.52269707887226,0.6250520598323825,1.0,optimal,False
-0.6,4,57;58;59;60,0.795179698750223,76.69955147987388,124.8182229310216,0.6144900133873915,1.0,optimal,False
-0.75,1,45;46;47;48,0.21993100563700227,13.593532749343527,0.12956680511155838,104.91524227705818,0.0,optimal,False
-0.75,2,49;50;51;52,0.4292975984344062,25.09350762015703,49.09902819621807,0.5110795170909288,1.0,optimal,False
-0.75,3,53;54;55;56,0.5165493753613317,88.49972531781417,113.52269707887226,0.7795773673023919,1.0,optimal,False
-0.75,4,57;58;59;60,0.7815176612430668,83.09597823414131,124.8182229310216,0.6657359501109282,1.0,optimal,False
-0.9,1,45;46;47;48,0.21672714936531803,20.58452483734818,0.12956680511155838,158.87190256504888,0.0,optimal,False
-0.9,2,49;50;51;52,0.4195404001222946,32.782214086411514,49.09902819621807,0.6676754162098999,1.0,optimal,False
-0.9,3,53;54;55;56,0.5114482920331658,101.34962100236271,113.52269707887226,0.8927696717066892,1.0,optimal,False
-0.9,4,57;58;59;60,0.7727831175324424,94.60472340275102,124.8182229310216,0.7579399961096427,1.0,optimal,False
-1.0,1,45;46;47;48,0.2176683000117685,23.654420538755293,0.12956680511155838,182.56543810267289,0.0,optimal,True
-1.0,2,49;50;51;52,0.41430432767720854,35.92504565672583,49.09902819621807,0.7316854727379922,1.0,optimal,True
-1.0,3,53;54;55;56,0.5111315310400365,108.38167512435894,113.52269707887226,0.9547137084759227,1.0,optimal,True
-1.0,4,57;58;59;60,0.7662718756325927,102.86730175065001,124.8182229310216,0.8241368875079856,1.0,optimal,True
+0.6,1,45;46;47;48,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.6: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.6,2,49;50;51;52,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.6: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.6,3,53;54;55;56,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.6: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.6,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.6: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.75,1,45;46;47;48,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.75: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.75,2,49;50;51;52,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.75: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.75,3,53;54;55;56,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.75: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.75,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.75: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.9,1,45;46;47;48,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.9: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.9,2,49;50;51;52,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.9: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.9,3,53;54;55;56,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.9: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+0.9,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.9: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False
+1.0,1,45;46;47;48,0.22374610256288188,1.5631940186722204e-13,1.0658141036401503e-14,0.00015631940186722204,1.0,optimal,True
+1.0,2,49;50;51;52,0.44753761093676353,33.60446903247866,33.60446903247861,1.0000000000000016,1.0,optimal,True
+1.0,3,53;54;55;56,0.5103385110033443,82.38966309399483,62.3867971210585,1.3206265892144096,0.0,optimal,True
+1.0,4,57;58;59;60,0.7573168363435089,110.58020971049716,110.58020971049672,1.000000000000004,1.0,optimal,True

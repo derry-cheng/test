@@ -18,19 +18,24 @@
   "number_of_parameter_combinations": 56,
   "theory_optimizer_boundary_agreement": 1.0,
   "reference_service_shadow_prices_usd_per_mwh": [
-    3.0,
-    1.5,
-    3.3523356821860943,
-    3.3523356821860943,
-    1.5,
-    1.5,
-    1.5,
-    3.3523356821860943,
-    1.5,
-    3.0
+    1.4999999257270247,
+    1.4999999257270247,
+    3.3523356687510386,
+    3.3523356541991234,
+    1.500000013038516,
+    1.500000013038516,
+    1.4999998384155333,
+    3.3523357415106148,
+    1.500000013038516,
+    3.000000011525117
   ],
-  "critical_reference_incentive_usd_per_mwh": 1.5,
-  "threshold_certificate": "minimum HiGHS LP right-hand-side shadow price over the ten honest reference-day event-service constraints",
+  "critical_reference_incentive_usd_per_mwh": 1.4999998384155333,
+  "threshold_certificate": "minimum independent right-direction finite-difference cost over two 0.0005/0.001-MWh probes on each of the ten honest reference-day event-service constraints",
+  "directional_probe_steps_mwh": [
+    0.0005,
+    0.001
+  ],
+  "threshold_tolerance_usd_per_mwh": 1e-06,
   "event_slots": [
     64,
     65,
