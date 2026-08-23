@@ -2,7 +2,7 @@
   "experiment": "event-gate information-boundary verification",
   "locked_days": 54,
   "event_gate_slot": 64,
-  "terminal_completion_index": 63,
+  "terminal_completion_index": 95,
   "future_arrivals_removed_from_decision": true,
   "target_source": "interval-online metadata gradient boosting refit with the current-day post-gate arrivals masked before feature construction",
   "target_future_arrivals_used_for_decision": false,
@@ -31,6 +31,9 @@
     "event_upper_bound_source": "physical flexible-capacity bound",
     "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
     "rolling_commitment": true,
+    "contract_baseline_source": "gate-causal masked-ledger no-event LP frozen before the event",
+    "response_objective": "same masked-ledger LP with the declared default DR price on participating event slots",
+    "default_dr_price_per_mwh": 150.0,
     "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response"
   },
   "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."

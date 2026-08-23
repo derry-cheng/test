@@ -66,6 +66,14 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
     assert "post-gate arrivals masked" in metadata["target_source"]
     assert "used only after the event" in metadata["meter_cap_scoring_note"]
     assert "precommitted no-event contract profile" in metadata["meter_cap_scoring_note"]
+    assert metadata["event_gate_slot"] == CFG["experiments"]["decision_time_event_gate_slot"]
+    assert metadata["terminal_completion_index"] == CFG["experiments"]["decision_time_terminal_completion_index"]
+    committed_meta = metadata["committed_ledger_safe_mode"]
+    assert committed_meta["future_arrivals_used_for_decision"] is False
+    assert committed_meta["rolling_commitment"] is True
+    assert "gate-causal masked-ledger no-event LP" in committed_meta["contract_baseline_source"]
+    assert "declared default DR price" in committed_meta["response_objective"]
+    assert float(committed_meta["default_dr_price_per_mwh"]) == CFG["market"]["default_dr_price_per_mwh"]
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
     assert set(comparison["schema_version"].astype(int)) == {8}
     assert not comparison.loc[
@@ -307,16 +315,21 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
     assert len(reference) == CFG["experiments"]["test_days"]
     assert np.all(reference["future_arrivals_used_for_decision"] == 0)
     assert set(committed["payment_eligibility"]) == {"committed-ledger-only"}
-    # The deployable contract is deliberately conservative: the closed-meter
-    # payment cannot exceed the submitted/frozen contract credit and therefore
-    # has no oracle-positive overpayment.  The post-event meter remains active
-    # because the rows expose strictly positive oracle underpayment.
+    # The closed-meter payment is observable and cannot exceed the submitted
+    # or frozen contract credit.  Oracle overpayment remains an explicit
+    # offline diagnostic rather than being hard-coded to zero; the committed
+    # response must expose a nonzero payable quantity and its audit must be no
+    # larger than the corresponding gross false-credit exposure.
     assert np.all(committed["meter_capped_false_response_mwh"] >= -1e-9)
-    assert np.all(committed["meter_capped_false_response_mwh"] <= 1e-8)
+    assert np.all(
+        committed["meter_capped_false_response_mwh"]
+        <= committed["false_response_mwh"] + 1e-8
+    )
     assert np.all(
         committed["meter_capped_response_mwh"]
         <= committed["paid_response_mwh"] + 1e-8
     )
+    assert float(committed["meter_capped_response_mwh"].mean()) > 1e-9
     assert float(committed["meter_capped_underpayment_mwh"].mean()) > 1e-9
     assert pd.Series(committed["settlement_rule"]).astype(str).str.startswith(
         "contract-capped-after-event"

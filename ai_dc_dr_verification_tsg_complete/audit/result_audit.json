@@ -1032,6 +1032,16 @@
       "detail": "216/216 rows; post-gate arrivals are excluded from all committed deployment-time decisions; positive committed response is settled only after the observable contract-capped rule, while the complete-ledger row remains an explicit post-event information comparator"
     },
     {
+      "name": "decision_time_committed_response_protocol",
+      "passed": true,
+      "detail": "committed-ledger response is a second masked-ledger LP with the declared DR-price objective, rolling state, and explicit contract cap"
+    },
+    {
+      "name": "decision_time_protocol_role_separation",
+      "passed": true,
+      "detail": "gate diagnostic, deployable response, and complete-ledger comparator are separately named"
+    },
+    {
       "name": "causal_reserve_is_validation_selected_and_payment_ineligible",
       "passed": true,
       "detail": "4 validation candidates select eta=0.60 under the declared false-credit budget; the held-out reserve is reported for capacity planning while committed-ledger payment remains separate"
@@ -1872,13 +1882,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 22363,
-      "sha256": "d30f95d7ec2c61b10d6f2781f6ee7c9a24c7222b694e1cc452418f010ee5a120"
+      "bytes": 59932,
+      "sha256": "e6e2cf090804359b7633bda3be19a90daa2e4542a462b3c1ab4d3cb9b813be2e"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
-      "bytes": 202,
-      "sha256": "20b2bf1a18f1bf13de898e9528f26e2ed921d32ba4bed4d28aeceda9ac60e5f3"
+      "bytes": 203,
+      "sha256": "b643f7035915835e817f46ddaf9d631875b782633cc6f31954d06ed8e71e19ae"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
@@ -1892,18 +1902,18 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
-      "bytes": 149794,
-      "sha256": "b9a269445dbbd56f9de09bd40911d708a62b5ad7e5da9a8713757f17b3ef2946"
+      "bytes": 149225,
+      "sha256": "150c7546cb7bde5602feddbcc2eef8a580c4105572f446ad218127bf006dbb57"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
-      "bytes": 988,
-      "sha256": "b4c0f34e6607afc17df6f289242b4c76757fe8f00e9db3ecd1f7785a531b343c"
+      "bytes": 1022,
+      "sha256": "7b8f89ea9cdbc96b39ede6140534bf977d74541a908a13832b8f123714edb790"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
-      "bytes": 2353,
-      "sha256": "b431d392f4599bbd5b8a476585b4659c2c2cf2bdcd16f08ab77294b3fb569d20"
+      "bytes": 2604,
+      "sha256": "fffd39d4f1204661fb8154c8a2457fbd5937eda2fc71dc7a809e5c584aaf9bfc"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
@@ -2387,13 +2397,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
-      "bytes": 17284,
-      "sha256": "019b4e7cfb67be09f7bdaa50df3e04a11f684020ed834a07a725420e5a172284"
+      "bytes": 17204,
+      "sha256": "12779796c8273c3e59dfe8dfd0d0f9c8a3451cd9c03aca6f9493dd4157abc031"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
-      "bytes": 306734,
-      "sha256": "5fe429a5dc6012fba4cc7cbf83191d6d3c2c4533548725b4d4205104669e3ffb"
+      "bytes": 308293,
+      "sha256": "f64d6b9741a1e7b923a90d5c4e1e1890611d0d45bc3522035fa8036af8d65d55"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",

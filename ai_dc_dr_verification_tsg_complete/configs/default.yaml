@@ -122,7 +122,11 @@ experiments:
   # event gate is the first declared event interval and no post-gate arrivals
   # may enter the decision-time panel.
   decision_time_event_gate_slot: 64
-  decision_time_terminal_completion_index: 63
+  # The gate-causal rolling certificate closes at the end of the declared
+  # event-day horizon (slot 95).  Work with a later valid deadline remains in
+  # the rolling state for the next commitment checkpoint; no post-gate arrival
+  # is imported into this decision.
+  decision_time_terminal_completion_index: 95
   decision_time_projection_weight: 1.0
   # Event-gate reserve planning is calibrated only on temporally earlier
   # validation days.  The reserve is never credited until the corresponding

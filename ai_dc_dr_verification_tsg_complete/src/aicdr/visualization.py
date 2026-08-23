@@ -1914,8 +1914,8 @@ def plot_exp17_decision_time(
         "Complete-ledger risk-constrained verifier",
     ]
     labels = {
-        order[0]: "Gate-truncated\nledger",
-        order[1]: "Committed-ledger\nrolling service",
+        order[0]: "Gate-causal\ncontract profile",
+        order[1]: "Committed-ledger\nrolling response",
         order[2]: "Committed-ledger\nreference",
         order[3]: "Complete-ledger\nrisk",
     }

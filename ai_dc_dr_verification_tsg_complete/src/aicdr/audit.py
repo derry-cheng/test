@@ -738,9 +738,18 @@ def run_audit(
         and bool(
             (
                 decision_time["meter_capped_false_response_mwh"].astype(float)
-                <= 1e-8
+                <= decision_time["false_response_mwh"].astype(float) + 1e-8
             ).all()
         )
+        and float(
+            decision_time.loc[
+                decision_time["method"].eq(
+                    "Committed-ledger rolling-service verifier"
+                ),
+                "meter_capped_response_mwh",
+            ].mean()
+        )
+        > 1e-9
         and float(
             decision_time.loc[
                 decision_time["method"].eq(
@@ -759,6 +768,12 @@ def run_audit(
         and decision_meta.get("target_future_arrivals_used_for_decision") is False
         and "post-gate arrivals masked" in str(decision_meta.get("target_source", ""))
         and decision_meta.get("future_arrivals_removed_from_decision") is True
+        and decision_meta.get("event_gate_slot") == int(
+            cfg["experiments"]["decision_time_event_gate_slot"]
+        )
+        and decision_meta.get("terminal_completion_index") == int(
+            cfg["experiments"]["decision_time_terminal_completion_index"]
+        )
         and decision_meta.get("causal_reserve_planning", {}).get(
             "future_arrivals_used_for_payment"
         ) is False
@@ -778,6 +793,44 @@ def run_audit(
         ),
         checks,
     )
+    # The committed profile must be an independently identifiable second
+    # optimization, not a relabelled copy of the gate baseline. These metadata
+    # checks keep the protocol auditable even if numerical traces coincide.
+    committed_meta = decision_meta.get("committed_ledger_safe_mode", {})
+    _check(
+        committed_meta.get("future_arrivals_used_for_decision") is False
+        and committed_meta.get("rolling_commitment") is True
+        and "gate-causal masked-ledger no-event LP" in str(
+            committed_meta.get("contract_baseline_source", "")
+        )
+        and "declared default DR price" in str(
+            committed_meta.get("response_objective", "")
+        )
+        and np.isclose(
+            float(committed_meta.get("default_dr_price_per_mwh", np.nan)),
+            float(cfg["market"]["default_dr_price_per_mwh"]),
+            rtol=0.0,
+            atol=1e-12,
+        )
+        and "contract-capped-after-event" in str(
+            committed_meta.get("settlement_rule", "")
+        ),
+        "decision_time_committed_response_protocol",
+        (
+            "committed-ledger response is a second masked-ledger LP with the "
+            "declared DR-price objective, rolling state, and explicit contract cap"
+        ),
+        checks,
+    )
+    _check(
+        decision_meta.get("protocol_note", "").startswith(
+            "The truncated profile is an information-boundary diagnostic"
+        ),
+        "decision_time_protocol_role_separation",
+        "gate diagnostic, deployable response, and complete-ledger comparator are separately named",
+        checks,
+    )
+
     reserve_validation = pd.read_csv(
         root
         / "experiments/exp17_decision_time_information/results/final/"
