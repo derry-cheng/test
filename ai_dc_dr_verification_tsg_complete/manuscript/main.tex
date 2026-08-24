@@ -458,8 +458,10 @@ using validation nRMSE, then risk ratio; held-out noninferiority is reported
 as an outcome and is not used as a hidden constraint. A second exact projection targets $\bar p$ while
 imposing, for every event sample,
 \begin{equation}
- p^{\rm safe}_{dt}\leq p^{(\ell^\star)}_{dt}. \label{eq:envelope}
+p^{\rm safe}_{dt}\leq p^{(\ell^\star)}_{dt}. \label{eq:envelope}
 \end{equation}
+The pointwise cap in (\ref{eq:envelope}) is the upper side of the contractual
+credit band; it is evaluated on every event slot before settlement.
 \paragraph{Two-sided credit band.}
 The upper envelope alone would admit an arbitrarily conservative zero-credit
 profile. We therefore impose a lower band tied to the independently fitted
