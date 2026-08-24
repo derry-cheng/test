@@ -85,12 +85,20 @@ experiments:
   ac_load_multiplier: 1.0
   ac_dc_peak_penetration: 0.06
   ac_data_center_power_factor: 0.95
-  # A declared low-load feasibility stress is used for the cross-network
-  # shared-active-plan AC panel.  The ordinary AC and corrective N-1 panels
-  # retain ac_load_multiplier=1.0/0.9; this separate value avoids silently
-  # treating an infeasible fixed-plan contingency as a solver failure.
+  # The cross-network shared-active-plan certificate uses the predeclared
+  # native-load multiplier 0.55.  Native-case outage admissibility and every
+  # locked contingency are solved by AC-OPF with the non-reference active plan
+  # fixed; voltage and apparent-power limits are never relaxed.
   preventive_ac_load_multiplier: 0.55
   preventive_ac_dc_peak_penetrations: [0.03, 0.06, 0.09]
+  # Fixed public-bus locations for the four regional AC workload injections;
+  # these are declared before the cross-network panel and never selected from
+  # an outage result.
+  preventive_ac_dc_bus_map_one_based:
+    "IEEE RTS 24-bus": [1, 2, 7, 13]
+    "IEEE 30-bus": [1, 2, 13, 22]
+    "IEEE 39-bus": [30, 32, 35, 38]
+    "IEEE 118-bus": [1, 4, 6, 8]
   # Complete factorial spatial validation: every one of the 4! assignments is
   # evaluated at each declared penetration, with no mapping screening.
   spatial_scale_peak_penetrations: [0.03, 0.06, 0.09]
@@ -128,6 +136,12 @@ experiments:
   # is imported into this decision.
   decision_time_terminal_completion_index: 95
   decision_time_projection_weight: 1.0
+  # Selected only on the 16 validation days under the causal information
+  # boundary.  The response LP remains exact; the grid changes its declared
+  # DR price and target regularization, not the feasibility constraints.
+  decision_time_response_dr_prices: [150.0, 300.0, 450.0, 600.0]
+  decision_time_response_projection_weights: [0.0, 0.25, 0.5, 1.0]
+  decision_time_response_validation_false_budget_mwh: 0.25
   # Event-gate reserve planning is calibrated only on temporally earlier
   # validation days.  The reserve is never credited until the corresponding
   # jobs enter the committed ledger.

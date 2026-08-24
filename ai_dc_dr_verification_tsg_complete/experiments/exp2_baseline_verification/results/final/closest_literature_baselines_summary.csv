@@ -1,5 +1,5 @@
 baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,net_system_response_mwh
-Cao-style batch flexibility structural analogue,cao2022flexibility,honest_operator_schedule,54,0.3734240155050314,4.215377980583373,0.4228604729138123,0.1994558538883618
-Incentive-compatible spatial DR structural analogue,chen2021incentive,strategic_reference,54,3.0666118588114366,114.76052337998405,0.13725411044096206,85.94894204967486
-Multi-site aggregator-response structural analogue,zhang2024aggregator,event_response,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
-Receding-horizon workload projection structural analogue,zhang2023receding,single_feasible_projection,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
+Cao-style batch flexibility structural analogue,cao2022flexibility,honest_operator_schedule,54,0.3701039793513508,1.5492058683821506,0.4110296422118455,0.09750714120635863
+Incentive-compatible spatial DR structural analogue,chen2021incentive,strategic_reference,54,3.0634543555100247,114.57246924101875,0.13735542037609508,85.84699333699284
+Multi-site aggregator-response structural analogue,zhang2024aggregator,event_response,54,0.328722155853179,5.756711979537848e-17,0.2792787025417138,-23.56593321966668
+Receding-horizon workload projection structural analogue,zhang2023receding,single_feasible_projection,54,0.34520898049151033,1.8492111356968033,0.44155765212298137,0.2811930906640722

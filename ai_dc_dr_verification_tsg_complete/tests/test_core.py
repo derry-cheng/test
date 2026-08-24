@@ -72,10 +72,12 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
     assert committed_meta["future_arrivals_used_for_decision"] is False
     assert committed_meta["rolling_commitment"] is True
     assert "gate-causal masked-ledger no-event LP" in committed_meta["contract_baseline_source"]
-    assert "declared default DR price" in committed_meta["response_objective"]
-    assert float(committed_meta["default_dr_price_per_mwh"]) == CFG["market"]["default_dr_price_per_mwh"]
+    assert "selected validation DR price" in committed_meta["response_objective"]
+    assert float(committed_meta["selected_dr_price_per_mwh"]) in {
+        float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
+    }
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
-    assert set(comparison["schema_version"].astype(int)) == {8}
+    assert set(comparison["schema_version"].astype(int)) == {9}
     assert not comparison.loc[
         comparison["method"] == "Decision-time truncated-ledger verifier",
         "future_arrivals_used_for_decision",
@@ -362,6 +364,10 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
     )
     assert len(np.unique(ac["network"])) == 4
     assert np.all(ac["solver_success"] == 1)
+    assert len(ac) == 1704
+    assert np.max(ac["maximum_apparent_line_loading"]) <= 1.0 + 1e-8
+    assert np.max(ac["maximum_voltage_violation_pu"]) <= 1e-8
+    assert np.max(ac["maximum_nonreference_active_plan_deviation_mw"]) <= 1e-8
     ac_metadata = json.loads(
         (
             ROOT
@@ -370,7 +376,8 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
         ).read_text(encoding="utf-8")
     )
     assert ac_metadata["test_outcomes_used_for_scaling"] is False
-    assert ac_metadata["ac_limits_enforced"] is False
+    assert ac_metadata["ac_limits_enforced"] is True
+    assert ac_metadata["pre_registered_dc_bus_mapping_one_based"] == CFG["experiments"]["preventive_ac_dc_bus_map_one_based"]
 
 
 def test_risk_decomposition_and_structural_literature_panel_are_explicit() -> None:

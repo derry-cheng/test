@@ -27,6 +27,7 @@ from .experiments import (
     run_exp16,
     run_exp17,
     run_exp18,
+    run_exp19,
 )
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
@@ -107,6 +108,7 @@ def run_pipeline(
         ("exp16", lambda: run_exp16(root, cfg, logger)),
         ("exp17", lambda: run_exp17(root, cfg, logger, resume=resume)),
         ("exp18", lambda: run_exp18(root, cfg, logger, resume=resume)),
+        ("exp19", lambda: run_exp19(root, cfg, logger, resume=resume)),
         (
             "audit",
             lambda: run_audit(
@@ -128,7 +130,7 @@ def run_pipeline(
                 "status": "pending",
                 "migration_note": "stage added after the previous unified run",
             }
-        for name in {"exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "audit"}:
+        for name in {"exp2", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "audit"}:
             if name not in manifest.get("stages", {}):
                 continue
             # A long stage may have been rerun and independently checked after
@@ -175,6 +177,7 @@ def run_pipeline(
         "exp16",
         "exp17",
         "exp18",
+        "exp19",
         "audit",
     } and stage != "audit":
         preprocess_all(root, cfg, False, logger)

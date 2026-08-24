@@ -21,6 +21,27 @@
     "future_arrivals_used_for_payment": false,
     "interpretation": "The empirical reserve is a pre-gate planning envelope. It can reserve capacity for future arrivals, but the event-gate payment profile is solved on the committed ledger and cannot credit the reserved jobs before a later commitment checkpoint."
   },
+  "causal_response_calibration": {
+    "daily_file": "causal_response_candidate_validation_daily.csv",
+    "summary_file": "causal_response_candidate_validation.csv",
+    "candidate_dr_prices_per_mwh": [
+      150.0,
+      300.0,
+      450.0,
+      600.0
+    ],
+    "candidate_projection_weights": [
+      0.0,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "validation_false_credit_budget_mwh": 0.25,
+    "selected_dr_price_per_mwh": 150.0,
+    "selected_projection_weight": 1.0,
+    "selection_rule": "among candidates satisfying the validation false-credit budget, maximize credit F1, then recall, then minimize nRMSE and false credit",
+    "future_arrivals_used_for_decision": false
+  },
   "scoring_source": "locked trace-anchored execution and semi-synthetic response",
   "meter_cap_scoring_note": "The deployed settlement uses the submitted baseline, the frozen precommitted no-event contract profile, and the closed event meter. For the locked audit, the trace-anchored no-event profile is used only after the event to diagnose oracle overpayment and underpayment; it is not supplied to target fitting, gate decisions, workload optimization, or payment formation.",
   "selection_uses_locked_test_truth": false,
@@ -32,8 +53,9 @@
     "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
     "rolling_commitment": true,
     "contract_baseline_source": "gate-causal masked-ledger no-event LP frozen before the event",
-    "response_objective": "same masked-ledger LP with the declared default DR price on participating event slots",
-    "default_dr_price_per_mwh": 150.0,
+    "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots",
+    "selected_dr_price_per_mwh": 150.0,
+    "selected_projection_weight": 1.0,
     "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response"
   },
   "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."

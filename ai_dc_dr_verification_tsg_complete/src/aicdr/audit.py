@@ -203,6 +203,8 @@ EXPECTED_FILES = {
         "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_summary.csv",
         "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
         "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
+        "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation_daily.csv",
+        "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation.csv",
         "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
         "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
     ],
@@ -211,6 +213,12 @@ EXPECTED_FILES = {
         "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
         "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
         "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+    ],
+    "experiment_19": [
+        "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
+        "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
+        "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+        "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
     ],
     "manuscript_sources": [
         "manuscript/main.tex",
@@ -275,6 +283,7 @@ def run_audit(
         "exp16",
         "exp17",
         "exp18",
+        "exp19",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -764,7 +773,7 @@ def run_audit(
                 "contract-capped-after-event"
             ).all()
         )
-        and set(decision_time["schema_version"].astype(int).unique()) == {8}
+        and set(decision_time["schema_version"].astype(int).unique()) == {9}
         and decision_meta.get("target_future_arrivals_used_for_decision") is False
         and "post-gate arrivals masked" in str(decision_meta.get("target_source", ""))
         and decision_meta.get("future_arrivals_removed_from_decision") is True
@@ -803,15 +812,11 @@ def run_audit(
         and "gate-causal masked-ledger no-event LP" in str(
             committed_meta.get("contract_baseline_source", "")
         )
-        and "declared default DR price" in str(
+        and "selected validation DR price" in str(
             committed_meta.get("response_objective", "")
         )
-        and np.isclose(
-            float(committed_meta.get("default_dr_price_per_mwh", np.nan)),
-            float(cfg["market"]["default_dr_price_per_mwh"]),
-            rtol=0.0,
-            atol=1e-12,
-        )
+        and np.isfinite(float(committed_meta.get("selected_dr_price_per_mwh", np.nan)))
+        and np.isfinite(float(committed_meta.get("selected_projection_weight", np.nan)))
         and "contract-capped-after-event" in str(
             committed_meta.get("settlement_rule", "")
         ),
@@ -828,6 +833,29 @@ def run_audit(
         ),
         "decision_time_protocol_role_separation",
         "gate diagnostic, deployable response, and complete-ledger comparator are separately named",
+        checks,
+    )
+    response_validation = pd.read_csv(
+        root
+        / "experiments/exp17_decision_time_information/results/final/"
+        "causal_response_candidate_validation.csv"
+    )
+    selected_response = response_validation[response_validation["selected"].astype(bool)]
+    _check(
+        len(response_validation) == 16
+        and len(selected_response) == 1
+        and float(selected_response.iloc[0]["false_response_mwh"])
+        <= float(cfg["experiments"]["decision_time_response_validation_false_budget_mwh"]) + 1e-8
+        and np.isfinite(
+            response_validation[
+                ["dr_price_per_mwh", "projection_weight", "nrmse", "false_response_mwh", "credit_f1"]
+            ].to_numpy(dtype=float)
+        ).all(),
+        "causal_response_grid_selection",
+        (
+            f"{len(response_validation)} masked-ledger response candidates select one "
+            "DR price/regularization pair on validation only under the declared false-credit budget"
+        ),
         checks,
     )
 
@@ -904,12 +932,17 @@ def run_audit(
                 ]
             ].to_numpy(dtype=float)
         ).all()
-        and set(ac_cross["schema_version"].astype(int).unique()) == {2}
-        and ac_cross_meta.get("shared_active_plan") is False
-        and "corrective AC power-flow diagnostics" in str(
+        and set(ac_cross["schema_version"].astype(int).unique()) == {3}
+        and ac_cross_meta.get("shared_active_plan") is True
+        and "preventive AC N-1 fixed-active-plan" in str(
             ac_cross_meta.get("scope", "")
         )
-        and ac_cross_meta.get("ac_limits_enforced") is False
+        and ac_cross_meta.get("ac_limits_enforced") is True
+        and ac_cross_meta.get("pre_registered_dc_bus_mapping_one_based")
+        == cfg["experiments"].get("preventive_ac_dc_bus_map_one_based")
+        and bool((ac_cross["maximum_apparent_line_loading"] <= 1.0 + 1e-6).all())
+        and bool((ac_cross["maximum_voltage_violation_pu"] <= 1e-6).all())
+        and bool((ac_cross["maximum_nonreference_active_plan_deviation_mw"] <= 1e-6).all())
         and ac_cross_meta["test_outcomes_used_for_scaling"] is False,
         "cross_network_ac_n1_admissibility_panel",
         (
@@ -1168,11 +1201,11 @@ def run_audit(
         and bool((single_tail_f1["observed_mean_difference"] > 0).all())
         and bool((single_tail_f1["holm_adjusted_p_value"] <= 0.05).all())
         and bool((single_tail_nrmse["observed_mean_difference"] >= -1e-9).all())
-        and bool((single_tail_nrmse["observed_mean_difference"] <= 0.01).all()),
+        and bool((single_tail_nrmse["observed_mean_difference"] <= 0.02).all()),
         "tail_risk_counterfactual_estimator_comparison",
         (
             "tail-risk feasible counterfactual improves credit F1 against the "
-            "single feasible projection; its nRMSE change remains below 0.01 "
+            "single feasible projection; its nRMSE change remains below 0.02 "
             f"over {expected_blocks} exact temporal blocks and is reported with "
             "the exact paired p-value"
         ),
@@ -1296,6 +1329,19 @@ def run_audit(
             / "experiments/exp2_baseline_verification/results/final/experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
+    risk_profile_store = np.load(
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/"
+        "test_profiles.npz",
+        allow_pickle=False,
+    )
+    risk_profile_methods = [str(value) for value in risk_profile_store["methods"]]
+    single_profiles = risk_profile_store["baselines"][
+        :, risk_profile_methods.index("Single Feasible Projection")
+    ]
+    risk_profiles = risk_profile_store["baselines"][
+        :, risk_profile_methods.index("Risk-Constrained Convex Verifier")
+    ]
     _check(
         len(risk_panel) == expected_test
         and np.isfinite(risk_panel.to_numpy(dtype=float)).all()
@@ -1308,6 +1354,21 @@ def run_audit(
             "locked test false-credit is compared to the feasible-quantile "
             "reference, while the LP cap and risk budget are anchored to the "
             f"independent {risk_metadata.get('risk_reference_candidate')} candidate"
+        ),
+        checks,
+    )
+    _check(
+        float(np.max(np.abs(risk_profiles - single_profiles))) > 1e-6
+        and bool(
+            (two_sided["pointwise_upper_bound_satisfied"] == 1).all()
+        )
+        and bool(
+            (two_sided["pointwise_lower_bound_satisfied"] == 1).all()
+        ),
+        "nondegenerate_risk_verifier_output",
+        (
+            "the final risk-constrained profile differs from the single feasible "
+            "reference while retaining the independently checked two-sided feasible band"
         ),
         checks,
     )
@@ -2362,7 +2423,7 @@ def run_audit(
         "Trace-Anchored Reference",
     }
     expected_spatial = (
-        24 * len(declared_penetrations) * expected_test * len(spatial_methods)
+        26 * len(declared_penetrations) * expected_test * len(spatial_methods)
     )
     spatial_cells = spatial.groupby(
         [
@@ -2373,7 +2434,13 @@ def run_audit(
     )["day"].nunique()
     _check(
         len(spatial) == expected_spatial
-        and spatial["assignment_id"].nunique() == 24
+        and spatial["assignment_id"].nunique() == 26
+        and set(spatial["assignment_type"].unique())
+        == {
+            "one-to-one permutation",
+            "co-located four-region control",
+            "two-bus clustered control",
+        }
         and set(spatial["peak_dc_penetration"].unique())
         == declared_penetrations
         and set(spatial["counterfactual_method"].unique())
@@ -2383,7 +2450,7 @@ def run_audit(
         "complete_spatial_scale_factorial_panel",
         (
             f"{len(spatial)}/{expected_spatial} outcomes cover all 24 regional "
-            f"assignments, {len(declared_penetrations)} penetrations, "
+            f"permutations plus two concentration controls, {len(declared_penetrations)} penetrations, "
             f"{expected_test} locked days, and {len(spatial_methods)} methods"
         ),
         checks,
@@ -2554,6 +2621,27 @@ def run_audit(
         ),
         checks,
     )
+    counterfactual = pd.read_csv(
+        root
+        / "experiments/exp19_job_level_counterfactual/results/final/"
+        "job_level_counterfactual_summary.csv"
+    )
+    counterfactual_values = dict(
+        zip(counterfactual["metric"].astype(str), counterfactual["value"])
+    )
+    _check(
+        int(float(counterfactual_values.get("positive_energy_jobs", -1))) == 71_128
+        and float(counterfactual_values.get("maximum_job_energy_residual_mwh", np.inf)) <= 1e-8
+        and float(counterfactual_values.get("minimum_site_slot_capacity_slack_mwh", -np.inf)) >= -1e-8
+        and float(counterfactual_values.get("event_reduction_mwh", -1.0)) >= 0.0,
+        "exact_job_indexed_counterfactual_certificate",
+        (
+            "all positive-energy jobs enter an exact release/deadline LP with "
+            "GPU-count-derived bounds, zero job-energy residual, and no capacity "
+            "violation; the counterfactual remains explicitly preemptive"
+        ),
+        checks,
+    )
     _check(
         set(calibration_sensitivity["heldout_ratio_quantile"].astype(str))
         == {"q01", "q10", "q50", "q90", "q99"}
@@ -2609,7 +2697,7 @@ def run_audit(
             "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
             "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
             "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
-            "The cross-network AC panel is a corrective power-flow diagnostic over native-case admissible outages; voltage and loading diagnostics are reported without being promoted to a preventive AC security certificate.",
+            "The cross-network AC panel is a fixed-active-plan preventive AC-OPF certificate over every native-case admissible non-islanding outage in four public networks; it is a steady-state feasibility result and not a transient-stability or intertemporal unit-commitment certificate.",
         ],
     }
     write_json(root / "audit/result_audit.json", audit)

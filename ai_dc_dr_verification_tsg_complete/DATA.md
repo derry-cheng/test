@@ -75,11 +75,13 @@ operator requires confidential co-located telemetry.
 The deployment information boundary is explicit: Experiment 17 removes all
 arrivals after the first declared event slot before solving and uses the locked
 execution trace only for scoring. Experiment 18 fixes the first locked day,
-first event slot, native-case connected/finite-AC outage rule, and
-validation-only power scale before evaluating RTS-24, IEEE-30, IEEE-39, and
-IEEE-118 AC contingencies. It reports corrective loading, voltage, and active
-recourse diagnostics; it is not a preventive AC security-constrained OPF
-certificate.
+first event slot, native-case connected/finite-AC outage rule, a pre-registered
+public-bus mapping for each network, and the validation-only power scale before
+evaluating RTS-24, IEEE-30, IEEE-39, and IEEE-118 AC contingencies. It freezes
+the intact AC-OPF non-reference active plan and enforces apparent-power and
+voltage limits for every contingency; the reference generator and reactive
+variables are the only recourse.
+
 # Data construction and independent counterfactual protocol
 
 The benchmark uses every valid BurstGPT row and every MIT job that has both a

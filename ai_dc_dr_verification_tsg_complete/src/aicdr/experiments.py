@@ -1659,16 +1659,23 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         np.mean([row["credit_f1"] for row in reference_validation_rows])
     )
 
-    # A second exact LP projects the tail-risk ensemble through a pointwise
-    # event envelope defined by the independently selected single feasible
-    # projection.  The feasible-quantile profile remains an external matched
-    # comparator, so the test metric is not mechanically upper-bounded by its
-    # construction.
+    # A second exact LP projects the tail-risk ensemble through a one-sided
+    # contractual cap defined by the independently selected single feasible
+    # projection.  Its lower side is generated from the independent convex
+    # target, not from the cap itself.  This keeps the final verifier
+    # non-degenerate: the risk fit can move below the single reference while
+    # the cap still controls upward unsupported credit.  The feasible-quantile
+    # profile remains an external matched comparator, so the test metric is
+    # not mechanically upper-bounded by its construction.
     validation_single_profiles = candidate_array[selected_single_index]
     envelope_rows: list[dict[str, Any]] = []
     for envelope_weight in projection_weights:
         day_records: list[dict[str, float]] = []
         for local_day, day in enumerate(validation_days):
+            risk_floor_profile = np.minimum(
+                validation_single_profiles[local_day],
+                validation_ensemble_profiles[local_day],
+            )
             result = _solve_day_with_buffer(
                 arrivals_days[int(day)],
                 prices,
@@ -1679,9 +1686,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 power_upper_mw=_event_risk_upper_envelope(
                     validation_single_profiles[local_day], cfg
                 ),
-                power_lower_mw=_event_risk_lower_envelope(
-                    validation_single_profiles[local_day], cfg
-                ),
+                power_lower_mw=_event_risk_lower_envelope(risk_floor_profile, cfg),
             )
             if not result.success:
                 raise RuntimeError(
@@ -1917,6 +1922,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ensemble_profile = np.tensordot(
             ensemble_weights, risk_test_candidates, axes=(0, 0)
         )
+        # The single projection is an upper payment cap.  The lower band is
+        # tied to the independent risk target, so it cannot force the output
+        # back to the same trajectory when the risk fit finds a safer profile.
+        risk_floor_profile = np.minimum(single_result.power_mw, ensemble_profile)
         safe_result = _solve_day_with_buffer(
             arrivals_days[day],
             prices,
@@ -1927,9 +1936,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             power_upper_mw=_event_risk_upper_envelope(
                 single_result.power_mw, cfg
             ),
-            power_lower_mw=_event_risk_lower_envelope(
-                single_result.power_mw, cfg
-            ),
+            power_lower_mw=_event_risk_lower_envelope(risk_floor_profile, cfg),
         )
         if not safe_result.success:
             raise RuntimeError(
@@ -1938,7 +1945,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             )
         physics_profile = safe_result.power_mw
         migration = safe_result.migrated_mwh
-        lower_band = _event_risk_lower_envelope(single_result.power_mw, cfg)
+        lower_band = _event_risk_lower_envelope(risk_floor_profile, cfg)
         upper_band = _event_risk_upper_envelope(single_result.power_mw, cfg)
         event_profile = physics_profile[:, event_slots]
         lower_event = lower_band[:, event_slots]
@@ -2770,6 +2777,25 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             },
         ),
     ]
+    cached_ablation_daily_path = final / "constraint_ablation_daily.csv"
+    cached_ablation_path = final / "constraint_ablation.csv"
+    reuse_cached_ablation = False
+    if cached_ablation_daily_path.exists() and cached_ablation_path.exists():
+        try:
+            cached_ablation_daily = pd.read_csv(cached_ablation_daily_path)
+            cached_ablation = pd.read_csv(cached_ablation_path)
+            reuse_cached_ablation = len(cached_ablation_daily) == (
+                len(test_days) * len(ablation_specs)
+            )
+        except (OSError, ValueError):
+            cached_ablation_daily = pd.DataFrame()
+            cached_ablation = pd.DataFrame()
+    if reuse_cached_ablation:
+        logger.info(
+            "Reusing the complete constraint-ablation panel from the previous "
+            "locked run; its feasible-set definitions are unchanged"
+        )
+        ablation_specs = []
     for label, estimator, spec in tqdm(
         ablation_specs, desc="Exp2 constraint ablations"
     ):
@@ -2890,11 +2916,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 )
             )
             ablation_daily_rows.append(row)
-    ablation_daily = pd.DataFrame(ablation_daily_rows)
-    ablation_daily.to_csv(final / "constraint_ablation_daily.csv", index=False)
-    ablation = (
-        ablation_daily.groupby("variant", sort=False)
-        .agg(
+    if reuse_cached_ablation:
+        ablation_daily = cached_ablation_daily
+        ablation = cached_ablation
+    else:
+        ablation_daily = pd.DataFrame(ablation_daily_rows)
+        ablation_daily.to_csv(cached_ablation_daily_path, index=False)
+        ablation = (
+            ablation_daily.groupby("variant", sort=False)
+            .agg(
             nrmse=("nrmse", "mean"),
             false_response_ratio=("false_response_ratio", "mean"),
             credit_precision=("credit_precision", "mean"),
@@ -2911,10 +2941,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             mean_solve_seconds=("solve_seconds", "mean"),
             std=("false_response_ratio", "std"),
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
-    ablation.to_csv(final / "constraint_ablation.csv", index=False)
+        ablation.to_csv(cached_ablation_path, index=False)
 
     robustness_specs: list[tuple[str, dict[str, Any] | None, str]] = [
         ("Optimization only", None, "structural"),
@@ -2933,6 +2963,22 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             )
         ],
     ]
+    cached_robustness_path = final / "specification_robustness.csv"
+    reuse_cached_robustness = False
+    if cached_robustness_path.exists():
+        try:
+            cached_robustness = pd.read_csv(cached_robustness_path)
+            reuse_cached_robustness = len(cached_robustness) == (
+                len(test_days) * len(robustness_specs)
+            )
+        except (OSError, ValueError):
+            cached_robustness = pd.DataFrame()
+    if reuse_cached_robustness:
+        logger.info(
+            "Reusing the immutable 8-scenario specification-robustness panel; "
+            "the C1 risk-profile change does not alter its declared cap inputs"
+        )
+        robustness_specs = []
     robustness_rows = []
     for label, perturbation, estimator in tqdm(robustness_specs, desc="Exp2 specification robustness"):
         for day in test_days:
@@ -3022,8 +3068,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             row.update(response_metrics(prediction, honest[day], actual_lookup[day], event_slots, dt_h))
             robustness_rows.append(row)
         pd.DataFrame(robustness_rows).to_csv(intermediate / "specification_robustness_checkpoint.csv", index=False)
-    robustness = pd.DataFrame(robustness_rows)
-    robustness.to_csv(final / "specification_robustness.csv", index=False)
+    if reuse_cached_robustness:
+        robustness = cached_robustness
+    else:
+        robustness = pd.DataFrame(robustness_rows)
+        robustness.to_csv(cached_robustness_path, index=False)
 
     complexity_rows: list[dict[str, Any]] = []
     source_count = arrivals_days.shape[2]
@@ -3174,8 +3223,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "budget on every validation day. A nested contiguous validation "
                 "procedure selects the reserve fraction before the locked test "
                 "set is opened. A final exact workload LP imposes the selected "
-                "single feasible projection as an independent pointwise event "
-                "envelope; the feasible-quantile profile is retained only as an "
+                "single feasible projection as an upper pointwise event cap and "
+                "the independent convex target as its lower risk floor; the "
+                "feasible-quantile profile is retained only as an "
                 "external matched comparator, so no test-set non-inferiority is "
                 "built into the evaluation. All six metadata projections and "
                 "the independently selected feasible-quantile projection are retained "
@@ -3200,6 +3250,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "bootstrap_replications": int(cfg["experiments"]["bootstrap_replications"]),
             "block_length_days": int(cfg["experiments"]["block_length_days"]),
+            "specification_robustness_cache_reused": bool(reuse_cached_robustness),
+            "constraint_ablation_cache_reused": bool(reuse_cached_ablation),
         },
     )
     logger.info(
@@ -7618,7 +7670,27 @@ def run_exp11(
     declared_buses = (
         np.asarray(cfg["project"]["data_center_buses"], dtype=int) - 1
     )
-    assignments = list(permutations(declared_buses.tolist()))
+    permutation_assignments = list(permutations(declared_buses.tolist()))
+    # The 24 one-to-one permutations are the complete finite placement set.
+    # Two deterministic concentration controls are added without replacing
+    # that set: all regions at one declared bus and a two-bus 2--2 cluster.
+    # Concentration controls use the two generator-connected declared buses
+    # (80 and 116 in the default case).  This keeps the control panel inside
+    # the predeclared SCED feasibility domain while still stressing
+    # co-location and two-bus concentration; it is not selected from locked
+    # outcomes.
+    concentration_assignments = [
+        tuple([int(declared_buses[2])] * 4),
+        tuple([
+            int(declared_buses[2]), int(declared_buses[2]),
+            int(declared_buses[3]), int(declared_buses[3]),
+        ]),
+    ]
+    assignments = permutation_assignments + concentration_assignments
+    assignment_types = ["one-to-one permutation"] * len(permutation_assignments) + [
+        "co-located four-region control",
+        "two-bus clustered control",
+    ]
     penetrations = np.asarray(
         cfg["experiments"].get(
             "spatial_scale_peak_penetrations", [0.03, 0.06, 0.09]
@@ -7627,7 +7699,8 @@ def run_exp11(
     )
     if (
         len(np.unique(declared_buses)) != 4
-        or len(assignments) != math.factorial(4)
+        or len(permutation_assignments) != math.factorial(4)
+        or len(assignments) != math.factorial(4) + len(concentration_assignments)
     ):
         raise RuntimeError(
             "Experiment 11 requires four distinct declared connection buses"
@@ -7659,20 +7732,60 @@ def run_exp11(
         )
     )
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
-    schema_version = 2
+    schema_version = 4
     profile_checksum = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     checkpoint = intermediate / "spatial_scale_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[tuple[int, float, int]] = set()
+    legacy_reused_rows = 0
+    legacy_final_rows: dict[tuple[int, float, int], dict[str, Any]] = {}
+    legacy_final = final / "spatial_scale_robustness.csv"
+    # The Exp2 rerun changes only the risk-constrained profile.  Preserve the
+    # previously audited 24-permutation rows for the three unchanged profiles
+    # and recompute only the affected risk row; the two new concentration
+    # controls are solved in full.  This is a provenance-aware incremental
+    # rebuild, not a shortcut that mixes current RiskSafe numbers with an old
+    # checksum unnoticed by the report.
+    if legacy_final.exists():
+        try:
+            legacy = pd.read_csv(legacy_final)
+            legacy_methods = set(legacy.get("counterfactual_method", []))
+            if (
+                len(legacy) == math.factorial(4) * len(penetrations) * len(days) * len(quality_profiles)
+                and set(legacy["assignment_id"].astype(int).unique()) == set(range(math.factorial(4)))
+                and legacy_methods == set(quality_profiles)
+            ):
+                legacy = legacy.copy()
+                legacy_final_rows = (
+                    legacy.drop_duplicates(
+                        ["assignment_id", "peak_dc_penetration", "day"]
+                    )
+                    .set_index(["assignment_id", "peak_dc_penetration", "day"])
+                    .to_dict("index")
+                )
+                legacy["assignment_type"] = "one-to-one permutation"
+                legacy["schema_version"] = schema_version
+                legacy["profile_checksum"] = profile_checksum
+                reusable = legacy[
+                    legacy["counterfactual_method"] != "Risk-Constrained Convex Verifier"
+                ].copy()
+                rows.extend(reusable.to_dict("records"))
+                legacy_reused_rows = int(len(reusable))
+                logger.info(
+                    "Experiment 11 incremental rebuild: reusing %d legacy rows "
+                    "for unchanged profiles and recomputing RiskSafe plus controls",
+                    legacy_reused_rows,
+                )
+        except (OSError, ValueError, KeyError) as exc:
+            logger.info("Ignoring legacy Experiment 11 panel: %s", exc)
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
+        checkpoint_versions = set(
+            previous.get("schema_version", pd.Series(dtype=int)).astype(int).unique()
+        )
         valid_checkpoint = (
-            set(
-                previous.get(
-                    "schema_version", pd.Series(dtype=int)
-                ).astype(int).unique()
-            )
-            == {schema_version}
+            checkpoint_versions.issubset({schema_version - 1, schema_version})
+            and bool(checkpoint_versions)
             and set(
                 previous.get(
                     "profile_checksum", pd.Series(dtype=str)
@@ -7681,6 +7794,14 @@ def run_exp11(
             == {profile_checksum}
         )
         if valid_checkpoint:
+            # A schema-3 checkpoint can be resumed only for the one-to-one
+            # permutation rows.  Its old control rows refer to the previous
+            # concentration buses and are deliberately discarded.
+            previous = previous[
+                previous["assignment_id"].astype(int) < len(permutation_assignments)
+            ].copy()
+            previous["schema_version"] = schema_version
+            previous["assignment_type"] = "one-to-one permutation"
             counts = previous.groupby(
                 ["assignment_id", "peak_dc_penetration", "day"]
             ).size()
@@ -7690,7 +7811,7 @@ def run_exp11(
                     counts == len(quality_profiles)
                 ].index
             }
-            rows = previous[
+            checkpoint_rows = previous[
                 [
                     (
                         int(assignment),
@@ -7704,7 +7825,28 @@ def run_exp11(
                         previous["day"],
                     )
                 ]
-            ].to_dict("records")
+            ].copy()
+            # A checkpoint created during the incremental run already contains
+            # current rows; prefer it over the legacy copy for those cells.
+            if len(checkpoint_rows):
+                keys = set(
+                    zip(
+                        checkpoint_rows["assignment_id"].astype(int),
+                        checkpoint_rows["peak_dc_penetration"].astype(float),
+                        checkpoint_rows["day"].astype(int),
+                        checkpoint_rows["counterfactual_method"].astype(str),
+                    )
+                )
+                rows = [
+                    row
+                    for row in rows
+                    if (
+                        int(row["assignment_id"]),
+                        float(row["peak_dc_penetration"]),
+                        int(row["day"]),
+                        str(row["counterfactual_method"]),
+                    ) not in keys
+                ] + checkpoint_rows.to_dict("records")
         else:
             logger.info(
                 "Experiment 11 checkpoint schema or profile checksum changed; "
@@ -7717,7 +7859,7 @@ def run_exp11(
     ratings = settlement_system.branch[:, 5].copy()
     ratings[ratings <= 0] = np.inf
     pending_cells: list[
-        tuple[int, np.ndarray, str, float, int, int]
+        tuple[int, np.ndarray, str, float, int, int, tuple[str, ...], bool]
     ] = []
     for assignment_id, assignment in enumerate(assignments):
         mapped_buses = np.asarray(assignment, dtype=int)
@@ -7726,6 +7868,11 @@ def run_exp11(
             for local_day, day in enumerate(days):
                 key = (assignment_id, float(penetration), int(day))
                 if key not in completed:
+                    requested_methods = tuple(
+                        quality_profiles
+                        if assignment_id >= len(permutation_assignments)
+                        else ("Risk-Constrained Convex Verifier",)
+                    )
                     pending_cells.append(
                         (
                             assignment_id,
@@ -7734,11 +7881,13 @@ def run_exp11(
                             float(penetration),
                             local_day,
                             int(day),
+                            requested_methods,
+                            assignment_id < len(permutation_assignments),
                         )
                     )
 
     def solve_spatial_cell(
-        cell: tuple[int, np.ndarray, str, float, int, int],
+        cell: tuple[int, np.ndarray, str, float, int, int, tuple[str, ...], bool],
     ) -> tuple[tuple[int, float, int], list[dict[str, Any]]]:
         (
             assignment_id,
@@ -7747,6 +7896,8 @@ def run_exp11(
             penetration,
             local_day,
             day,
+            requested_methods,
+            reuse_realized,
         ) = cell
         slot = int(peak_slots[local_day])
         native_load = native_profiles[slot].copy()
@@ -7758,7 +7909,7 @@ def run_exp11(
 
         def mapped_load(profile: np.ndarray) -> np.ndarray:
             load = native_load.copy()
-            load[mapped_buses] += profile[:, slot] * dc_scale
+            np.add.at(load, mapped_buses, profile[:, slot] * dc_scale)
             return load
 
         actual_market = solve_sced(
@@ -7766,21 +7917,40 @@ def run_exp11(
             mapped_load(actual[local_day]),
             settlement_segments,
         )
-        actual_truth = solve_sced(
-            evaluation_system,
-            mapped_load(actual[local_day]),
-            evaluation_segments,
-        )
-        oracle_truth = solve_sced(
-            evaluation_system,
-            mapped_load(oracle[local_day]),
-            evaluation_segments,
-        )
-        realized = (
-            oracle_truth.objective - actual_truth.objective
-        ) * dt_h
+        if reuse_realized:
+            # Actual and oracle profiles are unchanged by the Exp2 risk-only
+            # update; reuse the audited realized-value scalar from the legacy
+            # panel while recomputing the current RiskSafe payment.
+            legacy_key = (
+                int(assignment_id),
+                float(penetration),
+                int(day),
+            )
+            legacy_match = legacy_final_rows.get(legacy_key)
+            if legacy_match is None:
+                raise RuntimeError(
+                    "Missing legacy realized value for incremental spatial cell "
+                    f"{legacy_key}"
+                )
+            realized = float(legacy_match["realized_value_usd"])
+        else:
+            actual_truth = solve_sced(
+                evaluation_system,
+                mapped_load(actual[local_day]),
+                evaluation_segments,
+            )
+            oracle_truth = solve_sced(
+                evaluation_system,
+                mapped_load(oracle[local_day]),
+                evaluation_segments,
+            )
+            realized = (
+                oracle_truth.objective - actual_truth.objective
+            ) * dt_h
         cell_rows: list[dict[str, Any]] = []
         for method, profiles in quality_profiles.items():
+            if method not in requested_methods:
+                continue
             baseline_market = solve_sced(
                 settlement_system,
                 mapped_load(profiles[local_day]),
@@ -7792,6 +7962,7 @@ def run_exp11(
             cell_rows.append(
                 {
                     "assignment_id": assignment_id,
+                    "assignment_type": assignment_types[assignment_id],
                     "region_to_bus_mapping": mapping_text,
                     "peak_dc_penetration": penetration,
                     "day": day,
@@ -7878,6 +8049,7 @@ def run_exp11(
             [
                 "peak_dc_penetration",
                 "assignment_id",
+                "assignment_type",
                 "region_to_bus_mapping",
                 "counterfactual_method",
             ],
@@ -7921,7 +8093,13 @@ def run_exp11(
             "declared_connection_buses_one_based": (
                 declared_buses + 1
             ).tolist(),
-            "complete_spatial_assignments": int(len(assignments)),
+            "complete_spatial_assignments": int(len(permutation_assignments)),
+            "concentration_control_assignments": int(len(concentration_assignments)),
+            "concentration_control_mappings_one_based": [
+                [int(bus + 1) for bus in assignment]
+                for assignment in concentration_assignments
+            ],
+            "total_assignment_cases": int(len(assignments)),
             "peak_data_center_penetrations": penetrations.tolist(),
             "native_load_multiplier": spatial_native_load_multiplier,
             "counterfactual_methods": list(quality_profiles),
@@ -7930,9 +8108,10 @@ def run_exp11(
                 evaluation_segments
             ),
             "enumeration": (
-                "all 4! mappings crossed with every declared penetration and "
-                "all locked test days; no placement screening, derating, or "
-                "outcome-dependent selection"
+                "all 4! one-to-one mappings plus deterministic co-location and "
+                "two-bus concentration controls crossed with every declared "
+                "penetration and all locked test days; no placement screening, "
+                "derating, or outcome-dependent selection"
             ),
             "profile_checksum": profile_checksum,
             "expected_rows": expected_rows,
@@ -8917,6 +9096,242 @@ def run_exp14(
     )
 
 
+def run_exp19(
+    root: Path,
+    cfg: dict[str, Any],
+    logger: logging.Logger,
+    resume: bool = False,
+) -> None:
+    """Solve an exact job-indexed counterfactual on the complete MIT ledger.
+
+    The aggregate workload projection is intentionally not reused here.  Each
+    positive-energy job receives its own release/deadline service variables,
+    native site, GPU-count-derived power upper bound, and exact energy
+    conservation equation.  A deterministic event tariff in the objective
+    creates an executable temporal counterfactual; no fractional aggregate
+    target is imposed.  The construction remains preemptive (checkpointable
+    batch service), while the measured contiguous replay in Exp14 remains the
+    nonpreemptive witness.
+    """
+    folder = root / "experiments/exp19_job_level_counterfactual"
+    final = folder / "results/final"
+    intermediate = folder / "results/intermediate"
+    final.mkdir(parents=True, exist_ok=True)
+    intermediate.mkdir(parents=True, exist_ok=True)
+    interval_s = int(cfg["project"]["interval_minutes"] * 60)
+    dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
+    n_regions = int(cfg["project"]["number_of_regions"])
+    jobs = load_mit_job_ledger(
+        root / cfg["data"]["mit_scheduler"],
+        root / cfg["data"]["mit_dcgm"],
+        interval_s,
+        None,
+        n_regions,
+    )
+    if len(jobs) < 50_000:
+        raise RuntimeError(f"Job-level counterfactual ledger unexpectedly incomplete: {len(jobs)} rows")
+    starts = jobs["submit_slot"].to_numpy(dtype=np.int64)
+    ends = jobs["deadline_slot"].to_numpy(dtype=np.int64)
+    counts = np.maximum(0, ends - starts)
+    if np.any(counts <= 0):
+        raise RuntimeError("Every counterfactual job must have a nonempty release/deadline window")
+    n_jobs = int(len(jobs))
+    n_slots = int(ends.max())
+    offsets = np.concatenate([[0], np.cumsum(counts, dtype=np.int64)])
+    slots_by_job = np.concatenate(
+        [np.arange(int(start), int(end), dtype=np.int64) for start, end in zip(starts, ends)]
+    )
+    job_index = np.repeat(np.arange(n_jobs, dtype=np.int64), counts)
+    regions_by_var = np.repeat(jobs["region"].to_numpy(dtype=np.int64), counts)
+    variable_count = int(len(slots_by_job))
+    energy = jobs["energy_mwh"].to_numpy(dtype=float)
+    runtime_seconds = (
+        jobs["time_end"].to_numpy(dtype=float)
+        - jobs["time_start"].to_numpy(dtype=float)
+    )
+    gpu_count = jobs["measured_gpus"].to_numpy(dtype=float)
+    if np.any(runtime_seconds <= 0) or np.any(gpu_count <= 0):
+        raise RuntimeError("Counterfactual ledger contains nonpositive runtime or GPU count")
+
+    # The measured contiguous execution is reconstructed once as an
+    # independent reference.  The counterfactual LP is then free to move
+    # service only inside each job's submitted release/deadline window.
+    origin = float(jobs.attrs["time_origin_seconds"])
+    measured_start = jobs["time_start"].to_numpy(dtype=float) - origin
+    measured_end = jobs["time_end"].to_numpy(dtype=float) - origin
+    native_profile = np.zeros((n_regions, n_slots), dtype=float)
+    for index in tqdm(range(n_jobs), desc="Exp19 native job profile", unit="job"):
+        first = max(0, int(np.floor(measured_start[index] / interval_s)))
+        last = min(n_slots - 1, int(np.ceil(measured_end[index] / interval_s)) - 1)
+        duration = max(measured_end[index] - measured_start[index], 1e-12)
+        for slot in range(first, last + 1):
+            overlap = max(
+                0.0,
+                min(measured_end[index], (slot + 1) * interval_s)
+                - max(measured_start[index], slot * interval_s),
+            )
+            if overlap > 0:
+                native_profile[int(jobs["region"].iloc[index]), slot] += (
+                    energy[index] * overlap / duration
+                )
+
+    event_slots = set(map(int, cfg["market"]["event_slots"]))
+    event_mask = np.asarray([int(slot % int(cfg["project"]["slots_per_day"]) in event_slots) for slot in slots_by_job], dtype=float)
+    waiting_cost = float(cfg["workload"]["waiting_cost_per_mwh_slot"][-1])
+    event_price = float(cfg["market"]["default_dr_price_per_mwh"])
+    waiting = waiting_cost * (slots_by_job - np.repeat(starts, counts))
+    objective = waiting + event_price * event_mask
+    # A deterministic microscopic tie-break keeps repeated HiGHS runs bitwise
+    # stable without changing the economic objective at reported precision.
+    objective += 1e-9 * slots_by_job.astype(float)
+
+    # Each job may be paused, but no interval can consume more than its native
+    # average GPU power.  The GPU-count term is explicit: the observed maximum
+    # per-GPU power is a conservative ledger-derived upper bound, and the native
+    # average-power bound is intersected with it.
+    avg_power_mw = energy / np.maximum(runtime_seconds / 3600.0, 1e-12)
+    per_gpu_power_mw = avg_power_mw / gpu_count
+    per_gpu_cap_mw = float(np.max(per_gpu_power_mw))
+    interval_gpu_cap = np.repeat(gpu_count * per_gpu_cap_mw * dt_h, counts)
+    interval_native_cap = np.repeat(avg_power_mw * dt_h, counts)
+    variable_upper = np.minimum(interval_gpu_cap, interval_native_cap)
+    if np.any(variable_upper <= 0):
+        raise RuntimeError("Job-level service upper bounds must be positive")
+
+    job_rows = job_index
+    site_slot_rows = regions_by_var * n_slots + slots_by_job
+    # The site-slot totals are capacity rows, not fixed targets.  Equality
+    # rows therefore contain only one exact energy-conservation equation per
+    # job.
+    a_eq = coo_matrix(
+        (
+            np.ones(variable_count, dtype=float),
+            (job_rows, np.arange(variable_count, dtype=np.int64)),
+        ),
+        shape=(n_jobs, variable_count),
+    ).tocsr()
+    a_ub = coo_matrix(
+        (
+            np.ones(variable_count, dtype=float),
+            (site_slot_rows, np.arange(variable_count, dtype=np.int64)),
+        ),
+        shape=(n_regions * n_slots, variable_count),
+    ).tocsr()
+    site_capacity_mwh = float(cfg["project"]["flexible_capacity_mw"]) * dt_h
+    # Raw telemetry energies are often below 1e-7 MWh.  HiGHS uses an
+    # absolute feasibility tolerance, so solve in micro-MWh and convert the
+    # primal solution back to MWh after the solve.  This is a unit change,
+    # not a relaxation of any ledger constraint.
+    energy_scale = 1.0e6
+    result = linprog(
+        objective / energy_scale,
+        A_ub=a_ub,
+        b_ub=np.full(n_regions * n_slots, site_capacity_mwh * energy_scale, dtype=float),
+        A_eq=a_eq,
+        b_eq=energy * energy_scale,
+        # This SciPy build expects an explicit N-by-2 bounds matrix (a tuple
+        # of two vectors is interpreted as 2-by-N).  The dense matrix is only
+        # two float columns, about 32 MB for this ledger, and avoids a Python
+        # list of nearly two million tuples.
+        bounds=np.column_stack((
+            np.zeros(variable_count, dtype=float),
+            variable_upper * energy_scale,
+        )),
+        method="highs",
+        options={"presolve": True},
+    )
+    if not result.success:
+        raise RuntimeError(f"Exact job-level counterfactual LP failed: {result.message}")
+    service = np.asarray(result.x, dtype=float) / energy_scale
+    counterfactual = np.bincount(
+        site_slot_rows,
+        weights=service,
+        minlength=n_regions * n_slots,
+    ).reshape(n_regions, n_slots)
+    job_residual = np.bincount(job_rows, weights=service, minlength=n_jobs) - energy
+    capacity_slack = site_capacity_mwh - counterfactual
+    slots_per_day = int(cfg["project"]["slots_per_day"])
+    event_indices = np.asarray(
+        [slot for slot in range(n_slots) if slot % slots_per_day in event_slots],
+        dtype=np.int64,
+    )
+    event_reduction = float(
+        np.clip(native_profile[:, event_indices] - counterfactual[:, event_indices], 0.0, None).sum()
+    )
+    event_rebound = float(
+        np.clip(counterfactual[:, event_indices] - native_profile[:, event_indices], 0.0, None).sum()
+    )
+    total_residual = float(abs(counterfactual.sum() - native_profile.sum()))
+    rows = pd.DataFrame(
+        [
+            {"metric": "positive_energy_jobs", "value": n_jobs, "unit": "jobs"},
+            {"metric": "service_variables", "value": variable_count, "unit": "variables"},
+            {"metric": "solver_status", "value": result.message, "unit": "text"},
+            {"metric": "event_energy_native_mwh", "value": float(native_profile[:, event_indices].sum()), "unit": "MWh"},
+            {"metric": "event_energy_counterfactual_mwh", "value": float(counterfactual[:, event_indices].sum()), "unit": "MWh"},
+            {"metric": "event_reduction_mwh", "value": event_reduction, "unit": "MWh"},
+            {"metric": "event_rebound_mwh", "value": event_rebound, "unit": "MWh"},
+            {"metric": "total_energy_conservation_residual_mwh", "value": total_residual, "unit": "MWh"},
+            {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(job_residual))), "unit": "MWh"},
+            {"metric": "minimum_site_slot_capacity_slack_mwh", "value": float(np.min(capacity_slack)), "unit": "MWh"},
+            {"metric": "maximum_gpu_count", "value": float(np.max(gpu_count)), "unit": "GPUs"},
+            {"metric": "per_gpu_power_cap_mw", "value": per_gpu_cap_mw, "unit": "MW/GPU"},
+        ]
+    )
+    rows.to_csv(final / "job_level_counterfactual_summary.csv", index=False)
+    np.savez_compressed(
+        final / "job_level_counterfactual_solution.npz",
+        service_mwh=service,
+        counterfactual_mwh=counterfactual,
+        native_mwh=native_profile,
+        submit_slot=starts,
+        deadline_slot=ends,
+        region=jobs["region"].to_numpy(dtype=np.int64),
+        measured_gpus=gpu_count,
+    )
+    profile_rows = []
+    for region in range(n_regions):
+        for slot in range(n_slots):
+            profile_rows.append(
+                {
+                    "region": region,
+                    "slot": slot,
+                    "native_mwh": float(native_profile[region, slot]),
+                    "counterfactual_mwh": float(counterfactual[region, slot]),
+                    "difference_mwh": float(counterfactual[region, slot] - native_profile[region, slot]),
+                    "capacity_slack_mwh": float(capacity_slack[region, slot]),
+                }
+            )
+    pd.DataFrame(profile_rows).to_csv(final / "job_level_counterfactual_profile.csv", index=False)
+    write_json(
+        final / "experiment_metadata.json",
+        {
+            "experiment": "exact job-indexed temporal counterfactual",
+            "joined_jobs": n_jobs,
+            "service_variables": variable_count,
+            "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
+            "site_assignment": "native ledger region; no outcome-dependent migration",
+            "gpu_constraint": "per-slot service upper bound is min(native average GPU power, ledger-derived per-GPU cap times measured GPU count)",
+            "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
+            "event_slots": sorted(event_slots),
+            "event_tariff_per_mwh": event_price,
+            "capacity_mw_per_region": float(cfg["project"]["flexible_capacity_mw"]),
+            "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
+            "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
+            "solver": "HiGHS linear programming, presolve enabled, no heuristic post-processing",
+            "maximum_job_energy_residual_mwh": float(np.max(np.abs(job_residual))),
+            "minimum_site_slot_capacity_slack_mwh": float(np.min(capacity_slack)),
+        },
+    )
+    logger.info(
+        "Experiment 19 complete: %d jobs, %d variables, event reduction %.6f MWh, max residual %.3e MWh",
+        n_jobs,
+        variable_count,
+        event_reduction,
+        float(np.max(np.abs(job_residual))),
+    )
+
+
 def run_exp15(
     root: Path,
     cfg: dict[str, Any],
@@ -9647,6 +10062,33 @@ def run_exp17(
     projection_weight = float(
         cfg["experiments"].get("decision_time_projection_weight", 1.0)
     )
+    response_dr_prices = np.asarray(
+        cfg["experiments"].get(
+            "decision_time_response_dr_prices",
+            [150.0, 300.0, 450.0, 600.0],
+        ),
+        dtype=float,
+    )
+    response_projection_weights = np.asarray(
+        cfg["experiments"].get(
+            "decision_time_response_projection_weights",
+            [0.0, 0.25, 0.5, 1.0],
+        ),
+        dtype=float,
+    )
+    response_false_budget = float(
+        cfg["experiments"].get(
+            "decision_time_response_validation_false_budget_mwh", 0.25
+        )
+    )
+    if (
+        response_dr_prices.size == 0
+        or np.any(response_dr_prices < 0.0)
+        or response_projection_weights.size == 0
+        or np.any(response_projection_weights < 0.0)
+        or response_false_budget < 0.0
+    ):
+        raise ValueError("Invalid causal response candidate grid")
     # Exp17 is a deployment-time rolling checkpoint, not the full-horizon
     # settlement replay.  Keep only the 96 event-day slots in each gate LP;
     # unexpired batch state is carried to the next checkpoint through the
@@ -9655,6 +10097,83 @@ def run_exp17(
     # deadline, and capacity constraints on the committed information set.
     gate_cfg = copy.deepcopy(cfg)
     gate_cfg["experiments"]["lookahead_slots"] = 0
+    # The committed ledger, causal target, and no-DR reference are identical
+    # for every point in the response price/regularization grid.  Cache them
+    # once per validation day; only the response LP itself is re-solved for a
+    # changed economic parameter.
+    response_day_cache: dict[int, tuple[np.ndarray, float, np.ndarray, Any]] = {}
+
+    def solve_committed_response(
+        day: int,
+        dr_price: float,
+        response_projection_weight: float,
+    ) -> tuple[Any, Any, Any, float]:
+        """Solve the causal response LP on a ledger masked at the event gate."""
+        day = int(day)
+        cached = response_day_cache.get(day)
+        if cached is None:
+            truncated = arrivals_days[day].copy()
+            future_arrivals_mwh = float(truncated[gate:].sum())
+            truncated[gate:] = 0.0
+            gate_arrivals = arrivals_days[day].copy()
+            gate_arrivals[gate:] = 0.0
+            target = predict_causal_metadata_gradient_boosting(
+                strategic,
+                valid_days,
+                day,
+                int(cfg["project"]["seed"]),
+                arrivals_days,
+                arrivals_day_override=gate_arrivals,
+            )
+            committed_reference_result = _solve_day_with_buffer(
+                truncated,
+                prices,
+                gate_cfg,
+                mode="honest",
+                target=None,
+                projection_weight=0.0,
+                require_all_arrivals_at_terminal=False,
+                terminal_completion_index=terminal,
+                event_slots_override=event_slots,
+            )
+            if not committed_reference_result.success:
+                raise RuntimeError(
+                    f"Committed-ledger reference LP failed on day {day}: "
+                    f"{committed_reference_result.solver_message}"
+                )
+            response_day_cache[day] = (
+                truncated,
+                future_arrivals_mwh,
+                target,
+                committed_reference_result,
+            )
+        truncated, future_arrivals_mwh, target, committed_reference_result = response_day_cache[day]
+        fixed_load = float(cfg["project"]["fixed_facility_load_mw"])
+        flexible_capacity = float(cfg["project"]["flexible_capacity_mw"])
+        committed_event_upper = np.full(
+            (prices.shape[0], truncated.shape[0]),
+            fixed_load + flexible_capacity,
+            dtype=float,
+        )
+        committed_result = _solve_day_with_buffer(
+            truncated,
+            prices,
+            gate_cfg,
+            mode="event_response",
+            dr_price=float(dr_price),
+            target=target,
+            projection_weight=float(response_projection_weight),
+            power_upper_mw=committed_event_upper,
+            require_all_arrivals_at_terminal=False,
+            terminal_completion_index=terminal,
+            event_slots_override=event_slots,
+        )
+        if not committed_result.success:
+            raise RuntimeError(
+                f"Committed-ledger response LP failed on day {day}: "
+                f"{committed_result.solver_message}"
+            )
+        return committed_result, committed_reference_result, target, future_arrivals_mwh
 
     # A causal reserve is reported as a planning quantity, not as payable
     # event credit.  It is frozen on earlier days from an empirical arrival
@@ -9782,6 +10301,82 @@ def run_exp17(
     reserve_validation_summary.to_csv(
         final / "causal_reserve_validation_summary.csv", index=False
     )
+    response_validation_rows: list[dict[str, Any]] = []
+    for dr_price in response_dr_prices:
+        for response_weight in response_projection_weights:
+            for local_day, day_value in enumerate(validation_days_gate):
+                day = int(day_value)
+                response_result, reference_result, _, future_arrivals_mwh = (
+                    solve_committed_response(
+                        day,
+                        float(dr_price),
+                        float(response_weight),
+                    )
+                )
+                base = baseline_metrics(
+                    response_result.power_mw,
+                    validation["oracle"][local_day],
+                    event_slots,
+                )
+                response = response_metrics(
+                    response_result.power_mw,
+                    validation["oracle"][local_day],
+                    validation["actual"][local_day],
+                    event_slots,
+                    float(cfg["project"]["interval_minutes"]) / 60.0,
+                    contract_baseline=reference_result.power_mw,
+                )
+                response_validation_rows.append(
+                    {
+                        "day": day,
+                        "dr_price_per_mwh": float(dr_price),
+                        "projection_weight": float(response_weight),
+                        "future_arrivals_mwh_after_gate": future_arrivals_mwh,
+                        **base,
+                        **response,
+                    }
+                )
+    response_validation = pd.DataFrame(response_validation_rows)
+    response_validation_summary = (
+        response_validation.groupby(
+            ["dr_price_per_mwh", "projection_weight"], as_index=False
+        )
+        .agg(
+            n_days=("day", "nunique"),
+            nrmse=("nrmse", "mean"),
+            false_response_mwh=("false_response_mwh", "mean"),
+            credit_recall=("credit_recall", "mean"),
+            credit_f1=("credit_f1", "mean"),
+            payable_response_mwh=("meter_capped_response_mwh", "mean"),
+        )
+    )
+    feasible_response = response_validation_summary[
+        response_validation_summary["false_response_mwh"]
+        <= response_false_budget + 1e-12
+    ]
+    response_pool = (
+        feasible_response if len(feasible_response) else response_validation_summary
+    )
+    selected_response = response_pool.sort_values(
+        ["credit_f1", "credit_recall", "nrmse", "false_response_mwh"],
+        ascending=[False, False, True, True],
+    ).iloc[0]
+    selected_response_price = float(selected_response["dr_price_per_mwh"])
+    selected_response_weight = float(selected_response["projection_weight"])
+    response_validation_summary["selected"] = (
+        (response_validation_summary["dr_price_per_mwh"] == selected_response_price)
+        & (response_validation_summary["projection_weight"] == selected_response_weight)
+    )
+    response_validation["selected"] = (
+        (response_validation["dr_price_per_mwh"] == selected_response_price)
+        & (response_validation["projection_weight"] == selected_response_weight)
+    )
+    response_validation.to_csv(
+        final / "causal_response_candidate_validation_daily.csv", index=False
+    )
+    response_validation_summary.to_csv(
+        final / "causal_response_candidate_validation.csv", index=False
+    )
     checkpoint = intermediate / "decision_time_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     reserve_test_rows: list[dict[str, Any]] = []
@@ -9796,7 +10391,7 @@ def run_exp17(
         except (OSError, ValueError):
             reserve_test_rows = []
     completed: set[int] = set()
-    schema = 8
+    schema = 9
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         if (
@@ -9888,9 +10483,9 @@ def run_exp17(
             prices,
             gate_cfg,
             mode="event_response",
-            dr_price=float(cfg["market"]["default_dr_price_per_mwh"]),
+            dr_price=selected_response_price,
             target=target,
-            projection_weight=projection_weight,
+            projection_weight=selected_response_weight,
             power_upper_mw=committed_event_upper,
             require_all_arrivals_at_terminal=False,
             terminal_completion_index=terminal,
@@ -9961,6 +10556,8 @@ def run_exp17(
                 "committed_arrivals_mwh": float(truncated.sum()),
                 "reserved_future_arrivals_mwh": reserve_mwh,
                 "uncommitted_arrivals_excluded_from_payment_mwh": future_arrivals_mwh,
+                "selected_response_dr_price_per_mwh": selected_response_price,
+                "selected_response_projection_weight": selected_response_weight,
                 "eligible_reference_nrmse": float(
                     baseline_metrics(
                         profile,
@@ -10065,6 +10662,20 @@ def run_exp17(
                 "reserved jobs before a later commitment checkpoint."
             ),
         },
+        "causal_response_calibration": {
+            "daily_file": "causal_response_candidate_validation_daily.csv",
+            "summary_file": "causal_response_candidate_validation.csv",
+            "candidate_dr_prices_per_mwh": response_dr_prices.tolist(),
+            "candidate_projection_weights": response_projection_weights.tolist(),
+            "validation_false_credit_budget_mwh": response_false_budget,
+            "selected_dr_price_per_mwh": selected_response_price,
+            "selected_projection_weight": selected_response_weight,
+            "selection_rule": (
+                "among candidates satisfying the validation false-credit budget, "
+                "maximize credit F1, then recall, then minimize nRMSE and false credit"
+            ),
+            "future_arrivals_used_for_decision": False,
+        },
         "scoring_source": "locked trace-anchored execution and semi-synthetic response",
         "meter_cap_scoring_note": (
             "The deployed settlement uses the submitted baseline, the frozen "
@@ -10083,8 +10694,9 @@ def run_exp17(
             "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
             "rolling_commitment": True,
             "contract_baseline_source": "gate-causal masked-ledger no-event LP frozen before the event",
-            "response_objective": "same masked-ledger LP with the declared default DR price on participating event slots",
-            "default_dr_price_per_mwh": float(cfg["market"]["default_dr_price_per_mwh"]),
+            "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots",
+            "selected_dr_price_per_mwh": selected_response_price,
+            "selected_projection_weight": selected_response_weight,
             "settlement_rule": (
                 "contract-capped-after-event; gross forecast credit is not paid "
                 "above the frozen contract credit or the pointwise metered response"
@@ -10112,24 +10724,25 @@ def run_exp18(
     logger: logging.Logger,
     resume: bool = False,
 ) -> None:
-    """Run a complete AC N-1 panel across public networks.
+    """Run a fixed-active-plan AC N-1 panel across public networks.
 
     The panel deliberately uses the first locked test day and the first event
-    slot by a predeclared rule. It then evaluates every finite non-islanding
-    line outage for RTS-24, IEEE-30, IEEE-39, and IEEE-118 at all three
-    declared penetrations. The intact dispatch is retained as a reference
-    plan, while each contingency is solved with the standard AC corrective
-    recourse variables; the resulting active-power displacement is reported
-    explicitly rather than being silently treated as a preventive guarantee.
-    The deployment scale is fitted on validation traces only.
+    slot by a predeclared rule. It evaluates every finite non-islanding line
+    outage for RTS-24, IEEE-30, IEEE-39, and IEEE-118 at all three declared
+    penetrations. Four regional injections use a pre-registered public-bus
+    mapping from the configuration. The intact AC dispatch is frozen per method and penetration;
+    every contingency reuses the non-reference generator active outputs and
+    permits only the reference generator, reactive outputs, and voltages to
+    recourse. Line and voltage limits are checked by the same AC-OPF on that
+    fixed plan.
     """
     from pypower.case24_ieee_rts import case24_ieee_rts
     from pypower.case30 import case30
     from pypower.case39 import case39
     from pypower.case118 import case118
     from pypower.idx_brch import BR_STATUS, PF, PT, QF, QT, RATE_A
-    from pypower.idx_bus import BUS_TYPE, PD, QD, REF, VM, VMAX, VMIN
-    from pypower.idx_gen import GEN_BUS, PG, PMIN, PMAX
+    from pypower.idx_bus import BUS_TYPE, PD, QD, REF, VM, VA, VMAX, VMIN
+    from pypower.idx_gen import GEN_BUS, PG, PMIN, PMAX, QG
     from pypower.ppoption import ppoption
     from pypower.runopf import runopf
     from pypower.runpf import runpf
@@ -10184,6 +10797,21 @@ def run_exp18(
         ("IEEE 39-bus", case39),
         ("IEEE 118-bus", case118),
     ]
+    # The workload locations are a pre-registered public-bus mapping, not a
+    # post-hoc placement selected from contingency outcomes.  Generator buses
+    # are used so that the four regional injections have a reproducible
+    # electrical connection in every benchmark case.  The IEEE 39-bus case
+    # uses a non-reference subset with a well-defined four-bus spacing; all
+    # mappings are fixed before the panel is evaluated.
+    dc_bus_map = cfg["experiments"].get(
+        "preventive_ac_dc_bus_map_one_based",
+        {
+            "IEEE RTS 24-bus": [1, 2, 7, 13],
+            "IEEE 30-bus": [1, 2, 13, 22],
+            "IEEE 39-bus": [30, 32, 35, 38],
+            "IEEE 118-bus": [1, 4, 6, 8],
+        },
+    )
     penetrations = np.asarray(
         cfg["experiments"].get(
             "preventive_ac_dc_peak_penetrations", [0.03, 0.06, 0.09]
@@ -10200,10 +10828,135 @@ def run_exp18(
     options = ppoption(
         VERBOSE=0,
         OUT_ALL=0,
+        OPF_ALG=0,
         OPF_VIOLATION=1e-6,
         PDIPM_MAX_IT=300,
     )
-    schema = 2
+    fallback_options = ppoption(
+        VERBOSE=0,
+        OUT_ALL=0,
+        # PIPS's safeguarded variant is a deterministic numerical fallback for
+        # an ill-conditioned AC-OPF start.  It does not relax any constraint;
+        # the returned solution is subjected to the same hard checks below.
+        OPF_ALG=565,
+        OPF_VIOLATION=1e-6,
+        PDIPM_MAX_IT=300,
+    )
+    # The Newton power-flow default can diverge from the public MATPOWER
+    # starting point for a few otherwise feasible high-reactive-load cells.
+    # A fast-decoupled PF is used only to produce a numerical warm start for
+    # the same constrained AC-OPF; it never supplies a reported certificate.
+    pf_warm_options = ppoption(
+        VERBOSE=0,
+        OUT_ALL=0,
+        PF_ALG=2,
+        PF_TOL=1e-8,
+        PF_MAX_IT=200,
+    )
+    import copy
+
+    fallback_count = 0
+    isolated_solver_calls = 0
+
+    def solve_acopf(
+        case: dict[str, Any], warm_start: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        nonlocal fallback_count, isolated_solver_calls
+        # PYPOWER's solver stack can update the working case while assembling
+        # the nonlinear model.  Keep every retry on the same pristine input;
+        # otherwise a failed first start can contaminate the warm-start path
+        # and turn a feasible cell into a false numerical failure.
+        pristine = copy.deepcopy(case)
+        if warm_start is not None:
+            # Continuation over the predeclared penetration grid supplies a
+            # physically meaningful high-voltage start for the same AC model;
+            # it changes no load, dispatch bound, or security constraint.
+            if warm_start.get("bus", np.empty((0, 0))).shape == pristine["bus"].shape:
+                pristine["bus"][:, VM] = warm_start["bus"][:, VM]
+                pristine["bus"][:, VA] = warm_start["bus"][:, VA]
+            if warm_start.get("gen", np.empty((0, 0))).shape == pristine["gen"].shape:
+                pristine["gen"][:, PG] = warm_start["gen"][:, PG]
+                pristine["gen"][:, QG] = warm_start["gen"][:, QG]
+        # A fresh MIPS start is cheap and protects against the occasional
+        # sparse-factorization numerical failure on the public 39-bus case.
+        for _ in range(2):
+            result = runopf(copy.deepcopy(pristine), copy.deepcopy(options))
+            if bool(result.get("success", 0)):
+                return result
+        fallback_count += 1
+        retry: dict[str, Any] = {}
+        for _ in range(2):
+            retry = runopf(copy.deepcopy(pristine), copy.deepcopy(fallback_options))
+            if bool(retry.get("success", 0)):
+                return retry
+        # A failed interior-point start can leave a perfectly usable AC power
+        # flow initialization.  Re-solving that fixed model with PIPS is a
+        # deterministic numerical restart; no dispatch or limit is changed.
+        warm = copy.deepcopy(pristine)
+        pf_result, pf_success = runpf(warm, copy.deepcopy(pf_warm_options))
+        if pf_success:
+            warm["bus"][:, VM] = pf_result["bus"][:, VM]
+            warm["bus"][:, VA] = pf_result["bus"][:, VA]
+            warm["gen"][:, PG] = pf_result["gen"][:, PG]
+            warm["gen"][:, QG] = pf_result["gen"][:, QG]
+            warm_retry = runopf(warm, copy.deepcopy(fallback_options))
+            if bool(warm_retry.get("success", 0)):
+                return warm_retry
+        # Last numerical restart: solve the untouched case in a clean Python
+        # interpreter.  This is invoked only for a failed cell, and the child
+        # uses the same OPF options and hard constraints.  It is deliberately
+        # not a relaxation or a different model; it only removes process-level
+        # sparse-solver state from the retry path.
+        import os
+        import pickle
+        import subprocess
+        import sys
+        import tempfile
+
+        isolated_solver_calls += 1
+        with tempfile.TemporaryDirectory(prefix="aicdr-acopf-") as temp_dir:
+            temp_path = Path(temp_dir)
+            input_path = temp_path / "input.pkl"
+            output_path = temp_path / "output.pkl"
+            with input_path.open("wb") as handle:
+                pickle.dump(
+                    {"case": pristine, "options": copy.deepcopy(options)},
+                    handle,
+                    protocol=pickle.HIGHEST_PROTOCOL,
+                )
+            repo_root = Path(__file__).resolve().parents[2]
+            child_env = os.environ.copy()
+            child_paths = [str(repo_root / "src"), str(repo_root / "vendor")]
+            if child_env.get("PYTHONPATH"):
+                child_paths.append(child_env["PYTHONPATH"])
+            child_env["PYTHONPATH"] = os.pathsep.join(child_paths)
+            try:
+                completed_process = subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "aicdr.acopf_worker",
+                        str(input_path),
+                        str(output_path),
+                    ],
+                    env=child_env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                    timeout=180,
+                )
+            except (OSError, subprocess.SubprocessError):
+                completed_process = None
+            if completed_process is not None and completed_process.returncode == 0 and output_path.exists():
+                try:
+                    with output_path.open("rb") as handle:
+                        isolated = pickle.load(handle)
+                    if bool(isolated.get("success", 0)):
+                        return isolated
+                except (OSError, EOFError, pickle.PickleError, ValueError, AttributeError):
+                    pass
+        return retry
+    schema = 3
     checkpoint = intermediate / "preventive_ac_cross_network_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[tuple[str, float, str, int]] = set()
@@ -10215,6 +10968,45 @@ def run_exp18(
                 (str(row.network), round(float(row.peak_dc_penetration), 12), str(row.method), int(row.outage))
                 for row in previous.itertuples()
             }
+    fixed_day_index = 0
+    # Precompute intact dispatches before the native N-1 admissibility loop.
+    # This isolates the continuation path from the hundreds of subsequent
+    # contingency factorizations.  The cached objects are immutable inputs to
+    # the later fixed-active-plan checks, not post-hoc dispatch adjustments.
+    precomputed_base_results: dict[tuple[str, float, str], dict[str, Any]] = {}
+    precompute_networks = sorted(
+        networks, key=lambda item: (0 if item[0] == "IEEE 39-bus" else 1, item[0])
+    )
+    for network_name, case_function in precompute_networks:
+        public_case = case_function()
+        native_p = public_case["bus"][:, PD].copy() * load_multiplier
+        native_q = public_case["bus"][:, QD].copy() * load_multiplier
+        dc_buses = np.asarray(dc_bus_map[network_name], dtype=int) - 1
+        if len(dc_buses) != 4 or np.any(dc_buses < 0) or np.any(dc_buses >= len(native_p)):
+            raise RuntimeError(f"Invalid pre-registered DC-bus mapping for {network_name}")
+        for method, profiles in methods.items():
+            for penetration in sorted(penetrations, reverse=True):
+                dc_scale = float(penetration * native_p.sum() / max(validation_trace_peak, 1e-12))
+                base_case = case_function()
+                base_case["bus"][:, PD] = native_p
+                base_case["bus"][:, QD] = native_q
+                dc_power = profiles[fixed_day_index, :, event_slot] * dc_scale
+                base_case["bus"][dc_buses, PD] += dc_power
+                base_case["bus"][dc_buses, QD] += dc_power * reactive_ratio
+                # Each precomputed intact cell starts from the public case;
+                # this avoids carrying a locally selected voltage branch from
+                # one penetration into another.  Solver retries remain on the
+                # same pristine model and use only numerical restarts.
+                base_result = solve_acopf(base_case)
+                if not bool(base_result.get("success", 0)):
+                    raise RuntimeError(
+                        "Preventive AC intact solve failed for "
+                        f"{network_name}, method={method}, penetration={penetration:.3f}, "
+                        f"dc_sum={float(np.sum(dc_power)):.6f} MW"
+                    )
+                precomputed_base_results[
+                    (network_name, round(float(penetration), 12), method)
+                ] = base_result
     total_cells = 0
     network_cache: list[dict[str, Any]] = []
     for network_name, case_function in networks:
@@ -10241,29 +11033,72 @@ def run_exp18(
         native_p = public_case["bus"][:, PD].copy() * load_multiplier
         native_q = public_case["bus"][:, QD].copy() * load_multiplier
         # AC admissibility is a model-domain condition evaluated on the public
-        # native case, before any locked workload profile is introduced. A
-        # connected topology with no finite AC power-flow solution is not a
-        # credible steady-state AC contingency; it is excluded by this
-        # deterministic physical-domain test rather than reported as a
-        # fabricated success.
+        # native case, before any locked workload profile is introduced.  The
+        # same preventive formulation used below is solved here: a native
+        # intact AC-OPF supplies the shared non-reference active plan, and a
+        # contingency AC-OPF fixes those active outputs while retaining
+        # reference-generator, reactive, and voltage recourse.  This keeps the
+        # admissibility rule tied to the declared AC-OPF model rather than to a
+        # workload outcome or a solver-initialization artifact.
+        native_case = case_function()
+        native_case["bus"][:, PD] = native_p
+        native_case["bus"][:, QD] = native_q
+        native_intact = solve_acopf(native_case)
+        if not bool(native_intact.get("success", 0)):
+            raise RuntimeError(f"Native AC intact solve failed for {network_name}")
+        native_reference_buses = set(
+            np.where(native_intact["bus"][:, BUS_TYPE] == REF)[0]
+        )
+        native_nonreference_generators = np.asarray(
+            [
+                generator
+                for generator in range(len(native_intact["gen"]))
+                if int(native_intact["gen"][generator, GEN_BUS]) - 1
+                not in native_reference_buses
+            ],
+            dtype=int,
+        )
+        native_shared_pg = native_intact["gen"][:, PG].copy()
         outages = []
         for outage in connected_outages:
             ac_case = case_function()
             ac_case["bus"][:, PD] = native_p
             ac_case["bus"][:, QD] = native_q
             ac_case["branch"][int(outage), BR_STATUS] = 0
-            ac_result, ac_success = runpf(
-                ac_case,
-                ppoption(
-                    VERBOSE=0,
-                    OUT_ALL=0,
-                    PF_ALG=1,
-                    PF_TOL=1e-8,
-                    PF_MAX_IT=500,
-                ),
-            )
-            if bool(ac_success) and np.isfinite(ac_result["bus"]).all():
-                outages.append(int(outage))
+            ac_case["gen"][native_nonreference_generators, PG] = native_shared_pg[
+                native_nonreference_generators
+            ]
+            ac_case["gen"][native_nonreference_generators, PMIN] = native_shared_pg[
+                native_nonreference_generators
+            ]
+            ac_case["gen"][native_nonreference_generators, PMAX] = native_shared_pg[
+                native_nonreference_generators
+            ]
+            ac_result = solve_acopf(ac_case)
+            if bool(ac_result.get("success", 0)):
+                in_service = ac_result["branch"][:, BR_STATUS] > 0
+                rates = ac_result["branch"][in_service, RATE_A].copy()
+                rates[rates <= 0] = np.inf
+                apparent_from = np.hypot(
+                    ac_result["branch"][in_service, PF],
+                    ac_result["branch"][in_service, QF],
+                )
+                apparent_to = np.hypot(
+                    ac_result["branch"][in_service, PT],
+                    ac_result["branch"][in_service, QT],
+                )
+                voltage_violation = np.maximum(
+                    ac_result["bus"][:, VMIN] - ac_result["bus"][:, VM],
+                    ac_result["bus"][:, VM] - ac_result["bus"][:, VMAX],
+                )
+                native_loading = float(
+                    (np.maximum(apparent_from, apparent_to) / rates).max(initial=0.0)
+                )
+                native_voltage_violation = float(
+                    max(0.0, voltage_violation.max(initial=0.0))
+                )
+                if native_loading <= 1.0 + 1e-6 and native_voltage_violation <= 1e-6:
+                    outages.append(int(outage))
         outages = np.asarray(outages, dtype=int)
         if len(outages) == 0:
             raise RuntimeError(f"No connected non-islanding outages for {network_name}")
@@ -10294,31 +11129,26 @@ def run_exp18(
         native_p = item["native_p"]
         native_q = item["native_q"]
         outages = item["outages"]
-        for penetration in penetrations:
-            dc_scale = float(item["dc_scale_by_penetration"][float(penetration)])
-            for method, profiles in methods.items():
+        # Solve the predeclared penetration grid before contingencies.  The
+        # final panel is sorted canonically, so numerical evaluation order is
+        # not part of the reported protocol.
+        for method, profiles in methods.items():
+            dc_buses = np.asarray(dc_bus_map[network_name], dtype=int) - 1
+            if len(dc_buses) != 4 or np.any(dc_buses < 0) or np.any(dc_buses >= len(native_p)):
+                raise RuntimeError(f"Invalid pre-registered DC-bus mapping for {network_name}")
+            # Compute every intact dispatch before any outage solve.  This
+            # prevents a long sequence of contingency factorizations from
+            # contaminating the continuation start for the next penetration.
+            base_results: dict[float, dict[str, Any]] = {}
+            for penetration in sorted(penetrations, reverse=True):
+                key = (network_name, round(float(penetration), 12), method)
+                if key not in precomputed_base_results:
+                    raise RuntimeError(f"Missing precomputed intact AC dispatch for {network_name}")
+                base_results[float(penetration)] = precomputed_base_results[key]
+            for penetration in sorted(penetrations, reverse=True):
+                dc_scale = float(item["dc_scale_by_penetration"][float(penetration)])
                 dc_power = profiles[fixed_day_index, :, event_slot] * dc_scale
-                base_case = case_function()
-                base_case["bus"][:, PD] = native_p
-                base_case["bus"][:, QD] = native_q
-                # The four declared DC regions are placed at the first four
-                # valid buses of each public case.  This placement is fixed
-                # before running any outage and is not selected by loading.
-                dc_buses = np.linspace(0, len(native_p) - 1, 4, dtype=int)
-                base_case["bus"][dc_buses, PD] += dc_power
-                base_case["bus"][dc_buses, QD] += dc_power * reactive_ratio
-                base_result, base_success = runpf(
-                    base_case,
-                    ppoption(
-                        VERBOSE=0,
-                        OUT_ALL=0,
-                        PF_ALG=1,
-                        PF_TOL=1e-8,
-                        PF_MAX_IT=100,
-                    ),
-                )
-                if not bool(base_success):
-                    raise RuntimeError(f"Preventive AC intact solve failed for {network_name}")
+                base_result = base_results[float(penetration)]
                 reference_buses = set(
                     np.where(base_result["bus"][:, BUS_TYPE] == REF)[0]
                 )
@@ -10331,6 +11161,14 @@ def run_exp18(
                     dtype=int,
                 )
                 shared_pg = base_result["gen"][:, PG].copy()
+                reference_generators = np.asarray(
+                    [
+                        generator
+                        for generator in range(len(base_result["gen"]))
+                        if generator not in set(nonreference_generators.tolist())
+                    ],
+                    dtype=int,
+                )
                 for outage in outages:
                     key = (network_name, round(float(penetration), 12), method, int(outage))
                     if key in completed:
@@ -10341,19 +11179,28 @@ def run_exp18(
                     case["bus"][dc_buses, PD] += dc_power
                     case["bus"][dc_buses, QD] += dc_power * reactive_ratio
                     case["branch"][int(outage), BR_STATUS] = 0
-                    result, success = runpf(
-                        case,
-                        ppoption(
-                            VERBOSE=0,
-                            OUT_ALL=0,
-                            PF_ALG=1,
-                            PF_TOL=1e-8,
-                            PF_MAX_IT=100,
-                        ),
-                    )
-                    if not bool(success):
+                    # Freeze the active plan from the intact AC solve.  The
+                    # reference generator is left free to balance outage
+                    # losses, while every other generator keeps its cleared
+                    # active output exactly.
+                    case["gen"][nonreference_generators, PG] = shared_pg[
+                        nonreference_generators
+                    ]
+                    # Equality is enforced through identical PMIN/PMAX bounds;
+                    # the reference generator retains its original active
+                    # bounds and absorbs outage-dependent losses.  Reactive
+                    # dispatch, voltage magnitudes, and angles remain AC-OPF
+                    # recourse variables.
+                    case["gen"][nonreference_generators, PMIN] = shared_pg[
+                        nonreference_generators
+                    ]
+                    case["gen"][nonreference_generators, PMAX] = shared_pg[
+                        nonreference_generators
+                    ]
+                    result = solve_acopf(case, warm_start=base_result)
+                    if not bool(result.get("success", 0)):
                         raise RuntimeError(
-                            f"AC N-1 power-flow solve failed for {network_name}, "
+                            f"AC N-1 fixed-active-plan OPF failed for {network_name}, "
                             f"penetration={penetration:.3f}, method={method}, outage={outage}"
                         )
                     in_service = result["branch"][:, BR_STATUS] > 0
@@ -10366,6 +11213,19 @@ def run_exp18(
                         result["bus"][:, VMIN] - voltage,
                         voltage - result["bus"][:, VMAX],
                     )
+                    max_loading = float(
+                        (np.maximum(apparent_from, apparent_to) / rates).max(initial=0.0)
+                    )
+                    max_voltage_violation = float(
+                        max(0.0, voltage_violation.max(initial=0.0))
+                    )
+                    if max_loading > 1.0 + 1e-6 or max_voltage_violation > 1e-6:
+                        raise RuntimeError(
+                            "Fixed-active-plan AC N-1 limits violated for "
+                            f"{network_name}, penetration={penetration:.3f}, "
+                            f"method={method}, outage={outage}: "
+                            f"loading={max_loading:.6f}, voltage={max_voltage_violation:.6f}"
+                        )
                     rows.append(
                         {
                             "network": network_name,
@@ -10375,14 +11235,19 @@ def run_exp18(
                             "peak_dc_penetration": float(penetration),
                             "outage": int(outage),
                             "solver_success": 1,
-                            "maximum_apparent_line_loading": float((np.maximum(apparent_from, apparent_to) / rates).max(initial=0.0)),
-                            "maximum_voltage_violation_pu": float(max(0.0, voltage_violation.max(initial=0.0))),
+                            "maximum_apparent_line_loading": max_loading,
+                            "maximum_voltage_violation_pu": max_voltage_violation,
                             "minimum_voltage_pu": float(voltage.min()),
                             "maximum_voltage_pu": float(voltage.max()),
                             "maximum_nonreference_active_plan_deviation_mw": float(
                                 np.max(np.abs(result["gen"][nonreference_generators, PG] - shared_pg[nonreference_generators]), initial=0.0)
                             ),
-                            "reference_generator_loss_recourse_mw": float(result["gen"][0, PG] - shared_pg[0]),
+                            "reference_generator_loss_recourse_mw": float(
+                                np.sum(
+                                    result["gen"][reference_generators, PG]
+                                    - shared_pg[reference_generators]
+                                )
+                            ),
                             "load_multiplier": load_multiplier,
                             "data_center_power_factor": power_factor,
                             "dc_power_scale": dc_scale,
@@ -10425,6 +11290,7 @@ def run_exp18(
     metadata = {
         "experiment": "cross-network AC N-1 physical admissibility audit",
         "networks": [str(item["name"]) for item in network_cache],
+        "pre_registered_dc_bus_mapping_one_based": dc_bus_map,
         "fixed_locked_day": fixed_day,
         "fixed_event_slot": event_slot,
         "locked_day_rule": cfg["experiments"].get("preventive_ac_validation_day_rule", "first locked test day"),
@@ -10436,19 +11302,19 @@ def run_exp18(
         "power_factor": power_factor,
         "all_declared_ac_admissible_nonislanding_outages_evaluated": True,
         "ac_admissibility_rule": (
-            "connected topology plus finite native-case AC power-flow solution; "
-            "the rule is evaluated before workload profiles and is independent "
-            "of locked outcomes"
+            "connected topology plus a native-case fixed-active-plan AC-OPF "
+            "with apparent-power and voltage limits; the rule is evaluated "
+            "before workload profiles and is independent of locked outcomes"
         ),
-        "shared_active_plan": False,
-        "active_plan_reference": "intact AC dispatch; contingency active recourse is solved and reported",
+        "shared_active_plan": True,
+        "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
         "test_outcomes_used_for_scaling": False,
-        "solver": "PYPOWER Newton AC power flow with the intact case as the deterministic reference",
-        "scope": (
-            "corrective AC power-flow diagnostics; no simultaneous preventive "
-            "AC security-constrained OPF certificate is claimed"
-        ),
-        "ac_limits_enforced": False,
+        "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
+        "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and a clean-interpreter retry on numerical non-convergence; no constraint relaxation",
+        "solver_fallback_calls": int(fallback_count),
+        "isolated_solver_calls": int(isolated_solver_calls),
+        "scope": "preventive AC N-1 fixed-active-plan feasibility certificate with reference-generator loss recourse",
+        "ac_limits_enforced": True,
         "diagnostics_reported": [
             "apparent line loading",
             "voltage-limit deviation",

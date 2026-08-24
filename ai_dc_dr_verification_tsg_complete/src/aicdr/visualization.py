@@ -1072,7 +1072,7 @@ def plot_exp11(
         palette=palette,
         ax=axes[0],
     )
-    axes[0].set_title("(a) Error across all 24 assignments")
+    axes[0].set_title("(a) Error across 24 permutations + controls")
     axes[0].set_xlabel("Peak data-center penetration")
     axes[0].set_ylabel("Mean absolute error ($/interval)")
     axes[0].legend(
@@ -2010,7 +2010,7 @@ def plot_exp18_preventive_ac_panel(
         legend=False,
         ax=axes[2],
     )
-    axes[2].set_title("(c) Active recourse from intact plan")
+    axes[2].set_title("(c) Non-reference plan deviation")
     axes[2].set_xlabel("Data-center peak penetration")
     axes[2].set_ylabel("Non-reference $P_G$ deviation (MW)")
     save_figure(fig, folder, "fig24_preventive_ac_cross_network")

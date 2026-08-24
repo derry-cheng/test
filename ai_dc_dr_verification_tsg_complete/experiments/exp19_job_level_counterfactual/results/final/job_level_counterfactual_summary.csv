@@ -1,0 +1,13 @@
+metric,value,unit
+positive_energy_jobs,71128,jobs
+service_variables,1974690,variables
+solver_status,Optimization terminated successfully. (HiGHS Status 7: Optimal),text
+event_energy_native_mwh,0.19442596894717518,MWh
+event_energy_counterfactual_mwh,0.14123055679316074,MWh
+event_reduction_mwh,0.05824984977654413,MWh
+event_rebound_mwh,0.0050544376225296755,MWh
+total_energy_conservation_residual_mwh,0.0,MWh
+maximum_job_energy_residual_mwh,7.632783294297951e-17,MWh
+minimum_site_slot_capacity_slack_mwh,29.49498226451249,MWh
+maximum_gpu_count,64.0,GPUs
+per_gpu_power_cap_mw,0.00040376923076923077,MW/GPU

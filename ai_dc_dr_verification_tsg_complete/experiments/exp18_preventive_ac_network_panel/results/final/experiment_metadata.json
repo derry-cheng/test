@@ -6,6 +6,32 @@
     "IEEE 39-bus",
     "IEEE 118-bus"
   ],
+  "pre_registered_dc_bus_mapping_one_based": {
+    "IEEE RTS 24-bus": [
+      1,
+      2,
+      7,
+      13
+    ],
+    "IEEE 30-bus": [
+      1,
+      2,
+      13,
+      22
+    ],
+    "IEEE 39-bus": [
+      30,
+      32,
+      35,
+      38
+    ],
+    "IEEE 118-bus": [
+      1,
+      4,
+      6,
+      8
+    ]
+  },
   "fixed_locked_day": 61,
   "fixed_event_slot": 64,
   "locked_day_rule": "first locked test day",
@@ -19,22 +45,25 @@
     "Trace-Anchored Reference"
   ],
   "outages_by_network": {
-    "IEEE RTS 24-bus": 37,
+    "IEEE RTS 24-bus": 36,
     "IEEE 30-bus": 38,
-    "IEEE 39-bus": 31,
+    "IEEE 39-bus": 33,
     "IEEE 118-bus": 177
   },
-  "validation_trace_peak_mw": 252.92852185302473,
+  "validation_trace_peak_mw": 252.92852185302465,
   "load_multiplier": 0.55,
   "power_factor": 0.95,
   "all_declared_ac_admissible_nonislanding_outages_evaluated": true,
-  "ac_admissibility_rule": "connected topology plus finite native-case AC power-flow solution; the rule is evaluated before workload profiles and is independent of locked outcomes",
-  "shared_active_plan": false,
-  "active_plan_reference": "intact AC dispatch; contingency active recourse is solved and reported",
+  "ac_admissibility_rule": "connected topology plus a native-case fixed-active-plan AC-OPF with apparent-power and voltage limits; the rule is evaluated before workload profiles and is independent of locked outcomes",
+  "shared_active_plan": true,
+  "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
   "test_outcomes_used_for_scaling": false,
-  "solver": "PYPOWER Newton AC power flow with the intact case as the deterministic reference",
-  "scope": "corrective AC power-flow diagnostics; no simultaneous preventive AC security-constrained OPF certificate is claimed",
-  "ac_limits_enforced": false,
+  "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
+  "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and a clean-interpreter retry on numerical non-convergence; no constraint relaxation",
+  "solver_fallback_calls": 3,
+  "isolated_solver_calls": 3,
+  "scope": "preventive AC N-1 fixed-active-plan feasibility certificate with reference-generator loss recourse",
+  "ac_limits_enforced": true,
   "diagnostics_reported": [
     "apparent line loading",
     "voltage-limit deviation",

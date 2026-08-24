@@ -1,0 +1,23 @@
+# Experiment 19: job-indexed executable counterfactual
+
+This stage solves a global sparse linear program with one service variable for
+every positive-energy scheduler job and every admissible release/deadline slot.
+The job energy equality, native-region assignment, per-site nameplate capacity,
+GPU-count-derived interval bound, and deterministic event tariff are all
+enforced in the optimization model. The output is therefore an executable
+preemptive batch-service counterfactual rather than a replay of an already
+observed aggregate profile.
+
+The experiment does not claim arbitrary nonpreemptive execution. The measured
+contiguous runtime/GPU witness remains in Experiment 14; together the two
+stages separate (i) task-level evidence for the observed ledger from (ii) an
+indexed, globally optimized counterfactual for checkpointable batch work.
+
+Run from the repository root with:
+
+```bash
+PYTHONPATH=src:vendor python run_all.py --stage exp19
+```
+
+The final directory contains the exact solver summary, slot profile, compressed
+service vector, and machine-readable metadata used by the manuscript.

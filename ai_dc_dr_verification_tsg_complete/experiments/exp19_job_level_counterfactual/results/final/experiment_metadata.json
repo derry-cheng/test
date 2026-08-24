@@ -1,0 +1,26 @@
+{
+  "experiment": "exact job-indexed temporal counterfactual",
+  "joined_jobs": 71128,
+  "service_variables": 1974690,
+  "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
+  "site_assignment": "native ledger region; no outcome-dependent migration",
+  "gpu_constraint": "per-slot service upper bound is min(native average GPU power, ledger-derived per-GPU cap times measured GPU count)",
+  "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "event_tariff_per_mwh": 150.0,
+  "capacity_mw_per_region": 118.0,
+  "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
+  "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
+  "solver": "HiGHS linear programming, presolve enabled, no heuristic post-processing",
+  "maximum_job_energy_residual_mwh": 7.632783294297951e-17,
+  "minimum_site_slot_capacity_slack_mwh": 29.49498226451249
+}
