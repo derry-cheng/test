@@ -32,6 +32,8 @@
       8
     ]
   },
+  "bus_mapping_basis": "pre-registered generator-bus electrical-role strata selected before the locked panel; no outcome screening or loading-based placement",
+  "spatial_identification": "synthetic trace-to-bus benchmark because the public traces contain no utility geography; Experiment 11 supplies the 24-permutation and penetration sensitivity panel",
   "fixed_locked_day": 61,
   "fixed_event_slot": 64,
   "locked_day_rule": "first locked test day",

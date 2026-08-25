@@ -1,10 +1,18 @@
 {
   "experiment": "exact job-indexed temporal counterfactual",
   "joined_jobs": 71128,
-  "service_variables": 1974690,
+  "service_variables": 5465157,
   "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
+  "deadline_source": "submit-time scheduler timelimit; unlimited sentinel mapped to precommitted bounded window",
+  "deadline_mode": "declared_timelimit",
+  "declared_window_slots_min": 1,
+  "declared_window_slots_max": 584,
+  "unlimited_timelimit_jobs": 29056,
+  "observed_time_end_used_as_deadline": false,
+  "unbounded_timelimit_slots": 128,
+  "declared_per_gpu_power_cap_mw": 0.001,
   "site_assignment": "native ledger region; no outcome-dependent migration",
-  "gpu_constraint": "per-slot service upper bound is min(native average GPU power, ledger-derived per-GPU cap times measured GPU count)",
+  "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times measured GPU count",
   "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
   "event_slots": [
     64,
@@ -17,10 +25,11 @@
     71
   ],
   "event_tariff_per_mwh": 150.0,
+  "event_reduction_definition": "net equals native event energy minus counterfactual event energy; gross positive-part reduction and rebound are reported separately",
   "capacity_mw_per_region": 118.0,
   "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
   "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
   "solver": "HiGHS linear programming, presolve enabled, no heuristic post-processing",
-  "maximum_job_energy_residual_mwh": 7.632783294297951e-17,
-  "minimum_site_slot_capacity_slack_mwh": 29.49498226451249
+  "maximum_job_energy_residual_mwh": 2.168404344971009e-19,
+  "minimum_site_slot_capacity_slack_mwh": 29.49151105611111
 }

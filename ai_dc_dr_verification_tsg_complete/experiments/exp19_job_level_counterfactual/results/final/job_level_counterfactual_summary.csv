@@ -1,13 +1,15 @@
 metric,value,unit
 positive_energy_jobs,71128,jobs
-service_variables,1974690,variables
+service_variables,5465157,variables
 solver_status,Optimization terminated successfully. (HiGHS Status 7: Optimal),text
 event_energy_native_mwh,0.19442596894717518,MWh
-event_energy_counterfactual_mwh,0.14123055679316074,MWh
-event_reduction_mwh,0.05824984977654413,MWh
-event_rebound_mwh,0.0050544376225296755,MWh
-total_energy_conservation_residual_mwh,0.0,MWh
-maximum_job_energy_residual_mwh,7.632783294297951e-17,MWh
-minimum_site_slot_capacity_slack_mwh,29.49498226451249,MWh
+event_energy_counterfactual_mwh,0.027517586944444443,MWh
+event_reduction_mwh,0.18329001289924102,MWh
+event_gross_reduction_mwh,0.18329001289924102,MWh
+event_net_reduction_mwh,0.16690838200273073,MWh
+event_rebound_mwh,0.016381630896510284,MWh
+total_energy_conservation_residual_mwh,4.440892098500626e-16,MWh
+maximum_job_energy_residual_mwh,2.168404344971009e-19,MWh
+minimum_site_slot_capacity_slack_mwh,29.49151105611111,MWh
 maximum_gpu_count,64.0,GPUs
-per_gpu_power_cap_mw,0.00040376923076923077,MW/GPU
+per_gpu_power_cap_mw,0.001,MW/GPU

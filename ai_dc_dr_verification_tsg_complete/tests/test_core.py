@@ -65,13 +65,13 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
     assert metadata["target_future_arrivals_used_for_decision"] is False
     assert "post-gate arrivals masked" in metadata["target_source"]
     assert "used only after the event" in metadata["meter_cap_scoring_note"]
-    assert "precommitted no-event contract profile" in metadata["meter_cap_scoring_note"]
+    assert "causal committed-ledger baseline" in metadata["meter_cap_scoring_note"]
     assert metadata["event_gate_slot"] == CFG["experiments"]["decision_time_event_gate_slot"]
     assert metadata["terminal_completion_index"] == CFG["experiments"]["decision_time_terminal_completion_index"]
     committed_meta = metadata["committed_ledger_safe_mode"]
     assert committed_meta["future_arrivals_used_for_decision"] is False
     assert committed_meta["rolling_commitment"] is True
-    assert "gate-causal masked-ledger no-event LP" in committed_meta["contract_baseline_source"]
+    assert "causal committed-ledger baseline LP" in committed_meta["contract_baseline_source"]
     assert "selected validation DR price" in committed_meta["response_objective"]
     assert float(committed_meta["selected_dr_price_per_mwh"]) in {
         float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
@@ -136,6 +136,51 @@ def test_job_level_flow_certificate_has_machine_precision_residuals() -> None:
     assert int(witness_values["release_violation_seconds"]) == 0
     assert int(witness_values["completion_deadline_violation_seconds"]) == 0
     assert float(witness_values["minimum_native_capacity_slack_mwh"]) >= -1e-9
+
+
+def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction() -> None:
+    folder = ROOT / "experiments/exp19_job_level_counterfactual/results/final"
+    metadata = json.loads(
+        (folder / "experiment_metadata.json").read_text(encoding="utf-8")
+    )
+    assert metadata["observed_time_end_used_as_deadline"] is False
+    assert metadata["deadline_mode"] == "declared_timelimit"
+    assert int(metadata["declared_window_slots_min"]) >= 1
+    assert int(metadata["declared_window_slots_max"]) >= int(metadata["declared_window_slots_min"])
+    assert int(metadata["declared_window_slots_max"]) == 584
+    assert int(metadata["unlimited_timelimit_jobs"]) >= 0
+    assert "submit-time scheduler timelimit" in metadata["deadline_source"]
+    assert float(metadata["declared_per_gpu_power_cap_mw"]) == 0.001
+    summary = pd.read_csv(folder / "job_level_counterfactual_summary.csv")
+    values = dict(zip(summary["metric"], summary["value"]))
+    native = float(values["event_energy_native_mwh"])
+    counterfactual = float(values["event_energy_counterfactual_mwh"])
+    net = float(values["event_net_reduction_mwh"])
+    gross = float(values["event_gross_reduction_mwh"])
+    rebound = float(values["event_rebound_mwh"])
+    assert np.isclose(native - counterfactual, net, atol=1e-12)
+    assert gross >= net - 1e-12
+    assert rebound >= -1e-12
+    assert int(float(values["service_variables"])) == 5_465_157
+    assert float(values["maximum_job_energy_residual_mwh"]) < 1e-15
+
+
+def test_unseen_payment_transfer_panel_is_not_used_for_certificate_selection() -> None:
+    folder = ROOT / "experiments/exp9_payment_certificate/results/final"
+    metadata = json.loads(
+        (folder / "experiment_metadata.json").read_text(encoding="utf-8")
+    )["unseen_transfer_evaluation"]
+    unseen = pd.read_csv(folder / "payment_evaluation_unseen_summary.csv")
+    assert len(unseen) == 8
+    assert set(np.round(unseen["conversion_scale_factor"].astype(float), 8)) == {
+        0.80,
+        1.20,
+    }
+    assert metadata["scenarios_used_in_certificate"] is False
+    assert metadata["target_selection_used"] is False
+    assert np.isfinite(
+        unseen[["mean_absolute_error_usd", "mean_overpayment_usd"]].to_numpy()
+    ).all()
 
 
 def test_literature_controls_share_the_locked_information_contract() -> None:
@@ -377,6 +422,8 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
     )
     assert ac_metadata["test_outcomes_used_for_scaling"] is False
     assert ac_metadata["ac_limits_enforced"] is True
+    assert "pre-registered generator-bus electrical-role" in ac_metadata["bus_mapping_basis"]
+    assert "synthetic trace-to-bus benchmark" in ac_metadata["spatial_identification"]
     assert ac_metadata["pre_registered_dc_bus_mapping_one_based"] == CFG["experiments"]["preventive_ac_dc_bus_map_one_based"]
 
 

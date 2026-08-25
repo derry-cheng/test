@@ -594,15 +594,21 @@ def load_mit_job_ledger(
     interval_s: int,
     n_slots: int | None,
     n_regions: int,
+    deadline_mode: str = "observed",
+    unbounded_timelimit_slots: int = 128,
+    declared_per_gpu_power_cap_mw: float = 1.0e-3,
 ) -> pd.DataFrame:
     """Return the complete measured-job ledger used by exact replay checks.
 
     The join is the same immutable ``id_job``/positive-energy join used by
     :func:`_aggregate_mit_jobs`, but it retains release, execution, deadline,
-    measured energy, GPU count and a deterministic spatial label.  No sample,
-    synthetic row, or heuristic deadline is introduced.  The observed
-    completion time is used only as a retrospective deadline witness in the
-    job-level fidelity experiment.
+    measured energy, GPU count and a deterministic spatial label.  ``observed``
+    mode retains the scheduler completion time as a retrospective replay
+    witness.  ``declared_timelimit`` mode instead constructs an admissible
+    counterfactual window from the submitter-declared Slurm ``timelimit`` and
+    a precommitted fallback for the Slurm unlimited sentinel.  The latter is
+    the only deadline mode allowed for job-level counterfactual optimization;
+    it never reads ``time_end`` to define a decision constraint.
     """
     dcgm = pd.read_csv(
         dcgm_path,
@@ -629,6 +635,7 @@ def load_mit_job_ledger(
             "time_start",
             "time_end",
             "time_submit",
+            "timelimit",
             "gres_req",
             "job_type",
             "state",
@@ -646,14 +653,15 @@ def load_mit_job_ledger(
     if jobs.empty:
         raise RuntimeError("MIT scheduler/DCGM join returned no positive-energy jobs")
     origin = float(jobs["time_start"].min())
-    if n_slots is None:
-        n_slots = int(
-            np.ceil(
-                (float(jobs["time_end"].max()) - origin) / float(interval_s)
-            )
+    if deadline_mode not in {"observed", "declared_timelimit"}:
+        raise ValueError(
+            "deadline_mode must be 'observed' or 'declared_timelimit'"
         )
-    if n_slots <= 0:
-        raise ValueError("n_slots must be positive or None")
+    if int(unbounded_timelimit_slots) <= 0:
+        raise ValueError("unbounded_timelimit_slots must be positive")
+    if float(declared_per_gpu_power_cap_mw) <= 0.0:
+        raise ValueError("declared_per_gpu_power_cap_mw must be positive")
+    requested_n_slots = n_slots
     jobs["submit_slot"] = np.floor(
         np.maximum(0.0, jobs["time_submit"].to_numpy(dtype=float) - origin)
         / float(interval_s)
@@ -662,9 +670,51 @@ def load_mit_job_ledger(
         np.maximum(0.0, jobs["time_start"].to_numpy(dtype=float) - origin)
         / float(interval_s)
     ).astype(np.int64)
-    jobs["deadline_slot"] = np.ceil(
+    jobs["deadline_slot_observed"] = np.ceil(
         (jobs["time_end"].to_numpy(dtype=float) - origin) / float(interval_s)
     ).astype(np.int64)
+    # ``timelimit`` is a scheduler declaration available at submission, not an
+    # observed completion outcome.  Slurm's UINT_MAX sentinel denotes an
+    # unlimited request; the study precommits a finite 128-slot service window
+    # for that case so the counterfactual remains a bounded LP.  The service
+    # floor is derived from measured energy, measured GPU count, and a fixed
+    # precommitted 1-kW/GPU cap; it is a resource identity constraint, not an
+    # observed-runtime upper bound.
+    timelimit_seconds = jobs["timelimit"].to_numpy(dtype=np.int64)
+    unlimited = timelimit_seconds >= np.iinfo(np.uint32).max - 1
+    declared_window_slots = np.where(
+        unlimited,
+        int(unbounded_timelimit_slots),
+        np.maximum(
+            1,
+            np.ceil(timelimit_seconds / float(interval_s)).astype(np.int64),
+        ),
+    ).astype(np.int64)
+    service_floor_slots = np.ceil(
+        (jobs["energy_j"].to_numpy(dtype=float) / 3.6e9)
+        / (
+            np.maximum(jobs["measured_gpus"].to_numpy(dtype=float), 1.0)
+            * float(declared_per_gpu_power_cap_mw)
+            * (float(interval_s) / 3600.0)
+        )
+    ).astype(np.int64)
+    service_floor_slots = np.maximum(service_floor_slots, 1)
+    jobs["deadline_slot_declared_timelimit"] = (
+        jobs["submit_slot"].to_numpy(dtype=np.int64)
+        + np.maximum(declared_window_slots, service_floor_slots)
+    ).astype(np.int64)
+    jobs["deadline_slot"] = (
+        jobs["deadline_slot_observed"]
+        if deadline_mode == "observed"
+        else jobs["deadline_slot_declared_timelimit"]
+    ).astype(np.int64)
+    if requested_n_slots is None:
+        if deadline_mode == "declared_timelimit":
+            n_slots = int(jobs["deadline_slot"].max())
+        else:
+            n_slots = int(jobs["deadline_slot_observed"].max())
+    if n_slots is None or n_slots <= 0:
+        raise ValueError("n_slots must be positive or None")
     jobs["submit_slot_raw"] = jobs["submit_slot"]
     jobs["deadline_slot_raw"] = jobs["deadline_slot"]
     jobs["submit_slot"] = jobs["submit_slot"].clip(lower=0, upper=n_slots - 1)
@@ -692,6 +742,9 @@ def load_mit_job_ledger(
     jobs.attrs["dcgm_rows"] = int(len(dcgm))
     jobs.attrs["joined_jobs_before_horizon_filter"] = joined_jobs_before_horizon_filter
     jobs.attrs["joined_jobs_after_horizon_filter"] = int(len(jobs))
+    jobs.attrs["deadline_mode"] = deadline_mode
+    jobs.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
+    jobs.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
     return jobs.reset_index(drop=True)
 
 

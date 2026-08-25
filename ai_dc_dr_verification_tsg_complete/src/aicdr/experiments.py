@@ -6358,6 +6358,100 @@ def run_exp9(
         )
     )
     summary.to_csv(final / "payment_evaluation_summary.csv", index=False)
+
+    # Independent transfer panel: these two interior conversion factors are
+    # deliberately absent from the certificate LP and from validation target
+    # selection.  They reuse only the frozen profiles and the high-resolution
+    # N--1 evaluator, so the resulting payment/value errors test transfer
+    # rather than re-reporting the certificate's own right-hand-side bound.
+    unseen_scale_factors = np.asarray([0.80, 1.20], dtype=float)
+    unseen_labels = ["heldout-interior-low", "heldout-interior-high"]
+    unseen_day_count = int(
+        cfg["experiments"].get("payment_unseen_transfer_days", len(days))
+    )
+    if unseen_day_count <= 0:
+        raise ValueError("payment_unseen_transfer_days must be positive")
+    unseen_day_count = min(unseen_day_count, len(days))
+    unseen_local_days = np.unique(
+        np.linspace(0, len(days) - 1, unseen_day_count, dtype=int)
+    ).astype(int)
+    unseen_day_items = [
+        (int(local_day), int(days[local_day])) for local_day in unseen_local_days
+    ]
+    unseen_rows: list[dict[str, Any]] = []
+
+    def evaluate_unseen_payment_day(item: tuple[int, int]) -> tuple[int, list[dict[str, Any]]]:
+        local_day, day = item
+        day_rows: list[dict[str, Any]] = []
+        dispatch_cache: dict[tuple[int, bytes], Any] = {}
+
+        def unseen_dispatch(load: np.ndarray) -> Any:
+            key = (int(evaluation_segments), np.ascontiguousarray(load, dtype=np.float64).tobytes())
+            if key not in dispatch_cache:
+                dispatch_cache[key] = solve_n1_sced(
+                    system,
+                    load,
+                    evaluation_segments,
+                    security_factors=security,
+                )
+            return dispatch_cache[key]
+
+        for label, scale_factor in zip(unseen_labels, unseen_scale_factors):
+            for slot in event_slots:
+                actual_load = native.copy()
+                actual_load[dc_buses] += actual[local_day, :, slot] * dc_scale * scale_factor
+                oracle_load = native.copy()
+                oracle_load[dc_buses] += oracle[local_day, :, slot] * dc_scale * scale_factor
+                actual_eval = unseen_dispatch(actual_load)
+                oracle_eval = unseen_dispatch(oracle_load)
+                realized_value = (oracle_eval.objective - actual_eval.objective) * dt_h
+                for quality in qualities:
+                    baseline_load = native.copy()
+                    baseline_load[dc_buses] += quality_profiles[quality][local_day, :, slot] * dc_scale * scale_factor
+                    baseline_eval = unseen_dispatch(baseline_load)
+                    payment = (baseline_eval.objective - actual_eval.objective) * dt_h
+                    day_rows.append(
+                        {
+                            "day": int(day),
+                            "conversion_scenario": label,
+                            "conversion_scale_factor": float(scale_factor),
+                            "event_slot": int(slot),
+                            "counterfactual_method": quality,
+                            "settlement_payment_usd": float(payment),
+                            "independent_realized_value_usd": float(realized_value),
+                            "absolute_error_usd": float(abs(payment - realized_value)),
+                            "overpayment_usd": float(max(0.0, payment - realized_value)),
+                            "maximum_post_contingency_loading": float(baseline_eval.max_post_contingency_loading),
+                            "credible_line_contingencies": int(baseline_eval.credible_contingencies),
+                            "evaluation_schema_version": int(evaluation_schema_version),
+                            "certified_checksum": certified_checksum,
+                            "certificate_used_scale": False,
+                        }
+                    )
+        return int(day), day_rows
+
+    with ThreadPoolExecutor(max_workers=evaluation_workers) as executor:
+        for _, day_rows in executor.map(
+            evaluate_unseen_payment_day,
+            unseen_day_items,
+        ):
+            unseen_rows.extend(day_rows)
+    unseen_frame = pd.DataFrame(unseen_rows).sort_values(
+        ["day", "conversion_scale_factor", "event_slot", "counterfactual_method"]
+    )
+    unseen_frame.to_csv(final / "payment_evaluation_unseen_scenarios.csv", index=False)
+    unseen_summary = (
+        unseen_frame.groupby(
+            ["conversion_scenario", "conversion_scale_factor", "counterfactual_method"],
+            as_index=False,
+        )
+        .agg(
+            mean_absolute_error_usd=("absolute_error_usd", "mean"),
+            mean_overpayment_usd=("overpayment_usd", "mean"),
+            maximum_post_contingency_loading=("maximum_post_contingency_loading", "max"),
+        )
+    )
+    unseen_summary.to_csv(final / "payment_evaluation_unseen_summary.csv", index=False)
     paired = daily.pivot(
         index=["day", "conversion_scenario", "conversion_scale_factor"],
         columns="counterfactual_method",
@@ -6449,6 +6543,22 @@ def run_exp9(
             "payment_certificate_generator_segments": certificate_segments,
             "independent_evaluation_generator_segments": evaluation_segments,
             "independent_evaluation_parallel_workers": evaluation_workers,
+            "unseen_transfer_evaluation": {
+                "daily_file": "payment_evaluation_unseen_scenarios.csv",
+                "summary_file": "payment_evaluation_unseen_summary.csv",
+                "scale_factors": unseen_scale_factors.tolist(),
+                "locked_days_evaluated": int(len(unseen_day_items)),
+                "day_selection_rule": (
+                    "evenly spaced indices over the locked 54-day sequence; "
+                    "the primary independent evaluator remains full-horizon"
+                ),
+                "scenarios_used_in_certificate": False,
+                "target_selection_used": False,
+                "interpretation": (
+                    "Frozen certificate profiles are replayed at two interior conversion factors "
+                    "that were not included in the certificate LP or validation target selection."
+                ),
+            },
             "certificate_parallel_workers": certificate_workers,
             "maximum_payment_cap_violation_usd": float(
                 certificates["payment_cap_violation_usd"].max()
@@ -9127,6 +9237,15 @@ def run_exp19(
         interval_s,
         None,
         n_regions,
+        deadline_mode="declared_timelimit",
+        unbounded_timelimit_slots=int(
+            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        ),
+        declared_per_gpu_power_cap_mw=float(
+            cfg["experiments"].get(
+                "job_level_declared_per_gpu_power_cap_mw", 1.0e-3
+            )
+        ),
     )
     if len(jobs) < 50_000:
         raise RuntimeError(f"Job-level counterfactual ledger unexpectedly incomplete: {len(jobs)} rows")
@@ -9145,13 +9264,9 @@ def run_exp19(
     regions_by_var = np.repeat(jobs["region"].to_numpy(dtype=np.int64), counts)
     variable_count = int(len(slots_by_job))
     energy = jobs["energy_mwh"].to_numpy(dtype=float)
-    runtime_seconds = (
-        jobs["time_end"].to_numpy(dtype=float)
-        - jobs["time_start"].to_numpy(dtype=float)
-    )
     gpu_count = jobs["measured_gpus"].to_numpy(dtype=float)
-    if np.any(runtime_seconds <= 0) or np.any(gpu_count <= 0):
-        raise RuntimeError("Counterfactual ledger contains nonpositive runtime or GPU count")
+    if np.any(gpu_count <= 0):
+        raise RuntimeError("Counterfactual ledger contains nonpositive GPU count")
 
     # The measured contiguous execution is reconstructed once as an
     # independent reference.  The counterfactual LP is then free to move
@@ -9185,16 +9300,17 @@ def run_exp19(
     # stable without changing the economic objective at reported precision.
     objective += 1e-9 * slots_by_job.astype(float)
 
-    # Each job may be paused, but no interval can consume more than its native
-    # average GPU power.  The GPU-count term is explicit: the observed maximum
-    # per-GPU power is a conservative ledger-derived upper bound, and the native
-    # average-power bound is intersected with it.
-    avg_power_mw = energy / np.maximum(runtime_seconds / 3600.0, 1e-12)
-    per_gpu_power_mw = avg_power_mw / gpu_count
-    per_gpu_cap_mw = float(np.max(per_gpu_power_mw))
+    # Each job may be paused, but no interval can consume more than the
+    # precommitted per-GPU nameplate cap.  This cap is declared before the
+    # counterfactual solve; it is independent of observed runtime and
+    # observed average power.  Energy and measured GPU count identify the
+    # resource requirement, while the submit-time timelimit identifies the
+    # admissible service window.
+    per_gpu_cap_mw = float(
+        cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+    )
     interval_gpu_cap = np.repeat(gpu_count * per_gpu_cap_mw * dt_h, counts)
-    interval_native_cap = np.repeat(avg_power_mw * dt_h, counts)
-    variable_upper = np.minimum(interval_gpu_cap, interval_native_cap)
+    variable_upper = interval_gpu_cap
     if np.any(variable_upper <= 0):
         raise RuntimeError("Job-level service upper bounds must be positive")
 
@@ -9255,8 +9371,16 @@ def run_exp19(
         [slot for slot in range(n_slots) if slot % slots_per_day in event_slots],
         dtype=np.int64,
     )
-    event_reduction = float(
-        np.clip(native_profile[:, event_indices] - counterfactual[:, event_indices], 0.0, None).sum()
+    event_net_reduction = float(
+        native_profile[:, event_indices].sum()
+        - counterfactual[:, event_indices].sum()
+    )
+    event_gross_reduction = float(
+        np.clip(
+            native_profile[:, event_indices] - counterfactual[:, event_indices],
+            0.0,
+            None,
+        ).sum()
     )
     event_rebound = float(
         np.clip(counterfactual[:, event_indices] - native_profile[:, event_indices], 0.0, None).sum()
@@ -9269,7 +9393,9 @@ def run_exp19(
             {"metric": "solver_status", "value": result.message, "unit": "text"},
             {"metric": "event_energy_native_mwh", "value": float(native_profile[:, event_indices].sum()), "unit": "MWh"},
             {"metric": "event_energy_counterfactual_mwh", "value": float(counterfactual[:, event_indices].sum()), "unit": "MWh"},
-            {"metric": "event_reduction_mwh", "value": event_reduction, "unit": "MWh"},
+            {"metric": "event_reduction_mwh", "value": event_gross_reduction, "unit": "MWh"},
+            {"metric": "event_gross_reduction_mwh", "value": event_gross_reduction, "unit": "MWh"},
+            {"metric": "event_net_reduction_mwh", "value": event_net_reduction, "unit": "MWh"},
             {"metric": "event_rebound_mwh", "value": event_rebound, "unit": "MWh"},
             {"metric": "total_energy_conservation_residual_mwh", "value": total_residual, "unit": "MWh"},
             {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(job_residual))), "unit": "MWh"},
@@ -9310,11 +9436,37 @@ def run_exp19(
             "joined_jobs": n_jobs,
             "service_variables": variable_count,
             "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
+            "deadline_source": "submit-time scheduler timelimit; unlimited sentinel mapped to precommitted bounded window",
+            "deadline_mode": "declared_timelimit",
+            "declared_window_slots_min": int(
+                np.min(
+                    jobs["deadline_slot_declared_timelimit"].to_numpy(dtype=np.int64)
+                    - jobs["submit_slot_raw"].to_numpy(dtype=np.int64)
+                )
+            ),
+            "declared_window_slots_max": int(
+                np.max(
+                    jobs["deadline_slot_declared_timelimit"].to_numpy(dtype=np.int64)
+                    - jobs["submit_slot_raw"].to_numpy(dtype=np.int64)
+                )
+            ),
+            "unlimited_timelimit_jobs": int(
+                np.sum(
+                    jobs["timelimit"].to_numpy(dtype=np.int64)
+                    >= np.iinfo(np.uint32).max - 1
+                )
+            ),
+            "observed_time_end_used_as_deadline": False,
+            "unbounded_timelimit_slots": int(
+                cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+            ),
+            "declared_per_gpu_power_cap_mw": per_gpu_cap_mw,
             "site_assignment": "native ledger region; no outcome-dependent migration",
-            "gpu_constraint": "per-slot service upper bound is min(native average GPU power, ledger-derived per-GPU cap times measured GPU count)",
+            "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times measured GPU count",
             "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
             "event_slots": sorted(event_slots),
             "event_tariff_per_mwh": event_price,
+            "event_reduction_definition": "net equals native event energy minus counterfactual event energy; gross positive-part reduction and rebound are reported separately",
             "capacity_mw_per_region": float(cfg["project"]["flexible_capacity_mw"]),
             "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
             "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
@@ -9324,10 +9476,10 @@ def run_exp19(
         },
     )
     logger.info(
-        "Experiment 19 complete: %d jobs, %d variables, event reduction %.6f MWh, max residual %.3e MWh",
+        "Experiment 19 complete: %d jobs, %d variables, net event reduction %.6f MWh, max residual %.3e MWh",
         n_jobs,
         variable_count,
-        event_reduction,
+        event_net_reduction,
         float(np.max(np.abs(job_residual))),
     )
 
@@ -10006,8 +10158,8 @@ def run_exp17(
     """Evaluate the verifier with only event-gate information available.
 
     The main counterfactual panel is an ex-post ledger audit.  This separate
-    panel freezes the information boundary at the first event slot, removes
-    every post-gate arrival from the optimization input, and retains the
+    panel freezes the information boundary at a pre-event commitment
+    checkpoint, removes every post-gate arrival from the optimization input, and retains the
     deadline-indexed cumulative state for work already committed at the gate.
     A
     gate-causal no-event profile is frozen as the contract baseline; a second
@@ -10054,8 +10206,10 @@ def run_exp17(
     strategic = observed + (model_strategic - model_honest)
     event_slots = list(map(int, cfg["market"]["event_slots"]))
     gate = int(cfg["experiments"].get("decision_time_event_gate_slot", min(event_slots)))
-    if gate != min(event_slots):
-        raise ValueError("decision_time_event_gate_slot must equal the first event slot")
+    if gate < 0 or gate >= min(event_slots):
+        raise ValueError(
+            "decision_time_event_gate_slot must be nonnegative and strictly before the first event slot"
+        )
     terminal = int(
         cfg["experiments"].get("decision_time_terminal_completion_index", gate - 1)
     )
@@ -10107,8 +10261,15 @@ def run_exp17(
         day: int,
         dr_price: float,
         response_projection_weight: float,
-    ) -> tuple[Any, Any, Any, float]:
-        """Solve the causal response LP on a ledger masked at the event gate."""
+    ) -> tuple[Any, Any, Any, Any, float]:
+        """Solve causal baseline and response LPs on a masked ledger.
+
+        The baseline LP is solved with the causal target and no event tariff;
+        it is the profile submitted before the event.  The second LP applies
+        the declared DR tariff to the same committed ledger and is retained as
+        a post-event operating trace.  Separating the two avoids scoring a
+        post-response trajectory as if it were a baseline certificate.
+        """
         day = int(day)
         cached = response_day_cache.get(day)
         if cached is None:
@@ -10173,7 +10334,30 @@ def run_exp17(
                 f"Committed-ledger response LP failed on day {day}: "
                 f"{committed_result.solver_message}"
             )
-        return committed_result, committed_reference_result, target, future_arrivals_mwh
+        committed_baseline_result = _solve_day_with_buffer(
+            truncated,
+            prices,
+            gate_cfg,
+            mode="honest",
+            target=target,
+            projection_weight=float(response_projection_weight),
+            power_upper_mw=committed_event_upper,
+            require_all_arrivals_at_terminal=False,
+            terminal_completion_index=terminal,
+            event_slots_override=event_slots,
+        )
+        if not committed_baseline_result.success:
+            raise RuntimeError(
+                f"Committed-ledger baseline LP failed on day {day}: "
+                f"{committed_baseline_result.solver_message}"
+            )
+        return (
+            committed_result,
+            committed_baseline_result,
+            committed_reference_result,
+            target,
+            future_arrivals_mwh,
+        )
 
     # A causal reserve is reported as a planning quantity, not as payable
     # event credit.  It is frozen on earlier days from an empirical arrival
@@ -10306,7 +10490,7 @@ def run_exp17(
         for response_weight in response_projection_weights:
             for local_day, day_value in enumerate(validation_days_gate):
                 day = int(day_value)
-                response_result, reference_result, _, future_arrivals_mwh = (
+                response_result, baseline_result, reference_result, _, future_arrivals_mwh = (
                     solve_committed_response(
                         day,
                         float(dr_price),
@@ -10324,7 +10508,16 @@ def run_exp17(
                     validation["actual"][local_day],
                     event_slots,
                     float(cfg["project"]["interval_minutes"]) / 60.0,
-                    contract_baseline=reference_result.power_mw,
+                    contract_baseline=baseline_result.power_mw,
+                )
+                response["post_response_event_service_mwh"] = float(
+                    np.maximum(
+                        response_result.power_mw[:, event_slots]
+                        - float(cfg["project"]["fixed_facility_load_mw"]),
+                        0.0,
+                    ).sum()
+                    * float(cfg["project"]["interval_minutes"])
+                    / 60.0
                 )
                 response_validation_rows.append(
                     {
@@ -10422,39 +10615,11 @@ def run_exp17(
         truncated = arrivals_days[day].copy()
         future_arrivals_mwh = float(truncated[gate:].sum())
         truncated[gate:] = 0.0
-        gate_arrivals = arrivals_days[day].copy()
-        gate_arrivals[gate:] = 0.0
-        target = predict_causal_metadata_gradient_boosting(
-            strategic,
-            valid_days,
-            day,
-            int(cfg["project"]["seed"]),
-            arrivals_days,
-            arrivals_day_override=gate_arrivals,
-        )
-        result = _solve_day_with_buffer(
-            truncated,
-            prices,
-            gate_cfg,
-            mode="honest",
-            target=target,
-            projection_weight=projection_weight,
-            require_all_arrivals_at_terminal=False,
-            terminal_completion_index=terminal,
-            event_slots_override=event_slots,
-        )
-        if not result.success:
-            raise RuntimeError(
-                f"Decision-time projection failed for day {day}: {result.solver_message}"
-            )
-        contract_profile = result.power_mw
         # A deployable event-gate policy must not credit flexible service whose
         # ledger is not committed.  The post-gate ledger has already been
-        # removed from ``truncated``.  The contract profile above is frozen
-        # before the event, and the response LP below uses the declared DR
-        # price to shift only committed service away from the event slots.  The
-        # physical capacity envelope is explicit even when it is not binding;
-        # every paid joule remains backed by a record available at the gate.
+        # removed from ``truncated``.  The no-tariff committed-ledger baseline
+        # is frozen before the event, and the second LP uses the declared DR
+        # price to shift only committed service away from the event slots.
         fixed_load = float(cfg["project"]["fixed_facility_load_mw"])
         flexible_capacity = float(cfg["project"]["flexible_capacity_mw"])
         committed_event_upper = np.full(
@@ -10462,40 +10627,21 @@ def run_exp17(
             fixed_load + flexible_capacity,
             dtype=float,
         )
-        committed_reference_result = _solve_day_with_buffer(
-            truncated,
-            prices,
-            gate_cfg,
-            mode="honest",
-            target=None,
-            projection_weight=0.0,
-            require_all_arrivals_at_terminal=False,
-            terminal_completion_index=terminal,
-            event_slots_override=event_slots,
+        (
+            committed_result,
+            committed_baseline_result,
+            committed_reference_result,
+            _,
+            _,
+        ) = solve_committed_response(
+            day,
+            selected_response_price,
+            selected_response_weight,
         )
-        if not committed_reference_result.success:
-            raise RuntimeError(
-                f"Committed-ledger reference LP failed on day {day}: "
-                f"{committed_reference_result.solver_message}"
-            )
-        committed_result = _solve_day_with_buffer(
-            truncated,
-            prices,
-            gate_cfg,
-            mode="event_response",
-            dr_price=selected_response_price,
-            target=target,
-            projection_weight=selected_response_weight,
-            power_upper_mw=committed_event_upper,
-            require_all_arrivals_at_terminal=False,
-            terminal_completion_index=terminal,
-            event_slots_override=event_slots,
-        )
-        if not committed_result.success:
-            raise RuntimeError(
-                f"Committed-ledger safe LP failed for day {day}: "
-                f"{committed_result.solver_message}"
-            )
+        # The submitted contract is exactly the no-tariff LP returned by the
+        # same causal response solve; the tariff-bearing profile is evaluated
+        # only as the post-event operating response below.
+        contract_profile = committed_baseline_result.power_mw
         reserve_result, _, reserve_mwh = solve_causal_reserve(
             day, selected_reserve_quantile
         )
@@ -10521,7 +10667,7 @@ def run_exp17(
                 contract_profile,
                 False,
                 "gate-causal frozen contract baseline",
-                committed_reference_result.power_mw,
+                contract_profile,
             ),
             (
                 "Complete-ledger risk-constrained verifier",
@@ -10534,8 +10680,8 @@ def run_exp17(
                 "Committed-ledger rolling-service verifier",
                 committed_result.power_mw,
                 False,
-                "committed-ledger event response",
-                contract_profile,
+                "committed-ledger response; submitted baseline frozen before event",
+                committed_baseline_result.power_mw,
             ),
             (
                 "Committed-ledger reference schedule",
@@ -10572,6 +10718,17 @@ def run_exp17(
                     np.min(
                         committed_event_upper[:, event_slots] - profile[:, event_slots]
                     )
+                )
+                if method == "Committed-ledger rolling-service verifier"
+                else np.nan,
+                "post_response_event_service_mwh": float(
+                    np.maximum(
+                        committed_result.power_mw[:, event_slots]
+                        - fixed_load,
+                        0.0,
+                    ).sum()
+                    * float(cfg["project"]["interval_minutes"])
+                    / 60.0
                 )
                 if method == "Committed-ledger rolling-service verifier"
                 else np.nan,
@@ -10674,12 +10831,13 @@ def run_exp17(
                 "among candidates satisfying the validation false-credit budget, "
                 "maximize credit F1, then recall, then minimize nRMSE and false credit"
             ),
+            "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
             "future_arrivals_used_for_decision": False,
         },
         "scoring_source": "locked trace-anchored execution and semi-synthetic response",
         "meter_cap_scoring_note": (
-            "The deployed settlement uses the submitted baseline, the frozen "
-            "precommitted no-event contract profile, and the closed event meter. For "
+            "The deployed settlement uses the submitted causal committed-ledger "
+            "baseline, its frozen pre-event contract profile, and the closed event meter. For "
             "the locked audit, the trace-anchored no-event profile is used only "
             "after the event to diagnose oracle overpayment and underpayment; it "
             "is not supplied to target fitting, gate decisions, workload "
@@ -10693,8 +10851,8 @@ def run_exp17(
             "event_upper_bound_source": "physical flexible-capacity bound",
             "certificate_scope": "committed-ledger service feasibility; all paid service is committed at the gate",
             "rolling_commitment": True,
-            "contract_baseline_source": "gate-causal masked-ledger no-event LP frozen before the event",
-            "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots",
+            "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
+            "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
             "selected_dr_price_per_mwh": selected_response_price,
             "selected_projection_weight": selected_response_weight,
             "settlement_rule": (
@@ -11291,6 +11449,15 @@ def run_exp18(
         "experiment": "cross-network AC N-1 physical admissibility audit",
         "networks": [str(item["name"]) for item in network_cache],
         "pre_registered_dc_bus_mapping_one_based": dc_bus_map,
+        "bus_mapping_basis": (
+            "pre-registered generator-bus electrical-role strata selected before "
+            "the locked panel; no outcome screening or loading-based placement"
+        ),
+        "spatial_identification": (
+            "synthetic trace-to-bus benchmark because the public traces contain no "
+            "utility geography; Experiment 11 supplies the 24-permutation and "
+            "penetration sensitivity panel"
+        ),
         "fixed_locked_day": fixed_day,
         "fixed_event_slot": event_slot,
         "locked_day_rule": cfg["experiments"].get("preventive_ac_validation_day_rule", "first locked test day"),

@@ -6,6 +6,14 @@ classified as a standard cited model, a cited model adapted to this setting, a
 definition, or a proposition derived in this study. Citation keys resolve in
 `references.bib`.
 
+The related-work boundary is explicit. Recent power-system studies on non-wire
+alternatives, clean-energy flexibility, and data-center flexibility
+\cite{cao2024nonwire,riepin2025clean,takci2025flexibility} motivate the
+structural analogue panel, but they do not supply the gate-causal ledger,
+submitted/frozen contract separation, or the closed-meter settlement rule used
+here. Those elements are defined and proved below rather than presented as
+consequences of the cited models.
+
 ## A. Indices, data, and decision variables
 
 Inference arrivals and token volumes use the complete BurstGPT release

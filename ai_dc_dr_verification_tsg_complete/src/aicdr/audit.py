@@ -126,6 +126,8 @@ EXPECTED_FILES = {
         "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
         "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
         "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
         "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
         "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
         "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
@@ -353,6 +355,9 @@ def run_audit(
         "zhang2020virtuallinks",
         "zhang2022remunerating",
         "zhang2023receding",
+        "cao2024nonwire",
+        "riepin2025clean",
+        "takci2025flexibility",
         "nash1950bargaining",
         "satchidanandan2023twostage",
         "chen2021incentive",
@@ -789,7 +794,7 @@ def run_audit(
         and "used only after the event" in str(
             decision_meta.get("meter_cap_scoring_note", "")
         )
-        and "precommitted no-event contract profile" in str(
+        and "causal committed-ledger baseline" in str(
             decision_meta.get("meter_cap_scoring_note", "")
         ),
         "decision_time_information_boundary_panel",
@@ -809,7 +814,7 @@ def run_audit(
     _check(
         committed_meta.get("future_arrivals_used_for_decision") is False
         and committed_meta.get("rolling_commitment") is True
-        and "gate-causal masked-ledger no-event LP" in str(
+        and "causal committed-ledger baseline LP" in str(
             committed_meta.get("contract_baseline_source", "")
         )
         and "selected validation DR price" in str(
@@ -2165,6 +2170,35 @@ def run_audit(
         ),
         checks,
     )
+    unseen_payment = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_evaluation_unseen_summary.csv"
+    )
+    unseen_metadata = payment_metadata.get("unseen_transfer_evaluation", {})
+    _check(
+        len(unseen_payment) == 2 * 4
+        and set(unseen_payment["conversion_scenario"].astype(str))
+        == {"heldout-interior-low", "heldout-interior-high"}
+        and set(np.round(unseen_payment["conversion_scale_factor"].astype(float), 8))
+        == {0.80, 1.20}
+        and set(unseen_payment["counterfactual_method"].astype(str))
+        == evaluator_methods
+        and np.isfinite(
+            unseen_payment[
+                ["mean_absolute_error_usd", "mean_overpayment_usd"]
+            ].to_numpy(dtype=float)
+        ).all()
+        and unseen_metadata.get("scenarios_used_in_certificate") is False
+        and unseen_metadata.get("target_selection_used") is False,
+        "unseen_conversion_factor_transfer_panel",
+        (
+            f"{len(unseen_payment)} frozen-profile outcomes across two interior "
+            "conversion factors absent from the certificate and target selection; "
+            "the finer N-1 replay is independent of the contractual RHS"
+        ),
+        checks,
+    )
     interval_endpoint = pd.read_csv(
         root
         / "experiments/exp15_interval_certificate/results/final/"
@@ -2629,6 +2663,24 @@ def run_audit(
     counterfactual_values = dict(
         zip(counterfactual["metric"].astype(str), counterfactual["value"])
     )
+    counterfactual_metadata = json.loads(
+        (
+            root
+            / "experiments/exp19_job_level_counterfactual/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    native_event = float(counterfactual_values.get("event_energy_native_mwh", np.nan))
+    counterfactual_event = float(
+        counterfactual_values.get("event_energy_counterfactual_mwh", np.nan)
+    )
+    net_reduction = float(
+        counterfactual_values.get("event_net_reduction_mwh", np.nan)
+    )
+    gross_reduction = float(
+        counterfactual_values.get("event_gross_reduction_mwh", np.nan)
+    )
+    rebound = float(counterfactual_values.get("event_rebound_mwh", np.nan))
     _check(
         int(float(counterfactual_values.get("positive_energy_jobs", -1))) == 71_128
         and float(counterfactual_values.get("maximum_job_energy_residual_mwh", np.inf)) <= 1e-8
@@ -2639,6 +2691,28 @@ def run_audit(
             "all positive-energy jobs enter an exact release/deadline LP with "
             "GPU-count-derived bounds, zero job-energy residual, and no capacity "
             "violation; the counterfactual remains explicitly preemptive"
+        ),
+        checks,
+    )
+    _check(
+        counterfactual_metadata.get("deadline_mode") == "declared_timelimit"
+        and counterfactual_metadata.get("observed_time_end_used_as_deadline") is False
+        and int(counterfactual_metadata.get("declared_window_slots_min", 0)) >= 1
+        and int(counterfactual_metadata.get("declared_window_slots_max", 0))
+        >= int(counterfactual_metadata.get("unbounded_timelimit_slots", 0))
+        and int(counterfactual_metadata.get("declared_window_slots_max", 0)) == 584
+        and float(counterfactual_metadata.get("declared_per_gpu_power_cap_mw", 0.0))
+        == 0.001
+        and np.isfinite([native_event, counterfactual_event, net_reduction, gross_reduction, rebound]).all()
+        and abs((native_event - counterfactual_event) - net_reduction) <= 1e-10
+        and gross_reduction + 1e-10 >= net_reduction
+        and rebound >= -1e-10,
+        "declared_timelimit_counterfactual_boundary",
+        (
+            f"submit-time declarations are used (window slots "
+            f"{counterfactual_metadata.get('declared_window_slots_min')}--"
+            f"{counterfactual_metadata.get('declared_window_slots_max')}), "
+            "observed completion is excluded, and net/gross/rebound arithmetic is explicit"
         ),
         checks,
     )

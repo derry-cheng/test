@@ -48,12 +48,20 @@ Experiment 9 embeds all three values in the same payment-certificate program;
 they form a declared finite empirical uncertainty set, not a tuned continuous
 distribution or a replacement for the measured scoring trace.
 
+Experiment 19 uses a separate job-indexed counterfactual. Its service endpoint
+is formed from the submit-time Slurm `timelimit`; finite declarations are kept
+at their declared duration, while the unlimited sentinel is mapped to a
+precommitted 128-slot horizon. A fixed 0.001 MW/GPU nameplate provides the
+per-slot service bound. The observed scheduler completion interval
+is retained only for the independent native replay and never defines the
+counterfactual deadline or power cap.
+
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The
-raw execution peaks are at most 0.006685 MW per region; after the train-fitted
-batch scaling used for the benchmark, the regional peaks are 61.463, 97.836,
-102.619, and 37.460 MW. The flexible nameplate of 118 MW is committed before
+raw execution peaks are at most 0.008637 MW per region; after the train-fitted
+batch scaling used for the benchmark, the regional peaks are 43.808, 62.537,
+103.197, and 132.571 MW. The flexible nameplate of 118 MW is committed before
 the validation/test split; Experiment 16 reconciles this predeclared value
 against the scaled benchmark envelope and verifies that it covers every
 observed region-slot. Locked outcomes do not select the nameplate.
@@ -73,10 +81,11 @@ workload shapes and an auditable network benchmark; external validity to a parti
 operator requires confidential co-located telemetry.
 
 The deployment information boundary is explicit: Experiment 17 removes all
-arrivals after the first declared event slot before solving and uses the locked
-execution trace only for scoring. Experiment 18 fixes the first locked day,
-first event slot, native-case connected/finite-AC outage rule, a pre-registered
-public-bus mapping for each network, and the validation-only power scale before
+arrivals after the pre-event commitment gate (slot 48, four hours before the
+event window) before solving and uses the locked execution trace only for
+scoring. Experiment 18 fixes the first locked day, first event slot, native-case
+connected/finite-AC outage rule, and a generator-bus electrical-role mapping for
+each public network before
 evaluating RTS-24, IEEE-30, IEEE-39, and IEEE-118 AC contingencies. It freezes
 the intact AC-OPF non-reference active plan and enforces apparent-power and
 voltage limits for every contingency; the reference generator and reactive

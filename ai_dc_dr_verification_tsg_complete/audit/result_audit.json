@@ -457,6 +457,16 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_9:experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
       "passed": true,
       "detail": "exists and non-empty"
@@ -914,7 +924,7 @@
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "21/21 stages recorded; canonical request=all; audit status=running"
+      "detail": "21/21 stages recorded; canonical request=all; audit status=completed"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
@@ -924,7 +934,7 @@
     {
       "name": "model_formula_citation_traceability",
       "passed": true,
-      "detail": "28/28 required source keys in bibliography, formula-source matrix, and complete formulation"
+      "detail": "31/31 required source keys in bibliography, formula-source matrix, and complete formulation"
     },
     {
       "name": "official_ieee_journal_template",
@@ -934,12 +944,12 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "39 in-text citation groups checked"
+      "detail": "40 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
       "passed": true,
-      "detail": "30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]"
+      "detail": "33 verified bibliography entries; 33 unique in-text citations; uncited=[]; missing=[]"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
@@ -1289,12 +1299,17 @@
     {
       "name": "scenario_robust_exact_n1_payment_noninferiority_certificate",
       "passed": true,
-      "detail": "54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=9.997e-09 USD"
+      "detail": "54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=3.827e-09 USD"
     },
     {
       "name": "complete_independent_payment_model_transfer_evaluation",
       "passed": true,
       "detail": "648 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
+    },
+    {
+      "name": "unseen_conversion_factor_transfer_panel",
+      "passed": true,
+      "detail": "8 frozen-profile outcomes across two interior conversion factors absent from the certificate and target selection; the finer N-1 replay is independent of the contractual RHS"
     },
     {
       "name": "independent_endpoint_certificate_uses_selected_single_reference",
@@ -1309,7 +1324,7 @@
     {
       "name": "independent_nondegenerate_payment_candidate_hull",
       "passed": true,
-      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 8 distinct daily optimal weight vectors"
+      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 9 distinct daily optimal weight vectors"
     },
     {
       "name": "validation_only_payment_target_selection",
@@ -1360,6 +1375,11 @@
       "name": "exact_job_indexed_counterfactual_certificate",
       "passed": true,
       "detail": "all positive-energy jobs enter an exact release/deadline LP with GPU-count-derived bounds, zero job-energy residual, and no capacity violation; the counterfactual remains explicitly preemptive"
+    },
+    {
+      "name": "declared_timelimit_counterfactual_boundary",
+      "passed": true,
+      "detail": "submit-time declarations are used (window slots 1--584), observed completion is excluded, and net/gross/rebound arithmetic is explicit"
     },
     {
       "name": "heldout_power_conversion_capacity_safe_sensitivity",
@@ -1927,53 +1947,53 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 22394,
-      "sha256": "ddbd50eed91afbfd61089efa332d8f5adce69c289a5fd478b6cadcf2454360e1"
+      "bytes": 22429,
+      "sha256": "6f628c11a42f967a92ad268f1a53840474296243345feb5ef21cfb97724256a1"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
       "bytes": 202,
-      "sha256": "1474fe64691940cf2e3259678635c3ec48bfbe85d06b5f447fff4220462ddecc"
+      "sha256": "5e3b876f939c898d87775b164ee68c40ca3ef48ca881bd4656896c821dc19c1e"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
-      "bytes": 26070,
-      "sha256": "6f431945a1afc9d94456e47ae391fc90f4cef753fb7c8e227a1a1b9ab3c2cb13"
+      "bytes": 26083,
+      "sha256": "4d9f68d99da1c375fa83065f23674af36fba474939ec03c799875b54e5cdad05"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_summary.csv",
-      "bytes": 550,
-      "sha256": "8d4afd1e2e84f4f7ee43b52af817cce22924f9651232c82ec8ca507b9fee6984"
+      "bytes": 548,
+      "sha256": "2e16fb1ef4a8d9eaf761c176ef01b3232c1eead5df83cc7ad846cee91a790160"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation.csv",
-      "bytes": 1588,
-      "sha256": "83723b74c4a17a92a465bbd2b80688736f2087908f76180d44c7e081f13b0905"
+      "bytes": 1504,
+      "sha256": "b27831a19938848cbb7e230a1356955fb8c09ba739ab52634faf4cb50177124a"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation_daily.csv",
-      "bytes": 79794,
-      "sha256": "225df0b6be5515f7f0bd9a76b4c26e8bd67af7c630f778efb864f3137339684a"
+      "bytes": 75994,
+      "sha256": "5a5de14cac11193dca1140d729bac95e798f4121d39ebf85971d7ea406c02d80"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
-      "bytes": 151853,
-      "sha256": "f0c503d6f596d6fd37753b14b9a756fb5492a5366e6026a2bf84f9f0eb6cf965"
+      "bytes": 151415,
+      "sha256": "34149b0241977ec2c30f13d9b0e17da4e41a3832fcc2a95c85f77e290c65a377"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
-      "bytes": 1019,
-      "sha256": "611c8a49b7045cd19818a08327f2445128e520359ae6f7dc6dc7e3dbf8c018e5"
+      "bytes": 1050,
+      "sha256": "483bf5116d556a37e3fa6f00f44870be7670dd724f81f3fdd34efad9fe08f9f8"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
-      "bytes": 3336,
-      "sha256": "60fb7b28a60c5eb7212eec2bc609f6bfe2e33196a2358e9e1b5233599e7e6672"
+      "bytes": 3579,
+      "sha256": "36d95cb7b180b981aaed6f2a6c735964c753840a2dd910b267dc78b9b10c56d7"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
-      "bytes": 2124,
-      "sha256": "15ae601a133f70a1f8147fa560a5f2658bcdb7f64a518923d9a1ecbcaaebdbae"
+      "bytes": 2481,
+      "sha256": "ce303ed1ab2b7520cc4cfd8f70e24dea7e76b38a2701840db82378ce2ed86355"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
@@ -1987,23 +2007,23 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
-      "bytes": 1084,
-      "sha256": "1b15b403ec2d01d3c5f70c3406e580ea5d17c433b3a5890814cc154b19109b5d"
+      "bytes": 1619,
+      "sha256": "99e096dffcfaa5e049469110bc803a269e736a03b6ee43de9a0a5b422183be98"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
-      "bytes": 4352573,
-      "sha256": "31030d47b76caaf0f3e8b9abfc6396b174659d701d7434836f67edd3c65912ce"
+      "bytes": 2320714,
+      "sha256": "a3ceea5633594f93aea81d058500aa85ddfb870deac43498f0c3701299168386"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
-      "bytes": 1803518,
-      "sha256": "b7726bb5dfd28bf3ce11d83c24558f1068807839c6d934ae9b783a6119f7d58d"
+      "bytes": 1508485,
+      "sha256": "793739041c1ae7403e89cd91b4ff5ec44bb8e0d30920cf3fe9240c36349e7f2d"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
-      "bytes": 604,
-      "sha256": "84c678ca2a3919a66a2628a54018f02586c77815099f453f67e7130f172e6e19"
+      "bytes": 703,
+      "sha256": "5c0b96d6b5ca8c6c548371252b27e9e674798d4a71ba307048ed9bfc8289d34b"
     },
     {
       "path": "experiments/exp1_manipulation/results/final/experiment_metadata.json",
@@ -2337,48 +2357,58 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
-      "bytes": 130540,
-      "sha256": "0075dc667e367c4a96efe6a003892fc383dfed9088b346443527b8d49abd7728"
+      "bytes": 130072,
+      "sha256": "85ccb3e4e2a567c1ce897dc81460b599d5488a827e613cb3ebbe7bc65d91bf1f"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
-      "bytes": 14268,
-      "sha256": "081ef8f312af733389c0ce24c7e68b8847fd11a1343d6a36fe0dac5b03eb82c1"
+      "bytes": 13942,
+      "sha256": "fad4a5e434195028bbff2401eb3ee8a70c17631ecabff5e2b927cc47745b922c"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
-      "bytes": 25194,
-      "sha256": "03c290a7d7d1aaaa188d0a9e8c00c4f4b0b1a577ca639902995264d41336b86c"
+      "bytes": 25042,
+      "sha256": "545f2c2d3a3a2eff0c3417f65ca2b131b5bfff8ff051d4220a6912defa29232a"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
-      "bytes": 2897,
-      "sha256": "cb944627adee3c871f8734a6fcb0a9cc4c16f1a49749c8be16cf4c5a816a6b0d"
+      "bytes": 3533,
+      "sha256": "c08b882ee072511c7847929901f69c3aa3b27751c4c3256af3dcc395d47420eb"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
-      "bytes": 12503,
-      "sha256": "521726cc2fce92f517209a9d51644f077b42fcb3074b0f2d79f76ce8c71dba2d"
+      "bytes": 12508,
+      "sha256": "caf84196399e1f9e51331290e80aea85de678aaa1bc0c285e5b20ae05bdbb3bb"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
-      "bytes": 89208,
-      "sha256": "1108b2e0f80a3861504e547190f6a3517939d5777632c530dbfac1e54c303de8"
+      "bytes": 89370,
+      "sha256": "ee0d514207da4a7df53e4f75e4e6f7c42599f851355db41cd64e51c8c0bb09ea"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
-      "bytes": 1081293,
-      "sha256": "f05f5469438f9704bd39a6e9cf0e8e8662977a3a7f76bfb7d7068440a7606045"
+      "bytes": 1080612,
+      "sha256": "886574158ccb7bee15c45fc17d73142f8f558c39787f52e587432a00c417357c"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
-      "bytes": 1962,
-      "sha256": "e43d1b9f19f45b9e81e1ccd1525dd205bf22d53b32b2e203b597b9d043e7c51d"
+      "bytes": 1959,
+      "sha256": "3b26aeb3fee8b11c71d4d5a417c964c6d9dc3ca2e78e63ef3b0d40805a2f8c9f"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
+      "bytes": 77979,
+      "sha256": "88117ba3c6e6c19ac332322346044f5aa019153fbd76f9772dec6db67c9bb052"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
+      "bytes": 909,
+      "sha256": "5428bbf303072c8084d073366ed0f28c484095d6a058c733a27bd30977e50880"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
       "bytes": 910,
-      "sha256": "e75b65a97bd00cca06b09405a25a97c04274e50454c27571e7f512b817dd6019"
+      "sha256": "65884f75225f0c98262d1f2a66e63e81fccc718d20e16aab99536d7b7af8d9c5"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.pdf",
@@ -2472,13 +2502,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
-      "bytes": 17190,
-      "sha256": "b1a7480dfd91005313ff66ab00c428da5f3239df7c4e2295417d99c9dc56d3fd"
+      "bytes": 17210,
+      "sha256": "399006b475f09f9d6cd30b07625a78cc5a77130081ec945bd58e0a02297e14d5"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
-      "bytes": 308396,
-      "sha256": "c50d00038b790eb4b74761bde8a693f5571fef5077566cd5c26af66c94e3cc5c"
+      "bytes": 293158,
+      "sha256": "ce93e9f91f55d624aa382aedbf31646e53bb2db5630855a7f145cbc17e0ef7a2"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
@@ -2652,8 +2682,8 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
-      "bytes": 20970,
-      "sha256": "a3965156f9119f0a5a19a811d5ec83296459e2b75d4584ff2e1255543b744767"
+      "bytes": 21037,
+      "sha256": "921a67d0288ef3c809cb9128225e76cb0908b582e42399dfeb89dbba63dff3bc"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
