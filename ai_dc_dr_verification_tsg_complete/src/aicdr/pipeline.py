@@ -29,6 +29,7 @@ from .experiments import (
     run_exp18,
     run_exp19,
 )
+from .trace_replay import run_trace_meter_replay
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -109,13 +110,19 @@ def run_pipeline(
         ("exp17", lambda: run_exp17(root, cfg, logger, resume=resume)),
         ("exp18", lambda: run_exp18(root, cfg, logger, resume=resume)),
         ("exp19", lambda: run_exp19(root, cfg, logger, resume=resume)),
+        ("exp20", lambda: run_trace_meter_replay(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
                 root,
                 cfg,
                 logger,
-                allow_missing_raw=(stage == "audit"),
+                # A resumed unified run can finish from the compact locked
+                # artifact package after raw inputs have been archived.  The
+                # explicit data/full stages still fail closed on missing or
+                # mismatched sources; audit-only execution records the missing
+                # raw files as an identification boundary.
+                allow_missing_raw=(stage in {"audit", "all"}),
             ),
         ),
     ]
@@ -130,7 +137,7 @@ def run_pipeline(
                 "status": "pending",
                 "migration_note": "stage added after the previous unified run",
             }
-        for name in {"exp2", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "audit"}:
+        for name in {"exp2", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "exp20", "audit"}:
             if name not in manifest.get("stages", {}):
                 continue
             # A long stage may have been rerun and independently checked after
@@ -178,15 +185,18 @@ def run_pipeline(
         "exp17",
         "exp18",
         "exp19",
+        "exp20",
         "audit",
-    } and stage != "audit":
+    } and stage not in {"audit", "exp20"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage == "audit":
+    elif stage in {"audit", "exp20"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound
-        # outputs; explicit data/full runs still call ``preprocess_all`` and
-        # fail closed when a declared raw file is absent or mismatched.
+        # outputs; the independent trace-meter replay has the same boundary
+        # because it scores the locked tensor and Exp2 profiles only. Explicit
+        # data/full runs still call ``preprocess_all`` and fail closed when a
+        # declared raw file is absent or mismatched.
         processed = root / cfg["data"]["processed_dir"] / "workload_15min.npz"
         if not processed.exists():
             raise FileNotFoundError(
@@ -194,8 +204,9 @@ def run_pipeline(
                 "raw archive before running the audit."
             )
         logger.info(
-            "Audit-only stage uses the locked processed workload; raw-source "
-            "validation remains enforced by data/full stages."
+            "%s stage uses the locked processed workload; raw-source validation "
+            "remains enforced by data/full stages.",
+            stage.upper(),
         )
     for name, function in functions:
         if name not in selected:

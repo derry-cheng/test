@@ -20,9 +20,11 @@ Inference arrivals and token volumes use the complete BurstGPT release
 \cite{wang2024burstgpt}; submitted batch arrivals and independently observed GPU
 execution energy use the joined MIT Supercloud scheduler/DCGM release
 \cite{samsi2021supercloud}. Neither source contains co-located utility demand or
-four-site geography, so the trace-to-capacity scaling and deterministic
-identifier-based regional assignment are explicitly declared benchmark
-transformations rather than empirical claims about either source operator.
+four-site geography, so the trace-to-capacity scaling and feature-stratified
+regional assignment are explicitly declared benchmark transformations rather
+than empirical claims about either source operator. All regional permutations
+are evaluated in the spatial panel; no identifier hash is interpreted as
+physical geography.
 
 For provenance, each retained job is represented by the canonical tuple
 
@@ -56,14 +58,16 @@ data-center scheduling foundations in \cite{liu2013dcdr,adnan2012geographical}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters rather than facts inferred from those papers.
 
-For an event window, \(p^0\) is the no-event counterfactual, \(p^1\) is the
-declared workload-feasible event trajectory, and \(p^{\mathrm{obs}}\) is the
-execution meter used only after the event for locked scoring. A submitted
+For an event window, \(p^0\) is the no-event counterfactual and
+\(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
+only in mechanism-isolation replays. The measured execution meter
+\(p^{\mathrm{obs}}\) is an independent observational target for locked trace
+alignment; the public releases contain no utility event label. A submitted
 counterfactual \(\widehat p^0\) creates gross forecast credit
 
 \[
 F=\Delta t\sum_{d,t\in\mathcal E}
-\left[\widehat p^0_{dt}-\max\{p^{\mathrm{obs}}_{dt},p^1_{dt}\}\right]_+.
+\left[\widehat p^0_{dt}-\max\{p^{\mathrm{obs}}_{dt},p^{1,\mathrm{sim}}_{dt}\}\right]_+.
 \]
 
 The settlement rule is distinct from this gross risk metric. After the event
@@ -75,10 +79,12 @@ Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
 [p^{\mathrm{con}}_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
 \]
 
-In locked evaluation, \(p^0\) is the trace-anchored no-event profile read only
-after the event for oracle diagnostics. The deployable quantity \(p^{\rm con}\)
-is frozen before the event and is the only baseline used in payment formation;
-neither baseline enters target fitting, gate decisions, or workload optimization.
+In mechanism-isolation evaluation, \(p^0\) is the trace-anchored no-event
+profile and \(p^{1,\mathrm{sim}}\) is the solved operating response. The
+deployable quantity \(p^{\rm con}\) is frozen before the event and is the only
+baseline used in payment formation; the measured meter enters only after the
+decision as an observational replay. No causal intervention is inferred from
+the public traces.
 
 Define cumulative arrivals and cumulative service as
 
@@ -228,7 +234,7 @@ worst contiguous-fold validation nRMSE. For validation sample \(n\), define the
 maximum non-false-credit baseline
 
 \[
-c_n=\max\{p_n^{\mathrm{obs}},p_n^{1}\}
+c_n=\max\{p_n^{\mathrm{obs}},p_n^{1,\mathrm{sim}}\}
 \]
 
 and the day-specific reference false-credit exposure

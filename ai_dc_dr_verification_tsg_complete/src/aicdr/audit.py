@@ -207,6 +207,7 @@ EXPECTED_FILES = {
         "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
         "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation_daily.csv",
         "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation.csv",
+        "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
         "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
         "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
     ],
@@ -221,6 +222,12 @@ EXPECTED_FILES = {
         "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
         "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
         "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
+    ],
+    "experiment_20": [
+        "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
+        "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
+        "experiments/exp20_trace_meter_replay/results/final/experiment_metadata.json",
+        "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
     ],
     "manuscript_sources": [
         "manuscript/main.tex",
@@ -286,6 +293,7 @@ def run_audit(
         "exp17",
         "exp18",
         "exp19",
+        "exp20",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -676,6 +684,11 @@ def run_audit(
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
+    decision_trace = pd.read_csv(
+        root
+        / "experiments/exp17_decision_time_information/results/final/"
+        "decision_time_trace_replay.csv"
+    )
     decision_methods = {
         "Decision-time truncated-ledger verifier",
         "Committed-ledger rolling-service verifier",
@@ -807,6 +820,26 @@ def run_audit(
         ),
         checks,
     )
+    _check(
+        len(decision_trace) == expected_test * len(decision_methods)
+        and decision_trace.groupby("method")["day"].nunique().eq(expected_test).all()
+        and set(decision_trace["truth_source"].astype(str))
+        == {"independent_trace_observed_meter"}
+        and decision_trace["event_intervention"].astype(str).str.lower().eq("false").all()
+        and np.isfinite(
+            decision_trace[
+                ["trace_mae_mw", "trace_rmse_mw", "trace_nrmse"]
+            ].to_numpy(dtype=float)
+        ).all()
+        and decision_meta.get("observational_trace_source")
+        == "independent locked DCGM/BurstGPT execution trace",
+        "decision_time_independent_trace_replay",
+        (
+            f"{len(decision_trace)} event-gate profiles are scored against the "
+            "independent meter tensor in a separate observational panel"
+        ),
+        checks,
+    )
     # The committed profile must be an independently identifiable second
     # optimization, not a relabelled copy of the gate baseline. These metadata
     # checks keep the protocol auditable even if numerical traces coincide.
@@ -917,6 +950,10 @@ def run_audit(
         "IEEE 39-bus",
         "IEEE 118-bus",
     }
+    expected_ac_snapshots = int(
+        len(cfg["experiments"].get("preventive_ac_validation_day_indices", []))
+        * len(cfg["experiments"].get("preventive_ac_validation_event_slots", []))
+    )
     _check(
         set(ac_cross["network"].unique()) == expected_ac_networks
         and set(ac_cross["method"].unique())
@@ -927,6 +964,7 @@ def run_audit(
         )
         * 3
         * 2
+        * int(ac_cross_meta.get("locked_snapshot_count", 0))
         and bool((ac_cross["solver_success"] == 1).all())
         and np.isfinite(
             ac_cross[
@@ -937,7 +975,15 @@ def run_audit(
                 ]
             ].to_numpy(dtype=float)
         ).all()
-        and set(ac_cross["schema_version"].astype(int).unique()) == {3}
+        and set(ac_cross["schema_version"].astype(int).unique()) == {4}
+        and int(ac_cross_meta.get("locked_snapshot_count", 0)) == len(
+            ac_cross_meta.get("locked_snapshots", [])
+        )
+        and int(ac_cross_meta.get("locked_snapshot_count", 0)) == expected_ac_snapshots
+        and expected_ac_snapshots >= 2
+        and ac_cross["snapshot_index"].nunique() == expected_ac_snapshots
+        and ac_cross.groupby("snapshot_index")["day"].nunique().eq(1).all()
+        and ac_cross.groupby("snapshot_index")["event_slot"].nunique().eq(1).all()
         and ac_cross_meta.get("shared_active_plan") is True
         and "preventive AC N-1 fixed-active-plan" in str(
             ac_cross_meta.get("scope", "")
@@ -945,6 +991,8 @@ def run_audit(
         and ac_cross_meta.get("ac_limits_enforced") is True
         and ac_cross_meta.get("pre_registered_dc_bus_mapping_one_based")
         == cfg["experiments"].get("preventive_ac_dc_bus_map_one_based")
+        and float(ac_cross_meta.get("load_multiplier", np.nan))
+        == float(cfg["experiments"].get("preventive_ac_load_multiplier"))
         and bool((ac_cross["maximum_apparent_line_loading"] <= 1.0 + 1e-6).all())
         and bool((ac_cross["maximum_voltage_violation_pu"] <= 1e-6).all())
         and bool((ac_cross["maximum_nonreference_active_plan_deviation_mw"] <= 1e-6).all())
@@ -965,7 +1013,7 @@ def run_audit(
         "Incentive-compatible spatial DR structural analogue",
         "Cao-style batch flexibility structural analogue",
         "Receding-horizon workload projection structural analogue",
-        "Multi-site aggregator-response structural analogue",
+        "All-site exact event-response comparator",
     }
     literature_cells = literature.groupby("baseline")["day"].nunique()
     _check(
@@ -1005,6 +1053,46 @@ def run_audit(
             f"{len(structural_literature)}/{expected_test * len(structural_methods)} "
             "same-ledger DC-T/DC-ST outcomes retain native-site and migration "
             "assignment as explicit structural controls"
+        ),
+        checks,
+    )
+    trace_replay = pd.read_csv(
+        root
+        / "experiments/exp20_trace_meter_replay/results/final/"
+        "trace_meter_replay_daily.csv"
+    )
+    trace_summary = pd.read_csv(
+        root
+        / "experiments/exp20_trace_meter_replay/results/final/"
+        "trace_meter_replay_summary.csv"
+    )
+    trace_meta = json.loads(
+        (
+            root
+            / "experiments/exp20_trace_meter_replay/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(trace_replay) == expected_test * len(trace_summary)
+        and len(trace_summary) == 12
+        and trace_replay.groupby("method")["day"].nunique().eq(expected_test).all()
+        and set(trace_replay["truth_source"].astype(str)) == {
+            "independent_trace_observed_meter"
+        }
+        and trace_replay["event_intervention"].astype(str).str.lower().eq("false").all()
+        and trace_meta.get("truth_source") == "independent_trace_observed_meter"
+        and trace_meta.get("event_intervention") is False
+        and np.isfinite(
+            trace_summary[
+                ["mean_mae_mw", "mae_ci_low_mw", "mae_ci_high_mw", "mean_rmse_mw"]
+            ].to_numpy(dtype=float)
+        ).all(),
+        "independent_trace_meter_replay_panel",
+        (
+            f"{len(trace_replay)} locked-day method scores against the measured "
+            "DCGM execution tensor; no event intervention or simulated response "
+            "is used as scoring truth"
         ),
         checks,
     )
@@ -1363,6 +1451,18 @@ def run_audit(
         checks,
     )
     _check(
+        risk_metadata.get("scoring_truth_source")
+        == "independent_trace_observed_meter"
+        and risk_metadata.get("causal_intervention_claim") is False
+        and "independently observed" in str(risk_metadata.get("evaluation_reference", "")),
+        "independent_observed_scoring_truth",
+        (
+            "locked response scores use the observed DCGM/BurstGPT meter; any "
+            "event-response LP is restricted to mechanism-isolation panels"
+        ),
+        checks,
+    )
+    _check(
         float(np.max(np.abs(risk_profiles - single_profiles))) > 1e-6
         and bool(
             (two_sided["pointwise_upper_bound_satisfied"] == 1).all()
@@ -1385,6 +1485,10 @@ def run_audit(
         bool(
             risk_certificate["optimizer_success"] == 1
             and risk_certificate["risk_constraints_satisfied"] == 1
+            and risk_certificate["solver_name"] == "scipy.optimize.trust-constr"
+            and np.isfinite(float(risk_certificate["kkt_stationarity_residual"]))
+            and float(risk_certificate["kkt_stationarity_residual"]) <= 1e-5
+            and float(risk_certificate["primal_constraint_residual"]) <= 1e-6
             and risk_certificate["fitted_validation_mse_mw2"]
             <= risk_certificate["reference_validation_mse_mw2"] + 1e-8
             and risk_certificate["fitted_false_credit_exposure_mw_slots"]
@@ -2703,6 +2807,10 @@ def run_audit(
         and int(counterfactual_metadata.get("declared_window_slots_max", 0)) == 584
         and float(counterfactual_metadata.get("declared_per_gpu_power_cap_mw", 0.0))
         == 0.001
+        and int(counterfactual_metadata.get("declared_window_infeasible_jobs", -1)) == 0
+        and "exact submit-time timelimit" in str(
+            counterfactual_metadata.get("deadline_window_rule", "")
+        )
         and np.isfinite([native_event, counterfactual_event, net_reduction, gross_reduction, rebound]).all()
         and abs((native_event - counterfactual_event) - net_reduction) <= 1e-10
         and gross_reduction + 1e-10 >= net_reduction

@@ -409,7 +409,6 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
     )
     assert len(np.unique(ac["network"])) == 4
     assert np.all(ac["solver_success"] == 1)
-    assert len(ac) == 1704
     assert np.max(ac["maximum_apparent_line_loading"]) <= 1.0 + 1e-8
     assert np.max(ac["maximum_voltage_violation_pu"]) <= 1e-8
     assert np.max(ac["maximum_nonreference_active_plan_deviation_mw"]) <= 1e-8
@@ -420,6 +419,13 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
+    assert len(ac) == (
+        sum(ac_metadata["outages_by_network"].values())
+        * len(CFG["experiments"]["preventive_ac_dc_peak_penetrations"])
+        * len(ac_metadata["methods"])
+        * ac_metadata["locked_snapshot_count"]
+    )
+    assert ac_metadata["locked_snapshot_count"] == 6
     assert ac_metadata["test_outcomes_used_for_scaling"] is False
     assert ac_metadata["ac_limits_enforced"] is True
     assert "pre-registered generator-bus electrical-role" in ac_metadata["bus_mapping_basis"]
@@ -1014,5 +1020,7 @@ def test_final_panels_exist() -> None:
         "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
         "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
         "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+        "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
+        "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
     ]
     assert all((ROOT / path).stat().st_size > 0 for path in expected)

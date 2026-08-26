@@ -447,14 +447,15 @@ def baseline_metrics(pred: np.ndarray, truth: np.ndarray, event_slots: list[int]
 def response_metrics(
     predicted_baseline: np.ndarray,
     oracle_baseline: np.ndarray,
-    actual: np.ndarray,
+    observed_meter: np.ndarray,
     event_slots: list[int],
     dt_h: float,
     contract_baseline: np.ndarray | None = None,
 ) -> dict[str, float]:
     """Score a submitted counterfactual and its observable settlement.
 
-    ``oracle_baseline`` is deliberately diagnostic: it is available only in
+    ``observed_meter`` is the closed execution meter and is the only trajectory
+    used by the observable settlement. ``oracle_baseline`` is deliberately diagnostic: it is available only in
     the locked replay after the event and must never be used to form a
     contract or a decision.  ``contract_baseline`` is the frozen baseline that
     was committed before the event.  The deployable settlement is therefore
@@ -466,9 +467,9 @@ def response_metrics(
     """
     if contract_baseline is None:
         contract_baseline = predicted_baseline
-    pred_response = predicted_baseline[:, event_slots] - actual[:, event_slots]
-    contract_response = contract_baseline[:, event_slots] - actual[:, event_slots]
-    true_response = oracle_baseline[:, event_slots] - actual[:, event_slots]
+    pred_response = predicted_baseline[:, event_slots] - observed_meter[:, event_slots]
+    contract_response = contract_baseline[:, event_slots] - observed_meter[:, event_slots]
+    true_response = oracle_baseline[:, event_slots] - observed_meter[:, event_slots]
     predicted_credit = np.clip(pred_response, 0, None)
     contract_credit = np.clip(contract_response, 0, None)
     true_credit = np.clip(true_response, 0, None)

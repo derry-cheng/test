@@ -1,25 +1,25 @@
-network,peak_dc_penetration,method,evaluated_outages,maximum_apparent_line_loading,maximum_voltage_violation_pu,maximum_nonreference_active_plan_deviation_mw
-IEEE 118-bus,0.03,Payment-Certified N-1 Verifier,177,0.02817619959891531,0.0,0.0
-IEEE 118-bus,0.03,Trace-Anchored Reference,177,0.02822232808353161,0.0,0.0
-IEEE 118-bus,0.06,Payment-Certified N-1 Verifier,177,0.028359111321982156,0.0,0.0
-IEEE 118-bus,0.06,Trace-Anchored Reference,177,0.028452221306390663,0.0,0.0
-IEEE 118-bus,0.09,Payment-Certified N-1 Verifier,177,0.02854357009385891,0.0,0.0
-IEEE 118-bus,0.09,Trace-Anchored Reference,177,0.028663538404363236,0.0,0.0
-IEEE 30-bus,0.03,Payment-Certified N-1 Verifier,38,0.7474654790307076,0.0,0.0
-IEEE 30-bus,0.03,Trace-Anchored Reference,38,0.7468856866373657,0.0,0.0
-IEEE 30-bus,0.06,Payment-Certified N-1 Verifier,38,0.7450165406984607,0.0,0.0
-IEEE 30-bus,0.06,Trace-Anchored Reference,38,0.7438576806943579,0.0,0.0
-IEEE 30-bus,0.09,Payment-Certified N-1 Verifier,38,0.7425693221097243,0.0,0.0
-IEEE 30-bus,0.09,Trace-Anchored Reference,38,0.7408321229043123,0.0,0.0
-IEEE 39-bus,0.03,Payment-Certified N-1 Verifier,33,0.9173423100455926,0.0,0.0
-IEEE 39-bus,0.03,Trace-Anchored Reference,33,0.9152838925266764,0.0,0.0
-IEEE 39-bus,0.06,Payment-Certified N-1 Verifier,33,0.916992527834325,0.0,0.0
-IEEE 39-bus,0.06,Trace-Anchored Reference,33,0.9128597098552566,0.0,0.0
-IEEE 39-bus,0.09,Payment-Certified N-1 Verifier,33,0.9166540888276418,0.0,0.0
-IEEE 39-bus,0.09,Trace-Anchored Reference,33,0.910454865154781,0.0,0.0
-IEEE RTS 24-bus,0.03,Payment-Certified N-1 Verifier,36,0.91929060604814,0.0,0.0
-IEEE RTS 24-bus,0.03,Trace-Anchored Reference,36,0.9192906056712864,0.0,0.0
-IEEE RTS 24-bus,0.06,Payment-Certified N-1 Verifier,36,0.9192906061241011,0.0,0.0
-IEEE RTS 24-bus,0.06,Trace-Anchored Reference,36,0.9192906064790981,0.0,0.0
-IEEE RTS 24-bus,0.09,Payment-Certified N-1 Verifier,36,0.919290608635378,0.0,0.0
-IEEE RTS 24-bus,0.09,Trace-Anchored Reference,36,0.9192906110486481,0.0,0.0
+network,peak_dc_penetration,method,evaluated_outages,evaluated_snapshots,maximum_apparent_line_loading,maximum_voltage_violation_pu,maximum_nonreference_active_plan_deviation_mw
+IEEE 118-bus,0.03,Payment-Certified N-1 Verifier,177,6,0.0243153239780408,0.0,0.0
+IEEE 118-bus,0.03,Trace-Anchored Reference,177,6,0.0243303101580617,0.0,0.0
+IEEE 118-bus,0.06,Payment-Certified N-1 Verifier,177,6,0.024431174568795,0.0,0.0
+IEEE 118-bus,0.06,Trace-Anchored Reference,177,6,0.0244608297939714,0.0,0.0
+IEEE 118-bus,0.09,Payment-Certified N-1 Verifier,177,6,0.0245540094797407,0.0,0.0
+IEEE 118-bus,0.09,Trace-Anchored Reference,177,6,0.0246010640764024,0.0,0.0
+IEEE 30-bus,0.03,Payment-Certified N-1 Verifier,38,6,0.6574643582092998,0.0,0.0
+IEEE 30-bus,0.03,Trace-Anchored Reference,38,6,0.6574529886377396,0.0,0.0
+IEEE 30-bus,0.06,Payment-Certified N-1 Verifier,38,6,0.6574214293183076,0.0,0.0
+IEEE 30-bus,0.06,Trace-Anchored Reference,38,6,0.6573986274226101,0.0,0.0
+IEEE 30-bus,0.09,Payment-Certified N-1 Verifier,38,6,0.6573784772904597,0.0,0.0
+IEEE 30-bus,0.09,Trace-Anchored Reference,38,6,0.6573441797318631,0.0,0.0
+IEEE 39-bus,0.03,Payment-Certified N-1 Verifier,24,6,0.9172613165382538,0.0,0.0
+IEEE 39-bus,0.03,Trace-Anchored Reference,24,6,0.9151555076499294,0.0,0.0
+IEEE 39-bus,0.06,Payment-Certified N-1 Verifier,24,6,0.914815427358962,0.0,0.0
+IEEE 39-bus,0.06,Trace-Anchored Reference,24,6,0.9136127069961104,0.0,0.0
+IEEE 39-bus,0.09,Payment-Certified N-1 Verifier,24,6,0.9138862190309656,0.0,0.0
+IEEE 39-bus,0.09,Trace-Anchored Reference,24,6,0.9119366113758876,0.0,0.0
+IEEE RTS 24-bus,0.03,Payment-Certified N-1 Verifier,36,6,0.9058946177127368,0.0,0.0
+IEEE RTS 24-bus,0.03,Trace-Anchored Reference,36,6,0.905894617728062,0.0,0.0
+IEEE RTS 24-bus,0.06,Payment-Certified N-1 Verifier,36,6,0.905894617404218,0.0,0.0
+IEEE RTS 24-bus,0.06,Trace-Anchored Reference,36,6,0.9058946161162972,0.0,0.0
+IEEE RTS 24-bus,0.09,Payment-Certified N-1 Verifier,36,6,0.9058946163268952,0.0,0.0
+IEEE RTS 24-bus,0.09,Trace-Anchored Reference,36,6,0.905894614397804,0.0,0.0

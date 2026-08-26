@@ -107,7 +107,7 @@ let
 \[
 B_j^{\mathrm{ref}}
 =\sum_{n\in\mathcal V_j}[p_n^{(\ell^\star)}
--\max\{p_n^{\mathrm{obs}},p_n^{1}\}]_+.
+-\max\{p_n^{\mathrm{obs}},p_n^{1,\mathrm{sim}}\}]_+.
 \]
 
 For a pre-declared reserve \(\beta\in(0,1]\), define
@@ -281,22 +281,23 @@ exact. Experiment 7 checks efficiency for \(G=4\) and up to \(m=5\), i.e.,
 
 ## Proposition 6: provenance-bound workload certificate
 
-For every joined job (j), let the canonical tuple be
+For every joined job \(j\), let the canonical tuple be
 
 \[
  r_j=(\mathrm{id}_j,t_j^{\rm submit},t_j^{\rm start},t_j^{\rm end},
  E_j, n_j^{\rm telemetry},q_j,\kappa_j,\sigma_j),
 \]
 
-where (E_j>0) is the aggregated DCGM energy, (n_j^{\rm telemetry}) is
-the number of raw telemetry records, (q_j) is the requested GPU field,
-(kappa_j) is the workload type, and (sigma_j) is the scheduler state.
+where \(E_j>0\) is the aggregated DCGM energy, \(n_j^{\rm telemetry}\) is
+the number of raw telemetry records, \(q_j\) is the requested GPU field,
+\(\kappa_j\) is the workload type, and \(\sigma_j\) is the scheduler state.
 The ledger commitment is the SHA-256 digest of the deterministically sorted
-CSV serialization of all (r_j), following the Secure Hash Standard
-cite{nist2015fips1804}.
+CSV serialization of all \(r_j\), following the Secure Hash Standard
+\cite{nist2015fips1804}.
 
 If the scheduler--telemetry join is one-to-one after the declared last-record
-rule, every retained job has (t_j^{\rm submit}le t_j^{\rm start}<t_j^{\rm end}),
+rule, every retained job has
+\(t_j^{\rm submit}\le t_j^{\rm start}<t_j^{\rm end}\),
 and the positive-energy sum in the joined table equals the positive-energy sum
 of the retained raw telemetry IDs, then the exact job-level flow LP is a
 certificate for the committed ledger: any changed, inserted, removed, or

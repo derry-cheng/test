@@ -608,7 +608,8 @@ def load_mit_job_ledger(
     counterfactual window from the submitter-declared Slurm ``timelimit`` and
     a precommitted fallback for the Slurm unlimited sentinel.  The latter is
     the only deadline mode allowed for job-level counterfactual optimization;
-    it never reads ``time_end`` to define a decision constraint.
+    it never reads ``time_end`` or measured energy to define a decision
+    constraint.
     """
     dcgm = pd.read_csv(
         dcgm_path,
@@ -674,12 +675,13 @@ def load_mit_job_ledger(
         (jobs["time_end"].to_numpy(dtype=float) - origin) / float(interval_s)
     ).astype(np.int64)
     # ``timelimit`` is a scheduler declaration available at submission, not an
-    # observed completion outcome.  Slurm's UINT_MAX sentinel denotes an
+    # observed completion outcome. Slurm's UINT_MAX sentinel denotes an
     # unlimited request; the study precommits a finite 128-slot service window
-    # for that case so the counterfactual remains a bounded LP.  The service
-    # floor is derived from measured energy, measured GPU count, and a fixed
-    # precommitted 1-kW/GPU cap; it is a resource identity constraint, not an
-    # observed-runtime upper bound.
+    # for that case so the counterfactual remains a bounded LP.  A measured
+    # energy value is deliberately *not* allowed to enlarge a submitted
+    # window: doing so would use an outcome to define the counterfactual
+    # feasible set.  The nameplate calculation below is retained only as an
+    # auditable feasibility precheck.
     timelimit_seconds = jobs["timelimit"].to_numpy(dtype=np.int64)
     unlimited = timelimit_seconds >= np.iinfo(np.uint32).max - 1
     declared_window_slots = np.where(
@@ -690,7 +692,7 @@ def load_mit_job_ledger(
             np.ceil(timelimit_seconds / float(interval_s)).astype(np.int64),
         ),
     ).astype(np.int64)
-    service_floor_slots = np.ceil(
+    required_service_slots = np.ceil(
         (jobs["energy_j"].to_numpy(dtype=float) / 3.6e9)
         / (
             np.maximum(jobs["measured_gpus"].to_numpy(dtype=float), 1.0)
@@ -698,10 +700,11 @@ def load_mit_job_ledger(
             * (float(interval_s) / 3600.0)
         )
     ).astype(np.int64)
-    service_floor_slots = np.maximum(service_floor_slots, 1)
+    required_service_slots = np.maximum(required_service_slots, 1)
+    jobs["required_service_slots"] = required_service_slots.astype(np.int64)
+    jobs["declared_window_slots"] = declared_window_slots
     jobs["deadline_slot_declared_timelimit"] = (
-        jobs["submit_slot"].to_numpy(dtype=np.int64)
-        + np.maximum(declared_window_slots, service_floor_slots)
+        jobs["submit_slot"].to_numpy(dtype=np.int64) + declared_window_slots
     ).astype(np.int64)
     jobs["deadline_slot"] = (
         jobs["deadline_slot_observed"]
@@ -716,6 +719,7 @@ def load_mit_job_ledger(
     if n_slots is None or n_slots <= 0:
         raise ValueError("n_slots must be positive or None")
     jobs["submit_slot_raw"] = jobs["submit_slot"]
+    jobs["start_slot_raw"] = jobs["start_slot"]
     jobs["deadline_slot_raw"] = jobs["deadline_slot"]
     jobs["submit_slot"] = jobs["submit_slot"].clip(lower=0, upper=n_slots - 1)
     jobs["start_slot"] = jobs["start_slot"].clip(lower=0, upper=n_slots - 1)
@@ -727,7 +731,7 @@ def load_mit_job_ledger(
     jobs["region"] = _balanced_trace_region_labels(jobs, n_regions)
     jobs["within_horizon"] = (
         (jobs["submit_slot_raw"] < int(n_slots))
-        & (jobs["start_slot"] < int(n_slots))
+        & (jobs["start_slot_raw"] < int(n_slots))
         & (jobs["deadline_slot"] > jobs["submit_slot"])
         & (jobs["energy_mwh"] > 0)
     )
@@ -745,6 +749,16 @@ def load_mit_job_ledger(
     jobs.attrs["deadline_mode"] = deadline_mode
     jobs.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
     jobs.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
+    jobs.attrs["declared_window_infeasible_jobs"] = int(
+        np.sum(
+            jobs["required_service_slots"].to_numpy(dtype=np.int64)
+            > jobs["declared_window_slots"].to_numpy(dtype=np.int64)
+        )
+    )
+    jobs.attrs["deadline_window_rule"] = (
+        "submit-time timelimit exactly; measured energy is a feasibility check, "
+        "never a deadline extension"
+    )
     return jobs.reset_index(drop=True)
 
 

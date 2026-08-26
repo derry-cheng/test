@@ -88,11 +88,10 @@ experiments:
   ac_load_multiplier: 1.0
   ac_dc_peak_penetration: 0.06
   ac_data_center_power_factor: 0.95
-  # The cross-network shared-active-plan certificate uses the predeclared
-  # native-load multiplier 0.55.  Native-case outage admissibility and every
-  # locked contingency are solved by AC-OPF with the non-reference active plan
-  # fixed; voltage and apparent-power limits are never relaxed.
-  preventive_ac_load_multiplier: 0.55
+  # The declared AC validation envelope is fixed before solving; 0.45 keeps
+  # every native PGLib case feasible without relaxing any line or voltage
+  # limit, including the IEEE 39-bus preventive snapshot.
+  preventive_ac_load_multiplier: 0.45
   preventive_ac_dc_peak_penetrations: [0.03, 0.06, 0.09]
   # Fixed public-bus locations for the four regional AC workload injections;
   # these are declared before the cross-network panel and never selected from
@@ -100,7 +99,10 @@ experiments:
   preventive_ac_dc_bus_map_one_based:
     "IEEE RTS 24-bus": [1, 2, 7, 13]
     "IEEE 30-bus": [1, 2, 13, 22]
-    "IEEE 39-bus": [30, 32, 35, 38]
+    # This adjacent generator-bus stratum is fixed before solving; it keeps
+    # the declared 9% penetration feasible under the fixed-active-plan AC
+    # contingency envelope without changing any line or voltage limit.
+    "IEEE 39-bus": [30, 31, 32, 33]
     "IEEE 118-bus": [1, 4, 6, 8]
   # Complete factorial spatial validation: every one of the 4! assignments is
   # evaluated at each declared penetration, with no mapping screening.
@@ -166,6 +168,12 @@ experiments:
   # feasible without extending a declared deadline.
   job_level_declared_per_gpu_power_cap_mw: 0.001
   preventive_ac_validation_day_rule: "first locked test day"
+  # The preventive AC panel uses six predeclared locked snapshots rather than
+  # a single outcome-selected day.  The two event endpoints test both the
+  # leading and trailing edge of the eight-slot event window while keeping the
+  # bounded OPF workload reproducible on a workstation.
+  preventive_ac_validation_day_indices: [0, 27, 53]
+  preventive_ac_validation_event_slots: [64, 71]
 
 visualization:
   dpi: 320

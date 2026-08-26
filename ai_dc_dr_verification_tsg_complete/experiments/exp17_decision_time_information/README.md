@@ -15,8 +15,10 @@ as an eligibility control. A causal reserve is calibrated on earlier validation 
 it is never inserted into payment eligibility before the corresponding jobs are
 committed. After the event meter closes, gross forecast credit is converted to
 the pointwise meter-capped payable quantity; gross false credit remains the
-independent risk metric. The locked execution trace is used only for scoring;
-it is never supplied to a decision.
+independent risk metric. The event-response rows are explicitly operating
+replays because the public releases contain no utility event label. The
+measured execution tensor is scored separately in
+`decision_time_trace_replay.csv` and is never supplied to a decision.
 
 Outputs are written to `results/intermediate/` and `results/final/`, with the
 English visualization `figures/fig23_decision_time_information.png` and PDF.

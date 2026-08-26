@@ -4,7 +4,11 @@ This stage solves a global sparse linear program with one service variable for
 every positive-energy scheduler job and every admissible release/deadline slot.
 The job energy equality, native-region assignment, per-site nameplate capacity,
 GPU-count-derived interval bound, and deterministic event tariff are all
-enforced in the optimization model. The output is therefore an executable
+enforced in the optimization model. Finite scheduler timelimits are retained
+exactly; only the declared unlimited sentinel receives the precommitted
+128-slot window. The measured-energy/nameplate calculation is an audit-only
+feasibility precheck, and an infeasible declaration stops the run rather than
+enlarging its deadline. The output is therefore an executable
 preemptive batch-service counterfactual rather than a replay of an already
 observed aggregate profile.
 
@@ -16,7 +20,7 @@ indexed, globally optimized counterfactual for checkpointable batch work.
 Run from the repository root with:
 
 ```bash
-PYTHONPATH=src:vendor python run_all.py --stage exp19
+PYTHONPATH=src python experiments/exp19_job_level_counterfactual/run.py
 ```
 
 The final directory contains the exact solver summary, slot profile, compressed

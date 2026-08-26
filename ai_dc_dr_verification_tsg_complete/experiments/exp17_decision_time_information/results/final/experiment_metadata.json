@@ -43,7 +43,10 @@
     "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
     "future_arrivals_used_for_decision": false
   },
-  "scoring_source": "locked trace-anchored execution and semi-synthetic response",
+  "scoring_source": "declared event-response LP operating replay for the mechanism-isolation rows; no public utility intervention is observed",
+  "observational_trace_source": "independent locked DCGM/BurstGPT execution trace",
+  "observational_trace_replay_file": "decision_time_trace_replay.csv",
+  "simulated_response_source": "the committed-ledger DR LP is retained as an operating replay and is never substituted for the measured scoring meter",
   "meter_cap_scoring_note": "The deployed settlement uses the submitted causal committed-ledger baseline, its frozen pre-event contract profile, and the closed event meter. For the locked audit, the trace-anchored no-event profile is used only after the event to diagnose oracle overpayment and underpayment; it is not supplied to target fitting, gate decisions, workload optimization, or payment formation.",
   "selection_uses_locked_test_truth": false,
   "all_decision_time_lp_solved": true,
