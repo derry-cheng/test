@@ -9379,22 +9379,21 @@ def run_exp19(
     # not a relaxation of any ledger constraint.
     energy_scale = 1.0e6
     result = linprog(
-        objective / energy_scale,
-        A_ub=a_ub,
-        b_ub=np.full(n_regions * n_slots, site_capacity_mwh * energy_scale, dtype=float),
-        A_eq=a_eq,
-        b_eq=energy * energy_scale,
-        # This SciPy build expects an explicit N-by-2 bounds matrix (a tuple
-        # of two vectors is interpreted as 2-by-N).  The dense matrix is only
-        # two float columns, about 32 MB for this ledger, and avoids a Python
-        # list of nearly two million tuples.
-        bounds=np.column_stack((
-            np.zeros(variable_count, dtype=float),
-            variable_upper * energy_scale,
-        )),
-        method="highs",
-        options={"presolve": True},
-    )
+            objective / energy_scale,
+            A_ub=a_ub,
+            b_ub=np.full(n_regions * n_slots, site_capacity_mwh * energy_scale, dtype=float),
+            A_eq=a_eq,
+            b_eq=energy * energy_scale,
+            # This SciPy build expects an explicit N-by-2 bounds matrix (a tuple
+            # of two vectors is interpreted as 2-by-N).  The dense matrix is only
+            # two float columns, about 32 MB for this ledger.
+            bounds=np.column_stack((
+                np.zeros(variable_count, dtype=float),
+                variable_upper * energy_scale,
+            )),
+            method="highs",
+            options={"presolve": True},
+        )
     if not result.success:
         raise RuntimeError(f"Exact job-level counterfactual LP failed: {result.message}")
     service = np.asarray(result.x, dtype=float) / energy_scale

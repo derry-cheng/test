@@ -50,7 +50,9 @@ linear program covers all 71,128
 positive-energy jobs with 5,465,157 admissible job--slot variables and yields a
 net event reduction of 0.167 MWh (gross reduction 0.183 MWh and rebound
 0.016 MWh), with a maximum job-energy residual of
-$2.17\times10^{-19}$ MWh. The security panel evaluates all 37 finite IEEE
+$2.17\times10^{-19}$ MWh. A homogeneous scale-consistency certificate reaches
+the committed 118-MW nameplate at a certified 3475.108$\times$ scale while
+preserving every job-level equality and admissible window. The security panel evaluates all 37 finite IEEE
 Reliability Test System 24-bus (RTS-24) line outages and the spatial panel evaluates four public networks, 24 regional
 permutations, and three penetrations. The BurstGPT, MIT, and IEEE sources are
 therefore reported as an auditable benchmark rather than co-located utility
@@ -974,8 +976,9 @@ AC feasibility, spatial/scale transfer, and continuous-cycle remuneration.
 Experiments 13--16 provide measured replay, a job-level witness, conversion
 intervals, and immutable ledger reconciliation. Experiment 17 freezes the
 event-gate information set, Experiment 18 evaluates a fixed-active-plan AC
-certificate across four public networks, and Experiment 19 solves the indexed
-job-level counterfactual. Confirmatory comparisons use the same 54 locked days
+certificate across four public networks, Experiment 19 solves the indexed
+job-level counterfactual, and Experiment 21 audits the exact homogeneous
+capacity-safe scaling of that primal. Confirmatory comparisons use the same 54 locked days
 unless a deterministic network or ledger rule is stated.
 
 \section{Results}\label{sec:results}
@@ -1154,7 +1157,7 @@ target selection.
 
 Experiment 10 replaces the linear network with AC OPF
 \cite{zimmerman2011matpower}: all 864 base outcomes converge, all 5,400
-corrective IEEE-9/14 outages satisfy the limits, and 3,888 shared-active-plan
+corrective IEEE-30/39/118 outages satisfy the limits, and 3,888 shared-active-plan
 cells have zero active-plan deviation (maximum loadings
 0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 evaluates all
 24 regional permutations, three penetrations, four counterfactuals, and 54
@@ -1214,7 +1217,9 @@ preemptive, while Experiment 14 is the measured contiguous witness. As shown in
 Table~\ref{tab:jobcounterfactual}, native/counterfactual event energy is
 0.194/0.028 MWh, giving 0.183 MWh gross, 0.167 MWh net reduction,
 and 0.016 MWh rebound; maximum job residual is
-$2.17\times10^{-19}$ MWh and minimum capacity slack is 29.492 MWh.
+$2.17\times10^{-19}$ MWh and minimum capacity slack is 29.492 MWh. The
+separate Exp.~21 audit certifies a capacity-safe 3475.108$\times$ homogeneous
+scale at the 118-MW nameplate without using locked-test outcomes.
 
 \begin{table}[t]
 \centering
@@ -1245,12 +1250,14 @@ settlement. The safe profile reaches nRMSE/false credit 0.343/1.717
 MWh/day, while the four-hour gate uses distinct submitted-baseline and response
 LPs (Table~\ref{tab:decision}). The indexed counterfactual preserves all 71,128
 job energies and yields 0.167 MWh net reduction, 0.183 MWh gross
-reduction, and 0.016 MWh rebound. Deployment requires signed co-located
+reduction, and 0.016 MWh rebound. The scale-consistency certificate confirms
+that this indexed primal reaches the 118-MW nameplate under a 3475.108$\times$
+trace scale while retaining all ledger constraints. Deployment requires signed co-located
 telemetry, topology access, and capacity-safe power conversion.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{7pt}{7.6pt}\selectfont}{\savedendthebibliography}
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.5pt}{7pt}\selectfont}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

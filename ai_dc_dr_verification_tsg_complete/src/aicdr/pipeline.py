@@ -30,6 +30,7 @@ from .experiments import (
     run_exp19,
 )
 from .trace_replay import run_trace_meter_replay
+from .scale_audit import run_exp21_scale_consistency
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -111,6 +112,7 @@ def run_pipeline(
         ("exp18", lambda: run_exp18(root, cfg, logger, resume=resume)),
         ("exp19", lambda: run_exp19(root, cfg, logger, resume=resume)),
         ("exp20", lambda: run_trace_meter_replay(root, cfg, logger)),
+        ("exp21", lambda: run_exp21_scale_consistency(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
@@ -186,10 +188,11 @@ def run_pipeline(
         "exp18",
         "exp19",
         "exp20",
+        "exp21",
         "audit",
-    } and stage not in {"audit", "exp20"}:
+    } and stage not in {"audit", "exp20", "exp21"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp20"}:
+    elif stage in {"audit", "exp20", "exp21"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound
