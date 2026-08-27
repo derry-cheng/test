@@ -1,7 +1,0 @@
-2026-08-17 18:55:19,757 | INFO | aicdr | Unified run started; stage=audit, resume=False
-2026-08-17 18:55:19,761 | INFO | aicdr | Audit-only stage uses the locked processed workload; raw-source validation remains enforced by data/full stages.
-2026-08-17 18:55:19,761 | INFO | aicdr | ===== START STAGE AUDIT =====
-2026-08-17 18:55:20,231 | INFO | aicdr | Audit complete: 255/255 checks passed
-2026-08-17 18:55:20,234 | INFO | aicdr | ===== END STAGE AUDIT (0.5 s) =====
-2026-08-17 18:55:20,234 | INFO | aicdr | Unified pipeline progress: 5.0% (1/20 stages completed)
-2026-08-17 18:55:20,234 | INFO | aicdr | Unified run completed successfully
