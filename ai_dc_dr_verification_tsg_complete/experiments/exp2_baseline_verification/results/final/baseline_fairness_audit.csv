@@ -2,6 +2,6 @@ baseline,information_set,same_arrivals,same_deadlines,same_site_capacity,same_ev
 Single Feasible Projection,complete submitted ledger,True,True,True,True,54,exact ledger LP,False
 Risk-Constrained Convex Verifier,complete submitted ledger,True,True,True,True,54,validation-only convex fit + exact envelope,False
 Feasible Quantile Projection,complete submitted ledger,True,True,True,True,54,matched-information quantile + exact ledger LP,False
-Wan--Li DC-T temporal-only ledger schedule,complete submitted ledger,True,True,True,True,54,native-site exact ledger LP,False
-Wan--Li DC-ST joint spatio-temporal ledger schedule,complete submitted ledger,True,True,True,True,54,joint exact ledger LP,False
+Temporal-only ledger control,complete submitted ledger,True,True,True,True,54,native-site exact ledger LP,False
+Joint spatio-temporal ledger control,complete submitted ledger,True,True,True,True,54,joint exact ledger LP,False
 Post-event metadata,complete submitted ledger,True,True,True,True,54,statistical comparator,False

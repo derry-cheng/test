@@ -6,7 +6,7 @@ import logging
 import math
 import time
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from itertools import permutations, product
 from pathlib import Path
 from typing import Any
@@ -78,6 +78,56 @@ METHODS = [
 ]
 
 SETTLEMENT_SCHEMA_VERSION = 6
+
+
+def _exp18_process_opf(payload: dict[str, Any]) -> dict[str, Any]:
+    """Solve one Exp18 AC-OPF cell in a fresh worker process.
+
+    PYPOWER's model assembly is largely Python-bound, so a thread pool does
+    not provide reliable parallelism.  This top-level worker is deliberately
+    independent of the experiment closure: it receives a pristine case and
+    the exact option dictionaries, then applies only numerical restarts.  No
+    limit, dispatch bound, or objective is changed by a restart.
+    """
+    from pypower.idx_bus import VA, VM
+    from pypower.idx_gen import PG, QG
+    from pypower.runopf import runopf
+    from pypower.runpf import runpf
+
+    case = copy.deepcopy(payload["case"])
+    warm_start = payload.get("warm_start")
+    if warm_start is not None:
+        if warm_start.get("bus", np.empty((0, 0))).shape == case["bus"].shape:
+            case["bus"][:, VM] = warm_start["bus"][:, VM]
+            case["bus"][:, VA] = warm_start["bus"][:, VA]
+        if warm_start.get("gen", np.empty((0, 0))).shape == case["gen"].shape:
+            case["gen"][:, PG] = warm_start["gen"][:, PG]
+            case["gen"][:, QG] = warm_start["gen"][:, QG]
+    options = payload["options"]
+    fallback_options = payload["fallback_options"]
+    pf_warm_options = payload["pf_warm_options"]
+    fallback_count = 0
+    for _ in range(2):
+        result = runopf(copy.deepcopy(case), copy.deepcopy(options))
+        if bool(result.get("success", 0)):
+            return {"result": result, "fallback_count": fallback_count}
+    fallback_count += 1
+    retry: dict[str, Any] = {}
+    for _ in range(2):
+        retry = runopf(copy.deepcopy(case), copy.deepcopy(fallback_options))
+        if bool(retry.get("success", 0)):
+            return {"result": retry, "fallback_count": fallback_count}
+    warm = copy.deepcopy(case)
+    pf_result, pf_success = runpf(warm, copy.deepcopy(pf_warm_options))
+    if pf_success:
+        warm["bus"][:, VM] = pf_result["bus"][:, VM]
+        warm["bus"][:, VA] = pf_result["bus"][:, VA]
+        warm["gen"][:, PG] = pf_result["gen"][:, PG]
+        warm["gen"][:, QG] = pf_result["gen"][:, QG]
+        warm_retry = runopf(warm, copy.deepcopy(fallback_options))
+        if bool(warm_retry.get("success", 0)):
+            return {"result": warm_retry, "fallback_count": fallback_count}
+    return {"result": retry, "fallback_count": fallback_count}
 
 
 def _exact_group_symmetric_shapley(
@@ -1146,6 +1196,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         if count % day_count:
             raise ValueError("Risk design cannot be partitioned into complete days")
         observations_per_day = count // day_count
+        # The two trajectories are kept as separate labels throughout scoring.
+        # Their pointwise maximum is used only as the predeclared offline
+        # union ceiling for the risk epigraph; it is never reported as a
+        # physical meter path or as a causal event outcome.
         credit_ceiling = np.maximum(local_target, local_actual)
         reference_prediction = local_design[:, reference_candidate]
         reference_false_by_day = np.maximum(
@@ -2184,6 +2238,40 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     )
     risk_audit.to_csv(final / "final_risk_contract_audit.csv", index=False)
 
+    # The union ceiling above is an offline eligibility diagnostic.  Preserve
+    # the two underlying truth sources in a separate locked-test certificate so
+    # no aggregate max() can conceal a source-specific increase in unsupported
+    # credit.  These are meter diagnostics, not utility-event treatment effects.
+    truth_source_rows: list[dict[str, Any]] = []
+    for local_day, day_value in enumerate(test_days):
+        day = int(day_value)
+        final_event = stored_baselines[local_day, final_risk_index][:, event_slots]
+        reference_event = stored_baselines[local_day, final_reference_index][:, event_slots]
+        for truth_source, truth_profile in [
+            (observed_truth_source, observed_meter_lookup[day]),
+            (actual_truth_source, actual_lookup[day]),
+        ]:
+            truth_event = truth_profile[:, event_slots]
+            final_false_mw_slots = float(np.maximum(final_event - truth_event, 0.0).sum())
+            reference_false_mw_slots = float(np.maximum(reference_event - truth_event, 0.0).sum())
+            truth_source_rows.append(
+                {
+                    "day": day,
+                    "truth_source": truth_source,
+                    "event_intervention": False,
+                    "final_false_credit_mw_slots": final_false_mw_slots,
+                    "reference_false_credit_mw_slots": reference_false_mw_slots,
+                    "final_false_credit_mwh": final_false_mw_slots * dt_h,
+                    "reference_false_credit_mwh": reference_false_mw_slots * dt_h,
+                    "false_credit_ratio_to_reference": final_false_mw_slots
+                    / max(reference_false_mw_slots, 1e-9),
+                    "causal_event_effect": False,
+                }
+            )
+    pd.DataFrame(truth_source_rows).to_csv(
+        final / "risk_truth_source_audit.csv", index=False
+    )
+
     # Reproduce the closest power/energy-domain mechanisms as exact workload
     # LP instantiations rather than comparing only generic regressors.  The
     # source rows are deliberately kept separate from the main METHODS table:
@@ -2296,15 +2384,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             )
         structural_specs = [
             (
-                "Wan--Li DC-T temporal-only ledger schedule",
-                "wan2026scuc",
+                "Temporal-only ledger control",
+                "internal_structural_control",
                 temporal.power_mw,
                 temporal.migrated_mwh,
                 "exact workload LP with native-site assignment fixed; temporal deferral retained",
             ),
             (
-                "Wan--Li DC-ST joint spatio-temporal ledger schedule",
-                "wan2026scuc",
+                "Joint spatio-temporal ledger control",
+                "internal_structural_control",
                 model_honest[day],
                 float(honest_migration[day]),
                 "exact workload LP with temporal deferral and cross-site migration enabled",
@@ -2348,8 +2436,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ("Single Feasible Projection", "complete submitted ledger", "exact ledger LP"),
         ("Risk-Constrained Convex Verifier", "complete submitted ledger", "validation-only convex fit + exact envelope"),
         ("Feasible Quantile Projection", "complete submitted ledger", "matched-information quantile + exact ledger LP"),
-        ("Wan--Li DC-T temporal-only ledger schedule", "complete submitted ledger", "native-site exact ledger LP"),
-        ("Wan--Li DC-ST joint spatio-temporal ledger schedule", "complete submitted ledger", "joint exact ledger LP"),
+        ("Temporal-only ledger control", "complete submitted ledger", "native-site exact ledger LP"),
+        ("Joint spatio-temporal ledger control", "complete submitted ledger", "joint exact ledger LP"),
         ("Post-event metadata", "complete submitted ledger", "statistical comparator"),
     ]:
         fairness_rows.append(
@@ -3204,12 +3292,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "convex_ensemble_candidate_names": risk_candidate_names,
             "structural_literature_baselines": {
                 "file": "structural_literature_baselines_summary.csv",
-                "citation_key": "wan2026scuc",
-                "models": ["DC-T temporal-only", "DC-ST joint spatio-temporal"],
+                "citation_key": "internal_structural_control",
+                "models": ["temporal-only ledger control", "joint spatio-temporal ledger control"],
                 "implementation": (
                     "Both are exact workload LPs with the same release, deadline, "
-                    "conservation, capacity, and terminal constraints; DC-T fixes "
-                    "each source to its native site and DC-ST enables migration."
+                    "conservation, capacity, and terminal constraints; the temporal-only "
+                    "control fixes each source to its native site and the joint control enables migration."
                 ),
             },
             "baseline_fairness_audit": {
@@ -3225,6 +3313,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 ),
             },
             "risk_fit_certificate": risk_fit_certificate,
+            "risk_credit_ceiling_source": (
+                "offline union ceiling max(observational baseline, simulated "
+                "mechanism-isolation response); separate truth-source scores "
+                "are retained and no causal event effect is claimed"
+            ),
+            "risk_truth_source_audit_file": "risk_truth_source_audit.csv",
             "risk_reference_candidate": risk_candidate_names[risk_reference_index],
             "pointwise_envelope_candidate": "Single Feasible Projection",
             "two_sided_band_tolerance_mw": float(
@@ -10627,7 +10721,10 @@ def run_exp17(
         except (OSError, ValueError):
             reserve_test_rows = []
     completed: set[int] = set()
-    schema = 9
+    # The candidate economic grid is part of the decision protocol. Bump the
+    # checkpoint schema whenever that grid changes so a stale response profile
+    # cannot be reported under a new calibration.
+    schema = 10
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         if (
@@ -10909,6 +11006,15 @@ def run_exp17(
             "declared event-response LP operating replay for the mechanism-"
             "isolation rows; no public utility intervention is observed"
         ),
+        "causal_identification_boundary": {
+            "temporal_information_causality": True,
+            "utility_event_label_available": False,
+            "randomized_or_exogenous_event_intervention": False,
+            "interpretation": (
+                "causal refers to the pre-event information filtration only; the "
+                "locked trace-meter alignment is observational and is not a treatment-effect estimate"
+            ),
+        },
         "observational_trace_source": "independent locked DCGM/BurstGPT execution trace",
         "observational_trace_replay_file": "decision_time_trace_replay.csv",
         "simulated_response_source": (
@@ -11085,6 +11191,11 @@ def run_exp18(
     load_multiplier = float(
         cfg["experiments"].get("preventive_ac_load_multiplier", cfg["experiments"].get("ac_load_multiplier", 0.9))
     )
+    active_plan_tolerance_mw = float(
+        cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw", 1.0e-8)
+    )
+    if not np.isfinite(active_plan_tolerance_mw) or not (0.0 < active_plan_tolerance_mw <= 1.0e-5):
+        raise ValueError("preventive_ac_active_plan_tolerance_mw must be in (0, 1e-5]")
     power_factor = float(cfg["experiments"].get("ac_data_center_power_factor", 0.95))
     reactive_ratio = float(np.tan(np.arccos(power_factor)))
     options = ppoption(
@@ -11218,7 +11329,9 @@ def run_exp18(
                 except (OSError, EOFError, pickle.PickleError, ValueError, AttributeError):
                     pass
         return retry
-    schema = 4
+    # Schema 6 invalidates the earlier 0.45-load panel and records the
+    # fixed-plan numerical tolerance introduced for the 0.90-load protocol.
+    schema = 6
     checkpoint = intermediate / "preventive_ac_cross_network_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[tuple[str, float, str, int, int, int]] = set()
@@ -11245,6 +11358,7 @@ def run_exp18(
     precompute_networks = sorted(
         networks, key=lambda item: (0 if item[0] == "IEEE 39-bus" else 1, item[0])
     )
+    precompute_tasks: list[dict[str, Any]] = []
     for network_name, case_function in precompute_networks:
         public_case = case_function()
         native_p = public_case["bus"][:, PD].copy() * load_multiplier
@@ -11256,26 +11370,69 @@ def run_exp18(
             for snapshot_index, (local_day_index, fixed_day, snapshot_slot) in enumerate(snapshots):
                 for penetration in sorted(penetrations, reverse=True):
                     dc_scale = float(penetration * native_p.sum() / max(validation_trace_peak, 1e-12))
-                    base_case = case_function()
-                    base_case["bus"][:, PD] = native_p
-                    base_case["bus"][:, QD] = native_q
-                    dc_power = profiles[local_day_index, :, snapshot_slot] * dc_scale
-                    base_case["bus"][dc_buses, PD] += dc_power
-                    base_case["bus"][dc_buses, QD] += dc_power * reactive_ratio
-                    # Each precomputed intact cell starts from the public case;
-                    # this avoids carrying a locally selected voltage branch from
-                    # one penetration into another.  Solver retries remain on the
-                    # same pristine model and use only numerical restarts.
-                    base_result = solve_acopf(base_case)
-                    if not bool(base_result.get("success", 0)):
-                        raise RuntimeError(
-                            "Preventive AC intact solve failed for "
-                            f"{network_name}, snapshot={snapshot_index}, method={method}, penetration={penetration:.3f}, "
-                            f"dc_sum={float(np.sum(dc_power)):.6f} MW"
-                        )
-                    precomputed_base_results[
-                        (network_name, round(float(penetration), 12), method, snapshot_index)
-                    ] = base_result
+                    precompute_tasks.append(
+                        {
+                            "network": network_name,
+                            "case_function": case_function,
+                            "native_p": native_p,
+                            "native_q": native_q,
+                            "dc_buses": dc_buses,
+                            "method": method,
+                            "profiles": profiles,
+                            "snapshot_index": snapshot_index,
+                            "local_day_index": local_day_index,
+                            "fixed_day": fixed_day,
+                            "snapshot_slot": snapshot_slot,
+                            "penetration": float(penetration),
+                            "dc_scale": dc_scale,
+                        }
+                    )
+
+    workers = int(cfg["experiments"].get("ac_n1_workers", 1))
+    if workers < 1 or workers > 20:
+        raise ValueError("ac_n1_workers must be between 1 and 20")
+    logger.info(
+        "Experiment 18 intact AC dispatches: %d cells with %d bounded workers",
+        len(precompute_tasks),
+        workers,
+    )
+    base_payloads: list[dict[str, Any]] = []
+    base_keys: list[tuple[str, float, str, int]] = []
+    for task in precompute_tasks:
+        base_case = task["case_function"]()
+        base_case["bus"][:, PD] = task["native_p"]
+        base_case["bus"][:, QD] = task["native_q"]
+        dc_power = task["profiles"][task["local_day_index"], :, task["snapshot_slot"]] * task["dc_scale"]
+        base_case["bus"][task["dc_buses"], PD] += dc_power
+        base_case["bus"][task["dc_buses"], QD] += dc_power * reactive_ratio
+        base_payloads.append(
+            {
+                "case": base_case,
+                "options": options,
+                "fallback_options": fallback_options,
+                "pf_warm_options": pf_warm_options,
+            }
+        )
+        base_keys.append(
+            (
+                str(task["network"]),
+                round(float(task["penetration"]), 12),
+                str(task["method"]),
+                int(task["snapshot_index"]),
+            )
+        )
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        for key, payload_result in zip(base_keys, executor.map(_exp18_process_opf, base_payloads)):
+            base_result = payload_result["result"]
+            fallback_count += int(payload_result.get("fallback_count", 0))
+            if not bool(base_result.get("success", 0)):
+                task = precompute_tasks[len(precomputed_base_results)]
+                raise RuntimeError(
+                    "Preventive AC intact solve failed for "
+                    f"{task['network']}, snapshot={task['snapshot_index']}, method={task['method']}, "
+                    f"penetration={task['penetration']:.3f}"
+                )
+            precomputed_base_results[key] = base_result
     total_cells = 0
     network_cache: list[dict[str, Any]] = []
     for network_name, case_function in networks:
@@ -11337,12 +11494,12 @@ def run_exp18(
             ac_case["gen"][native_nonreference_generators, PG] = native_shared_pg[
                 native_nonreference_generators
             ]
-            ac_case["gen"][native_nonreference_generators, PMIN] = native_shared_pg[
-                native_nonreference_generators
-            ]
-            ac_case["gen"][native_nonreference_generators, PMAX] = native_shared_pg[
-                native_nonreference_generators
-            ]
+            ac_case["gen"][native_nonreference_generators, PMIN] = (
+                native_shared_pg[native_nonreference_generators] - active_plan_tolerance_mw
+            )
+            ac_case["gen"][native_nonreference_generators, PMAX] = (
+                native_shared_pg[native_nonreference_generators] + active_plan_tolerance_mw
+            )
             ac_result = solve_acopf(ac_case)
             if bool(ac_result.get("success", 0)):
                 in_service = ac_result["branch"][:, BR_STATUS] > 0
@@ -11399,174 +11556,207 @@ def run_exp18(
         initial=len(completed),
         desc="Exp18 cross-network AC N-1 admissibility",
     )
+    def prepare_contingency_cell(task: dict[str, Any]) -> tuple[tuple[str, float, str, int, int, int], dict[str, Any]]:
+        """Build one fixed-active-plan case for the process-isolated solver."""
+        network_name = str(task["network"])
+        method = str(task["method"])
+        penetration = float(task["penetration"])
+        fixed_day = int(task["fixed_day"])
+        snapshot_slot = int(task["snapshot_slot"])
+        outage = int(task["outage"])
+        base_result = task["base_result"]
+        nonreference_generators = task["nonreference_generators"]
+        shared_pg = task["shared_pg"]
+        case = task["case_function"]()
+        case["bus"][:, PD] = task["native_p"]
+        case["bus"][:, QD] = task["native_q"]
+        case["bus"][task["dc_buses"], PD] += task["dc_power"]
+        case["bus"][task["dc_buses"], QD] += task["dc_power"] * reactive_ratio
+        case["branch"][outage, BR_STATUS] = 0
+        case["gen"][nonreference_generators, PG] = shared_pg[nonreference_generators]
+        case["gen"][nonreference_generators, PMIN] = (
+            shared_pg[nonreference_generators] - active_plan_tolerance_mw
+        )
+        case["gen"][nonreference_generators, PMAX] = (
+            shared_pg[nonreference_generators] + active_plan_tolerance_mw
+        )
+        key = (network_name, round(penetration, 12), method, outage, fixed_day, snapshot_slot)
+        payload = {
+            "case": case,
+            "warm_start": base_result,
+            "options": options,
+            "fallback_options": fallback_options,
+            "pf_warm_options": pf_warm_options,
+        }
+        return key, payload
+
+    def score_contingency_cell(
+        task: dict[str, Any], result: dict[str, Any]
+    ) -> tuple[tuple[str, float, str, int, int, int], dict[str, Any]]:
+        network_name = str(task["network"])
+        method = str(task["method"])
+        penetration = float(task["penetration"])
+        fixed_day = int(task["fixed_day"])
+        snapshot_index = int(task["snapshot_index"])
+        snapshot_slot = int(task["snapshot_slot"])
+        outage = int(task["outage"])
+        base_result = task["base_result"]
+        nonreference_generators = task["nonreference_generators"]
+        reference_generators = task["reference_generators"]
+        shared_pg = task["shared_pg"]
+        if not bool(result.get("success", 0)):
+            raise RuntimeError(
+                f"AC N-1 fixed-active-plan OPF failed for {network_name}, "
+                f"snapshot={snapshot_index}, penetration={penetration:.3f}, method={method}, outage={outage}"
+            )
+        in_service = result["branch"][:, BR_STATUS] > 0
+        rates = result["branch"][in_service, RATE_A].copy()
+        rates[rates <= 0] = np.inf
+        apparent_from = np.hypot(result["branch"][in_service, PF], result["branch"][in_service, QF])
+        apparent_to = np.hypot(result["branch"][in_service, PT], result["branch"][in_service, QT])
+        voltage = result["bus"][:, VM]
+        voltage_violation = np.maximum(result["bus"][:, VMIN] - voltage, voltage - result["bus"][:, VMAX])
+        max_loading = float((np.maximum(apparent_from, apparent_to) / rates).max(initial=0.0))
+        max_voltage_violation = float(max(0.0, voltage_violation.max(initial=0.0)))
+        active_plan_deviation = float(
+            np.max(
+                np.abs(result["gen"][nonreference_generators, PG] - shared_pg[nonreference_generators]),
+                initial=0.0,
+            )
+        )
+        if (
+            max_loading > 1.0 + 1e-6
+            or max_voltage_violation > 1e-6
+            or active_plan_deviation > active_plan_tolerance_mw + 1e-6
+        ):
+            raise RuntimeError(
+                "Fixed-active-plan AC N-1 limits violated for "
+                f"{network_name}, snapshot={snapshot_index}, penetration={penetration:.3f}, method={method}, outage={outage}: "
+                f"loading={max_loading:.6f}, voltage={max_voltage_violation:.6f}, "
+                f"active_plan_deviation={active_plan_deviation:.3e} MW"
+            )
+        key = (network_name, round(penetration, 12), method, outage, fixed_day, snapshot_slot)
+        row = {
+            "network": network_name,
+            "snapshot_index": snapshot_index,
+            "day": fixed_day,
+            "event_slot": snapshot_slot,
+            "method": method,
+            "peak_dc_penetration": penetration,
+            "outage": outage,
+            "solver_success": 1,
+            "maximum_apparent_line_loading": max_loading,
+            "maximum_voltage_violation_pu": max_voltage_violation,
+            "minimum_voltage_pu": float(voltage.min()),
+            "maximum_nonreference_active_plan_deviation_mw": active_plan_deviation,
+            "reference_generator_loss_recourse_mw": float(
+                np.sum(result["gen"][reference_generators, PG] - shared_pg[reference_generators])
+            ),
+            "load_multiplier": load_multiplier,
+            "data_center_power_factor": power_factor,
+            "dc_power_scale": float(task["dc_scale"]),
+            "validation_trace_peak_mw": validation_trace_peak,
+            "schema_version": schema,
+        }
+        return key, row
+
+    contingency_tasks: list[dict[str, Any]] = []
     for item in network_cache:
         network_name = str(item["name"])
         case_function = item["case_function"]
         native_p = item["native_p"]
         native_q = item["native_q"]
         outages = item["outages"]
-        # Solve the predeclared penetration grid before contingencies.  The
-        # final panel is sorted canonically, so numerical evaluation order is
-        # not part of the reported protocol.
         dc_buses = np.asarray(dc_bus_map[network_name], dtype=int) - 1
         if len(dc_buses) != 4 or np.any(dc_buses < 0) or np.any(dc_buses >= len(native_p)):
             raise RuntimeError(f"Invalid pre-registered DC-bus mapping for {network_name}")
         for snapshot_index, (local_day_index, fixed_day, snapshot_slot) in enumerate(snapshots):
             for method, profiles in methods.items():
-                # Compute every intact dispatch before any outage solve.  This
-                # prevents a long sequence of contingency factorizations from
-                # contaminating the continuation start for the next penetration.
-                base_results: dict[float, dict[str, Any]] = {}
                 for penetration in sorted(penetrations, reverse=True):
                     key = (network_name, round(float(penetration), 12), method, snapshot_index)
                     if key not in precomputed_base_results:
-                        raise RuntimeError(
-                            f"Missing precomputed intact AC dispatch for {network_name}, "
-                            f"snapshot={snapshot_index}"
-                        )
-                    base_results[float(penetration)] = precomputed_base_results[key]
-                for penetration in sorted(penetrations, reverse=True):
-                    dc_scale = float(item["dc_scale_by_penetration"][float(penetration)])
-                    dc_power = profiles[local_day_index, :, snapshot_slot] * dc_scale
-                    base_result = base_results[float(penetration)]
-                    reference_buses = set(
-                        np.where(base_result["bus"][:, BUS_TYPE] == REF)[0]
-                    )
+                        raise RuntimeError(f"Missing precomputed intact AC dispatch for {network_name}, snapshot={snapshot_index}")
+                    base_result = precomputed_base_results[key]
+                    reference_buses = set(np.where(base_result["bus"][:, BUS_TYPE] == REF)[0])
                     nonreference_generators = np.asarray(
-                        [
-                            generator
-                            for generator in range(len(base_result["gen"]))
-                            if int(base_result["gen"][generator, GEN_BUS]) - 1
-                            not in reference_buses
-                        ],
+                        [generator for generator in range(len(base_result["gen"])) if int(base_result["gen"][generator, GEN_BUS]) - 1 not in reference_buses],
                         dtype=int,
                     )
                     shared_pg = base_result["gen"][:, PG].copy()
+                    nonreference_set = set(nonreference_generators.tolist())
                     reference_generators = np.asarray(
-                        [
-                            generator
-                            for generator in range(len(base_result["gen"]))
-                            if generator not in set(nonreference_generators.tolist())
-                        ],
+                        [generator for generator in range(len(base_result["gen"])) if generator not in nonreference_set],
                         dtype=int,
                     )
+                    dc_scale = float(item["dc_scale_by_penetration"][float(penetration)])
+                    dc_power = profiles[local_day_index, :, snapshot_slot] * dc_scale
                     for outage in outages:
-                        key = (
-                            network_name,
-                            round(float(penetration), 12),
-                            method,
-                            int(outage),
-                            int(fixed_day),
-                            int(snapshot_slot),
-                        )
+                        key = (network_name, round(float(penetration), 12), method, int(outage), int(fixed_day), int(snapshot_slot))
                         if key in completed:
                             continue
-                        case = case_function()
-                        case["bus"][:, PD] = native_p
-                        case["bus"][:, QD] = native_q
-                        case["bus"][dc_buses, PD] += dc_power
-                        case["bus"][dc_buses, QD] += dc_power * reactive_ratio
-                        case["branch"][int(outage), BR_STATUS] = 0
-                        # Freeze the active plan from the intact AC solve.  The
-                        # reference generator is left free to balance outage
-                        # losses, while every other generator keeps its cleared
-                        # active output exactly.
-                        case["gen"][nonreference_generators, PG] = shared_pg[
-                            nonreference_generators
-                        ]
-                        # Equality is enforced through identical PMIN/PMAX bounds;
-                        # reactive dispatch, voltage magnitudes, and angles remain
-                        # AC-OPF recourse variables.
-                        case["gen"][nonreference_generators, PMIN] = shared_pg[
-                            nonreference_generators
-                        ]
-                        case["gen"][nonreference_generators, PMAX] = shared_pg[
-                            nonreference_generators
-                        ]
-                        result = solve_acopf(case, warm_start=base_result)
-                        if not bool(result.get("success", 0)):
-                            raise RuntimeError(
-                                f"AC N-1 fixed-active-plan OPF failed for {network_name}, "
-                                f"snapshot={snapshot_index}, penetration={penetration:.3f}, "
-                                f"method={method}, outage={outage}"
-                            )
-                        in_service = result["branch"][:, BR_STATUS] > 0
-                        rates = result["branch"][in_service, RATE_A].copy()
-                        rates[rates <= 0] = np.inf
-                        apparent_from = np.hypot(
-                            result["branch"][in_service, PF],
-                            result["branch"][in_service, QF],
-                        )
-                        apparent_to = np.hypot(
-                            result["branch"][in_service, PT],
-                            result["branch"][in_service, QT],
-                        )
-                        voltage = result["bus"][:, VM]
-                        voltage_violation = np.maximum(
-                            result["bus"][:, VMIN] - voltage,
-                            voltage - result["bus"][:, VMAX],
-                        )
-                        max_loading = float(
-                            (np.maximum(apparent_from, apparent_to) / rates).max(initial=0.0)
-                        )
-                        max_voltage_violation = float(
-                            max(0.0, voltage_violation.max(initial=0.0))
-                        )
-                        if max_loading > 1.0 + 1e-6 or max_voltage_violation > 1e-6:
-                            raise RuntimeError(
-                                "Fixed-active-plan AC N-1 limits violated for "
-                                f"{network_name}, snapshot={snapshot_index}, penetration={penetration:.3f}, "
-                                f"method={method}, outage={outage}: "
-                                f"loading={max_loading:.6f}, voltage={max_voltage_violation:.6f}"
-                            )
-                        rows.append(
+                        contingency_tasks.append(
                             {
                                 "network": network_name,
-                                "snapshot_index": int(snapshot_index),
-                                "day": fixed_day,
-                                "event_slot": snapshot_slot,
+                                "case_function": case_function,
+                                "native_p": native_p,
+                                "native_q": native_q,
+                                "dc_buses": dc_buses,
+                                "dc_power": dc_power,
+                                "dc_scale": dc_scale,
                                 "method": method,
-                                "peak_dc_penetration": float(penetration),
+                                "penetration": float(penetration),
+                                "snapshot_index": snapshot_index,
+                                "fixed_day": fixed_day,
+                                "snapshot_slot": snapshot_slot,
                                 "outage": int(outage),
-                                "solver_success": 1,
-                                "maximum_apparent_line_loading": max_loading,
-                                "maximum_voltage_violation_pu": max_voltage_violation,
-                                "minimum_voltage_pu": float(voltage.min()),
-                                "maximum_voltage_pu": float(voltage.max()),
-                                "maximum_nonreference_active_plan_deviation_mw": float(
-                                    np.max(
-                                        np.abs(
-                                            result["gen"][nonreference_generators, PG]
-                                            - shared_pg[nonreference_generators]
-                                        ),
-                                        initial=0.0,
-                                    )
-                                ),
-                                "reference_generator_loss_recourse_mw": float(
-                                    np.sum(
-                                        result["gen"][reference_generators, PG]
-                                        - shared_pg[reference_generators]
-                                    )
-                                ),
-                                "load_multiplier": load_multiplier,
-                                "data_center_power_factor": power_factor,
-                                "dc_power_scale": dc_scale,
-                                "validation_trace_peak_mw": validation_trace_peak,
-                                "schema_version": schema,
+                                "base_result": base_result,
+                                "nonreference_generators": nonreference_generators,
+                                "reference_generators": reference_generators,
+                                "shared_pg": shared_pg,
                             }
                         )
-                        completed.add(key)
-                        progress.update(1)
-                        if len(completed) - last_progress_log >= progress_log_step:
-                            last_progress_log = len(completed)
-                            logger.info(
-                                "Experiment 18 AC panel progress: %d/%d cells (%.1f%%)",
-                                len(completed),
-                                total_cells,
-                                100.0 * len(completed) / max(total_cells, 1),
-                            )
-                        if len(rows) % max(1, len(outages)) == 0:
-                            pd.DataFrame(rows).to_csv(checkpoint, index=False)
+    logger.info(
+        "Experiment 18 contingency AC solves: %d pending cells with %d bounded workers",
+        len(contingency_tasks),
+        workers,
+    )
+    checkpoint_interval = max(32, workers * 8)
+    prepared = [prepare_contingency_cell(task) for task in contingency_tasks]
+    prepared_keys = [key for key, _ in prepared]
+    prepared_payloads = [payload for _, payload in prepared]
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        for task, key, payload_result, prepared_payload in zip(
+            contingency_tasks,
+            prepared_keys,
+            executor.map(_exp18_process_opf, prepared_payloads),
+            prepared_payloads,
+        ):
+            fallback_count += int(payload_result.get("fallback_count", 0))
+            result = payload_result["result"]
+            if not bool(result.get("success", 0)):
+                # A process-isolated restart removes shared sparse-factorization
+                # state, but PYPOWER can still encounter a transient line-search
+                # failure.  Retry the identical case in the parent with the
+                # full in-process numerical restart chain before failing closed.
+                result = solve_acopf(
+                    prepared_payload["case"],
+                    warm_start=task["base_result"],
+                )
+                fallback_count += 1
+            key, row = score_contingency_cell(task, result)
+            rows.append(row)
+            completed.add(key)
+            progress.update(1)
+            if len(completed) - last_progress_log >= progress_log_step:
+                last_progress_log = len(completed)
+                logger.info(
+                    "Experiment 18 AC panel progress: %d/%d cells (%.1f%%)",
+                    len(completed),
+                    total_cells,
+                    100.0 * len(completed) / max(total_cells, 1),
+                )
+            if len(rows) % checkpoint_interval == 0:
+                pd.DataFrame(rows).to_csv(checkpoint, index=False)
     progress.close()
     result_frame = pd.DataFrame(rows).sort_values(
         ["network", "day", "event_slot", "peak_dc_penetration", "method", "outage"]
@@ -11648,6 +11838,7 @@ def run_exp18(
         },
         "validation_trace_peak_mw": validation_trace_peak,
         "load_multiplier": load_multiplier,
+        "fixed_active_plan_tolerance_mw": active_plan_tolerance_mw,
         "power_factor": power_factor,
         "all_declared_ac_admissible_nonislanding_outages_evaluated": True,
         "ac_admissibility_rule": (
@@ -11659,7 +11850,7 @@ def run_exp18(
         "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
         "test_outcomes_used_for_scaling": False,
         "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
-        "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and a clean-interpreter retry on numerical non-convergence; no constraint relaxation",
+        "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
         "solver_fallback_calls": int(fallback_count),
         "isolated_solver_calls": int(isolated_solver_calls),
         "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",

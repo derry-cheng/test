@@ -81,12 +81,13 @@ workload shapes and an auditable network benchmark; external validity to a parti
 operator requires confidential co-located telemetry.
 
 The deployment information boundary is explicit: Experiment 17 removes all
-arrivals after the pre-event commitment gate (slot 48, four hours before the
+arrivals after the pre-event commitment gate (slot 60, one hour before the
 event window) before solving and uses the locked execution trace only for
 scoring. Experiment 18 fixes the first locked day, first event slot, native-case
 connected/finite-AC outage rule, and a generator-bus electrical-role mapping for
 each public network before
-evaluating RTS-24, IEEE-30, IEEE-39, and IEEE-118 AC contingencies. It freezes
+evaluating RTS-24, IEEE-30, IEEE-39, and IEEE-118 AC contingencies at the same
+0.90 native-load multiplier used by the primary preventive DC panel. It freezes
 the intact AC-OPF non-reference active plan and enforces apparent-power and
 voltage limits for every contingency; the reference generator and reactive
 variables are the only recourse.

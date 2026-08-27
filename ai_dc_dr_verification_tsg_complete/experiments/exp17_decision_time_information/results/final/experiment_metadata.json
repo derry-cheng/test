@@ -1,7 +1,7 @@
 {
   "experiment": "event-gate information-boundary verification",
   "locked_days": 54,
-  "event_gate_slot": 48,
+  "event_gate_slot": 60,
   "terminal_completion_index": 95,
   "future_arrivals_removed_from_decision": true,
   "target_source": "interval-online metadata gradient boosting refit with the current-day post-gate arrivals masked before feature construction",
@@ -25,25 +25,36 @@
     "daily_file": "causal_response_candidate_validation_daily.csv",
     "summary_file": "causal_response_candidate_validation.csv",
     "candidate_dr_prices_per_mwh": [
-      150.0,
-      300.0,
-      450.0,
-      600.0
+      0.0,
+      10.0,
+      25.0,
+      50.0,
+      100.0,
+      150.0
     ],
     "candidate_projection_weights": [
       0.0,
+      1.0,
       3.0,
       5.0,
-      7.0
+      7.0,
+      10.0,
+      15.0
     ],
     "validation_false_credit_budget_mwh": 7.0,
-    "selected_dr_price_per_mwh": 150.0,
-    "selected_projection_weight": 7.0,
+    "selected_dr_price_per_mwh": 100.0,
+    "selected_projection_weight": 15.0,
     "selection_rule": "among candidates satisfying the validation false-credit budget, maximize credit F1, then recall, then minimize nRMSE and false credit",
     "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
     "future_arrivals_used_for_decision": false
   },
   "scoring_source": "declared event-response LP operating replay for the mechanism-isolation rows; no public utility intervention is observed",
+  "causal_identification_boundary": {
+    "temporal_information_causality": true,
+    "utility_event_label_available": false,
+    "randomized_or_exogenous_event_intervention": false,
+    "interpretation": "causal refers to the pre-event information filtration only; the locked trace-meter alignment is observational and is not a treatment-effect estimate"
+  },
   "observational_trace_source": "independent locked DCGM/BurstGPT execution trace",
   "observational_trace_replay_file": "decision_time_trace_replay.csv",
   "simulated_response_source": "the committed-ledger DR LP is retained as an operating replay and is never substituted for the measured scoring meter",
@@ -58,8 +69,8 @@
     "rolling_commitment": true,
     "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
     "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
-    "selected_dr_price_per_mwh": 150.0,
-    "selected_projection_weight": 7.0,
+    "selected_dr_price_per_mwh": 100.0,
+    "selected_projection_weight": 15.0,
     "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response"
   },
   "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."

@@ -24,4 +24,8 @@ PYTHONPATH=src python experiments/exp19_job_level_counterfactual/run.py
 ```
 
 The final directory contains the exact solver summary, slot profile, compressed
-service vector, and machine-readable metadata used by the manuscript.
+service vector, and machine-readable metadata used by the manuscript. The
+downstream Experiment 21 audit reports both the capacity-proportional
+homogeneous scale and the certified scale with the fixed per-GPU nameplate;
+the latter is the deployment interpretation and neither scale is presented as
+a re-optimised second LP.

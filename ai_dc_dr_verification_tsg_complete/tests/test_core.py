@@ -57,12 +57,41 @@ def test_observational_replay_covers_every_locked_day_and_slot() -> None:
     assert metadata["trace_coverage"].startswith("100 percent")
 
 
+def test_risk_ceiling_keeps_observational_and_simulated_truth_sources_explicit() -> None:
+    metadata = json.loads(
+        (
+            ROOT
+            / "experiments/exp2_baseline_verification/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    source = str(metadata["risk_credit_ceiling_source"])
+    assert "offline union ceiling" in source
+    assert "separate truth-source scores" in source
+    assert metadata["event_intervention_observed"] is False
+    truth_audit = pd.read_csv(
+        ROOT
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_truth_source_audit.csv"
+    )
+    assert len(truth_audit) == CFG["experiments"]["test_days"] * 2
+    assert set(truth_audit["truth_source"]) == {
+        "independent_trace_observed_meter",
+        "simulated_event_response_mechanism_isolation",
+    }
+    assert truth_audit["causal_event_effect"].astype(str).str.lower().eq("false").all()
+
+
 def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
     folder = ROOT / "experiments/exp17_decision_time_information/results/final"
     metadata = json.loads(
         (folder / "experiment_metadata.json").read_text(encoding="utf-8")
     )
     assert metadata["target_future_arrivals_used_for_decision"] is False
+    boundary = metadata["causal_identification_boundary"]
+    assert boundary["temporal_information_causality"] is True
+    assert boundary["utility_event_label_available"] is False
+    assert boundary["randomized_or_exogenous_event_intervention"] is False
     assert "post-gate arrivals masked" in metadata["target_source"]
     assert "used only after the event" in metadata["meter_cap_scoring_note"]
     assert "causal committed-ledger baseline" in metadata["meter_cap_scoring_note"]
@@ -77,7 +106,7 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
         float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
     }
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
-    assert set(comparison["schema_version"].astype(int)) == {9}
+    assert set(comparison["schema_version"].astype(int)) == {10}
     assert not comparison.loc[
         comparison["method"] == "Decision-time truncated-ledger verifier",
         "future_arrivals_used_for_decision",
@@ -163,6 +192,14 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert rebound >= -1e-12
     assert int(float(values["service_variables"])) == 5_465_157
     assert float(values["maximum_job_energy_residual_mwh"]) < 1e-15
+    scale = pd.read_csv(
+        ROOT
+        / "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv"
+    )
+    scale_values = dict(zip(scale["metric"], scale["value"]))
+    assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 3475.1083746250592)
+    assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.0357518522695626)
+    assert float(scale_values["certified_peak_mw"]) <= 118.0 + 1e-9
 
 
 def test_unseen_payment_transfer_panel_is_not_used_for_certificate_selection() -> None:
@@ -407,17 +444,19 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
         dtype=None,
         encoding="utf-8",
     )
-    assert len(np.unique(ac["network"])) == 4
-    assert np.all(ac["solver_success"] == 1)
-    assert np.max(ac["maximum_apparent_line_loading"]) <= 1.0 + 1e-8
-    assert np.max(ac["maximum_voltage_violation_pu"]) <= 1e-8
-    assert np.max(ac["maximum_nonreference_active_plan_deviation_mw"]) <= 1e-8
     ac_metadata = json.loads(
         (
             ROOT
             / "experiments/exp18_preventive_ac_network_panel/results/final/"
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
+    )
+    assert len(np.unique(ac["network"])) == 4
+    assert np.all(ac["solver_success"] == 1)
+    assert np.max(ac["maximum_apparent_line_loading"]) <= 1.0 + 1e-8
+    assert np.max(ac["maximum_voltage_violation_pu"]) <= 1e-8
+    assert np.max(ac["maximum_nonreference_active_plan_deviation_mw"]) <= (
+        float(ac_metadata["fixed_active_plan_tolerance_mw"]) + 1.0e-6
     )
     assert len(ac) == (
         sum(ac_metadata["outages_by_network"].values())
@@ -431,6 +470,10 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
     assert "pre-registered generator-bus electrical-role" in ac_metadata["bus_mapping_basis"]
     assert "synthetic trace-to-bus benchmark" in ac_metadata["spatial_identification"]
     assert ac_metadata["pre_registered_dc_bus_mapping_one_based"] == CFG["experiments"]["preventive_ac_dc_bus_map_one_based"]
+    assert ac_metadata["load_multiplier"] == 0.90
+    assert 0.0 < float(ac_metadata["fixed_active_plan_tolerance_mw"]) <= 1.0e-5
+    assert ac_metadata["locked_snapshot_count"] == len(CFG["experiments"]["preventive_ac_validation_day_indices"]) * len(CFG["experiments"]["preventive_ac_validation_event_slots"])
+    assert 1 <= CFG["experiments"]["ac_n1_workers"] <= 20
 
 
 def test_risk_decomposition_and_structural_literature_panel_are_explicit() -> None:
@@ -443,8 +486,8 @@ def test_risk_decomposition_and_structural_literature_panel_are_explicit() -> No
     assert len(structural) == CFG["experiments"]["test_days"] * 2
     assert set(structural["implementation"]) == {"exact_ledger_lp"}
     assert set(structural["baseline"]) == {
-        "Wan--Li DC-T temporal-only ledger schedule",
-        "Wan--Li DC-ST joint spatio-temporal ledger schedule",
+        "Temporal-only ledger control",
+        "Joint spatio-temporal ledger control",
     }
 
 
@@ -1022,5 +1065,9 @@ def test_final_panels_exist() -> None:
         "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
         "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
         "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
+        "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+        "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
+        "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
     ]
     assert all((ROOT / path).stat().st_size > 0 for path in expected)

@@ -10,11 +10,23 @@ for every outage; only the reference generator, reactive outputs, and voltages
 can recourse. Four data-center regions use a pre-registered public-bus mapping
 for each network; the mapping is fixed before any outage is solved.
 Apparent-power and voltage limits are checked on the same fixed plan, and any
-violation fails the stage. The declared native-load multiplier is 0.45; it is
-fixed before solving to keep every public case in the stated AC model domain,
-including the 9% IEEE-39 snapshot. The power scale is fitted only from
-validation traces. The panel therefore contains
-\(2\times3\times6\times(36+38+24+177)=9{,}900\) outage outcomes.
+violation fails the stage. The declared native-load multiplier is 0.90,
+matching the primary DC N--1 stress envelope; it is fixed before solving and
+no line or voltage limit is relaxed. The fixed non-reference active plan uses
+an explicit \(10^{-8}\)-MW bound; the certificate accepts only the declared
+bound plus a (10^{-6})-MW solver-residual margin and records the post-solve
+deviation. The power scale is fitted only from validation traces. The panel
+therefore contains
+\(2\times3\times6\times(32+35+24+177)=9{,}648\) outage outcomes (the exact
+connected-outage counts and native-inadmissible screening counts are recorded
+in the metadata).
+
+The intact and contingency AC-OPF cells are evaluated in a bounded eight-worker
+process pool. Parallel execution changes only wall-clock scheduling; each cell
+receives an independent public case copy and the same hard constraints. A
+schema-6 checkpoint permits restart after interruption without reusing
+results from a different load multiplier, fixed-plan tolerance, or solver
+protocol.
 
 The resulting CSVs and English visualization are stored under `results/` and
 `figures/`; checkpoints make the complete outage panel restartable.

@@ -14,7 +14,7 @@ dependencies:
 ```text
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHONPATH=src .venv/bin/python -m aicdr.pipeline --config configs/default.yaml --stage audit
+PYTHONPATH=src:vendor .venv/bin/python run_all.py --config configs/default.yaml --stage audit
 ```
 
 After restoring the raw files named in `configs/default.yaml`, the complete
@@ -29,7 +29,7 @@ standalone stages write under `artifacts/stage_runs/` and do not overwrite the
 canonical all-stage manifest. The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`.
 
-The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any measured job requires more service slots than its submit-time declared window. The preventive AC panel uses six predeclared day/slot snapshots and records every outage result in its checkpoint before finalization. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
+The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any measured job requires more service slots than its submit-time declared window. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
 PYTHONPATH=src .venv/bin/python experiments/exp20_trace_meter_replay/run.py
@@ -51,9 +51,11 @@ scenarios; all 24 region-to-bus permutations are evaluated in Experiment 11.
 
 The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Each experiment owns its README, final results, checkpoint,
-and figures, while the audit module checks the expected output inventory and
-the numerical certificates.
+the LaTeX source. Experiments 1--21 each own a README, final results,
+checkpoint, and figures, while the audit module checks the expected output
+inventory and the numerical certificates. Experiment 21 reports both the
+capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
+not pretend that a scaled witness is a second re-optimised LP.
 
 ## Reproducibility boundaries
 

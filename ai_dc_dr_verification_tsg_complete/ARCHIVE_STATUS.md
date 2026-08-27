@@ -3,7 +3,7 @@
 The uploaded `ai_dc_dr_verification_tsg_complete.tar(1).gz` stream was
 truncated and cannot by itself reproduce the study (`gzip: unexpected end of
 file`). The workspace has been completed with verified public raw inputs and
-contains the source code, processed arrays, all 18 experiment directories,
+contains the source code, processed arrays, all 21 experiment directories,
 audit reports, tests, manuscript sources, editable figures, and generated
 results.
 

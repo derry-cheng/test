@@ -78,8 +78,8 @@
     "Trace-Anchored Reference"
   ],
   "outages_by_network": {
-    "IEEE RTS 24-bus": 36,
-    "IEEE 30-bus": 38,
+    "IEEE RTS 24-bus": 32,
+    "IEEE 30-bus": 35,
     "IEEE 39-bus": 24,
     "IEEE 118-bus": 177
   },
@@ -90,13 +90,14 @@
     "IEEE 118-bus": 177
   },
   "native_ac_inadmissible_connected_outages_by_network": {
-    "IEEE RTS 24-bus": 1,
-    "IEEE 30-bus": 0,
+    "IEEE RTS 24-bus": 5,
+    "IEEE 30-bus": 3,
     "IEEE 39-bus": 11,
     "IEEE 118-bus": 0
   },
   "validation_trace_peak_mw": 252.92852185302465,
-  "load_multiplier": 0.45,
+  "load_multiplier": 0.9,
+  "fixed_active_plan_tolerance_mw": 1e-08,
   "power_factor": 0.95,
   "all_declared_ac_admissible_nonislanding_outages_evaluated": true,
   "ac_admissibility_rule": "connected topology plus a native-case fixed-active-plan AC-OPF with apparent-power and voltage limits; the rule is evaluated before workload profiles and is independent of locked outcomes",
@@ -104,9 +105,9 @@
   "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
   "test_outcomes_used_for_scaling": false,
   "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
-  "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and a clean-interpreter retry on numerical non-convergence; no constraint relaxation",
-  "solver_fallback_calls": 14,
-  "isolated_solver_calls": 12,
+  "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
+  "solver_fallback_calls": 80,
+  "isolated_solver_calls": 19,
   "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",
   "ac_limits_enforced": true,
   "diagnostics_reported": [

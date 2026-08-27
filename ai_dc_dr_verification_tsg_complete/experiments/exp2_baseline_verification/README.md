@@ -14,5 +14,8 @@ receive the same complete submitted-job ledger at the same post-event decision
 time. Four contiguous validation folds, moving-block intervals with four block
 lengths, exact three-day block-sign randomization over 18 blocks with Holm correction, independent
 constraint certificates, and sparse-complexity scaling are all written to final
-CSV panels. Scoring truth is trace-observed execution and is never supplied to a
-candidate method.
+CSV panels. `risk_truth_source_audit.csv` recomputes locked-test false credit
+separately for the observed meter and the mechanism-isolation trajectory; both
+rows are explicitly observational diagnostics and neither is a utility-event
+treatment effect. Scoring truth is trace-observed execution and is never supplied
+to a candidate method.

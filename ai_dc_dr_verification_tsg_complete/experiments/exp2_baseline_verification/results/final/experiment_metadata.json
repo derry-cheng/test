@@ -111,12 +111,12 @@
   ],
   "structural_literature_baselines": {
     "file": "structural_literature_baselines_summary.csv",
-    "citation_key": "wan2026scuc",
+    "citation_key": "internal_structural_control",
     "models": [
-      "DC-T temporal-only",
-      "DC-ST joint spatio-temporal"
+      "temporal-only ledger control",
+      "joint spatio-temporal ledger control"
     ],
-    "implementation": "Both are exact workload LPs with the same release, deadline, conservation, capacity, and terminal constraints; DC-T fixes each source to its native site and DC-ST enables migration."
+    "implementation": "Both are exact workload LPs with the same release, deadline, conservation, capacity, and terminal constraints; the temporal-only control fixes each source to its native site and the joint control enables migration."
   },
   "baseline_fairness_audit": {
     "file": "baseline_fairness_audit.csv",
@@ -155,6 +155,8 @@
     "linear_epigraph_rows": 530,
     "epigraph_primal_residual": 0.0
   },
+  "risk_credit_ceiling_source": "offline union ceiling max(observational baseline, simulated mechanism-isolation response); separate truth-source scores are retained and no causal event effect is claimed",
+  "risk_truth_source_audit_file": "risk_truth_source_audit.csv",
   "risk_reference_candidate": "Metadata projection rho=0.3",
   "pointwise_envelope_candidate": "Single Feasible Projection",
   "two_sided_band_tolerance_mw": 1.0,

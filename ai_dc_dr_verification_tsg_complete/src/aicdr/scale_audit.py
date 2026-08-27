@@ -26,22 +26,47 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
     data = np.load(source)
     native = np.asarray(data["native_mwh"], dtype=float)
     counterfactual = np.asarray(data["counterfactual_mwh"], dtype=float)
+    source_scale = float(data["source_scale_factor"]) if "source_scale_factor" in data.files else 1.0
+    if source_scale <= 0.0:
+        raise ValueError("Exp19 source_scale_factor must be positive")
+    native_raw, counterfactual_raw = native / source_scale, counterfactual / source_scale
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     capacity_mw = float(cfg["project"]["flexible_capacity_mw"])
     manifest = json.loads((root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text())
     declared = float(manifest["processing"]["batch_hyperscale_multiplier"])
-    raw_peak_mw = float(max(native.max(), counterfactual.max()) / dt_h)
+    raw_peak_mw = float(max(native_raw.max(), counterfactual_raw.max()) / dt_h)
     capacity_safe = capacity_mw / max(raw_peak_mw, 1e-12)
-    scale = min(declared, capacity_safe)
-    native_s, cf_s = native * scale, counterfactual * scale
+    fixed_gpu_cap_mw = float(
+        cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+    )
+    starts = np.asarray(data["submit_slot"], dtype=np.int64)
+    ends = np.asarray(data["deadline_slot"], dtype=np.int64)
+    gpus = np.asarray(data["measured_gpus"], dtype=float)
+    counts = np.maximum(0, ends - starts)
+    service = np.asarray(data["service_mwh"], dtype=float)
+    variable_cap = np.repeat(gpus * fixed_gpu_cap_mw * dt_h, counts)
+    positive_service = service > 1.0e-15
+    fixed_nameplate_scale = float(
+        np.min(variable_cap[positive_service] / service[positive_service])
+    )
+    capacity_scale = min(declared, capacity_safe)
+    fixed_scale = min(capacity_scale, fixed_nameplate_scale)
+    # The capacity-normalized profile is used for the network-facing stress
+    # certificate. The fixed-nameplate value is reported separately so a
+    # proportional scenario conversion is not confused with the measured cap.
+    scale = capacity_scale
+    native_s, cf_s = native_raw * scale, counterfactual_raw * scale
     cap_mwh = capacity_mw * dt_h
     slack = cap_mwh - cf_s
     slots_per_day = int(cfg["project"]["slots_per_day"])
     events = set(map(int, cfg["market"]["event_slots"]))
     event_idx = np.array([i for i in range(cf_s.shape[1]) if i % slots_per_day in events], dtype=int)
     rows = pd.DataFrame([
+        {"metric": "source_exp19_scale_factor", "value": source_scale, "unit": "x"},
         {"metric": "declared_batch_hyperscale_multiplier", "value": declared, "unit": "x"},
         {"metric": "capacity_safe_scale_factor", "value": capacity_safe, "unit": "x"},
+        {"metric": "fixed_gpu_nameplate_scale_factor", "value": fixed_nameplate_scale, "unit": "x"},
+        {"metric": "fixed_nameplate_certified_scale_factor", "value": fixed_scale, "unit": "x"},
         {"metric": "certified_scale_factor", "value": scale, "unit": "x"},
         {"metric": "raw_peak_mw", "value": raw_peak_mw, "unit": "MW"},
         {"metric": "certified_peak_mw", "value": float(max(native_s.max(), cf_s.max()) / dt_h), "unit": "MW"},
@@ -61,7 +86,12 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
         "experiment": "exact homogeneous scale-consistency certificate",
         "source": str(source.relative_to(root)),
         "proof_basis": "uniform scaling preserves release/deadline support, job-energy equalities, nonnegativity, and proportional GPU upper bounds",
-        "declared_scale": declared, "capacity_safe_scale": capacity_safe, "certified_scale": scale,
+        "source_scale": source_scale,
+        "declared_scale": declared,
+        "capacity_safe_scale": capacity_safe,
+        "fixed_gpu_nameplate_scale": fixed_nameplate_scale,
+        "fixed_nameplate_certified_scale": fixed_scale,
+        "certified_scale": scale,
         "capacity_mw": capacity_mw, "re_solved": False,
     }, indent=2), encoding="utf-8")
     logger.info("Experiment 21 complete: certified scale %.3fx (capacity-safe %.3fx)", scale, capacity_safe)

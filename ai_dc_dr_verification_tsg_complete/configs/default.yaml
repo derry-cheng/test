@@ -83,15 +83,18 @@ experiments:
   n1_dc_peak_penetration: 0.06
   n1_security_parallel_workers: 6
   # Independent nonlinear AC contingency cases are evaluated in a bounded
-  # thread pool; the case set and solver formulation are unchanged.
-  ac_n1_workers: 1
+  # process pool; the case set and solver formulation are unchanged. The cap
+  # stays below the 20-core project limit and avoids BLAS oversubscription.
+  ac_n1_workers: 8
   ac_load_multiplier: 1.0
   ac_dc_peak_penetration: 0.06
   ac_data_center_power_factor: 0.95
-  # The declared AC validation envelope is fixed before solving; 0.45 keeps
-  # every native PGLib case feasible without relaxing any line or voltage
-  # limit, including the IEEE 39-bus preventive snapshot.
-  preventive_ac_load_multiplier: 0.45
+  # Match the primary preventive DC N-1 stress point. The AC panel therefore
+  # tests the same native-load multiplier instead of a low-load surrogate.
+  preventive_ac_load_multiplier: 0.90
+  # Numerical equality tolerance for the fixed non-reference AC active plan;
+  # every post-solve certificate rejects a larger deviation.
+  preventive_ac_active_plan_tolerance_mw: 1.0e-8
   preventive_ac_dc_peak_penetrations: [0.03, 0.06, 0.09]
   # Fixed public-bus locations for the four regional AC workload injections;
   # these are declared before the cross-network panel and never selected from
@@ -135,24 +138,25 @@ experiments:
   # false-credit certificate.
   two_sided_band_tolerance_mw: 1.0
   # All deployment-time scaling factors are fitted on validation only.  The
-  # event gate is declared four hours before the event window; arrivals after
+  # event gate is declared one hour before the event window; arrivals after
   # this checkpoint cannot enter the contractual decision.
-  decision_time_event_gate_slot: 48
+  decision_time_event_gate_slot: 60
   # The gate-causal rolling certificate closes at the end of the declared
   # event-day horizon (slot 95).  Work with a later valid deadline remains in
   # the rolling state for the next commitment checkpoint; no post-gate arrival
   # is imported into this decision.
   decision_time_terminal_completion_index: 95
   decision_time_projection_weight: 1.0
-  # Selected only on the 16 validation days under the causal information
-  # boundary.  The response LP remains exact; the grid changes its declared
-  # DR price and target regularization, not the feasibility constraints.
-  decision_time_response_dr_prices: [150.0, 300.0, 450.0, 600.0]
+  # Selected only on the 16 validation days under the gate information
+  # boundary. The response LP remains exact; this predeclared economic grid
+  # spans zero to 150 USD/MWh so the validation selector can identify a
+  # non-degenerate service response without changing feasibility constraints.
+  decision_time_response_dr_prices: [0.0, 10.0, 25.0, 50.0, 100.0, 150.0]
   # Projection penalties are expressed in the same daily MW trajectory units
   # as the target distance.  The larger grid is calibrated on validation so a
   # causal response can carry committed service into the event window when
   # the workload ledger supports it.
-  decision_time_response_projection_weights: [0.0, 3.0, 5.0, 7.0]
+  decision_time_response_projection_weights: [0.0, 1.0, 3.0, 5.0, 7.0, 10.0, 15.0]
   decision_time_response_validation_false_budget_mwh: 7.0
   # Event-gate reserve planning is calibrated only on temporally earlier
   # validation days.  The reserve is never credited until the corresponding

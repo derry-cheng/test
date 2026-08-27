@@ -45,6 +45,7 @@ EXPECTED_FILES = {
         "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
         "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
         "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
         "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
@@ -229,6 +230,10 @@ EXPECTED_FILES = {
         "experiments/exp20_trace_meter_replay/results/final/experiment_metadata.json",
         "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
     ],
+    "experiment_21": [
+        "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
+        "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
+    ],
     "manuscript_sources": [
         "manuscript/main.tex",
         "manuscript/main.pdf",
@@ -294,6 +299,7 @@ def run_audit(
         "exp18",
         "exp19",
         "exp20",
+        "exp21",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -791,7 +797,7 @@ def run_audit(
                 "contract-capped-after-event"
             ).all()
         )
-        and set(decision_time["schema_version"].astype(int).unique()) == {9}
+        and set(decision_time["schema_version"].astype(int).unique()) == {10}
         and decision_meta.get("target_future_arrivals_used_for_decision") is False
         and "post-gate arrivals masked" in str(decision_meta.get("target_source", ""))
         and decision_meta.get("future_arrivals_removed_from_decision") is True
@@ -879,8 +885,12 @@ def run_audit(
         "causal_response_candidate_validation.csv"
     )
     selected_response = response_validation[response_validation["selected"].astype(bool)]
+    expected_response_candidates = (
+        len(cfg["experiments"]["decision_time_response_dr_prices"])
+        * len(cfg["experiments"]["decision_time_response_projection_weights"])
+    )
     _check(
-        len(response_validation) == 16
+        len(response_validation) == expected_response_candidates
         and len(selected_response) == 1
         and float(selected_response.iloc[0]["false_response_mwh"])
         <= float(cfg["experiments"]["decision_time_response_validation_false_budget_mwh"]) + 1e-8
@@ -975,7 +985,7 @@ def run_audit(
                 ]
             ].to_numpy(dtype=float)
         ).all()
-        and set(ac_cross["schema_version"].astype(int).unique()) == {4}
+        and set(ac_cross["schema_version"].astype(int).unique()) == {6}
         and int(ac_cross_meta.get("locked_snapshot_count", 0)) == len(
             ac_cross_meta.get("locked_snapshots", [])
         )
@@ -993,14 +1003,49 @@ def run_audit(
         == cfg["experiments"].get("preventive_ac_dc_bus_map_one_based")
         and float(ac_cross_meta.get("load_multiplier", np.nan))
         == float(cfg["experiments"].get("preventive_ac_load_multiplier"))
+        and np.isclose(
+            float(ac_cross_meta.get("fixed_active_plan_tolerance_mw", np.nan)),
+            float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")),
+            rtol=0.0,
+            atol=1e-15,
+        )
         and bool((ac_cross["maximum_apparent_line_loading"] <= 1.0 + 1e-6).all())
         and bool((ac_cross["maximum_voltage_violation_pu"] <= 1e-6).all())
-        and bool((ac_cross["maximum_nonreference_active_plan_deviation_mw"] <= 1e-6).all())
+        and bool(
+            (
+                ac_cross["maximum_nonreference_active_plan_deviation_mw"]
+                <= float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")) + 1e-6
+            ).all()
+        )
         and ac_cross_meta["test_outcomes_used_for_scaling"] is False,
         "cross_network_ac_n1_admissibility_panel",
         (
             f"{len(ac_cross)} AC outcomes over four public networks; "
             "native-case AC admissibility and validation-only scaling recorded"
+        ),
+        checks,
+    )
+    scale_summary = pd.read_csv(
+        root
+        / "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv"
+    )
+    scale_values = dict(zip(scale_summary["metric"], scale_summary["value"]))
+    scale_meta = json.loads(
+        (
+            root
+            / "experiments/exp21_scale_consistency/results/final/experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        float(scale_values.get("capacity_safe_scale_factor", np.nan)) > 1.0
+        and float(scale_values.get("fixed_nameplate_certified_scale_factor", np.nan)) > 0.0
+        and float(scale_values.get("certified_peak_mw", np.inf)) <= float(scale_meta.get("capacity_mw", np.nan)) + 1e-8
+        and bool(scale_meta.get("re_solved")) is False
+        and float(scale_meta.get("source_scale", np.nan)) == 1.0,
+        "homogeneous_scale_has_fixed_nameplate_bound",
+        (
+            "capacity-proportional and fixed-nameplate scales are reported separately; "
+            "the certified peak remains within the committed capacity without a second LP"
         ),
         checks,
     )
@@ -1035,8 +1080,8 @@ def run_audit(
         "structural_literature_baselines.csv"
     )
     structural_methods = {
-        "Wan--Li DC-T temporal-only ledger schedule",
-        "Wan--Li DC-ST joint spatio-temporal ledger schedule",
+        "Temporal-only ledger control",
+        "Joint spatio-temporal ledger control",
     }
     _check(
         set(structural_literature["baseline"].astype(str)) == structural_methods
@@ -1459,6 +1504,55 @@ def run_audit(
         (
             "locked response scores use the observed DCGM/BurstGPT meter; any "
             "event-response LP is restricted to mechanism-isolation panels"
+        ),
+        checks,
+    )
+    truth_source_audit = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_truth_source_audit.csv"
+    )
+    _check(
+        len(truth_source_audit) == expected_test * 2
+        and set(truth_source_audit["truth_source"].astype(str))
+        == {
+            "independent_trace_observed_meter",
+            "simulated_event_response_mechanism_isolation",
+        }
+        and truth_source_audit["event_intervention"].astype(str).str.lower().eq("false").all()
+        and truth_source_audit["causal_event_effect"].astype(str).str.lower().eq("false").all()
+        and np.isfinite(
+            truth_source_audit[
+                [
+                    "final_false_credit_mw_slots",
+                    "reference_false_credit_mw_slots",
+                    "final_false_credit_mwh",
+                    "reference_false_credit_mwh",
+                    "false_credit_ratio_to_reference",
+                ]
+            ].to_numpy(dtype=float)
+        ).all(),
+        "source_separated_false_credit_certificate",
+        (
+            "locked-test false-credit diagnostics are recomputed separately for the "
+            "observed meter and the mechanism-isolation trajectory; neither row is "
+            "labelled as a causal utility-event outcome"
+        ),
+        checks,
+    )
+    _check(
+        "offline union ceiling" in str(risk_metadata.get("risk_credit_ceiling_source", ""))
+        and "separate truth-source scores" in str(
+            risk_metadata.get("risk_credit_ceiling_source", "")
+        )
+        and "no causal event effect" in str(
+            risk_metadata.get("risk_credit_ceiling_source", "")
+        ),
+        "risk_ceiling_truth_sources_explicit",
+        (
+            "the pointwise risk-fit ceiling is labelled as an offline union of the "
+            "observational and mechanism-isolation trajectories; settlement scores "
+            "retain the two truth sources separately and do not assert a causal event effect"
         ),
         checks,
     )

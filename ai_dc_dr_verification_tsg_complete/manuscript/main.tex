@@ -7,7 +7,7 @@
 \usepackage{xcolor}
 \usepackage{url}
 \emergencystretch=1em
-\renewcommand{\baselinestretch}{0.875}
+\renewcommand{\baselinestretch}{0.86}
 \setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
 \setlength{\floatsep}{4pt plus 1pt minus 1pt}
 \setlength{\intextsep}{5pt plus 1pt minus 1pt}
@@ -41,18 +41,21 @@ baseline, its frozen contract, and the closed event meter. On a 121-day
 trace-driven inventory, 16 earlier days select parameters and 54 later days
 remain locked for evaluation. The complete-ledger verifier obtains normalized
 root-mean-square error (nRMSE)
-0.343 with 1.717 MWh/day of unsupported gross credit. At a gate four
-hours before the event, the committed-ledger operating replay has nRMSE
-0.431, 0.048 MWh/day of gross false credit, and 0.330 MWh/day of
-meter-capped payable credit; the submitted baseline is frozen before the event.
+0.343 with 1.717 MWh/day of unsupported gross credit. At a gate one
+hour before the event, the committed-ledger operating replay has nRMSE
+0.358, 3.442 MWh/day of gross false credit, and 7.015 MWh/day of
+meter-capped payable credit (recall 0.292, F1=0.283); the submitted baseline is frozen before
+the event.
 An independent job-indexed
 linear program covers all 71,128
 positive-energy jobs with 5,465,157 admissible job--slot variables and yields a
 net event reduction of 0.167 MWh (gross reduction 0.183 MWh and rebound
 0.016 MWh), with a maximum job-energy residual of
 $2.17\times10^{-19}$ MWh. A homogeneous scale-consistency certificate reaches
-the committed 118-MW nameplate at a certified 3475.108$\times$ scale while
-preserving every job-level equality and admissible window. The security panel evaluates all 37 finite IEEE
+the committed 118-MW nameplate at a capacity-proportional 3475.108$\times$
+scale while preserving every job-level equality and admissible window; with
+the fixed 0.001-MW/GPU nameplate held constant, the certified scale is
+1.036$\times$. The security panel evaluates all 37 finite IEEE
 Reliability Test System 24-bus (RTS-24) line outages and the spatial panel evaluates four public networks, 24 regional
 permutations, and three penetrations. The BurstGPT, MIT, and IEEE sources are
 therefore reported as an auditable benchmark rather than co-located utility
@@ -293,14 +296,20 @@ label, so $p^{\rm obs}$ is an observational alignment target and is never
 relabelled as a causal event outcome or supplied to an estimator before its
 decision. For mechanism-isolation rows, $r_{dt}=p^0_{dt}-p^{1,\mathrm{sim}}_{dt}$ is signed:
 gross local response is $[r_{dt}]_+$, while net response retains negative
-rebound. For an estimate $\widehat p^0$, unsupported credited energy is
+rebound. For an estimate $\widehat p^0$, define the source-specific false credit
+against each trajectory:
 \begin{equation}
- F=\dt\sum_{d,t\in\mathcal E}
- [\widehat p^0_{dt}-\max\{p^{\rm obs}_{dt},p^{1,\mathrm{sim}}_{dt}\}]_+ .
+ F^{(z)}=\dt\sum_{d,t\in\mathcal E}
+ [\widehat p^0_{dt}-p^{(z)}_{dt}]_+,
+ \qquad z\in\{\mathrm{obs},\mathrm{sim}\}.
  \label{eq:falsecredit}
 \end{equation}
-The audit computes (\ref{eq:falsecredit}) separately for every locked day so
-that a favorable aggregate error cannot hide unsupported positive credit.
+The observed score uses the closed trace meter, whereas the mechanism-isolation
+score uses $p^{(\mathrm{sim})}=p^{1,\mathrm{sim}}$ from the response LP. Neither
+is a utility-event outcome. The offline fit uses the predeclared union ceiling
+$c^{\rm union}_{dt}=\max\{p^{(\mathrm{obs})}_{dt},p^{(\mathrm{sim})}_{dt}\}$
+only as an eligibility screen; the audit recomputes (\ref{eq:falsecredit})
+separately by day and source.
 The gross forecast credit is not itself a transfer. Before the event, the
 operator freezes a contract baseline \(p^{\rm con}\); after the event meter is
 closed, the payable response is the pointwise intersection
@@ -356,8 +365,8 @@ are this paper's workload-specific specialization.
 
 Let $M$ be the data-center-to-bus incidence matrix and
 $p_t=p_t^{\rm native}+Mp_t^{\rm dc}$ the nodal demand vector. For
-generator-to-bus map $C_g$, generator bounds, power
-power-transfer distribution factor (PTDF) $H$, and line ratings $\bar f$, the
+generator-to-bus map $C_g$, generator bounds, and power-transfer distribution
+factor (PTDF) $H$ with line ratings $\bar f$, the
 piecewise-linear security-constrained economic dispatch (SCED) value is
 \begin{align}
  V(p)=\min_g\;&\sum_i C_i(g_i) \label{eq:sced}\\
@@ -447,15 +456,15 @@ For implementation, the positive part is not differentiated through a sort. For
 each event sample $n$ and validation day $j$, the program introduces
 $f_n\geq0$, a CVaR threshold $\nu\geq0$, and tail slacks $u_j\geq0$:
  \begin{align}
-  f_n&\geq p^\alpha_n-\max\{p^{\mathrm{obs}}_n,p^{1,\mathrm{sim}}_n\},\\
+  f_n&\geq p^\alpha_n-c^{\rm union}_n,\\
   F_j&=\sum_{n\in j}f_n,\\
   F_j-\nu-u_j&\leq0,\\
   \nu+\frac{1}{0.25J}\sum_j u_j
   &\leq\beta\,\mathrm{CVaR}_{0.75}(B_j^{\rm cap}).
   \label{eq:riskepigraph}
  \end{align}
-Here $p^{\mathrm{obs}}$ and $p^{1,\mathrm{sim}}$ in the validation ceiling are
-labels for offline risk selection only. They are never substituted for the frozen contract profile
+Here $c^{\rm union}$ is the explicitly labelled offline risk-selection ceiling
+formed from the two separate trajectories. It is never substituted for the frozen contract profile
 $p^{\rm con}$ in (\ref{eq:meter_cap}). The explicit epigraph in
 (\ref{eq:riskepigraph}) is the implementation used in all reported fits.
 Together with the simplex equality, box bounds on $\alpha$, and the total
@@ -504,11 +513,12 @@ both margins and the post-event payable amount.
 \paragraph{Decision-time information boundary.}
 The ex-post selector can use the complete submitted ledger because it is an
 offline settlement protocol. For an event-gate deployment, all arrivals after
-the gate are removed before both the causal target construction and optimization.
+the gate are removed before both the gate-consistent target construction and
+optimization.
 The target is refit with the same metadata gradient-boosting specification used
 by the matched-information baseline, using historical days unchanged and the
 current day's masked ledger for every feature row. A first exact LP freezes the
-gate-causal no-event profile as the contract baseline. A second LP uses the same
+gate-consistent no-event profile as the contract baseline. A second LP uses the same
 masked ledger and the declared DR price on the participating event slots to
 shift eligible service away from the event window, while closing the rolling
 checkpoint at the end of the event day; unexpired batch state is carried to the
@@ -521,7 +531,7 @@ reported separately from the frozen contract profile, information-boundary
 diagnostic, and complete-ledger benchmark.
 
 To avoid conflating capacity planning with payment eligibility, the gate also
-publishes a causal reserve envelope. For a candidate quantile $\eta$ and event
+publishes a gate-consistent reserve envelope. For a candidate quantile $\eta$ and event
 day $d$, the reserve for a post-gate release cell is defined by
 (\ref{eq:causalreserve}):
 \begin{equation}
@@ -534,8 +544,8 @@ candidate set is selected on validation days under a declared false-credit
 budget, and the resulting reserve is used for capacity planning only. The
 payable event profile remains the committed-ledger LP above; no reserved job
 can enter the payment numerator before its later ledger commitment. This
-separation supplies a causal forecast without silently reintroducing future
-arrivals into the certificate.
+separation supplies an information-boundary forecast without silently
+reintroducing future arrivals into the certificate.
 
 The cumulative state reduces the constraint-matrix nonzeros from
 $O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|^2)$ for explicit prefixes
@@ -807,7 +817,8 @@ $p^1$ yields
 &\leq\lVert \lambda^1-\lambda^0\rVert_*
 \lVert p^1-p^0\rVert .
 \end{align*}
-The same proof applies after stacking all rows in (\ref{eq:n1}), because they
+Here $\lVert\cdot\rVert$ and $\lVert\cdot\rVert_*$ denote a fixed dual pair of
+norms on the nodal-demand and price spaces. The same proof applies after stacking all rows in (\ref{eq:n1}), because they
 remain linear. Gross positive-only settlement has no analogous identity:
 truncation changes the response vector before it enters the value function.
 
@@ -880,6 +891,14 @@ rounding. The guarantee is for preemptive checkpointable service. Nonpreemptive
 contiguous execution is asserted only for the independently observed intervals
 audited in Experiment~14.
 
+\noindent\textit{Proposition 9 (ledger-to-settlement coupling invariant):} For an
+aggregate schedule $x$ and a job-indexed witness $u$ over the same committed
+ledger, let $X_{dt}=\dt^{-1}\sum_{s,k}x_{skdt}$ and use the identical conversion
+in $p=P^{\rm fix}+MX$. Both representations therefore induce the same nodal
+demand; signed value, payment caps, and Shapley allocations act on this one
+$p$, with $\sum_i\phi_i=v(N)$. The invariant requires the ledger, conversion,
+and baseline to remain committed between verification and settlement.
+
 \section{Experimental Design}\label{sec:design}
 
 \subsection{Data, preprocessing, and information boundary}
@@ -930,12 +949,13 @@ coupling is a trace-driven benchmark rather than a field trial. Regions are
 assigned by a predeclared feature-stratified round robin over class, GPU count,
 runtime, submission time, and energy. Experiment~11 exhausts all $4!=24$
 permutations, three penetrations, and two concentration controls. Experiment~18
-uses fixed generator-bus electrical-role strata in each public case; its
+uses fixed generator-bus electrical-role strata in each public case and the
+same 0.90 native-load multiplier as the primary preventive DC stress point; its
 cross-network result is therefore conditional on the declared trace-to-bus
 scenario, not evidence of utility co-location. Held-out
 energy-ratio factors span 0.5845--2.6931; the contract uses the capacity-safe
 upper factor 1.1499 because the raw upper endpoint exceeds the committed
-118-MW nameplate. Public PGLib and MATPOWER/PYPOWER cases supply topology,
+118-MW nameplate. Public Power Grid Library (PGLib) and MATPOWER/PYPOWER cases supply topology,
 ratings, and costs \cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower};
 RTS-24 follows the published data \cite{grigg1999rts}.
 
@@ -968,7 +988,10 @@ imposes, for each non-reference generator $i$,
 The reference generator balances outage-dependent active losses, while $Q_G^{(k)}$
 and voltages remain recourse. Apparent-power and voltage limits are checked after each
 fixed-plan solve, so (\ref{eq:acplan}) tests one shared active plan rather than
-separately optimized post-contingency active schedules.
+separately optimized post-contingency active schedules. The implementation
+sets the non-reference bounds to the intact output plus/minus $10^{-8}$ MW and
+accepts only a further $10^{-6}$-MW solver-residual margin; the largest recorded
+deviation is $2.52\times10^{-8}$ MW.
 
 Experiments 1--2 test incentives and workload verification; 3--9 test signed
 settlement, network transfer, risk certification, and N--1 value; 10--12 test
@@ -1006,6 +1029,9 @@ false-credit reduction relative to the single projection is 7.15\%. Against
 the equally informed feasible-quantile projection, false credit decreases
 from 2.917 to 1.717 MWh/day, while nRMSE increases from 0.321 to
 0.343. This is selective risk control, not uniform predictive dominance.
+Source-separated locked-test false credit is 7.467 versus 7.617 MWh/day
+(final/single) for the observed meter and 10.534 versus 10.706 for the
+mechanism-isolation trajectory; both diagnostics remain observational.
 
 The independent convex fit is not identified with the single projection. Relative
 to that reference, total-plus-CVaR, CVaR-only, and the final pointwise envelope
@@ -1043,38 +1069,24 @@ Tail-risk feasible & \textbf{0.331} & 2.524 & 11.981 & 0.484\\
 }
 \end{table}
 
-The independent trace-meter replay provides the complementary observational
-check required for deployment: mean event-window MAE is 2.701 MW for the
-feasible-quantile projection, 2.812 MW for \TailRisk, and 2.864 MW for
-\RiskSafe over the same 54 locked days, with three-day block 95\% intervals
-reported in Experiment~20. These values measure alignment with the closed
-DCGM execution trace; they do not label the trace as a utility intervention or
-replace the mechanism-isolation response panel. Figure~\ref{fig:trace-replay}
-visualizes the independent replay intervals.
+The independent trace-meter replay is a complementary deployment check:
+event-window MAE is 2.701/2.812/2.864 MW for feasible quantile/\TailRisk/\RiskSafe
+on the same 54 locked days (three-day block intervals in Experiment~20). It
+measures closed-DCGM alignment and remains separate from the
+mechanism-isolation response panel.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{../experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.pdf}
-\caption{Independent locked-day trace-meter replay. Points show mean event-window
-MAE against the measured execution tensor; whiskers are three-day moving-block
-95\% intervals. The panel is observational and contains no utility-event label.}
-\label{fig:trace-replay}
-\end{figure}
-
-The closest domain baselines are equation-level structural controls, not
-software reimplementations. The spatial-DR, flexibility, receding-horizon, and
-all-site exact event-response controls have daily (nRMSE, false credit, $F_1$) of
-(3.063,114.572,0.137), (0.370,1.549,0.411), (0.345,1.849,0.442), and
-(0.329,0,0.279). DC--T/DC--ST translations give (0.370,1.549) with
-mean migration 0/4.328 MWh. All controls share the ledger, deadlines,
-capacities, event slots, and locked days. These two controls are documented in
-\cite{chen2021incentive,cao2022flexibility}; the receding-horizon control is
-documented in \cite{zhang2023receding}. The fairness audit records that no
-published software reimplementation is claimed.
-Fig.~\ref{fig:verification} reports the distributions and ablations. The
-5-by-3 capacity/deadline panel contains 810 optimal schedules, with maximum
-binding shares 0.310 and 0.948; matrix nonzeros scale with slope 1.003 over
-96--608 intervals.
+The closest domain baselines are equation-level structural controls. Spatial-DR,
+flexibility, receding-horizon, and all-site exact response give daily
+(nRMSE, false credit, $F_1$) of (3.063,114.572,0.137),
+(0.370,1.549,0.411), (0.345,1.849,0.442), and (0.329,0,0.279),
+respectively; DC--T/DC--ST translations give (0.370,1.549) with migration
+0/4.328 MWh. Every control shares the ledger, windows, capacities, event slots,
+and locked days; the fairness audit records equation-level controls rather than
+software reimplementations \cite{chen2021incentive,cao2022flexibility}. The
+receding-horizon translation follows \cite{zhang2023receding}. Fig.~\ref{fig:verification}
+reports the distributions and ablations; its 810
+schedules have binding shares 0.310/0.948 and nonzero slope 1.003 over 96--608
+intervals.
 
 \begin{figure}[t]
 \centering
@@ -1122,70 +1134,75 @@ N--1 & \textbf{N--1 exact} & \textbf{0.990} & 150.955 & 0.87/0.01 & 113.43/20.18
 }
 \end{table}
 
-Experiment 4 applies the predeclared largest gross-minus-net offset rule
-(day 87). Its curtailment, rebound, nodal prices, and line utilization show why
-positive-only local accounting fails when migration creates a negative component.
+Experiment 4 applies the predeclared largest gross-minus-net offset (day 87),
+exposing the rebound component that positive-only local accounting omits.
 
 \subsection{Cross-network and N--1 security evidence}
 
 Experiment 5 evaluates 6,480 four-network outcomes; exact value improves the
-trace-anchored error in all 12 cells (mean \$1.913/day, eight Holm-adjusted
-tests below 0.05), whereas the workload change is only \$0.050/day. Experiment
-6 solves 810 capacity/deadline schedules, with binding shares 0.031--0.911
-and capacity-level false-credit means 2.374--2.740 MWh.
+trace-anchored error in all 12 cells (mean \$1.913/day; eight Holm-adjusted
+tests below 0.05), with a \$0.050/day workload change. Experiment 6 solves 810
+capacity/deadline schedules (binding shares 0.031--0.911; false credit
+2.374--2.740 MWh).
 
 Experiment 7 enumerates 16 four-site and 256 eight-site coalitions (maximum
-budget residual $5.68\times10^{-14}$ dollars) and the exact 20-participant
-panel covers 1,296 states. Experiment 8 enforces (\ref{eq:n1}) for all 37
-RTS-24 non-islanding outages with an independent 40-segment dispatch.
-Trace-anchored MAE is \$139.221/\$2.208/\$0.990 for base exact/N--1 linear/N--1
-exact, while independent workload MAE is \$167.367/\$150.461/\$150.955; maximum
-loading is 1.000 p.u.
+budget residual $5.68\times10^{-14}$ dollars) and 1,296 states in the exact
+20-participant panel. Experiment 8 enforces (\ref{eq:n1}) for all 37 RTS-24
+non-islanding outages: trace/workload MAE is
+\$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955 for
+base exact/N--1 linear/N--1 exact, with 1.000 p.u. maximum loading.
 
-Experiment 9 tests (\ref{eq:paymentdominance}) with 54 globally solved programs
-and a validation-frozen seven-profile hull. At held-out factors
-0.734/0.996/1.278, all 162 cap violations are below $10^{-8}$ USD and the
-independent 40-segment MAE is \$181.266/\$169.652/\$177.013/\$169.652 per day
-for \PaymentSafe, selected single, feasible-quantile, and \RiskSafe. Experiment
-15 gives interval widths \$11.229/\$22.054 per day at $q_{01}$ and the
-capacity-safe $q_{99}$ endpoint (maxima \$50.090/\$97.951); the raw
-$q_{99}=2.6931$ is clipped to 1.150. Four of 108 cases lie inside the
-frozen deterministic interval. An independent six-day transfer panel at
-unseen factors 0.80/1.20 gives payment-certified MAE $40.914/$61.567 and
-feasible-quantile MAE $37.931/$57.077; neither factor enters certification or
-target selection.
+Experiment 9 tests (\ref{eq:paymentdominance}) with 54 global programs and a
+validation-frozen seven-profile hull. Held-out factors 0.734/0.996/1.278 have
+no cap violation above $10^{-8}$ USD; independent 40-segment MAE is
+\$181.266/\$169.652/\$177.013/\$169.652 per day for \PaymentSafe, single,
+feasible-quantile, and \RiskSafe. Experiment 15 gives interval widths
+\$11.229/\$22.054 at $q_{01}$/capacity-safe $q_{99}$ (maxima
+\$50.090/\$97.951); $q_{99}=2.6931$ is clipped to 1.150. The unseen-factor
+transfer panel (0.80/1.20) gives payment-certified MAE $40.914/$61.567 and
+feasible-quantile MAE $37.931/$57.077, with no factor used in certification.
 
 Experiment 10 replaces the linear network with AC OPF
-\cite{zimmerman2011matpower}: all 864 base outcomes converge, all 5,400
-corrective IEEE-30/39/118 outages satisfy the limits, and 3,888 shared-active-plan
-cells have zero active-plan deviation (maximum loadings
-0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 evaluates all
-24 regional permutations, three penetrations, four counterfactuals, and 54
-days; RiskSafe/single MAE is \$105.250/\$211.555/\$315.207 and feasible-quantile
-MAE is \$81.500/\$164.024/\$243.866 per day. Experiment 16 audits
-66,769/28,413 training/test jobs (MAE 11.223 W, RMSE 15.818 W, $R^2=0.8994$)
-and reconciles the 132.571-MW scaled peak to 118 MW. Experiment 12 reports
-complete-cycle MAE \$0.641/\$0.658/\$0/\$0 and event-window MAE
-\$21.882/\$29.287/\$5.325/\$5.325; all 54 bilateral contracts
-activate.
+\cite{zimmerman2011matpower}: 864 base and 5,400 corrective IEEE-30/39/118
+outages satisfy the limits; 3,888 shared-active-plan cells have zero deviation
+(maximum loading 0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 spans
+24 regional permutations, three penetrations, four counterfactuals, and 54 days;
+RiskSafe/single MAE is \$105.250/\$211.555/\$315.207 and feasible-quantile is
+\$81.500/\$164.024/\$243.866 per day. Experiment 16 audits 66,769/28,413
+training/test jobs (MAE 11.223 W, RMSE 15.818 W, $R^2=0.8994$), while
+Experiment 12 reports complete-cycle/event-window MAE
+\$0.641/\$0.658/\$0/\$0 and \$21.882/\$29.287/\$5.325/\$5.325; all 54
+contracts activate.
+
+Fig.~\ref{fig:ac-cross-network} summarizes the cross-network preventive
+certificate: maximum apparent-power loading, voltage-limit deviation, and
+non-reference active-plan deviation for each penetration and public network.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf}
+\caption{Cross-network preventive AC N--1 certificate. Each point aggregates
+the predeclared snapshots and all native-case admissible connected outages;
+the dashed line in (a) is the unit apparent-power limit.}
+\label{fig:ac-cross-network}
+\end{figure}
 
 \subsection{Independent trace and deployment-boundary audits}
 
-Immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW
-with 100\% coverage; the 71,128-job witness residual is below $10^{-17}$ MWh.
-The independent trace-meter panel reports mean event-window MAE 2.864 MW for
-\RiskSafe (2.701 MW for feasible quantile) with block intervals, and remains
-strictly observational. At the slot-48 gate, the submitted no-tariff baseline
-is frozen before scoring, whereas the committed-ledger operating replay reaches
-nRMSE 0.431, gross false credit 0.048 MWh/day, meter-capped payable
-credit 0.330 MWh/day, and recall 0.015. The complete-ledger RiskSafe comparator is
-0.343/1.717 MWh/day with recall 0.353. The selected \$150/MWh and
-weight 7.0 satisfy the 16-day, 7-MWh validation budget; reserve $\eta=0.60$ is
-planning-only. Table~\ref{tab:decision} keeps payable credit separate from
-offline meter diagnostics. Experiment 18 supplies a 9,900-cell fixed-active-
-plan AC-OPF certificate over three predeclared locked days and two event-slot
-endpoints under the pre-registered map (maximum loading 0.917 p.u.; zero
-voltage and non-reference active-plan violations).
+Immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
+100\% coverage; the 71,128-job residual is below $10^{-17}$ MWh. The
+observational trace-meter panel gives event-window MAE 2.864 MW for \RiskSafe
+(2.701 MW for feasible quantile). With the slot-60 gate, the submitted baseline
+is frozen before scoring; the committed-ledger replay reaches nRMSE 0.358,
+gross false credit 3.442, meter-capped payable credit 7.015 MWh/day, recall
+0.292, and $F_1=0.283$, while complete-ledger \RiskSafe is 0.343/1.717 with
+recall 0.353. The selected \$100/MWh, weight 15.0, and $\eta=0.60$ reserve
+satisfy the 16-day, 7-MWh validation budget; Table~\ref{tab:decision} keeps
+payable credit separate from offline diagnostics. Experiment 18 supplies 9,648
+fixed-active-plan AC-OPF outcomes at the 0.90 native-load multiplier over three
+locked days and two slot endpoints: 32/35/24/177 admissible outages in
+RTS-24/IEEE-30/39/118, with maxima 1.000000 p.u. loading, zero voltage
+violation, $2.52\times10^{-8}$ MW plan deviation, and minimum voltage 0.9503 p.u.
 
 \begin{table}[t]
 \centering
@@ -1193,14 +1210,14 @@ voltage and non-reference active-plan violations).
 \label{tab:decision}
 \footnotesize
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrrr}
 \toprule
-Method & nRMSE & Gross false MWh & Payable MWh & Meter underpay & Recall\\
+Method & nRMSE & Gross false MWh & Payable MWh & Meter underpay & Recall & F1\\
 \midrule
-Gate-causal submitted baseline & 0.452 & 0 & 0 & 22.288 & 0\\
-\textbf{Committed rolling response} & \textbf{0.431} & \textbf{0.048} & \textbf{0.330} & \textbf{21.994} & \textbf{0.015}\\
-Committed-ledger reference & 0.452 & 0 & 0 & 22.288 & 0\\
-Complete-ledger RiskSafe & 0.343 & 1.717 & 0 & 22.288 & 0.353\\
+Gate-consistent submitted baseline & 0.452 & 0 & 0 & 22.288 & 0 & 0\\
+\textbf{Committed rolling response} & \textbf{0.358} & \textbf{3.442} & \textbf{7.015} & \textbf{17.919} & \textbf{0.292} & \textbf{0.283}\\
+Committed-ledger reference & 0.452 & 0 & 0 & 22.288 & 0 & 0\\
+Complete-ledger RiskSafe & 0.343 & 1.717 & 0 & 22.288 & 0.353 & 0.442\\
 \bottomrule
 \end{tabular}%
 }
@@ -1208,37 +1225,34 @@ Complete-ledger RiskSafe & 0.343 & 1.717 & 0 & 22.288 & 0.353\\
 
 \subsection{Indexed workload counterfactual}
 
-Experiment 19 assigns one service variable to every positive-energy job and
-admissible slot between submission and the submit-time declared endpoint.
-Unlimited Slurm timelimits use a precommitted 128-slot horizon, and the
-per-slot bound is 0.001 MW/GPU; native region, exact energy equality, and
-118-MW regional capacity are retained. The sparse HiGHS counterfactual is
-preemptive, while Experiment 14 is the measured contiguous witness. As shown in
-Table~\ref{tab:jobcounterfactual}, native/counterfactual event energy is
-0.194/0.028 MWh, giving 0.183 MWh gross, 0.167 MWh net reduction,
-and 0.016 MWh rebound; maximum job residual is
-$2.17\times10^{-19}$ MWh and minimum capacity slack is 29.492 MWh. The
-separate Exp.~21 audit certifies a capacity-safe 3475.108$\times$ homogeneous
-scale at the 118-MW nameplate without using locked-test outcomes.
+Experiment 19 assigns one service variable to each positive-energy job and
+admissible slot before its declared endpoint, retaining the 128-slot horizon,
+0.001-MW/GPU bound, native region, exact energy, and 118-MW capacity. The
+sparse HiGHS program is preemptive; Experiment 14 is the contiguous witness.
+Table~\ref{tab:jobcounterfactual} reports native/counterfactual event energy
+0.194/0.028 MWh, gross/net reduction 0.183/0.167 MWh, rebound 0.016 MWh,
+residual $2.17\times10^{-19}$ MWh, and minimum slack 29.492 MWh. Exp.~21
+certifies the 3475.108$\times$ capacity-proportional homogeneous scale; with
+the 0.001-MW/GPU nameplate fixed, the deployable scale is 1.036$\times$.
 
 \begin{table}[t]
 \centering
 \caption{Exact indexed job-level counterfactual certificate.}
 \label{tab:jobcounterfactual}
 \footnotesize
-\begin{tabular}{lr}
+\begin{tabular}{@{}p{0.58\columnwidth}p{0.32\columnwidth}@{}}
 \toprule
 Quantity & Value\\
 \midrule
-Positive-energy jobs & 71,128\\
-Job--slot service variables & 5,465,157\\
-Native event energy (MWh) & 0.194\\
-Counterfactual event energy (MWh) & 0.028\\
-Gross event reduction (MWh) & \textbf{0.183}\\
-Net event reduction (MWh) & \textbf{0.167}\\
+Positive-energy jobs / job--slot variables & 71,128 / 5,465,157\\
+Native / counterfactual event energy (MWh) & 0.194 / 0.028\\
+Gross / net reduction (MWh) & \textbf{0.183} / \textbf{0.167}\\
 Event rebound (MWh) & 0.016\\
 Maximum job-energy residual (MWh) & $2.17\times10^{-19}$\\
 Minimum regional-slot capacity slack (MWh) & 29.492\\
+Capacity-proportional homogeneous scale ($\times$) & 3475.108\\
+Fixed 0.001-MW/GPU-nameplate scale ($\times$) & 1.036\\
+Scale audit re-optimised & No\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1246,14 +1260,14 @@ Minimum regional-slot capacity slack (MWh) & 29.492\\
 \section{Conclusion}\label{sec:conclusion}
 
 This paper couples a provenance-bound workload verifier to signed nodal
-settlement. The safe profile reaches nRMSE/false credit 0.343/1.717
-MWh/day, while the four-hour gate uses distinct submitted-baseline and response
-LPs (Table~\ref{tab:decision}). The indexed counterfactual preserves all 71,128
-job energies and yields 0.167 MWh net reduction, 0.183 MWh gross
-reduction, and 0.016 MWh rebound. The scale-consistency certificate confirms
-that this indexed primal reaches the 118-MW nameplate under a 3475.108$\times$
-trace scale while retaining all ledger constraints. Deployment requires signed co-located
-telemetry, topology access, and capacity-safe power conversion.
+settlement. The safe profile reaches nRMSE/false credit 0.343/1.717 MWh/day;
+the one-hour gate uses distinct submitted-baseline and response LPs
+(Table~\ref{tab:decision}). The indexed counterfactual preserves 71,128 job
+energies and yields 0.167 MWh net reduction (0.183 gross, 0.016 rebound).
+The scale certificate reports both 3475.108$\times$ capacity-proportional and
+1.036$\times$ fixed-nameplate witnesses under the declared ledger mapping.
+Deployment requires signed co-located telemetry, topology access, and
+capacity-safe power conversion.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography

@@ -28,6 +28,7 @@ Overall status: **PASS**.
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv: exists and non-empty
+- [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv: exists and non-empty
@@ -175,6 +176,8 @@ Overall status: **PASS**.
 - [x] experiment_20:experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv: exists and non-empty
 - [x] experiment_20:experiments/exp20_trace_meter_replay/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_20:experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png: exists and non-empty
+- [x] experiment_21:experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv: exists and non-empty
+- [x] experiment_21:experiments/exp21_scale_consistency/results/final/experiment_metadata.json: exists and non-empty
 - [x] manuscript_sources:manuscript/main.tex: exists and non-empty
 - [x] manuscript_sources:manuscript/main.pdf: exists and non-empty
 - [x] manuscript_sources:manuscript/IEEEtran.cls: exists and non-empty
@@ -193,14 +196,14 @@ Overall status: **PASS**.
 - [x] manuscript_sources:manuscript/figures/fig_method_detail.png: exists and non-empty
 - [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.png: exists and non-empty
 - [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
-- [x] canonical_unified_manifest_preserved: 22/22 stages recorded; canonical request=all; audit status=completed
+- [x] canonical_unified_manifest_preserved: 23/23 stages recorded; canonical request=all; audit status=completed
 - [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4036x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4335x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
 - [x] model_formula_citation_traceability: 31/31 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
 - [x] maximum_two_sources_per_citation_group: 40 in-text citation groups checked
 - [x] complete_manuscript_bibliography: 33 verified bibliography entries; 33 unique in-text citations; uncited=[]; missing=[]
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
 - [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
 - [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
@@ -216,7 +219,7 @@ Overall status: **PASS**.
 - [x] workload_conservation: max gap=7.105e-15 MWh
 - [x] data_center_capacity: violation=0.000e+00 MW
 - [x] deadline_feasibility: violation=0.000e+00 MWh
-- [x] sced_power_balance: gap=4.547e-13 MW
+- [x] sced_power_balance: gap=0.000e+00 MW
 - [x] sced_line_limits: max loading=1.000000 pu
 - [x] complete_exp1_grid: 56/56
 - [x] strategic_threshold_theory_matches_optimizer: 56/56 price-probability cells
@@ -226,9 +229,10 @@ Overall status: **PASS**.
 - [x] decision_time_independent_trace_replay: 216 event-gate profiles are scored against the independent meter tensor in a separate observational panel
 - [x] decision_time_committed_response_protocol: committed-ledger response is a second masked-ledger LP with the declared DR-price objective, rolling state, and explicit contract cap
 - [x] decision_time_protocol_role_separation: gate diagnostic, deployable response, and complete-ledger comparator are separately named
-- [x] causal_response_grid_selection: 16 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget
+- [x] causal_response_grid_selection: 42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget
 - [x] causal_reserve_is_validation_selected_and_payment_ineligible: 4 validation candidates select eta=0.60 under the declared false-credit budget; the held-out reserve is reported for capacity planning while committed-ledger payment remains separate
-- [x] cross_network_ac_n1_admissibility_panel: 9900 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
+- [x] cross_network_ac_n1_admissibility_panel: 9648 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
+- [x] homogeneous_scale_has_fixed_nameplate_bound: capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP
 - [x] closest_literature_baseline_panel: 216/216 same-ledger structural-analogue outcomes; proxy labels and cited mechanisms are explicit rather than presented as reimplementations
 - [x] exact_structural_dc_t_dc_st_baseline_panel: 108/108 same-ledger DC-T/DC-ST outcomes retain native-site and migration assignment as explicit structural controls
 - [x] independent_trace_meter_replay_panel: 648 locked-day method scores against the measured DCGM execution tensor; no event intervention or simulated response is used as scoring truth
@@ -242,6 +246,8 @@ Overall status: **PASS**.
 - [x] complete_independent_intervention_panel: 864/864 rows; all matched interventions are evaluated without a comparator-derived cap
 - [x] independent_pointwise_risk_envelope: locked test false-credit is compared to the feasible-quantile reference, while the LP cap and risk budget are anchored to the independent Metadata projection rho=0.3 candidate
 - [x] independent_observed_scoring_truth: locked response scores use the observed DCGM/BurstGPT meter; any event-response LP is restricted to mechanism-isolation panels
+- [x] source_separated_false_credit_certificate: locked-test false-credit diagnostics are recomputed separately for the observed meter and the mechanism-isolation trajectory; neither row is labelled as a causal utility-event outcome
+- [x] risk_ceiling_truth_sources_explicit: the pointwise risk-fit ceiling is labelled as an offline union of the observational and mechanism-isolation trajectories; settlement scores retain the two truth sources separately and do not assert a causal event effect
 - [x] nondegenerate_risk_verifier_output: the final risk-constrained profile differs from the single feasible reference while retaining the independently checked two-sided feasible band
 - [x] risk_constrained_validation_dominance: convex verifier has no larger validation MSE and satisfies both total and daily-tail CVaR false-credit budgets
 - [x] nested_daily_risk_reserve_selection: 16 reserve-fold cells; selected reserve=1.00
