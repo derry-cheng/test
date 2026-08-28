@@ -2172,8 +2172,8 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
-      "bytes": 304,
-      "sha256": "1855bd010202539100a3c4ee1c3cb5573eac446f28528031c7799c765dd7064f"
+      "bytes": 302,
+      "sha256": "84e08b5b5ca2cfc1ac35a551c839cac00ee4f59ca053e887e1ec7e9493e604d1"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
@@ -2192,8 +2192,8 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
-      "bytes": 6647,
-      "sha256": "246f00b0ea0c4470ed008db470dc731bb2353890869765fc3cbbf1434712b0ba"
+      "bytes": 7097,
+      "sha256": "295f2939e2d2620cc6d8fb46213c19060c1646022ba7dc97e8422e741d19938b"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/final_risk_contract_audit.csv",
@@ -2667,18 +2667,18 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
-      "bytes": 51040,
-      "sha256": "acca319e59a60a2a98b3e3528ce898d59db61b629d790df30503a4542c3a0e9d"
+      "bytes": 51109,
+      "sha256": "ca8632eeeac9fad00a072e3bcd386505774eeacdbb430437bcbbb598daf4490d"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
-      "bytes": 511146,
-      "sha256": "e1da6d5d29d3dcbc194a69b00a3f95891f3ee34bd4740549a2c5746963536fb7"
+      "bytes": 511259,
+      "sha256": "932b4a8926f41bdefe5fd1b51186ed1016c49a71b567b476f08f25a491df9456"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.pdf",
       "bytes": 27748,
-      "sha256": "8310cb64bed0f85a1e72c120aa292313eba491436aa6bae34253344cca5b1afd"
+      "sha256": "cb64904cd2944325c2996c9d68cda77ac0537fe404511d05ad5802b6eb2835e9"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
@@ -2687,13 +2687,13 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.pdf",
-      "bytes": 16596,
-      "sha256": "31e72707ed6d57796590058981b90034ace3a17792112480158313582b045552"
+      "bytes": 16598,
+      "sha256": "0e2b313e56ee3b562514318926dada6d1700bc3c41c64ce89730ff6e6ad51cf2"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
-      "bytes": 206314,
-      "sha256": "6b841e4db2195d4d13483b18a3ea16a6d476321341461bc74ce429779a7b1693"
+      "bytes": 206546,
+      "sha256": "95c5680523ebc7e3e835d9833a7bf5652de394330acf7e83ff97c3f71f229697"
     },
     {
       "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.pdf",

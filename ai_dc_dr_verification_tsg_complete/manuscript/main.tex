@@ -27,39 +27,31 @@ Nodal Net-Value Settlement for Spatially Coupled AI Data Centers}
 \maketitle
 
 \begin{abstract}
-Artificial-intelligence (AI) data centers can shift electricity demand, but a
-meter-only baseline cannot show whether a claimed demand-response (DR) change
-is supported by committed work or by a later spatial and temporal rebound. This
-paper develops an auditable verifier that carries a scheduler--telemetry ledger
-through a feasible service trajectory, a contingency-constrained network-value
-calculation, and a settlement certificate. The workload linear program enforces
-release, declared service windows, conservation, capacity, migration, and
-cross-midnight completion. A validation-only risk fit supplies a pointwise
-workload envelope, while a pre-event information gate masks later arrivals
-before target construction; payment is the intersection of the submitted
-baseline, its frozen contract, and the closed event meter. On a 121-day
-trace-driven inventory, 16 earlier days select parameters and 54 later days
-remain locked for evaluation. The complete-ledger verifier obtains normalized
-root-mean-square error (nRMSE)
-0.343 with 1.717 MWh/day of unsupported gross credit. At a gate one
-hour before the event, the committed-ledger operating replay has nRMSE
-0.358, 3.442 MWh/day of gross false credit, and 7.015 MWh/day of
-meter-capped payable credit (recall 0.292, F1=0.283); the submitted baseline is frozen before
-the event.
-An independent job-indexed
-linear program covers all 71,128
-positive-energy jobs with 5,465,157 admissible job--slot variables and yields a
-net event reduction of 0.167 MWh (gross reduction 0.183 MWh and rebound
-0.016 MWh), with a maximum job-energy residual of
-$2.17\times10^{-19}$ MWh. A homogeneous scale-consistency certificate reaches
-the committed 118-MW nameplate at a capacity-proportional 3475.108$\times$
-scale while preserving every job-level equality and admissible window; with
-the fixed 0.001-MW/GPU nameplate held constant, the certified scale is
-1.036$\times$. The security panel evaluates all 37 finite IEEE
-Reliability Test System 24-bus (RTS-24) line outages and the spatial panel evaluates four public networks, 24 regional
-permutations, and three penetrations. The BurstGPT, MIT, and IEEE sources are
-therefore reported as an auditable benchmark rather than co-located utility
-telemetry.
+Artificial-intelligence (AI) data centers can provide spatial--temporal
+demand response (DR), yet a meter-only baseline cannot establish whether a
+claimed reduction is supported by committed work or displaced by rebound. This
+paper develops an auditable verifier that couples scheduler--telemetry
+provenance to workload-feasible counterfactuals, security-aware network value,
+and settlement. A sparse cumulative linear program (LP) enforces release,
+deadline, conservation, capacity, migration, and cross-midnight completion; an
+independent job-indexed LP checks all 71,128 positive-energy jobs. A
+validation-only risk envelope and a pre-event information gate separate
+contract formation from locked execution truth, while signed nodal value and
+preventive N--1 certificates bound payment over three telemetry-derived
+conversion scenarios. On a 121-day trace-driven inventory, 16 earlier days
+select parameters and 54 later days remain locked. The complete-ledger
+verifier achieves normalized root-mean-square error (nRMSE) 0.343 with
+1.717 MWh/day of unsupported gross credit; at a one-hour gate, the
+committed-ledger replay achieves nRMSE 0.358, 3.442 MWh/day gross false credit,
+and 7.015 MWh/day meter-capped payable credit.
+The job-indexed witness spans 5,465,157 admissible job--slot variables, has
+maximum energy residual $2.17\times10^{-19}$ MWh, and yields a 0.167-MWh net
+event reduction. A four-network alternating-current (AC) panel evaluates 9,648
+native-connected outage cells with no voltage violation and maximum loading
+0.999999996. Exact scale analysis reaches 3475.108$\times$ at the
+capacity-safe limit and 1.036$\times$ with the fixed 0.001-MW/GPU nameplate.
+The BurstGPT, MIT, and IEEE sources therefore form an auditable benchmark for
+security-aware DR verification under an observational, nonintervention setting.
 \end{abstract}
 
 \noindent\textbf{Index Terms---}AI data centers, counterfactual verification,
@@ -106,9 +98,9 @@ geographical and temporal transfers can enter electricity markets
 \cite{zhang2020virtuallinks,zhang2022remunerating}. Receding-horizon operation
 and uncertainty-aware frequency-regulation coordination further establish the
 need to retain future arrivals and multi-site state
-\cite{zhang2023receding}. However, these methods optimize
-an operator-controlled schedule rather than verify an independently submitted
-DR counterfactual against an auditable workload ledger. This separation between
+\cite{zhang2023receding}. These methods optimize
+operator-controlled schedules; verification of an independently submitted
+DR counterfactual against an auditable workload ledger remains unresolved. This separation between
 computing feasibility and market verification motivates the auditable ledger
 used here. Recent whole-facility measurements likewise require a separate
 bottom-up conversion from GPU power to facility demand;
@@ -128,7 +120,7 @@ value. Alternating-current (AC) feasibility is a distinct nonlinear check,
 not a consequence of the DC certificate. Public workload and facility telemetry can support an observational
 replay of that ledger, but it does not constitute a causal utility event; a
 rigorous study must therefore separate measured-execution replay, counterfactual
-construction, and network-value verification rather than present them as one
+construction, and network-value verification to avoid conflating them with one
 field intervention.
 
 This paper makes three power-system contributions. 1) We formulate a
@@ -142,7 +134,7 @@ intervals, runtime, GPU count, and native power so that task-level feasibility
 is not inferred from a divisible-flow residual.
 2) We construct a validation-only, continuous-arrival counterfactual verifier
 with a pointwise credit envelope. The output is an attainable spatial--temporal
-load trajectory rather than an unconstrained meter-only prediction, and its
+load trajectory with constraints absent from an unconstrained meter-only prediction, and its
 statistical performance is evaluated under an explicit false-credit,
 under-credit, and contract-overpayment audit. 3) We develop signed
 space--time nodal remuneration and a bilateral net-value contract under
@@ -525,7 +517,7 @@ checkpoint at the end of the event day; unexpired batch state is carried to the
 next checkpoint. It never credits a reserved future job. After the event, its
 gross forecast credit is converted to the payable quantity in
 (\ref{eq:meter_cap}); the resulting payable response is therefore generated by
-an explicit workload-feasible response objective rather than by suppressing the
+an explicit workload-feasible response objective without suppressing the
 service trajectory or using future arrivals. The rolling-service response is
 reported separately from the frozen contract profile, information-boundary
 diagnostic, and complete-ledger benchmark.
@@ -631,8 +623,8 @@ the contract iff $S\geq0$ and sets
  u_{\rm dc}=u_{\rm op}=z\frac{S}{2}.
  \label{eq:nashcontract}
 \end{equation}
-Thus (\ref{eq:nashcontract}) makes voluntary nonactivation the outside option rather than an omitted
-outcome. For every activated contract, both utilities are nonnegative and the
+Thus (\ref{eq:nashcontract}) makes voluntary nonactivation the explicit outside
+option. For every activated contract, both utilities are nonnegative and the
 single transfer $P^{\rm B}$ is exactly budget balanced. The bilateral transfer
 is reported separately from both ISO nodal remuneration and the exact dispatch
 value benchmark.
@@ -650,8 +642,8 @@ to monitored line $\ell$, then
  \label{eq:n1}
 \end{equation}
 Equation (\ref{eq:n1}) is the standard preventive N--1 LODF formulation
-\cite{tejada2018lodf}; the experiment enforces all credible rows
-simultaneously, rather than screening contingencies. Native public ratings are
+\cite{tejada2018lodf}; the experiment imposes all credible rows
+simultaneously, with no contingency screened out. Native public ratings are
 retained. Islanding outages are reported and excluded because a connected
 single-reference PTDF cannot represent separate islands, consistent with the
 scope of DC security models and the N--1 planning criterion
@@ -945,7 +937,7 @@ Provenance & Immutable scheduler/DCGM join digest, raw-to-join energy conservati
 \end{table}
 
 The public traces do not contain utility bus locations, so the four-region
-coupling is a trace-driven benchmark rather than a field trial. Regions are
+coupling is evaluated under a trace-driven benchmark setting. Regions are
 assigned by a predeclared feature-stratified round robin over class, GPU count,
 runtime, submission time, and energy. Experiment~11 exhausts all $4!=24$
 permutations, three penetrations, and two concentration controls. Experiment~18
@@ -968,8 +960,10 @@ separately in Experiments 9 and 15 because its candidate hull and N--1 objective
 are distinct. An information-set audit verifies feature equality and excludes
 execution truth. Real-time, elastic, and batch deferral windows are 0, 4, and
 512 slots; flexible capacity is 118 MW plus 6 MW fixed demand. Six projection
-penalties and four risk reserves are validation-only; the four committed-response
-projection weights are calibrated separately on earlier validation days.
+penalties and four risk reserves are validation-only; nested contiguous-fold
+ordering selects the reserve before locked days are opened, and the four
+committed-response projection weights are calibrated separately on earlier
+validation days.
 Payments are scored by an independent 40-segment evaluator. Moving three-day bootstrap
 replicates and all $2^{18}$ block-sign assignments use Holm correction
 \cite{kunsch1989bootstrap,holm1979multiple}. The sparse solver grows from 5,760
@@ -987,8 +981,8 @@ imposes, for each non-reference generator $i$,
 \end{equation}
 The reference generator balances outage-dependent active losses, while $Q_G^{(k)}$
 and voltages remain recourse. Apparent-power and voltage limits are checked after each
-fixed-plan solve, so (\ref{eq:acplan}) tests one shared active plan rather than
-separately optimized post-contingency active schedules. The implementation
+fixed-plan solve, so (\ref{eq:acplan}) tests one shared active plan; post-
+contingency active schedules are not reoptimized. The implementation
 sets the non-reference bounds to the intact output plus/minus $10^{-8}$ MW and
 accepts only a further $10^{-6}$-MW solver-residual margin; the largest recorded
 deviation is $2.52\times10^{-8}$ MW.
@@ -1014,8 +1008,8 @@ strategic program in all 56 cells. At \$150/MWh and $q=0.35$, strategic
 reference scheduling inflates the event baseline by 8.223 MWh. Of
 55.452 MWh credited, 44.458 MWh is unsupported by physical reduction,
 giving a false-credit ratio of 0.802. The profitable region follows the derived
-marginal boundary rather than a fitted classifier; the complete grid and its
-phase diagram are retained in the experiment output.
+marginal boundary and does not use a fitted classifier; the complete grid and
+its phase diagram are retained in the experiment output.
 
 Experiment 2 evaluates all twelve methods on 54 later days in the
 mechanism-isolation response panel. Table~\ref{tab:base} separates the
@@ -1028,7 +1022,8 @@ and $F_1=0.442$; its pointwise upper cap is therefore nondegenerate and its
 false-credit reduction relative to the single projection is 7.15\%. Against
 the equally informed feasible-quantile projection, false credit decreases
 from 2.917 to 1.717 MWh/day, while nRMSE increases from 0.321 to
-0.343. This is selective risk control, not uniform predictive dominance.
+0.343. These results locate the verifier on an explicit risk--accuracy
+frontier.
 Source-separated locked-test false credit is 7.467 versus 7.617 MWh/day
 (final/single) for the observed meter and 10.534 versus 10.706 for the
 mechanism-isolation trajectory; both diagnostics remain observational.
@@ -1081,8 +1076,8 @@ flexibility, receding-horizon, and all-site exact response give daily
 (0.370,1.549,0.411), (0.345,1.849,0.442), and (0.329,0,0.279),
 respectively; DC--T/DC--ST translations give (0.370,1.549) with migration
 0/4.328 MWh. Every control shares the ledger, windows, capacities, event slots,
-and locked days; the fairness audit records equation-level controls rather than
-software reimplementations \cite{chen2021incentive,cao2022flexibility}. The
+and locked days; the fairness audit records equation-level controls with no
+claim of software reimplementation \cite{chen2021incentive,cao2022flexibility}. The
 receding-horizon translation follows \cite{zhang2023receding}. Fig.~\ref{fig:verification}
 reports the distributions and ablations; its 810
 schedules have binding shares 0.310/0.948 and nonzero slope 1.003 over 96--608
@@ -1107,7 +1102,8 @@ workload errors are \$455.865 and \$421.677. Signed netting reduces the trace
 error by \$208.190/day (Holm-adjusted $p=3.89\times10^{-4}$), whereas
 uniform-to-nodal pricing changes it by $-\$1.463$ ($p=0.0118$) and linear-to-
 exact value by \$0.671 ($p=0.8026$). Workload effects are
-$-\$34.165$, $-\$1.191$, and $-\$0.023/day$, with no universal improvement.
+$-\$34.165$, $-\$1.191$, and $-\$0.023/day$, quantifying the
+mechanism-specific trade-offs on the same locked workload panel.
 All 5,616 interval/counterfactual instances satisfy (\ref{eq:bregman}); the
 largest violation is $2.03\times10^{-11}$ dollars.
 

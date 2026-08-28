@@ -3285,6 +3285,21 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_reserve_candidates": reserve_candidates.tolist(),
             "selected_risk_reserve_fraction": selected_reserve_fraction,
+            "risk_reserve_selection_protocol": {
+                "candidate_count": int(len(reserve_candidates)),
+                "validation_fold_count": int(len(fold_partitions)),
+                "selection_pool_rule": (
+                    "retain candidates satisfying fold-wise risk non-inferiority "
+                    "when that predeclared pool is nonempty; otherwise retain the "
+                    "full candidate grid"
+                ),
+                "tie_break_order": [
+                    "max_contiguous_fold_nRMSE",
+                    "max_false_credit_ratio_to_reference",
+                    "reserve_fraction",
+                ],
+                "locked_test_days_consulted": False,
+            },
             "selected_risk_envelope_projection_weight": (
                 selected_envelope_weight
             ),

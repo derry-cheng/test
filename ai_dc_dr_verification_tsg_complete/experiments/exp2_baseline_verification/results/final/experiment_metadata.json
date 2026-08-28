@@ -90,6 +90,17 @@
     1.0
   ],
   "selected_risk_reserve_fraction": 1.0,
+  "risk_reserve_selection_protocol": {
+    "candidate_count": 4,
+    "validation_fold_count": 4,
+    "selection_pool_rule": "retain candidates satisfying fold-wise risk non-inferiority when that predeclared pool is nonempty; otherwise retain the full candidate grid",
+    "tie_break_order": [
+      "max_contiguous_fold_nRMSE",
+      "max_false_credit_ratio_to_reference",
+      "reserve_fraction"
+    ],
+    "locked_test_days_consulted": false
+  },
   "selected_risk_envelope_projection_weight": 0.3,
   "convex_ensemble_weights": [
     0.3139027029731862,

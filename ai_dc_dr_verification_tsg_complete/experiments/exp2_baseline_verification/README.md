@@ -2,8 +2,10 @@
 
 Run with `python run.py` or `./run_all.sh --stage exp2`. Sixteen days fit a
 simplex-constrained convex ensemble over six exact workload-feasible projections;
-no candidate is excluded. The validation program jointly constrains total
+all candidate fits are retained. The validation program jointly constrains total
 false-credit exposure and the 75% conditional value at risk of daily exposure.
+A nested contiguous-fold ordering selects the reserve fraction before the locked
+days are opened, and the selected value is recorded in both reserve audit files.
 A second exact workload LP applies a pointwise event envelope defined by the
 independently selected single feasible projection; this guarantees false-credit
 MWh noninferiority without using execution truth. Fifty-four later days support
