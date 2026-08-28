@@ -330,6 +330,13 @@
       "status": "completed",
       "finished_utc": "2026-08-27T15:33:44.075903+00:00",
       "elapsed_seconds": 0.902163
+    },
+    "exp22": {
+      "started_utc": "2026-08-28T16:58:00.000000+00:00",
+      "status": "completed",
+      "finished_utc": "2026-08-28T16:58:01.000000+00:00",
+      "elapsed_seconds": 1.0,
+      "migration_note": "exact job-to-network coupling certificate replayed from Exp19 witness"
     }
   },
   "resume_events_utc": [

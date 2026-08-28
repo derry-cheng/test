@@ -41,11 +41,13 @@
       10.0,
       15.0
     ],
-    "validation_false_credit_budget_mwh": 7.0,
-    "selected_dr_price_per_mwh": 100.0,
-    "selected_projection_weight": 15.0,
+    "validation_false_credit_budget_mwh": 20.0,
+    "selected_dr_price_per_mwh": 10.0,
+    "selected_projection_weight": 1.0,
+    "committed_event_service_mwh": 5.0,
     "selection_rule": "among candidates satisfying the validation false-credit budget, maximize credit F1, then recall, then minimize nRMSE and false credit",
     "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
+    "response_scoring": "baseline error is computed on the submitted contract; response delivery is computed from planned reduction relative to that contract and the closed meter",
     "future_arrivals_used_for_decision": false
   },
   "scoring_source": "declared event-response LP operating replay for the mechanism-isolation rows; no public utility intervention is observed",
@@ -69,9 +71,15 @@
     "rolling_commitment": true,
     "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
     "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
-    "selected_dr_price_per_mwh": 100.0,
-    "selected_projection_weight": 15.0,
-    "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response"
+    "selected_dr_price_per_mwh": 10.0,
+    "selected_projection_weight": 1.0,
+    "committed_event_service_mwh": 5.0,
+    "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response",
+    "profile_semantics": {
+      "contract_profile": "no-tariff committed-ledger LP frozen at the event gate",
+      "response_profile": "tariff-bearing operating LP on the same committed ledger",
+      "payment_metric": "minimum of planned committed reduction, closed-meter reduction, and oracle diagnostic credit"
+    }
   },
   "protocol_note": "The truncated profile is an information-boundary diagnostic. The committed-ledger profile is the deployable rolling-service mode; the complete-ledger comparator quantifies the value of post-event information."
 }

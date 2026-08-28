@@ -101,24 +101,34 @@ arrivals and constraints.
 
 ## Corollary 2.2: day-wise risk reserve on the validation contract
 
-Let \(\ell^\star\) be the independently selected single feasible projection and
-let
+Let \(\ell^\star\) be the independently selected single feasible projection.
+For each source \(z\in\{\mathrm{obs},\mathrm{sim}\}\), define submitted and
+true credit
 
 \[
-B_j^{\mathrm{ref}}
-=\sum_{n\in\mathcal V_j}[p_n^{(\ell^\star)}
--\max\{p_n^{\mathrm{obs}},p_n^{1,\mathrm{sim}}\}]_+.
+\widehat r_n^{(z)}=[p_n^{(\ell^\star)}-p_n^{(z)}]_+,\qquad
+r_n^{(z)}=[p_n^0-p_n^{(z)}]_+,
 \]
 
-For a pre-declared reserve \(\beta\in(0,1]\), define
-\(F_j(\alpha)\) as the positive false-credit exposure on validation day \(j\).
-The risk-constrained convex program imposes
+and source-specific false credit
 
 \[
-\sum_j F_j(\alpha)\leq\beta\sum_jB_j^{\mathrm{ref}},
+F_j^{(z)}=\sum_{n\in\mathcal V_j}
+[\widehat r_n^{(z)}-r_n^{(z)}]_+.
+\]
+
+The validation risk contract uses \(z=\mathrm{sim}\), while the observed
+meter is an independent locked replay. No maximum over the two sources is
+taken: doing so would mix an offline oracle with the deployable risk
+definition. For a pre-declared reserve
+\(\beta\in(0,1]\), the risk-constrained program imposes
+
+\[
+\sum_j F_j^{(\mathrm{sim})}(\alpha)
+\leq\beta\sum_jF_j^{(\mathrm{sim})}(\ell^\star),
 \qquad
-\operatorname{CVaR}_{0.75}(F_j(\alpha))
-\leq\beta\operatorname{CVaR}_{0.75}(B_j^{\mathrm{ref}}).
+\operatorname{CVaR}_{0.75}\!\left(F_j^{(\mathrm{sim})}(\alpha)\right)
+\leq\beta\operatorname{CVaR}_{0.75}\!\left(F_j^{(\mathrm{sim})}(\ell^\star)\right).
 \]
 
 The first inequality controls total risk and the second controls the mean of the
@@ -396,6 +406,30 @@ The scenario set comes from the independent MIT telemetry
 \cite{samsi2021supercloud}. The proof uses the standard SCED primal
 \cite{zimmerman2011matpower} and linear-program value-function theory
 \cite{boyd2004convex}; the payment certificate is the paper's specialization.
+
+## Proposition 9: ledger-to-settlement coupling invariant
+
+Partition the committed ledger into \(\mathcal J_{skd}\), and let
+\(u_{j\tau}\) be the exact job-indexed service witness on its submitted
+release--deadline window. Define
+
+\[
+x^{\rm job}_{skd\tau}
+=\sum_{j\in\mathcal J_{skd}:\,r_j\leq\tau<d_j}u_{j\tau},
+\qquad
+X^{\rm job}_{d\tau}=\sum_{s,k}x^{\rm job}_{skd\tau}.
+\]
+
+If the aggregate profile used by the network is defined by
+\(X_{d\tau}=X^{\rm job}_{d\tau}\), then the two representations induce the
+same nodal demand and every downstream signed value, N--1 payment cap, and
+coalition allocation is evaluated on one committed state. The result follows
+by finite summation over the disjoint ledger partition; no optimization or
+rounding is involved in the mapping. Experiment 22 reconstructs the profile
+from all 5,465,157 stored job--slot variables and records a maximum residual of
+zero before either SCED solve. Its network number is a deterministic
+arithmetic-mean event-window replay; it is not evidence from a separately
+optimized aggregate trajectory.
 
 ## Identification boundary
 

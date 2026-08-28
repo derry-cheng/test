@@ -40,6 +40,7 @@ def main() -> int:
             "exp19",
             "exp20",
             "exp21",
+            "exp22",
             "audit",
         ],
         default="all",

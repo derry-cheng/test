@@ -51,11 +51,14 @@ scenarios; all 24 region-to-bus permutations are evaluated in Experiment 11.
 
 The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--21 each own a README, final results,
+the LaTeX source. Experiments 1--22 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
-not pretend that a scaled witness is a second re-optimised LP.
+not pretend that a scaled witness is a second re-optimised LP. Experiment 22
+reconstructs the network profile from the exact Experiment 19 job--slot
+witness, checks a zero aggregation residual before dispatch, and reports a
+deterministic event-window-mean N--1 replay.
 
 ## Reproducibility boundaries
 

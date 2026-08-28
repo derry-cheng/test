@@ -506,6 +506,66 @@ def response_metrics(
     }
 
 
+def response_delivery_metrics(
+    contract_baseline: np.ndarray,
+    response_plan: np.ndarray,
+    oracle_baseline: np.ndarray,
+    observed_meter: np.ndarray,
+    event_slots: list[int],
+    dt_h: float,
+) -> dict[str, float]:
+    """Score a response trajectory against its frozen pre-event contract.
+
+    A tariff-bearing response trajectory is an operating plan, not a baseline
+    forecast.  It is therefore evaluated through the reduction planned from
+    the committed baseline and the reduction delivered by the closed meter.
+    The oracle baseline is used only for the locked replay diagnostics.  In
+    particular, this function never feeds the response plan into
+    :func:`baseline_metrics`, which would change the meaning of baseline error
+    and inflate unsupported credit.
+    """
+    contract = np.asarray(contract_baseline, dtype=float)[:, event_slots]
+    response = np.asarray(response_plan, dtype=float)[:, event_slots]
+    oracle = np.asarray(oracle_baseline, dtype=float)[:, event_slots]
+    meter = np.asarray(observed_meter, dtype=float)[:, event_slots]
+    if contract.shape != response.shape or contract.shape != oracle.shape or contract.shape != meter.shape:
+        raise ValueError("response trajectories must share [data_center, event_slot] shape")
+    if dt_h <= 0:
+        raise ValueError("dt_h must be positive")
+    planned_credit = np.clip(contract - response, 0.0, None)
+    delivered_credit = np.clip(contract - meter, 0.0, None)
+    true_credit = np.clip(oracle - meter, 0.0, None)
+    payable_credit = np.minimum(planned_credit, delivered_credit)
+    paid = planned_credit.sum() * dt_h
+    payable = payable_credit.sum() * dt_h
+    oracle_positive = true_credit.sum() * dt_h
+    matched = np.minimum(payable_credit, true_credit).sum() * dt_h
+    false = np.clip(payable_credit - true_credit, 0.0, None).sum() * dt_h
+    under = np.clip(true_credit - payable_credit, 0.0, None).sum() * dt_h
+    precision = matched / max(payable, 1e-9)
+    recall = matched / max(oracle_positive, 1e-9)
+    return {
+        "paid_response_mwh": float(paid),
+        "planned_response_mwh": float(paid),
+        "contract_capped_response_mwh": float(payable),
+        "meter_capped_response_mwh": float(payable),
+        "meter_capped_false_response_mwh": float(false),
+        "meter_capped_underpayment_mwh": float(under),
+        "oracle_matched_response_mwh": float(matched),
+        "oracle_response_mwh": float(oracle_positive),
+        "false_response_mwh": float(false),
+        "false_response_ratio": float(false / max(payable, 1e-9)),
+        "underestimation_mwh": float(under),
+        "credit_precision": float(precision),
+        "credit_recall": float(recall),
+        "credit_f1": float(2 * precision * recall / max(precision + recall, 1e-9)),
+        "net_system_response_mwh": float((contract - response).sum() * dt_h),
+        "response_tracking_mae_mw": float(np.mean(np.abs(response - meter))),
+        "response_tracking_rmse_mw": float(np.sqrt(np.mean((response - meter) ** 2))),
+        "response_plan_contract_mae_mw": float(np.mean(np.abs(response - contract))),
+    }
+
+
 def bootstrap_mean_ci(values: np.ndarray, replications: int, seed: int) -> tuple[float, float, float]:
     values = np.asarray(values, dtype=float)
     rng = np.random.default_rng(seed)

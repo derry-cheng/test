@@ -29,7 +29,7 @@
 | M10 | 稀疏线性规划的全局最优数值求解 | 采用 | HiGHS 对偶修正单纯形实现 \cite{huangfu2018highs} | 求解器成功状态、原始可行性证书和独立约束残差必须同时通过；数值最优不替代模型有效性证明。 |
 | D1 | BurstGPT 请求到达、令牌数和服务类型 | 采用数据 | \cite{wang2024burstgpt} | 公开数据没有设施功率和地理位置；令牌到功率的缩放是本文场景参数。 |
 | D2 | MIT Supercloud 调度日志和 DCGM 测量 | 采用数据 | \cite{samsi2021supercloud} | 提交时间形成到达，执行期 DCGM 能量形成独立评分真值；它与 BurstGPT 不是同一运营商或同一地点。 |
-| D3 | 四条区域轨迹到四个电气接入点的对应关系及峰值功率尺度 | 本文实验设计，不是外部事实 | 公共网络数据依据 \cite{babaeinejadsarookolaee2021pglib}；计算轨迹依据 \cite{wang2024burstgpt,samsi2021supercloud} | 第 11 个实验穷举全部 \(4!=24\) 种对应关系，并与 3%、6%、9% 三个预声明峰值渗透率和全部锁定日做笛卡尔积。该实验检验结论对空间对应和尺度的敏感性，但不能把非共址公开数据升级为现场测量。 |
+| D3 | 四条区域轨迹到四个电气接入点的对应关系及峰值功率尺度 | 本文实验设计，不是外部事实 | 公共网络数据依据 \cite{babaeinejadsarookolaee2021pglib}；计算轨迹依据 \cite{wang2024burstgpt,samsi2021supercloud} | 第 11 个实验穷举全部 \(4!=24\) 种对应关系，并与 3%、6%、9% 三个预声明峰值渗透率和全部锁定日做笛卡尔积。第 21 个实验另行报告固定 0.001-MW/GPU 可部署尺度与容量同比例 stress scale；后者不替代部署证书。该实验检验结论对空间对应和尺度的敏感性，但不能把非共址公开数据升级为现场测量。 |
 
 ## 正文公式标签逐一追踪
 
@@ -43,8 +43,8 @@
 | `eq:deadline` | M3、P2 | 完成期限依据 \cite{adnan2012geographical,cao2022flexibility}；累计写法是本文等价改写。 |
 | `eq:power` | M3 | 计算服务到设施功率的线性映射依据数据中心负荷调度模型 \cite{liu2013dcdr,cao2022flexibility}。 |
 | `eq:rollingterminal` | M3b | 滚动时域状态保留依据 \cite{zhang2023receding}；本文针对真实未来到达给出终端等式并由命题 2 审计可行性。 |
-| `eq:falsecredit` | M1、P2.2 | 历史基线与事件响应语境依据 \cite{caiso2017baseline}；正部暴露定义及其点式非劣保证由命题 2 证明。 |
-| `eq:meter_cap` | P2.3 | 本文可部署结算定义：提交的 gross forecast credit 在事件计量闭合后与冻结合同 no-event profile 的 credit 相交；trace-anchored no-event profile 仅用于事后 oracle overpayment/underpayment 诊断，不进入目标拟合、事件门决策或工作负载优化。 |
+| `eq:falsecredit` | M1、P2.2 | 历史基线与事件响应语境依据 \cite{caiso2017baseline}；提交信用与真实信用分别定义，源特定正部差额由命题 2 证明。观测电表和机制隔离轨迹分开审计，不能把离线 oracle 当成部署输入。 |
+| `eq:meter_cap` | P2.3 | 本文可部署结算定义：提交信用、冻结合同 no-event profile credit 与闭合电表 credit 的点式交集；trace-anchored no-event profile 仅用于事后 oracle overpayment/underpayment 诊断，不进入目标拟合、事件门决策或工作负载优化。 |
 | `eq:profit` | M2 | 基线内生操纵问题依据 \cite{wang2022baseline}；十参考日确定性等价式是本文场景化改写。 |
 | `eq:threshold` | P1 | 线性规划灵敏度依据 \cite{boyd2004convex}；充分必要条件由命题 1 证明。 |
 | `eq:sced` | M4 | 标准无损直流经济调度、网络模型与公开参数依据 \cite{stott2009dc,zimmerman2011matpower,babaeinejadsarookolaee2021pglib}。 |
@@ -55,6 +55,7 @@
 | `eq:riskepigraph` | P2.2 | CVaR 的阈值与尾部松弛上图依据 \cite{rockafellar2000cvar,boyd2004convex}；线性化实现和验证期预算为本文方法。 |
 | `eq:envelope` | P2.2 | 点式安全包络为本文方法；相对于所选工作负载可行参考的虚假信用非劣性由命题 2 证明。 |
 | `eq:twosided` | P2.2b | 双侧信用带为本文方法；固定 \(\varepsilon\) 的下界防止零信用退化，并由命题 2 同时给出虚假信用非劣性与额外欠信用上界。 |
+| `eq:jobnetworkcoupling` | P6、C1 | 同一 indexed job--slot witness 的区域聚合定义；命题 9 证明其与 aggregate profile 的恒等关系，Experiment 22 在 N--1 dispatch 前逐槽检查最大残差。 |
 | `eq:causalreserve` | P2.4 | 仅使用历史日的经验分位数 reserve 是本文的决策时间规划定义；它不进入事件支付资格，候选分位数与验证期 false-credit budget 在实验设置中预先声明。 |
 | `eq:bregman` | P3 | 凸值函数次梯度不等式依据 \cite{boyd2004convex}；在有符号节点价值中的具体结论由命题 3 证明。 |
 | `eq:spacetime` | M5b | 虚拟链路与时空补偿依据 \cite{zhang2020virtuallinks,zhang2022remunerating}。 |
@@ -80,6 +81,8 @@
 
 非输电替代方案、清洁能源灵活性和数据中心灵活性分别由
 \cite{cao2024nonwire}、\cite{riepin2025clean} 和
-\cite{takci2025flexibility} 提供结构性参照。它们用于限定相关工作与
-baseline panel 的比较边界，不被当作本文门控账本、冻结合同基线或闭合电表
-结算规则的直接来源；这些规则仍由正文中的定义、命题和实验审计负责。
+\cite{takci2025flexibility} 提供结构性参照；面向负荷聚合协调和生产轨迹
+灵活性的近期研究由 \cite{dcaopt2024,caprara2026} 补充。它们用于限定
+相关工作与 baseline panel 的比较边界，不被当作本文门控账本、冻结合同
+基线或闭合电表结算规则的直接来源；这些规则仍由正文中的定义、命题和
+实验审计负责。

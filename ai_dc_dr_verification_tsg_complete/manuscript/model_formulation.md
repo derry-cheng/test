@@ -8,11 +8,13 @@ definition, or a proposition derived in this study. Citation keys resolve in
 
 The related-work boundary is explicit. Recent power-system studies on non-wire
 alternatives, clean-energy flexibility, and data-center flexibility
-\cite{cao2024nonwire,riepin2025clean,takci2025flexibility} motivate the
-structural analogue panel, but they do not supply the gate-causal ledger,
-submitted/frozen contract separation, or the closed-meter settlement rule used
-here. Those elements are defined and proved below rather than presented as
-consequences of the cited models.
+\cite{cao2024nonwire,riepin2025clean,takci2025flexibility}, together with
+load-aggregator coordination and production-trace flexibility studies
+\cite{dcaopt2024,caprara2026}, motivate the structural analogue panel. None of
+these sources supplies the gate-causal ledger, submitted/frozen contract
+separation, or closed-meter settlement rule used here. Those elements are
+defined and proved below rather than presented as consequences of the cited
+models.
 
 ## A. Indices, data, and decision variables
 
@@ -62,16 +64,29 @@ For an event window, \(p^0\) is the no-event counterfactual and
 \(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
 only in mechanism-isolation replays. The measured execution meter
 \(p^{\mathrm{obs}}\) is an independent observational target for locked trace
-alignment; the public releases contain no utility event label. A submitted
-counterfactual \(\widehat p^0\) creates gross forecast credit
+alignment; the public releases contain no utility event label. For each source
+\(z\in\{\mathrm{obs},\mathrm{sim}\}\), define submitted and true credit by
 
 \[
-F=\Delta t\sum_{d,t\in\mathcal E}
-\left[\widehat p^0_{dt}-\max\{p^{\mathrm{obs}}_{dt},p^{1,\mathrm{sim}}_{dt}\}\right]_+.
+\widehat r^{(z)}_{dt}=\left[\widehat p^0_{dt}-p^{(z)}_{dt}\right]_+,
+\qquad
+r^{(z)}_{dt}=\left[p^0_{dt}-p^{(z)}_{dt}\right]_+.
 \]
 
-The settlement rule is distinct from this gross risk metric. After the event
-meter closes, the payable response is
+The source-specific false-credit exposure is the excess of submitted credit
+over true credit,
+
+\[
+F^{(z)}=\Delta t\sum_{d,t\in\mathcal E}
+\left[\widehat r^{(z)}_{dt}-r^{(z)}_{dt}\right]_+,
+\qquad z\in\{\mathrm{obs},\mathrm{sim}\}.
+\]
+
+The simulated source is used for the validation risk epigraph and the observed
+source is recomputed only in the locked replay; neither is a utility-event
+label. This distinction prevents a post-event oracle from entering a deployed
+payment rule. The settlement rule is separate from both diagnostic exposures.
+After the event meter closes, the payable response is
 
 \[
 Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
@@ -85,6 +100,36 @@ deployable quantity \(p^{\rm con}\) is frozen before the event and is the only
 baseline used in payment formation; the measured meter enters only after the
 decision as an observational replay. No causal intervention is inferred from
 the public traces.
+
+When a tariff-bearing operating plan \(p^{\rm plan}\) is evaluated, it is not
+relabelled as a baseline. Planned reduction, metered reduction, and true
+oracle reduction are respectively
+
+\[
+q^{\rm plan}_{dt}=[p^{\rm con}_{dt}-p^{\rm plan}_{dt}]_+,\quad
+q^{\rm meter}_{dt}=[p^{\rm con}_{dt}-p^{\rm obs}_{dt}]_+,\quad
+q^{\rm true}_{dt}=[p^0_{dt}-p^{\rm obs}_{dt}]_+.
+\]
+
+The closed-meter transfer is the pointwise intersection
+
+\[
+q^{\rm pay}_{dt}=\min\{q^{\rm plan}_{dt},q^{\rm meter}_{dt}\},
+\qquad
+Q^{\rm pay}=\Delta t\sum_{d,t\in\mathcal E}q^{\rm pay}_{dt},
+\]
+
+and the offline response audit reports
+
+\[
+F^{\rm delivery}=\Delta t\sum_{d,t\in\mathcal E}
+ [q^{\rm pay}_{dt}-q^{\rm true}_{dt}]_+,\qquad
+U^{\rm delivery}=\Delta t\sum_{d,t\in\mathcal E}
+ [q^{\rm true}_{dt}-q^{\rm pay}_{dt}]_+.
+\]
+
+These delivery quantities are calculated only after the meter closes; they are
+not used to select the submitted contract or the event-gate response plan.
 
 Define cumulative arrivals and cumulative service as
 
@@ -139,6 +184,41 @@ distance over this feasible set. Stage two minimizes operating cost subject to
 the stage-one optimal distance. This lexicographic construction uses the
 standard epigraph and optimal-face properties in \cite{boyd2004convex}; it
 introduces no user-selected penalty tradeoff.
+
+### B.1 Indexed ledger-to-network coupling
+
+The aggregate service variables are not an independent network input. Partition
+the committed job ledger by source, class, and native destination as
+\(\mathcal J_{skd}\). For job \(j\), let \(u_{j\tau}\) be its service energy in
+an admissible interval \(r_j\leq\tau<d_j\). The job-indexed witness and its
+regional reconstruction are
+
+\[
+x^{\rm job}_{skd\tau}
+=\sum_{j\in\mathcal J_{skd}:\,r_j\leq\tau<d_j}u_{j\tau},
+\qquad
+p^{\rm job}_{d\tau}
+=\sum_{s,k}x^{\rm job}_{skd\tau}.
+\]
+
+The exact flow used for the workload certificate is therefore
+\(x_{skd\tau}=x^{\rm job}_{skd\tau}\), with the same release, deadline,
+capacity, and terminal constraints. Experiment 19 stores the complete
+job--slot service vector; Experiment 22 reconstructs \(p^{\rm job}\) from that
+vector and checks its maximum residual against the saved aggregate profile
+before any dispatch is solved. The network value is consequently attached to
+the committed indexed witness, not to a second aggregate optimization. The
+network replay uses the arithmetic mean of every declared event slot solely as
+a deterministic representative interval; the underlying equality is checked
+at every event slot.
+
+For scale, let \(s_{\rm raw}\) be the source-to-energy normalization and
+\(s_{\rm cap}\) the largest factor that respects the committed network
+capacity. A fixed \(0.001\)-MW-per-GPU nameplate gives the deployable factor
+\(s_{\rm dep}=\min(s_{\rm raw},s_{\rm cap},s_{\rm gpu})\). A separate
+capacity-proportional profile may scale the network nameplate with the trace;
+it is reported as a stress scenario and is not substituted for
+\(s_{\rm dep}\) in the deployable certificate.
 
 ## C. Honest and strategic workload objectives
 

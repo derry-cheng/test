@@ -1,13 +1,16 @@
 {
   "experiment": "exact homogeneous scale-consistency certificate",
   "source": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
-  "proof_basis": "uniform scaling preserves release/deadline support, job-energy equalities, nonnegativity, and proportional GPU upper bounds",
+  "proof_basis": "fixed-nameplate scaling preserves release/deadline support, job-energy equalities, nonnegativity, and the declared GPU upper bounds; the larger network-capacity profile is a proportional stress scenario",
   "source_scale": 1.0,
   "declared_scale": 15350.07101986688,
   "capacity_safe_scale": 3475.1083746250592,
+  "capacity_proportional_network_scale": 3475.1083746250592,
   "fixed_gpu_nameplate_scale": 1.0357518522695626,
   "fixed_nameplate_certified_scale": 1.0357518522695626,
-  "certified_scale": 3475.1083746250592,
+  "certified_scale": 1.0357518522695626,
+  "capacity_proportional_profile_is_stress_scenario": true,
+  "deployable_profile_respects_fixed_gpu_nameplate": true,
   "capacity_mw": 118.0,
   "re_solved": false
 }

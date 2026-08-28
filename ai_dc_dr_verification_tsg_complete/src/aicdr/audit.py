@@ -232,7 +232,15 @@ EXPECTED_FILES = {
     ],
     "experiment_21": [
         "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
+        "experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
+        "experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
         "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
+    ],
+    "experiment_22": [
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
+        "experiments/exp22_coupled_job_network_certificate/README.md",
     ],
     "manuscript_sources": [
         "manuscript/main.tex",
@@ -300,6 +308,7 @@ def run_audit(
         "exp19",
         "exp20",
         "exp21",
+        "exp22",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -372,6 +381,8 @@ def run_audit(
         "cao2024nonwire",
         "riepin2025clean",
         "takci2025flexibility",
+        "dcaopt2024",
+        "caprara2026",
         "nash1950bargaining",
         "satchidanandan2023twostage",
         "chen2021incentive",
@@ -582,7 +593,17 @@ def run_audit(
     slots = int(cfg["project"]["slots_per_day"])
     day = int(workload["valid_days"][-1])
     daily = arrivals.reshape(-1, slots, arrivals.shape[1], arrivals.shape[2])[day]
-    system = parse_pglib_case(root / cfg["data"]["pglib_case"])
+    network_path = root / cfg["data"]["pglib_case"]
+    if network_path.exists():
+        system = parse_pglib_case(network_path)
+    else:
+        # Compact checkouts retain the processed workload and vendored public
+        # test cases but may omit the optional PGLib raw file.  Reuse the same
+        # IEEE-118 topology family used by the experiment input fallback.
+        from pypower.case118 import case118
+        from .optimization import power_system_from_ppc
+
+        system = power_system_from_ppc(case118())
     dc_count = int(cfg["project"]["number_of_regions"])
     prices = np.full((dc_count, slots), 50.0)
     schedule = solve_workload_schedule(daily, prices, cfg, mode="honest")
@@ -797,7 +818,7 @@ def run_audit(
                 "contract-capped-after-event"
             ).all()
         )
-        and set(decision_time["schema_version"].astype(int).unique()) == {10}
+        and set(decision_time["schema_version"].astype(int).unique()) == {11}
         and decision_meta.get("target_future_arrivals_used_for_decision") is False
         and "post-gate arrivals masked" in str(decision_meta.get("target_source", ""))
         and decision_meta.get("future_arrivals_removed_from_decision") is True
@@ -2950,6 +2971,37 @@ def run_audit(
             "66,769/28,413 held-out GPU-power observations are reconciled with "
             "finite MAE/RMSE/R2 while raw measurement and declared spatial mapping "
             "remain explicitly separated from utility-scale claims"
+        ),
+        checks,
+    )
+    coupled_summary = pd.read_csv(
+        root
+        / "experiments/exp22_coupled_job_network_certificate/results/final/"
+        "coupled_network_summary.csv"
+    )
+    coupled_values = dict(
+        zip(coupled_summary["metric"].astype(str), coupled_summary["value"].astype(float))
+    )
+    coupled_metadata = json.loads(
+        (
+            root
+            / "experiments/exp22_coupled_job_network_certificate/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        int(coupled_values.get("positive_energy_jobs", -1)) == 71_128
+        and int(coupled_values.get("service_variables", -1)) == 5_465_157
+        and float(coupled_values.get("maximum_job_to_aggregate_residual_mwh", np.inf))
+        <= 1e-12
+        and bool(coupled_values.get("all_network_solves_successful", 0.0))
+        and coupled_metadata.get("network_profile_is_same_job_witness") is True
+        and coupled_metadata.get("post_solution_profile_reoptimization") is False
+        and int(coupled_metadata.get("replayed_event_slot_count", 0)) == 1_048,
+        "exact_job_to_network_coupling_certificate",
+        (
+            "the 71,128-job indexed witness is aggregated before secure N-1 "
+            "settlement; residual is zero and no second profile optimization is used"
         ),
         checks,
     )

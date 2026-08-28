@@ -56,6 +56,12 @@ per-slot service bound. The observed scheduler completion interval
 is retained only for the independent native replay and never defines the
 counterfactual deadline or power cap.
 
+Experiment 22 reconstructs the regional network profile directly from the
+stored Experiment 19 job--slot service vector. It verifies the job-to-profile
+equality at every declared event slot before solving the secure network model;
+the reported network value is an arithmetic-mean event-window replay and is
+not based on a second aggregate optimization.
+
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The

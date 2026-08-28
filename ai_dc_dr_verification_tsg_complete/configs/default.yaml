@@ -122,6 +122,11 @@ experiments:
   payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 6
   payment_evaluation_parallel_workers: 8
+  # Experiment 22 replays the exact job witness through the same finite
+  # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
+  # contractual network value model; bounded threads avoid matrix duplication.
+  coupled_network_generator_segments: 4
+  coupled_network_parallel_workers: 1
   # The transfer panel is a predeclared evenly spaced subset of the locked
   # days; the full 54-day independent evaluator remains the primary result.
   payment_unseen_transfer_days: 6
@@ -157,7 +162,15 @@ experiments:
   # causal response can carry committed service into the event window when
   # the workload ledger supports it.
   decision_time_response_projection_weights: [0.0, 1.0, 3.0, 5.0, 7.0, 10.0, 15.0]
-  decision_time_response_validation_false_budget_mwh: 7.0
+  # A pre-event committed service quantity makes the response LP test an
+  # actual contracted flexibility obligation. It is imposed by an exact
+  # linear service row on the gate ledger, not by clipping a solved profile.
+  decision_time_committed_event_service_mwh: 5.0
+  decision_time_require_positive_response_price: true
+  # The response candidate selector permits a nonzero committed response while
+  # keeping the validation false-credit budget explicit; the closed-meter
+  # certificate still caps payable credit pointwise.
+  decision_time_response_validation_false_budget_mwh: 20.0
   # Event-gate reserve planning is calibrated only on temporally earlier
   # validation days.  The reserve is never credited until the corresponding
   # jobs enter the committed ledger.

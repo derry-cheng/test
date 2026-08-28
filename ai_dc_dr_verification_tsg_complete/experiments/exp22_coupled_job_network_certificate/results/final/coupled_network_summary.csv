@@ -1,0 +1,11 @@
+metric,value,unit
+positive_energy_jobs,71128.0,jobs
+service_variables,5465157.0,variables
+event_slots_replayed,1048.0,slots
+maximum_job_to_aggregate_residual_mwh,0.0,MWh
+event_native_job_profile_mwh,0.19442596894717518,MWh
+event_counterfactual_job_profile_mwh,0.027517586944444443,MWh
+event_secure_network_value_usd_per_interval,0.005966066848486662,USD/interval
+maximum_counterfactual_base_loading,0.04166666666666669,ratio
+maximum_counterfactual_postcontingency_loading,0.042914220197693045,ratio
+all_network_solves_successful,1.0,boolean

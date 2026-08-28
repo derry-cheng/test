@@ -31,6 +31,7 @@ from .experiments import (
 )
 from .trace_replay import run_trace_meter_replay
 from .scale_audit import run_exp21_scale_consistency
+from .coupling_certificate import run_exp22_coupled_job_network_certificate
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -51,6 +52,14 @@ def run_pipeline(
 ) -> None:
     """Run the paper's complete data-to-audit workflow from one entry point."""
     ensure_dirs(root)
+    worker_limits = {
+        key: int(value)
+        for key, value in cfg.get("experiments", {}).items()
+        if "worker" in key or key.endswith("_workers")
+    }
+    over_limit = {key: value for key, value in worker_limits.items() if value > 20}
+    if over_limit:
+        raise ValueError(f"Configured worker counts exceed the 20-core limit: {over_limit}")
     commitment = root / cfg["project"].get(
         "capacity_commitment_file", "configs/capacity_commitment.json"
     )
@@ -113,6 +122,7 @@ def run_pipeline(
         ("exp19", lambda: run_exp19(root, cfg, logger, resume=resume)),
         ("exp20", lambda: run_trace_meter_replay(root, cfg, logger)),
         ("exp21", lambda: run_exp21_scale_consistency(root, cfg, logger)),
+        ("exp22", lambda: run_exp22_coupled_job_network_certificate(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
@@ -189,10 +199,11 @@ def run_pipeline(
         "exp19",
         "exp20",
         "exp21",
+        "exp22",
         "audit",
-    } and stage not in {"audit", "exp20", "exp21"}:
+    } and stage not in {"audit", "exp20", "exp21", "exp22"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp20", "exp21"}:
+    elif stage in {"audit", "exp20", "exp21", "exp22"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound

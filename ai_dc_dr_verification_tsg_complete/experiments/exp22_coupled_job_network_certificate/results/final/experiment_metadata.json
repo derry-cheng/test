@@ -1,0 +1,32 @@
+{
+  "experiment": "exact job-to-network coupling certificate",
+  "source_solution": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+  "aggregation_equation": "p[r,t] = sum_{j:region_j=r, t in window_j} u[j,t]",
+  "network_load_equation": "L_t = L_base * 0.90 + B p_t / Delta t",
+  "network_value_model": "secure DC SCED with every finite non-islanding N-1 branch contingency",
+  "network_generator_segments": 4,
+  "network_parallel_workers": 1,
+  "network_time_aggregation": "arithmetic mean of every declared event slot; network value is reported per representative interval",
+  "network_source": "vendored PYPOWER case118 (compact checkout fallback)",
+  "data_center_buses_one_based": [
+    15,
+    42,
+    80,
+    116
+  ],
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "replayed_event_slot_count": 1048,
+  "maximum_job_to_aggregate_residual_mwh": 0.0,
+  "network_profile_is_same_job_witness": true,
+  "post_solution_profile_reoptimization": false,
+  "all_network_solves_successful": true
+}

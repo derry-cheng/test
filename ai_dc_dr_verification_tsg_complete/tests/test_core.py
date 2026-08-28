@@ -10,7 +10,11 @@ import numpy as np
 import pandas as pd
 
 from aicdr.data import _balanced_trace_region_labels, _validate_declared_raw_sources, load_workload
-from aicdr.baselines import exact_block_sign_test, response_metrics
+from aicdr.baselines import (
+    exact_block_sign_test,
+    response_delivery_metrics,
+    response_metrics,
+)
 from aicdr.experiments import (
     _exact_group_symmetric_shapley,
     _exact_shapley_values,
@@ -32,6 +36,16 @@ from aicdr.utils import load_config
 
 ROOT = Path(__file__).resolve().parents[1]
 CFG = load_config(ROOT / "configs/default.yaml")
+
+
+def _test_network():
+    """Use the declared PGLib case when present, otherwise the vendored public case."""
+    path = ROOT / CFG["data"]["pglib_case"]
+    if path.exists():
+        return parse_pglib_case(path)
+    from pypower.case118 import case118
+
+    return power_system_from_ppc(case118())
 
 
 def test_stage_runs_cannot_overwrite_the_unified_manifest() -> None:
@@ -65,9 +79,12 @@ def test_risk_ceiling_keeps_observational_and_simulated_truth_sources_explicit()
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
-    source = str(metadata["risk_credit_ceiling_source"])
-    assert "offline union ceiling" in source
-    assert "separate truth-source scores" in source
+    source = str(metadata["risk_credit_definition"])
+    assert "true-credit subtraction" in source
+    assert "separate truth-source scores" in metadata["risk_truth_source_audit"]
+    assert "oracle no-event baseline minus closed event meter" in str(
+        metadata["risk_credit_threshold_identity"]
+    )
     assert metadata["event_intervention_observed"] is False
     truth_audit = pd.read_csv(
         ROOT
@@ -106,7 +123,7 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
         float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
     }
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
-    assert set(comparison["schema_version"].astype(int)) == {10}
+    assert set(comparison["schema_version"].astype(int)) == {11}
     assert not comparison.loc[
         comparison["method"] == "Decision-time truncated-ledger verifier",
         "future_arrivals_used_for_decision",
@@ -119,17 +136,32 @@ def test_contract_settlement_does_not_hardcode_zero_overpayment() -> None:
     contract = np.array([[10.0, 10.0]])
     oracle = np.array([[9.0, 9.0]])
     actual = np.array([[8.0, 8.0]])
-    scored = response_metrics(
+    scored = response_delivery_metrics(
+        contract,
         submitted,
         oracle,
         actual,
         [0, 1],
         1.0,
-        contract_baseline=contract,
     )
-    assert scored["contract_capped_response_mwh"] == 4.0
-    assert scored["meter_capped_false_response_mwh"] == 2.0
-    assert scored["meter_capped_underpayment_mwh"] == 0.0
+    assert scored["planned_response_mwh"] == 0.0
+    assert scored["contract_capped_response_mwh"] == 0.0
+
+    # A distinct response plan is scored as planned reduction from the
+    # contract and as delivered reduction from the closed meter.
+    response_plan = np.array([[8.0, 8.0]])
+    delivered = response_delivery_metrics(
+        contract,
+        response_plan,
+        oracle,
+        actual,
+        [0, 1],
+        1.0,
+    )
+    assert delivered["planned_response_mwh"] == 4.0
+    assert delivered["contract_capped_response_mwh"] == 4.0
+    assert delivered["meter_capped_false_response_mwh"] == 2.0
+    assert delivered["meter_capped_underpayment_mwh"] == 0.0
 
 
 def test_feature_stratified_region_scenario_is_balanced_and_reproducible() -> None:
@@ -198,8 +230,13 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     )
     scale_values = dict(zip(scale["metric"], scale["value"]))
     assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 3475.1083746250592)
+    assert np.isclose(
+        float(scale_values["capacity_proportional_network_scale_factor"]),
+        3475.1083746250592,
+    )
     assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.0357518522695626)
     assert float(scale_values["certified_peak_mw"]) <= 118.0 + 1e-9
+    assert float(scale_values["capacity_proportional_minimum_capacity_slack_mwh"]) >= -1e-9
 
 
 def test_unseen_payment_transfer_panel_is_not_used_for_certificate_selection() -> None:
@@ -785,7 +822,7 @@ def test_exact_power_band_and_masked_lexicographic_projection() -> None:
 
 
 def test_sced_balances_and_respects_branch_limits() -> None:
-    system = parse_pglib_case(ROOT / CFG["data"]["pglib_case"])
+    system = _test_network()
     load = system.bus[:, 2] * 0.9
     result = solve_sced(system, load, CFG["market"]["generator_segments"])
     assert result.success
@@ -904,7 +941,7 @@ def test_full_payment_certificate_candidate_hull_is_independent() -> None:
 
 
 def test_polyhedral_sced_subgradient_certificate() -> None:
-    system = parse_pglib_case(ROOT / CFG["data"]["pglib_case"])
+    system = _test_network()
     baseline_load = system.bus[:, 2] * 0.9
     actual_load = baseline_load.copy()
     actual_load[np.array(CFG["project"]["data_center_buses"]) - 1] *= 1.03
@@ -924,7 +961,7 @@ def test_polyhedral_sced_subgradient_certificate() -> None:
 
 
 def test_independent_high_resolution_value_is_not_self_scored() -> None:
-    system = parse_pglib_case(ROOT / CFG["data"]["pglib_case"])
+    system = _test_network()
     evaluation = _ieee118_quadratic_evaluation_system(system)
     baseline_load = system.bus[:, 2] * 0.9
     actual_load = baseline_load.copy()
@@ -1069,5 +1106,25 @@ def test_final_panels_exist() -> None:
         "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
         "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
         "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
     ]
+    missing = [path for path in expected if not (ROOT / path).is_file()]
+    assert not missing, f"missing final panels: {missing}"
     assert all((ROOT / path).stat().st_size > 0 for path in expected)
+
+
+def test_job_to_network_certificate_replays_the_same_indexed_witness() -> None:
+    folder = ROOT / "experiments/exp22_coupled_job_network_certificate/results/final"
+    summary = pd.read_csv(folder / "coupled_network_summary.csv")
+    values = dict(zip(summary["metric"], summary["value"]))
+    assert int(float(values["positive_energy_jobs"])) == 71128
+    assert int(float(values["service_variables"])) == 5_465_157
+    assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
+    assert float(values["all_network_solves_successful"]) == 1.0
+    metadata = json.loads(
+        (folder / "experiment_metadata.json").read_text(encoding="utf-8")
+    )
+    assert metadata["network_profile_is_same_job_witness"] is True
+    assert metadata["post_solution_profile_reoptimization"] is False
+    assert metadata["replayed_event_slot_count"] == 1048

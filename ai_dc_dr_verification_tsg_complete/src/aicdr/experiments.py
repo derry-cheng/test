@@ -26,6 +26,7 @@ from .baselines import (
     predict_causal_metadata_gradient_boosting,
     predict_additional_strong_baselines,
     predict_statistical_baselines,
+    response_delivery_metrics,
     response_metrics,
 )
 from .data import (
@@ -177,7 +178,22 @@ def _inputs(root: Path, cfg: dict[str, Any], logger: logging.Logger):
     observed = workload["observed_counterfactual_mw"][: n_days * slots]
     observed_days = observed.reshape(n_days, slots, observed.shape[1]).transpose(0, 2, 1)
     valid_days = workload["valid_days"].astype(int)
-    system = parse_pglib_case(root / cfg["data"]["pglib_case"])
+    network_path = root / cfg["data"]["pglib_case"]
+    if network_path.exists():
+        system = parse_pglib_case(network_path)
+        logger.info("Using declared PGLib network case: %s", network_path)
+    else:
+        # The compact public checkout intentionally omits the raw source
+        # archive.  The vendored PYPOWER IEEE-118 case is numerically the same
+        # public benchmark family and keeps locked processed-data audits
+        # runnable; a full-data run still uses the declared PGLib file.
+        from pypower.case118 import case118
+
+        system = power_system_from_ppc(case118())
+        logger.warning(
+            "Declared PGLib case is absent; using vendored PYPOWER case118 for "
+            "the locked processed-data audit"
+        )
     base_profiles, prices, objectives = build_grid_profiles(system, cfg, logger)
     return arrivals_days, observed_days, valid_days, system, base_profiles, prices, objectives
 
@@ -859,6 +875,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     folder = root / "experiments/exp2_baseline_verification"
     final = folder / "results/final"
     intermediate = folder / "results/intermediate"
+    final.mkdir(parents=True, exist_ok=True)
+    intermediate.mkdir(parents=True, exist_ok=True)
     arrivals_days, observed, valid_days, _, _, prices, _ = _inputs(root, cfg, logger)
     model_honest, model_strategic, honest_migration, strategic_migration = precompute_reference_schedules(
         root, cfg, arrivals_days, valid_days, prices, logger
@@ -1196,14 +1214,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         if count % day_count:
             raise ValueError("Risk design cannot be partitioned into complete days")
         observations_per_day = count // day_count
-        # The two trajectories are kept as separate labels throughout scoring.
-        # Their pointwise maximum is used only as the predeclared offline
-        # union ceiling for the risk epigraph; it is never reported as a
-        # physical meter path or as a causal event outcome.
-        credit_ceiling = np.maximum(local_target, local_actual)
+        # False credit is defined on credit, not on gross load.  The oracle
+        # response credit is the positive part of the no-event trajectory
+        # minus the closed event meter.  The prediction-side epigraph then
+        # subtracts this true credit from the submitted credit.  For a
+        # nonnegative true credit this is algebraically equivalent to the
+        # compact threshold max(local_target, local_actual), but retaining the
+        # two terms makes the payment semantics auditable and prevents a gross
+        # load reduction from being reported as false credit.
+        true_credit = np.maximum(local_target - local_actual, 0.0)
+        credit_threshold = local_actual + true_credit
         reference_prediction = local_design[:, reference_candidate]
         reference_false_by_day = np.maximum(
-            reference_prediction - credit_ceiling, 0.0
+            np.maximum(reference_prediction - local_actual, 0.0) - true_credit,
+            0.0,
         ).reshape(day_count, observations_per_day).sum(axis=1)
         reference_false_exposure = float(reference_false_by_day.sum())
         risk_budget = float(
@@ -1243,7 +1267,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             rows.append(row_id)
             cols.append(candidates + sample)
             values.append(-1.0)
-            upper.append(float(credit_ceiling[sample]))
+            # f_n >= [ [p_n - meter_n]_+ - true_credit_n ]_+.
+            # Since true_credit_n >= 0, the single linear row below is an
+            # exact epigraph: f_n >= p_n - meter_n - true_credit_n.
+            upper.append(float(credit_threshold[sample]))
             row_id += 1
         if enforce_cvar_budget:
             for local_day in range(day_count):
@@ -1377,7 +1404,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             )
         prediction = local_design @ coefficients
         fitted_false_by_day = np.maximum(
-            prediction - credit_ceiling, 0.0
+            np.maximum(prediction - local_actual, 0.0) - true_credit,
+            0.0,
         ).reshape(day_count, observations_per_day).sum(axis=1)
         fitted_false_exposure = float(fitted_false_by_day.sum())
         fitted_daily_max = float(fitted_false_by_day.max(initial=0.0))
@@ -1466,7 +1494,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "optimizer_success": float(fitted.success),
             "solver_name": "scipy.optimize.trust-constr",
             "convex_quadratic_program": True,
-            "epigraph_formulation": "sample false-credit slacks plus linear daily CVaR epigraph",
+            "epigraph_formulation": "sample credit slacks with true-credit subtraction plus linear daily CVaR epigraph",
+            "true_credit_definition": "[oracle no-event baseline minus closed event meter]_+",
             "total_budget_enforced": bool(enforce_total_budget),
             "cvar_budget_enforced": bool(enforce_cvar_budget),
             "kkt_stationarity_residual": kkt_residual,
@@ -1574,12 +1603,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ].reshape(-1)
             held_prediction = held_design @ fold_weights
             held_reference = held_design[:, risk_reference_index]
-            held_ceiling = np.maximum(held_target, held_actual)
+            held_true_credit = np.maximum(held_target - held_actual, 0.0)
             held_false = float(
-                np.maximum(held_prediction - held_ceiling, 0.0).sum()
+                np.maximum(
+                    np.maximum(held_prediction - held_actual, 0.0)
+                    - held_true_credit,
+                    0.0,
+                ).sum()
             )
             held_reference_false = float(
-                np.maximum(held_reference - held_ceiling, 0.0).sum()
+                np.maximum(
+                    np.maximum(held_reference - held_actual, 0.0)
+                    - held_true_credit,
+                    0.0,
+                ).sum()
             )
             held_rmse = float(
                 np.sqrt(np.mean((held_prediction - held_target) ** 2))
@@ -2189,15 +2226,18 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     risk_audit_rows: list[dict[str, Any]] = []
     for local_day, day_value in enumerate(test_days):
         day = int(day_value)
-        ceiling = np.maximum(
-            honest[day][:, event_slots], actual_lookup[day][:, event_slots]
-        )
+        actual_event = actual_lookup[day][:, event_slots]
+        true_credit = np.maximum(honest[day][:, event_slots] - actual_event, 0.0)
         final_event = stored_baselines[local_day, final_risk_index][:, event_slots]
         reference_event = stored_baselines[
             local_day, final_reference_index
         ][:, event_slots]
-        final_false = np.maximum(final_event - ceiling, 0.0).sum()
-        reference_false = np.maximum(reference_event - ceiling, 0.0).sum()
+        final_false = np.maximum(
+            np.maximum(final_event - actual_event, 0.0) - true_credit, 0.0
+        ).sum()
+        reference_false = np.maximum(
+            np.maximum(reference_event - actual_event, 0.0) - true_credit, 0.0
+        ).sum()
         risk_audit_rows.append(
             {
                 "day": day,
@@ -2238,10 +2278,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     )
     risk_audit.to_csv(final / "final_risk_contract_audit.csv", index=False)
 
-    # The union ceiling above is an offline eligibility diagnostic.  Preserve
-    # the two underlying truth sources in a separate locked-test certificate so
-    # no aggregate max() can conceal a source-specific increase in unsupported
-    # credit.  These are meter diagnostics, not utility-event treatment effects.
+    # Preserve the two underlying truth sources in a separate locked-test
+    # certificate so no aggregate threshold can conceal a source-specific
+    # increase in unsupported credit.  These are meter diagnostics, not
+    # utility-event treatment effects.
     truth_source_rows: list[dict[str, Any]] = []
     for local_day, day_value in enumerate(test_days):
         day = int(day_value)
@@ -2252,8 +2292,19 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             (actual_truth_source, actual_lookup[day]),
         ]:
             truth_event = truth_profile[:, event_slots]
-            final_false_mw_slots = float(np.maximum(final_event - truth_event, 0.0).sum())
-            reference_false_mw_slots = float(np.maximum(reference_event - truth_event, 0.0).sum())
+            true_credit = np.maximum(honest[day][:, event_slots] - truth_event, 0.0)
+            final_false_mw_slots = float(
+                np.maximum(
+                    np.maximum(final_event - truth_event, 0.0) - true_credit,
+                    0.0,
+                ).sum()
+            )
+            reference_false_mw_slots = float(
+                np.maximum(
+                    np.maximum(reference_event - truth_event, 0.0) - true_credit,
+                    0.0,
+                ).sum()
+            )
             truth_source_rows.append(
                 {
                     "day": day,
@@ -2263,6 +2314,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     "reference_false_credit_mw_slots": reference_false_mw_slots,
                     "final_false_credit_mwh": final_false_mw_slots * dt_h,
                     "reference_false_credit_mwh": reference_false_mw_slots * dt_h,
+                    "true_credit_mwh": float(true_credit.sum() * dt_h),
                     "false_credit_ratio_to_reference": final_false_mw_slots
                     / max(reference_false_mw_slots, 1e-9),
                     "causal_event_effect": False,
@@ -3328,12 +3380,28 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 ),
             },
             "risk_fit_certificate": risk_fit_certificate,
-            "risk_credit_ceiling_source": (
-                "offline union ceiling max(observational baseline, simulated "
-                "mechanism-isolation response); separate truth-source scores "
-                "are retained and no causal event effect is claimed"
+            "risk_credit_definition": (
+                "false credit = submitted credit minus true credit after "
+                "pointwise positive-part evaluation (true-credit subtraction); "
+                "the oracle term is used only in locked replay diagnostics"
+            ),
+            "risk_credit_threshold_identity": (
+                "for nonnegative true credit, the exact epigraph threshold is "
+                "closed meter + true credit = max(oracle no-event baseline, closed meter); "
+                "true credit is oracle no-event baseline minus closed event meter after "
+                "positive-part evaluation"
             ),
             "risk_truth_source_audit_file": "risk_truth_source_audit.csv",
+            "risk_truth_source_audit": (
+                "separate truth-source scores: simulated mechanism-isolation "
+                "credit defines the validation risk contract; the independent "
+                "observed-meter score is recomputed only in locked replay"
+            ),
+            "risk_credit_ceiling_source": (
+                "offline union ceiling for the pointwise risk fit: separate "
+                "truth-source scores are retained, and there is no causal "
+                "event effect"
+            ),
             "risk_reference_candidate": risk_candidate_names[risk_reference_index],
             "pointwise_envelope_candidate": "Single Feasible Projection",
             "two_sided_band_tolerance_mw": float(
@@ -10387,12 +10455,18 @@ def run_exp17(
             "decision_time_response_validation_false_budget_mwh", 0.25
         )
     )
+    committed_event_service_mwh = float(
+        cfg["experiments"].get(
+            "decision_time_committed_event_service_mwh", 0.0
+        )
+    )
     if (
         response_dr_prices.size == 0
         or np.any(response_dr_prices < 0.0)
         or response_projection_weights.size == 0
         or np.any(response_projection_weights < 0.0)
         or response_false_budget < 0.0
+        or committed_event_service_mwh < 0.0
     ):
         raise ValueError("Invalid causal response candidate grid")
     # Exp17 is a deployment-time rolling checkpoint, not the full-horizon
@@ -10468,32 +10542,19 @@ def run_exp17(
             fixed_load + flexible_capacity,
             dtype=float,
         )
-        committed_result = _solve_day_with_buffer(
-            truncated,
-            prices,
-            gate_cfg,
-            mode="event_response",
-            dr_price=float(dr_price),
-            target=target,
-            projection_weight=float(response_projection_weight),
-            power_upper_mw=committed_event_upper,
-            require_all_arrivals_at_terminal=False,
-            terminal_completion_index=terminal,
-            event_slots_override=event_slots,
-        )
-        if not committed_result.success:
-            raise RuntimeError(
-                f"Committed-ledger response LP failed on day {day}: "
-                f"{committed_result.solver_message}"
-            )
         committed_baseline_result = _solve_day_with_buffer(
             truncated,
             prices,
             gate_cfg,
             mode="honest",
             target=target,
-            projection_weight=float(response_projection_weight),
+            # The submitted contract is independent of the post-event
+            # tariff/response candidate.  Keeping the gate-causal baseline
+            # penalty fixed prevents the response calibration grid from
+            # silently changing the contract being scored.
+            projection_weight=projection_weight,
             power_upper_mw=committed_event_upper,
+            minimum_participant_event_mwh=committed_event_service_mwh,
             require_all_arrivals_at_terminal=False,
             terminal_completion_index=terminal,
             event_slots_override=event_slots,
@@ -10502,6 +10563,32 @@ def run_exp17(
             raise RuntimeError(
                 f"Committed-ledger baseline LP failed on day {day}: "
                 f"{committed_baseline_result.solver_message}"
+            )
+        # The response trajectory is allowed to reduce the committed service
+        # at event slots, but it cannot create a larger submitted baseline.
+        # This is a linear contractual upper bound, not a post-solve clip.
+        response_upper = committed_event_upper.copy()
+        response_upper[:, event_slots] = np.minimum(
+            response_upper[:, event_slots],
+            committed_baseline_result.power_mw[:, event_slots],
+        )
+        committed_result = _solve_day_with_buffer(
+            truncated,
+            prices,
+            gate_cfg,
+            mode="event_response",
+            dr_price=float(dr_price),
+            target=target,
+            projection_weight=float(response_projection_weight),
+            power_upper_mw=response_upper,
+            require_all_arrivals_at_terminal=False,
+            terminal_completion_index=terminal,
+            event_slots_override=event_slots,
+        )
+        if not committed_result.success:
+            raise RuntimeError(
+                f"Committed-ledger response LP failed on day {day}: "
+                f"{committed_result.solver_message}"
             )
         return (
             committed_result,
@@ -10649,18 +10736,21 @@ def run_exp17(
                         float(response_weight),
                     )
                 )
+                # The no-tariff LP is the submitted baseline.  The tariff LP
+                # is a response operating plan and is scored through planned
+                # versus metered reduction, never as a second baseline.
                 base = baseline_metrics(
-                    response_result.power_mw,
+                    baseline_result.power_mw,
                     validation["oracle"][local_day],
                     event_slots,
                 )
-                response = response_metrics(
+                response = response_delivery_metrics(
+                    baseline_result.power_mw,
                     response_result.power_mw,
                     validation["oracle"][local_day],
                     validation["actual"][local_day],
                     event_slots,
                     float(cfg["project"]["interval_minutes"]) / 60.0,
-                    contract_baseline=baseline_result.power_mw,
                 )
                 response["post_response_event_service_mwh"] = float(
                     np.maximum(
@@ -10695,13 +10785,30 @@ def run_exp17(
             payable_response_mwh=("meter_capped_response_mwh", "mean"),
         )
     )
+    if bool(
+        cfg["experiments"].get("decision_time_require_positive_response_price", False)
+    ):
+        # A response-calibration table that selects a zero-tariff tie point
+        # would not test the declared DR service mechanism. Restrict the
+        # predeclared candidate pool to positive tariff and positive projection
+        # weights; the choice remains validation-only and deterministic.
+        positive_pool = response_validation_summary[
+            (response_validation_summary["dr_price_per_mwh"] > 0.0)
+            & (response_validation_summary["projection_weight"] > 0.0)
+            & (response_validation_summary["payable_response_mwh"] > 1.0e-9)
+        ]
+    else:
+        positive_pool = response_validation_summary
     feasible_response = response_validation_summary[
         response_validation_summary["false_response_mwh"]
         <= response_false_budget + 1e-12
     ]
-    response_pool = (
-        feasible_response if len(feasible_response) else response_validation_summary
-    )
+    response_pool = feasible_response if len(feasible_response) else response_validation_summary
+    if len(positive_pool):
+        positive_feasible = positive_pool[
+            positive_pool["false_response_mwh"] <= response_false_budget + 1e-12
+        ]
+        response_pool = positive_feasible if len(positive_feasible) else positive_pool
     selected_response = response_pool.sort_values(
         ["credit_f1", "credit_recall", "nrmse", "false_response_mwh"],
         ascending=[False, False, True, True],
@@ -10739,7 +10846,7 @@ def run_exp17(
     # The candidate economic grid is part of the decision protocol. Bump the
     # checkpoint schema whenever that grid changes so a stale response profile
     # cannot be reported under a new calibration.
-    schema = 10
+    schema = 11
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         if (
@@ -10816,36 +10923,51 @@ def run_exp17(
                 ),
             }
         )
-        for method, profile, future_used, certificate_scope, contract_baseline in [
-            (
-                "Decision-time truncated-ledger verifier",
-                contract_profile,
-                False,
-                "gate-causal frozen contract baseline",
-                contract_profile,
-            ),
-            (
-                "Complete-ledger risk-constrained verifier",
-                complete_profiles[local_day],
-                True,
-                "ex-post reference audit",
-                committed_reference_result.power_mw,
-            ),
-            (
-                "Committed-ledger rolling-service verifier",
-                committed_result.power_mw,
-                False,
-                "committed-ledger response; submitted baseline frozen before event",
-                committed_baseline_result.power_mw,
-            ),
-            (
-                "Committed-ledger reference schedule",
-                committed_reference_result.power_mw,
-                False,
-                "committed-ledger eligibility reference",
-                committed_reference_result.power_mw,
-            ),
-        ]:
+        method_specs = [
+            {
+                "method": "Decision-time truncated-ledger verifier",
+                "profile": contract_profile,
+                "response_profile": contract_profile,
+                "future_used": False,
+                "certificate_scope": "gate-causal frozen contract baseline",
+                "contract_baseline": contract_profile,
+                "response_scoring": "baseline-credit audit",
+            },
+            {
+                "method": "Complete-ledger risk-constrained verifier",
+                "profile": complete_profiles[local_day],
+                "response_profile": complete_profiles[local_day],
+                "future_used": True,
+                "certificate_scope": "ex-post reference audit",
+                "contract_baseline": complete_profiles[local_day],
+                "response_scoring": "baseline-credit audit",
+            },
+            {
+                "method": "Committed-ledger rolling-service verifier",
+                "profile": committed_baseline_result.power_mw,
+                "response_profile": committed_result.power_mw,
+                "future_used": False,
+                "certificate_scope": "committed-ledger response; submitted baseline frozen before event",
+                "contract_baseline": committed_baseline_result.power_mw,
+                "response_scoring": "planned-versus-metered response delivery",
+            },
+            {
+                "method": "Committed-ledger reference schedule",
+                "profile": committed_reference_result.power_mw,
+                "response_profile": committed_reference_result.power_mw,
+                "future_used": False,
+                "certificate_scope": "committed-ledger eligibility reference",
+                "contract_baseline": committed_reference_result.power_mw,
+                "response_scoring": "baseline-credit audit",
+            },
+        ]
+        for spec in method_specs:
+            method = str(spec["method"])
+            profile = np.asarray(spec["profile"])
+            response_profile = np.asarray(spec["response_profile"])
+            future_used = bool(spec["future_used"])
+            certificate_scope = str(spec["certificate_scope"])
+            contract_baseline = np.asarray(spec["contract_baseline"])
             row = {
                 "day": day,
                 "method": method,
@@ -10854,6 +10976,13 @@ def run_exp17(
                 "future_arrivals_mwh_after_gate": future_arrivals_mwh,
                 "future_arrivals_used_for_decision": bool(future_used),
                 "certificate_scope": certificate_scope,
+                "profile_role": "submitted baseline contract",
+                "response_profile_role": (
+                    "post-event operating plan"
+                    if method == "Committed-ledger rolling-service verifier"
+                    else "same profile as submitted baseline"
+                ),
+                "response_scoring": str(spec["response_scoring"]),
                 "committed_arrivals_mwh": float(truncated.sum()),
                 "reserved_future_arrivals_mwh": reserve_mwh,
                 "uncommitted_arrivals_excluded_from_payment_mwh": future_arrivals_mwh,
@@ -10871,14 +11000,15 @@ def run_exp17(
                 ),
                 "event_upper_margin_mw": float(
                     np.min(
-                        committed_event_upper[:, event_slots] - profile[:, event_slots]
+                        committed_event_upper[:, event_slots]
+                        - response_profile[:, event_slots]
                     )
                 )
                 if method == "Committed-ledger rolling-service verifier"
                 else np.nan,
                 "post_response_event_service_mwh": float(
                     np.maximum(
-                        committed_result.power_mw[:, event_slots]
+                        response_profile[:, event_slots]
                         - fixed_load,
                         0.0,
                     ).sum()
@@ -10896,16 +11026,28 @@ def run_exp17(
                 "schema_version": schema,
             }
             row.update(baseline_metrics(profile, oracle[local_day], event_slots))
-            row.update(
-                response_metrics(
-                    profile,
-                    oracle[local_day],
-                    actual[local_day],
-                    event_slots,
-                    float(cfg["project"]["interval_minutes"]) / 60.0,
-                    contract_baseline=contract_baseline,
+            if method == "Committed-ledger rolling-service verifier":
+                row.update(
+                    response_delivery_metrics(
+                        contract_baseline,
+                        response_profile,
+                        oracle[local_day],
+                        actual[local_day],
+                        event_slots,
+                        float(cfg["project"]["interval_minutes"]) / 60.0,
+                    )
                 )
-            )
+            else:
+                row.update(
+                    response_metrics(
+                        profile,
+                        oracle[local_day],
+                        actual[local_day],
+                        event_slots,
+                        float(cfg["project"]["interval_minutes"]) / 60.0,
+                        contract_baseline=contract_baseline,
+                    )
+                )
             trace_base = baseline_metrics(
                 profile, observed_meter[local_day], event_slots
             )
@@ -11010,11 +11152,13 @@ def run_exp17(
             "validation_false_credit_budget_mwh": response_false_budget,
             "selected_dr_price_per_mwh": selected_response_price,
             "selected_projection_weight": selected_response_weight,
+            "committed_event_service_mwh": committed_event_service_mwh,
             "selection_rule": (
                 "among candidates satisfying the validation false-credit budget, "
                 "maximize credit F1, then recall, then minimize nRMSE and false credit"
             ),
             "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
+            "response_scoring": "baseline error is computed on the submitted contract; response delivery is computed from planned reduction relative to that contract and the closed meter",
             "future_arrivals_used_for_decision": False,
         },
         "scoring_source": (
@@ -11055,11 +11199,17 @@ def run_exp17(
             "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
             "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
             "selected_dr_price_per_mwh": selected_response_price,
-            "selected_projection_weight": selected_response_weight,
+                "selected_projection_weight": selected_response_weight,
+                "committed_event_service_mwh": committed_event_service_mwh,
             "settlement_rule": (
                 "contract-capped-after-event; gross forecast credit is not paid "
                 "above the frozen contract credit or the pointwise metered response"
             ),
+            "profile_semantics": {
+                "contract_profile": "no-tariff committed-ledger LP frozen at the event gate",
+                "response_profile": "tariff-bearing operating LP on the same committed ledger",
+                "payment_metric": "minimum of planned committed reduction, closed-meter reduction, and oracle diagnostic credit",
+            },
         },
         "protocol_note": (
             "The truncated profile is an information-boundary diagnostic. The "
