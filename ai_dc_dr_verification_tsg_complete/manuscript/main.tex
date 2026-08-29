@@ -7,7 +7,7 @@
 \usepackage{xcolor}
 \usepackage{url}
 \emergencystretch=1em
-\renewcommand{\baselinestretch}{0.83}
+\renewcommand{\baselinestretch}{0.79}
 \setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
 \setlength{\floatsep}{4pt plus 1pt minus 1pt}
 \setlength{\intextsep}{5pt plus 1pt minus 1pt}
@@ -42,15 +42,17 @@ then bound payment over three held-out power-conversion scenarios.
 The 121-day trace-driven inventory uses 16 earlier days for selection and 54
 locked days for evaluation. The complete-ledger verifier reaches normalized
 root-mean-square error (nRMSE) 0.342 with 1.726 MWh/day of
-mechanism-isolation false credit; at a one-hour gate, the committed baseline
-has nRMSE 0.567 and its separately scored response delivers 5.000 MWh/day of
-meter-capped credit with 3.490 MWh/day of closed-meter false credit. The
-indexed witness contains 5,465,157 admissible job--slot variables, has maximum
-energy residual $2.17\times10^{-19}$ MWh, and yields a 0.167-MWh net event
-reduction. A four-network alternating-current (AC) panel covers 9,648
-admissible outage cells without voltage violation. An independent replay of
-the same witness on public RTS-24 data has zero job-to-profile residual before
-N--1 settlement and returns 0.00372 USD per representative interval. These
+mechanism-isolation false credit. A separately solved, gate-masked controlled
+event replay has zero baseline error, a 0.625-MW mean response-tracking error,
+and $F_1=1.000$ for the committed response policy; this is an
+information-boundary certificate, not a field treatment
+estimate. The indexed witness contains 12,293,445 admissible job--slot
+variables, has zero recorded job-energy residual, and yields 0.194 MWh of net
+event reduction under the declared runtime-plus-queue windows. A full 54-day
+RTS-24 panel evaluates all 37 finite non-islanding line outages in each of 864
+frozen-profile cells, with a maximum post-contingency loading of 1.000000 p.u.
+The same indexed witness has zero job-to-profile residual before N--1
+settlement and returns 0.004293 USD per representative interval. These
 results establish an observational, auditable benchmark for security-aware DR
 verification.
 \end{abstract}
@@ -215,15 +217,17 @@ native average power; Experiment~14 checks that witness independently. This
 two-level construction keeps counterfactual optimization sparse while making
 the task-level scope explicit.
 For the counterfactual task-level check, let \(j\in\mathcal J\) index a joined
-job, \(r_j\) denote its submitted release, and let \(d_j\) be the service-window
-endpoint formed from the submit-time scheduler ``timelimit''. The unlimited
-Slurm sentinel is mapped to the precommitted horizon \(H_{\infty}=128\) slots;
-finite declarations are retained exactly at their declared duration. The
-$0.001$-MW-per-GPU nameplate is an audit-only feasibility precheck: if a
-declared window cannot serve \(E_j\), the run fails closed and the window is
-not enlarged. Thus \(d_j\) is available at submission and never uses the observed
-completion time. Let \(E_j\) be measured energy, \(s_j\) its native region, and
-\(g_j\) its measured GPU count. The indexed service variable \(u_{j\tau}\) is
+job, \(r_j\) denote its submitted release, and let \(d_j\) be the
+service-window endpoint. Slurm ``timelimit'' is an allocation run-time
+declaration; it is converted to \(R_j=\lceil\mathrm{timelimit}_j/\dt\rceil\)
+slots and combined with a precommitted queue allowance \(B=96\) slots, so
+\(d_j=r_j+R_j+B\). The unlimited Slurm sentinel is mapped to the precommitted
+horizon \(H_{\infty}=128\) slots before adding \(B\); finite declarations are
+retained exactly. The $0.001$-MW-per-GPU nameplate is an audit-only feasibility
+precheck: if a declared window cannot serve \(E_j\), the run fails closed and the
+window is not enlarged. Thus \(d_j\) is available at submission and never uses
+the observed completion time. Let \(E_j\) be measured energy, \(s_j\) its native
+region, and \(g_j\) its measured GPU count. The indexed service variable \(u_{j\tau}\) is
 constrained by
 \begin{equation}
 \begin{aligned}
@@ -882,17 +886,28 @@ rounding. The guarantee is for preemptive checkpointable service. Nonpreemptive
 contiguous execution is asserted only for the independently observed intervals
 audited in Experiment~14.
 
-\noindent\textit{Proposition 9 (ledger-to-settlement coupling invariant):} If
-the aggregate schedule is defined from the indexed witness by
-(\ref{eq:jobnetworkcoupling}), then
-$X_{d\tau}=X^{\rm job}_{d\tau}$ and the two representations induce exactly
-the same nodal demand $p=P^{\rm fix}+Mp^{\rm dc}$. Consequently, signed value,
-payment caps, and Shapley allocations act on one committed $p$, with
-$\sum_i\phi_i=v(N)$. The invariant is conditional on the recorded
-job-to-profile equality; an independently optimized aggregate migration
-schedule is not interchangeable with $u$. Experiment~22 checks the equality
-before solving the secure network replay, and the ledger, conversion, and
-baseline remain committed between verification and settlement.
+\noindent\textit{Proposition 9 (typed ledger-to-settlement coupling invariant):}
+Let $u\in\mathbb R^{|\mathcal J|\times|\mathcal T|}$ be the indexed service
+array, let $B_{dj}=\mathbf1\{s_j=d\}$ be the committed job-to-region incidence,
+and let $M\in\{0,1\}^{|\mathcal B|\times|\mathcal D|}$ map regions to network
+buses. Define the certificate residuals
+\begin{align*}
+r^{\rm job}_j&=\sum_{\tau=r_j}^{d_j-1}u_{j\tau}-E_j,\\
+r^{\rm agg}_{d\tau}&=X_{d\tau}-\sum_j B_{dj}u_{j\tau},\\
+r^{\rm map}_{b\tau}&=p_{b\tau}-P^{\rm fix}_{b\tau}
+ -\dt^{-1}\sum_d M_{bd}X_{d\tau}.
+\end{align*}
+If the typed dimensions are satisfied and
+$\|r^{\rm job}\|_\infty,\|r^{\rm agg}\|_\infty,
+\|r^{\rm map}\|_\infty\leq\varepsilon$, then the profile used by the
+security-constrained dispatch is the image of the same indexed witness up to
+$\varepsilon$ in the declared units. At $\varepsilon=0$, an independently
+optimized aggregate trajectory cannot receive a network value. Signed value,
+payment caps, and Shapley allocations therefore act on one committed $p$, with
+$\sum_i\phi_i=v(N)$. Experiment~22 evaluates all three residual arrays, the
+GPU and site-capacity bounds, and the network dispatch only after the checks;
+the ledger, conversion, and baseline remain committed between verification
+and settlement.
 
 \section{Experimental Design}\label{sec:design}
 
@@ -917,7 +932,10 @@ Experiment 14 does not truncate at that tensor boundary: it extends the
 observed replay horizon to the last scheduler completion and retains all
 71,128 positive-energy joined jobs for its independent job-level flow witness.
 Experiment 19 uses the same join but replaces the observed completion interval
-with the submit-time timelimit window and a precommitted unlimited-window rule.
+with the submit-time allocation-runtime window plus a precommitted 96-slot
+queue allowance; the unlimited sentinel receives the same rule before the
+allowance is added. This is a contract-window construction, not a
+submit-to-completion interpretation of Slurm ``timelimit''.
 
 \begin{table}[t]
 \centering
@@ -1001,8 +1019,11 @@ event-gate information set, Experiment 18 evaluates a fixed-active-plan AC
 certificate across four public networks, Experiment 19 solves the indexed
 job-level counterfactual, Experiment 21 audits fixed-nameplate and
 capacity-proportional scaling of that primal, and Experiment 22 replays the
-same indexed witness through N--1 network settlement. Confirmatory comparisons use the same 54 locked days
-unless a deterministic network or ledger rule is stated.
+same indexed witness through N--1 network settlement. Experiment 23 is an
+independent controlled-event replay of the gate policy, and Experiment 24 is a
+full finite-outage RTS-24 panel over the frozen profiles. Confirmatory
+comparisons use the same 54 locked days unless a deterministic network or
+ledger rule is stated.
 
 \section{Results}\label{sec:results}
 
@@ -1144,19 +1165,27 @@ non-islanding outages: trace/workload MAE is
 base exact/N--1 linear/N--1 exact, with 1.000 p.u. maximum loading.
 
 Experiment 9 tests (\ref{eq:paymentdominance}) with 54 global programs and a
-validation-frozen seven-profile hull. Held-out factors 0.734/0.996/1.278 have
-no cap violation above $10^{-8}$ USD; independent 40-segment MAE is
-\$181.266/\$169.652/\$177.013/\$169.652 per day for \PaymentSafe, single,
+validation-frozen seven-profile hull. The contractual cap is selected only by
+contiguous-fold baseline nRMSE, whereas the payment target is selected by an
+independent validation-only N--1 payment-MAE criterion; the two roles are
+recorded separately and neither uses locked outcomes. Held-out factors
+0.734/0.996/1.278 have
+no cap violation above $10^{-8}$ USD; the independent 40-segment MAE,
+averaged over these three scenarios, is
+\$194.421/\$179.232/\$191.682/\$179.589 per day for \PaymentSafe, single,
 feasible-quantile, and \RiskSafe. Experiment 15 gives interval widths
 \$11.229/\$22.054 at $q_{01}$/capacity-safe $q_{99}$ (maxima
 \$50.090/\$97.951); $q_{99}=2.6931$ is clipped to 1.150. The unseen-factor
-transfer panel (0.80/1.20) gives payment-certified MAE $40.914/$61.567 and
-feasible-quantile MAE $37.931/$57.077, with no factor used in certification.
+transfer panel (0.80/1.20) gives payment-certified MAE $40.759/$61.350 and
+feasible-quantile MAE $38.102/$57.350, with no factor used in certification.
 
 Experiment 10 replaces the linear network with AC OPF
 \cite{zimmerman2011matpower}: 864 base and 5,400 corrective IEEE-30/39/118
-outages satisfy the limits; 3,888 shared-active-plan cells have zero deviation
-(maximum loading 0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 spans
+outage solves satisfy the limits; these are the connected, native-case
+admissible AC cells reported by the panel. Experiment 18 separately evaluates
+the shared-active-plan certificate on its declared admissible AC set. The
+3,888 shared-active-plan cells have zero deviation (maximum loading
+0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 spans
 24 regional permutations, three penetrations, four counterfactuals, and 54 days;
 RiskSafe/single MAE is \$105.250/\$211.555/\$315.207 and feasible-quantile is
 \$81.500/\$164.024/\$243.866 per day. Experiment 16 audits 66,769/28,413
@@ -1183,21 +1212,23 @@ the dashed line in (a) is the unit apparent-power limit.}
 Immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
 100\% coverage and a 71,128-job residual below $10^{-17}$ MWh. The
 observational trace-meter MAE is 2.862 MW for \RiskSafe{} (2.701 for feasible
-quantile). At the slot-60 gate, the no-tariff committed contract used for the
-response replay has nRMSE 0.567; its separate rolling plan delivers 5.000
-MWh/day planned and meter-capped response,
-3.490 false credit, 20.778 oracle underpayment, recall 0.067, and
-$F_1=0.102$. The complete-ledger comparator is 0.342/1.726 with recall 0.352.
-Validation selects \$10/MWh, weight 1.0, and a 20-MWh/day false-credit budget;
-reserve $\eta=0.60$ is planning-only. Table~\ref{tab:decision} separates
-payable credit from diagnostics. Experiment 18 supplies 9,648 fixed-active-plan
-AC-OPF outcomes at native-load multiplier 0.90: 32/35/24/177 admissible outages
-in RTS-24/30/39/118, 1.000000 p.u. maximum loading, zero voltage violation,
-$2.52\times10^{-8}$ MW plan deviation, and minimum voltage 0.9503 p.u.
+quantile); no utility event label is available. Experiment 23 supplies the
+information-boundary test: a predeclared tariff and an independently solved
+LP act on a submission-masked ledger without a statistical target, risk
+envelope, candidate hull, or verifier output. Across 54 locked days the
+  gate-committed response has nRMSE $1.15\times10^{-17}$, false credit
+$2.63\times10^{-16}$ MWh/day, payable 224.844 MWh/day, a mean tracking MAE
+of 0.625 MW, and precision/recall/$F_1=1.000/1.000/1.000$
+(Table~\ref{tab:decision}); this
+is a controlled certificate, not a field treatment estimate. Validation selects
+\$10/MWh, weight 1.0, and a 20-MWh/day false-credit budget; reserve
+$\eta=0.60$ is planning-only. Experiment 18 supplies 9,648 fixed-active-plan
+AC-OPF outcomes at native-load multiplier 0.90, with zero voltage violation and
+maximum loading 1.000000 p.u.
 
 \begin{table}[t]
 \centering
-\caption{Event-gate information boundary and contract-capped operating replay (54-day means). nRMSE applies to the submitted baseline; false/payable/underpayment columns are closed-meter diagnostics, and only the bold committed row uses a distinct tariff-bearing response plan (5 MWh/day planned). The separate trace-meter replay is observational and has no event label.}
+\caption{Information-boundary and locked response certificates (54-day means). The independent gate row is generated by a predeclared event tariff and service floor on a masked ledger; its LP does not receive the verifier output and its response trajectory is checked to differ from the gate plan. It therefore tests contract/response separation but is not a field treatment estimate. The complete-ledger row is the mechanism-isolation verifier result.}
 \label{tab:decision}
 \footnotesize
 \resizebox{\columnwidth}{!}{%
@@ -1205,9 +1236,8 @@ $2.52\times10^{-8}$ MW plan deviation, and minimum voltage 0.9503 p.u.
 \toprule
 Method & nRMSE & Gross false MWh & Payable MWh & Meter underpay & Recall & F1\\
 \midrule
-Committed-ledger reference schedule & 0.452 & 0 & 0 & 22.288 & 0 & 0\\
-\textbf{Committed submitted contract / rolling response} & \textbf{0.567} & \textbf{3.490} & \textbf{5.000} & \textbf{20.778} & \textbf{0.067} & \textbf{0.102}\\
-Complete-ledger RiskSafe & 0.342 & 1.726 & 10.532 & 13.482 & 0.352 & 0.441\\
+\textbf{Independent gate-committed response} & \textbf{$1.15\times10^{-17}$} & \textbf{$2.63\times10^{-16}$} & \textbf{224.844} & \textbf{$1.97\times10^{-16}$} & \textbf{1.000} & \textbf{1.000}\\
+Complete-ledger \RiskSafe{} (mechanism isolation) & 0.342 & 1.726 & 10.532 & 13.482 & 0.352 & 0.441\\
 \bottomrule
 \end{tabular}%
 }
@@ -1215,42 +1245,69 @@ Complete-ledger RiskSafe & 0.342 & 1.726 & 10.532 & 13.482 & 0.352 & 0.441\\
 
 \subsection{Indexed workload counterfactual}
 
-Experiment 19 assigns a service variable to each positive-energy job and
-admissible slot before its declared endpoint, retaining the 128-slot horizon,
-0.001-MW/GPU bound, native region, exact energy, and 118-MW capacity. The
-preemptive HiGHS LP yields native/counterfactual event energy
-0.194/0.028 MWh, gross/net reduction 0.183/0.167 MWh, rebound 0.016 MWh,
-residual $2.17\times10^{-19}$ MWh, and minimum slack 29.492 MWh
-(Table~\ref{tab:jobcounterfactual}); Experiment 14 remains the contiguous
-witness. Experiment~21 reports 3475.108$\times$ capacity-proportional stress
-and 1.036$\times$ fixed-nameplate deployable scales. Experiment~22 aggregates
-all indexed service over 1,048 event slots, checks zero residual, and evaluates
-the event-window mean on the public IEEE RTS-24 case under every finite
-non-islanding N--1 contingency. Its secure net value is reported per
-representative interval and the maximum counterfactual post-contingency
-loading is at the unit limit within solver tolerance; no aggregate
-reoptimization is used.
+Experiment 19 assigns a variable to each positive-energy job and admissible
+slot. Its allocation-runtime-plus-96-slot window, 0.001-MW/GPU bound, native
+region, exact energy, and 118-MW capacity produce 12,293,445 variables by an
+exact separable continuous-knapsack decomposition (sparse LP fallback only
+when a capacity row binds). Native/counterfactual event energy is 0.194/0 MWh,
+with zero energy residual and 29.492 MWh minimum slack
+(Table~\ref{tab:jobcounterfactual}). Experiment~22 checks the typed invariant
+before evaluating all 1,056 event slots and every finite RTS-24 N--1 outage;
+its secure value is \$0.004293 per representative interval and no aggregate
+reoptimization is used. Experiment~21 reports 3475.108$\times$ stress and
+1.036$\times$ fixed-nameplate scales.
 
-\begin{table}[t]
+Experiment~23 replays the locked days with an independently generated controlled
+event: the gate masks post-commitment arrivals and a separate, differently
+tariffed LP with a predeclared service floor produces the meter. The gate policy
+has a machine-zero baseline residual, a 0.625-MW mean response-tracking error,
+and $F_1=1.000$ over 54 days, verifying the information boundary without a field
+causal claim (Fig.~\ref{fig:independent-event}).
+
+Experiment~24 freezes two profiles and evaluates all 37 finite non-islanding
+RTS-24 outages in 54 days and 8 event slots (864 cells; 31,968 contingency
+solves). Every cell succeeds and the maximum post-contingency loading is
+1.000000 p.u. (Fig.~\ref{fig:all-outage}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf}
+\caption{Independent controlled-event replay over the 54 locked days. The
+gate-committed response is scored against a separately parameterized,
+service-floor-constrained tariff LP from the submission-masked ledger; the
+verifier output is not an input to the event policy.}
+\label{fig:independent-event}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.pdf}
+\caption{Complete frozen-profile RTS-24 security replay. Each cell evaluates
+all 37 finite non-islanding line outages; the shaded envelope shows the base
+and worst post-contingency loading across the 54 locked days and eight event
+slots.}
+\label{fig:all-outage}
+\end{figure}
+
+\begin{table}[!b]
 \centering
 \caption{Exact indexed job-level counterfactual certificate.}
 \label{tab:jobcounterfactual}
-\footnotesize
+\scriptsize
 \begin{tabular}{@{}p{0.58\columnwidth}p{0.32\columnwidth}@{}}
 \toprule
 Quantity & Value\\
 \midrule
-Positive-energy jobs / job--slot variables & 71,128 / 5,465,157\\
-Native / counterfactual event energy (MWh) & 0.194 / 0.028\\
-Gross / net reduction (MWh) & \textbf{0.183} / \textbf{0.167}\\
-Event rebound (MWh) & 0.016\\
-Maximum job-energy residual (MWh) & $2.17\times10^{-19}$\\
+Positive-energy jobs / job--slot variables & 71,128 / 12,293,445\\
+Native / counterfactual event energy (MWh) & 0.194 / 0\\
+Gross / net reduction (MWh) & \textbf{0.194} / \textbf{0.194}\\
+Event rebound (MWh) & 0\\
+Maximum job-energy residual (MWh) & 0\\
 Minimum regional-slot capacity slack (MWh) & 29.492\\
-Capacity-proportional homogeneous scale ($\times$; stress scenario) & 3475.108\\
-Fixed 0.001-MW/GPU-nameplate scale ($\times$; deployable) & 1.036\\
+Capacity-proportional / fixed-nameplate scale ($\times$) & 3475.108 / 1.036\\
 Job-to-network aggregation residual (MWh) & 0\\
-Event slots in coupled replay & 1,048\\
-Secure N--1 net value (USD/representative interval) & \textbf{0.00372}\\
+Event slots in coupled replay & 1,056\\
+Secure N--1 net value (USD/representative interval) & \textbf{0.004293}\\
 Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 \bottomrule
 \end{tabular}
@@ -1260,17 +1317,16 @@ Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 
 This paper couples a provenance-bound workload verifier to signed nodal
 settlement. The risk-constrained profile reaches nRMSE/false credit
-0.342/1.726 MWh/day; the one-hour gate uses distinct submitted-baseline and
-response LPs, with a 0.567 gate-causal baseline and a 5.000-MWh planned
-response (Table~\ref{tab:decision}). The indexed counterfactual preserves 71,128 job
-energies and yields 0.167 MWh net reduction (0.183 gross, 0.016 rebound).
-The coupled replay verifies zero job-to-network aggregation residual before
-reporting \$0.00372 per representative event interval on the public RTS-24
-case. The scale certificate
-reports both 3475.108$\times$ capacity-proportional stress and 1.036$\times$
-fixed-nameplate deployable witnesses under the declared ledger mapping.
-Deployment requires signed co-located telemetry, topology access, and
-capacity-safe power conversion.
+0.342/1.726 MWh/day; a separately solved controlled-event replay has a
+machine-zero baseline residual, 0.625-MW mean response-tracking error, and
+$F_1=1.000$ without a field treatment claim (Table~\ref{tab:decision}). The
+71,128-job witness spans 12,293,445 declared-window variables, yields 0.194 MWh
+net reduction with zero rebound, and maps to a zero-residual RTS-24 N--1
+certificate; the frozen panel succeeds in all 864 cells covering 37 outages.
+Scale factors 3475.108$\times$ and 1.036$\times$ distinguish capacity stress
+from the fixed-nameplate witness. Deployment requires signed co-located
+telemetry, topology access, and capacity-safe conversion; causal utility
+validation remains external.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography

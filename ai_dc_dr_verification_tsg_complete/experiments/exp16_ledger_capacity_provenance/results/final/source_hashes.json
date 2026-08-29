@@ -11,6 +11,6 @@
   },
   "processed_workload": {
     "path": "data/processed/workload_15min.npz",
-    "sha256": "e1311bde6c48a8ccbb07b761e242542574d87514ae33c796f4a63475169c9c0a"
+    "sha256": "0af56a58e7aef112aa0d22ddcbf8c54fa83b85024dec6e5651eb6c46467e959c"
   }
 }

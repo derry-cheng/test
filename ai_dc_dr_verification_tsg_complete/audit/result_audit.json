@@ -482,6 +482,11 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_9:experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
       "passed": true,
       "detail": "exists and non-empty"
@@ -897,7 +902,67 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/README.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
@@ -994,12 +1059,12 @@
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "24/24 stages recorded; canonical request=all; audit status=completed"
+      "detail": "26/26 stages recorded; canonical request=all; audit status=running"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
       "passed": true,
-      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4036x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4335x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643"
+      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1253; fig27_all_outage_security.png=2309x1253; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4036x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4335x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643"
     },
     {
       "name": "model_formula_citation_traceability",
@@ -1024,22 +1089,22 @@
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
     },
     {
       "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
@@ -1402,6 +1467,11 @@
       "detail": "54/54 lexicographically solved daily certificates across three held-out conversion scenarios; maximum cap violation=3.827e-09 USD"
     },
     {
+      "name": "payment_cap_and_target_are_not_a_fixed_plan_identity",
+      "passed": true,
+      "detail": "the contractual cap is frozen by Experiment-2 nRMSE, while the payment target is selected by an independent high-resolution N-1 payment MAE on validation days; locked test days are excluded"
+    },
+    {
       "name": "complete_independent_payment_model_transfer_evaluation",
       "passed": true,
       "detail": "648 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
@@ -1424,7 +1494,7 @@
     {
       "name": "independent_nondegenerate_payment_candidate_hull",
       "passed": true,
-      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 9 distinct daily optimal weight vectors"
+      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 10 distinct daily optimal weight vectors"
     },
     {
       "name": "validation_only_payment_target_selection",
@@ -1479,7 +1549,7 @@
     {
       "name": "declared_timelimit_counterfactual_boundary",
       "passed": true,
-      "detail": "submit-time declarations are used (window slots 1--584), observed completion is excluded, and net/gross/rebound arithmetic is explicit"
+      "detail": "allocation-runtime declarations plus the precommitted queue allowance are used (window slots 97--680), observed completion is excluded, and net/gross/rebound arithmetic is explicit"
     },
     {
       "name": "heldout_power_conversion_capacity_safe_sensitivity",
@@ -1505,6 +1575,21 @@
       "name": "independent_job_primal_recheck_before_network_value",
       "passed": true,
       "detail": "the stored indexed service vector independently satisfies every job-energy equality, committed GPU nameplate bound, and regional capacity row before the network replay"
+    },
+    {
+      "name": "typed_dimension_preserving_coupling_certificate",
+      "passed": true,
+      "detail": "one typed certificate checks job equalities, GPU/capacity bounds, job-to-region aggregation, and MWh-to-MW network mapping before settlement"
+    },
+    {
+      "name": "independent_controlled_event_replay",
+      "passed": true,
+      "detail": "54 locked days are replayed under a predeclared tariff intervention; the gate response is scored against an independently solved meter and the experiment makes no field-causal claim"
+    },
+    {
+      "name": "full_finite_n1_frozen_profile_panel",
+      "passed": true,
+      "detail": "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment"
     },
     {
       "name": "no_stale_atomic_temporary_artifacts",
@@ -2032,18 +2117,18 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
-      "bytes": 1028,
-      "sha256": "d7e71a51995ba2cc3dd52c0b09252864181c4d8a2cd29ab36480e45d8db58a13"
+      "bytes": 1012,
+      "sha256": "c3648e62f84ff89029a2fb541b120f326e095d499beb2518adb75ab2749275c2"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
       "bytes": 2078,
-      "sha256": "e32adc65bfe5193709fd5d2f1a1140dda5e1c14315e805cea45292d7872fbf7d"
+      "sha256": "a2708df01e555b714db97cb717f06c41ab55777a117d4837fff6b7b02d5d3702"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
-      "bytes": 1846,
-      "sha256": "5a8b5e303d0fa064ec1f9841d8d8bb060b37c38165a24780c1b056e65c565229"
+      "bytes": 1847,
+      "sha256": "27de1d84db65ce3ae3667785665a1b56bb4df7a10ceb1c99472bcc2f959a149e"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
@@ -2053,17 +2138,17 @@
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/physical_calibration_summary.csv",
       "bytes": 453,
-      "sha256": "95b4f8f5fe6e9ffa889746b25d1451fc46fefe4ea57776ac763c010eabac10df"
+      "sha256": "7ebe0b20adf5e0c0b22fc4ea179c37c639e63e56518c3e08209940b72d55ebb3"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
       "bytes": 530,
-      "sha256": "2966507955364a957fa4e6bfc374ccb27f2e8002a18176083f5288ac743c599d"
+      "sha256": "596b223ecab0fd1bc3313c7f46d6be7d60b06ebc6091772fdf9e277e44438bc8"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/workload_power_calibration_sensitivity.csv",
-      "bytes": 1589,
-      "sha256": "23aacae71103a5e698a28aba44073fb18117967fd20887ca4773bbb5fc3e7ab1"
+      "bytes": 1628,
+      "sha256": "20b813d8c3cd38de32b61c2eaa96150800d85f0f417993c249593229f9448a68"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
@@ -2132,23 +2217,23 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
-      "bytes": 1797,
-      "sha256": "2079d46457f0d41475a9f7fa2766e7401f2cec7b3734f5af72439e29a7b6a9c7"
+      "bytes": 1922,
+      "sha256": "2ebdf14603f02c1a6e4617fc230ac4cf9e73ccd784dd4a10c19251bb72a404bf"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
-      "bytes": 3478461,
-      "sha256": "b1f3f2c62b62bc3501ea689438e6f207affdf15c2723933b6ce574cf118309bd"
+      "bytes": 3479674,
+      "sha256": "ad07555830a9a5de7762d04772438de8b0efd0b34969d997928e0a58a720bb85"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
-      "bytes": 1926492,
-      "sha256": "1597c2c417f7532958a2868f6a812e34b80d53f68ba9279d218665c7668ef67b"
+      "bytes": 2009553,
+      "sha256": "4e6bf09c554a8a2b51fc99f7924644e022bcb13a66c1aa3065187e35ecc4c1fb"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
-      "bytes": 703,
-      "sha256": "5c0b96d6b5ca8c6c548371252b27e9e674798d4a71ba307048ed9bfc8289d34b"
+      "bytes": 677,
+      "sha256": "a7d9bc2966a67f9f703ccb3f4ce598ad05f3873e55cc97be96017e77216ea6a2"
     },
     {
       "path": "experiments/exp1_manipulation/results/final/experiment_metadata.json",
@@ -2177,8 +2262,8 @@
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
-      "bytes": 2232726,
-      "sha256": "c49cbc371379907ce86021f8fa2abacbe99752be6b4770de7646e3ace40da0d2"
+      "bytes": 2233022,
+      "sha256": "14ee253b6483093cbe92c742f0dd68ac50722535b0936e16be9474d8bcaa9173"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
@@ -2187,28 +2272,68 @@
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
-      "bytes": 2395416,
-      "sha256": "13552dfc043c97f687c7df8581f0842f655319f551f8a383bbab5cac39c39c25"
+      "bytes": 2395141,
+      "sha256": "7ab5408536a6d26e3841dc6ee778a1e571fdb83eb7d25c962c2500b44f651232"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
-      "bytes": 990,
-      "sha256": "076061834bba6f5a12106975fe4ea33a99e133985f2f83a249c627b927733445"
+      "bytes": 942,
+      "sha256": "87d7bacf7c847bcdbfb3d6d895261ddecddb244e315f32c1cacfbf5e063fd050"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
-      "bytes": 785,
-      "sha256": "f10cfe77b6e8d6e75d7064fc047432dc5969eef3979d1fd00fefaba2fe7ffadd"
+      "bytes": 795,
+      "sha256": "ac47ac09d73fcc78e5c2d91ba02f903990126975842aca115585ef66ed6a2c7e"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
-      "bytes": 753,
-      "sha256": "c09f6ad8719e2d0c41ca7aea460e65676a0514d7effddbbb534718e0ede42379"
+      "bytes": 701,
+      "sha256": "2561774a81103045142a6b61dcdb405d6fc79f1941b3f7e145222d6790f16392"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
+      "bytes": 1084,
+      "sha256": "916460cad3b8258798e851c8403668cae54f876ed75e32eeda4a9bab5c80b6a5"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
-      "bytes": 1440,
-      "sha256": "d6d639ec7eb695f9feb384786156f52e941fb8c7875a012a9c9a573388cea17c"
+      "bytes": 2443,
+      "sha256": "c7012dc0fa9e0742211e40299701350a023c1ac80872dfd4cb25d51a728b096e"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
+      "bytes": 1832,
+      "sha256": "428402f9405aeb3b507cca055b8038943f8074bd787e20b05c880981b2095f2a"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
+      "bytes": 295352,
+      "sha256": "e1c0e2225e87c30826dba38eb863faeb93017e774f022ee7c59706a6558bbc32"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
+      "bytes": 37543,
+      "sha256": "b813b20b7c695924b35ac398e574869b70175a29c3b411d93886ad3220f04008"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+      "bytes": 452,
+      "sha256": "2028f5d7778dc31790c89fee22c4fd5d2f5c34379d228b3a08dbdf29720cb2b1"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+      "bytes": 110083,
+      "sha256": "5b6e4d81fa01c0966dc2e6daf30d0f20f708d196ea51bf50908ae542091aa2ae"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+      "bytes": 381,
+      "sha256": "9f66f95e7d8c11d220303f25cd7438a570bc0a5171b7120dd906d457741a97f3"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
+      "bytes": 888,
+      "sha256": "dcd9e46309e0442368b5e093bcdcefc860168c8c6d4bfd70176b045724f3779e"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
@@ -2542,58 +2667,63 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
-      "bytes": 130072,
-      "sha256": "85ccb3e4e2a567c1ce897dc81460b599d5488a827e613cb3ebbe7bc65d91bf1f"
+      "bytes": 130051,
+      "sha256": "4694f96f72888ac76490818e9066a5048ddfb4c4a3758b9a822cf6eeaac9aa18"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
-      "bytes": 13942,
-      "sha256": "fad4a5e434195028bbff2401eb3ee8a70c17631ecabff5e2b927cc47745b922c"
+      "bytes": 14150,
+      "sha256": "65cde4e3f1088e4f2d6ae9c1912d40337cc643e5a6e562a7af0d67fb655770fd"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
-      "bytes": 25042,
-      "sha256": "545f2c2d3a3a2eff0c3417f65ca2b131b5bfff8ff051d4220a6912defa29232a"
+      "bytes": 25190,
+      "sha256": "8a8c2bdefaa9771eaf14aec714b9b85f57e9fbdcdf4d922fa8a97ce0394a4741"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
-      "bytes": 3533,
-      "sha256": "c08b882ee072511c7847929901f69c3aa3b27751c4c3256af3dcc395d47420eb"
+      "bytes": 3826,
+      "sha256": "179ba51ee934d0537dab8dafea8ed472a8ca47d899f0053516439aa6aa125473"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
-      "bytes": 12508,
-      "sha256": "caf84196399e1f9e51331290e80aea85de678aaa1bc0c285e5b20ae05bdbb3bb"
+      "bytes": 12299,
+      "sha256": "e1620245dee421aba5e7226f7e0dbeda55f0ee35bf84716a460ea1fd1b85168f"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
-      "bytes": 89370,
-      "sha256": "ee0d514207da4a7df53e4f75e4e6f7c42599f851355db41cd64e51c8c0bb09ea"
+      "bytes": 89390,
+      "sha256": "cb8b142458fa6d35866afcfe06efc16a96333a65d3d7bb9e4fb0f869a3edb087"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
-      "bytes": 1080612,
-      "sha256": "886574158ccb7bee15c45fc17d73142f8f558c39787f52e587432a00c417357c"
+      "bytes": 1082652,
+      "sha256": "65398e190568ee73d5d63072f30d10a99f83eaed4d5eeed2757531fd45872e66"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
-      "bytes": 1959,
-      "sha256": "3b26aeb3fee8b11c71d4d5a417c964c6d9dc3ca2e78e63ef3b0d40805a2f8c9f"
+      "bytes": 1952,
+      "sha256": "3659b578076ace7928adcd4af0fb94bbc04672370499023f2dd836e70741e07b"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
-      "bytes": 77979,
-      "sha256": "88117ba3c6e6c19ac332322346044f5aa019153fbd76f9772dec6db67c9bb052"
+      "bytes": 77911,
+      "sha256": "d4fe6070e48c4905fae231ab4d8b954094542a9b8cf9c1b3298c72bff88c39e6"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
-      "bytes": 909,
-      "sha256": "5428bbf303072c8084d073366ed0f28c484095d6a058c733a27bd30977e50880"
+      "bytes": 912,
+      "sha256": "867be6bdf7248ebe101c2d004cd826d5e394c926dcb723d155bbc6c4eb6c53ed"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
+      "bytes": 522,
+      "sha256": "c2b09a79ad3b392bf35aaa66c4b60b28f7a7f1a48b83a366eb73c69d13d1483a"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
       "bytes": 910,
-      "sha256": "65884f75225f0c98262d1f2a66e63e81fccc718d20e16aab99536d7b7af8d9c5"
+      "sha256": "715e41786116eb298e66d6985422751fe9a43665d740aa892d7d9657cd061299"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.pdf",
@@ -2677,8 +2807,8 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
-      "bytes": 19022,
-      "sha256": "cde4899fd6f07870665a822b7ac1e2bbaaf5ce08d0c4fb77f6d8e3d649ecb28d"
+      "bytes": 19026,
+      "sha256": "a3d2f6108056740deacceace1e54dae93e69460042fc476c6d547e8f990889c1"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
@@ -2734,6 +2864,26 @@
       "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
       "bytes": 190467,
       "sha256": "2fc8e36dbeaa1cc0fbac51ef27fcdc11c9611e13176c7b7e1a9f111a4c882c4e"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf",
+      "bytes": 13503,
+      "sha256": "8d8c96a1049157bf06567fcd3c6e4f6792dc9cde321ed6db7df09f902cccec0e"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
+      "bytes": 85373,
+      "sha256": "60c3ef6d6077dd6b15b17403300fffa0bd0dce233dfbba36cb6addadce527cee"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.pdf",
+      "bytes": 16537,
+      "sha256": "601cc41ac27532aaacdba742a2283f0773a9c35d423aa2436b3b11aa6a69fcf9"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
+      "bytes": 107954,
+      "sha256": "96235bf1383bc3bba125f1114ca34d5917acc43cff588d7d02b4f93983a1993c"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
@@ -2877,13 +3027,13 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
-      "bytes": 21037,
-      "sha256": "921a67d0288ef3c809cb9128225e76cb0908b582e42399dfeb89dbba63dff3bc"
+      "bytes": 21053,
+      "sha256": "65570406b3ce8da7088299f4f4798878978d974a4935032939f5205988360931"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
-      "bytes": 348356,
-      "sha256": "155e238fcc9496d428b8bf3c420968f70a3a62963bc6b7eed93ad12af642c80a"
+      "bytes": 347638,
+      "sha256": "0405db0890efa5c85fdf3899f2af1d96e82ae2dfd40b9278c74ee2e5947d6cca"
     }
   ],
   "limitations": [

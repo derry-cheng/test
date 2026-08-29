@@ -22,3 +22,4 @@ data/raw/**/*.csv
 
 # Atomic figure writers may leave a temporary file after an interrupted run.
 **/.[!.]*.tmp
+**/*.tmp.npz

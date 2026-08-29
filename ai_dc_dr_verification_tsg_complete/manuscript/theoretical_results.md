@@ -411,7 +411,9 @@ The scenario set comes from the independent MIT telemetry
 
 Partition the committed ledger into \(\mathcal J_{skd}\), and let
 \(u_{j\tau}\) be the exact job-indexed service witness on its submitted
-release--deadline window. Define
+release--deadline window. Let \(B_{dj}=\mathbf 1\{s_j=d\}\) be the committed
+job-to-region incidence and let \(M\in\{0,1\}^{|\mathcal B|\times|\mathcal D|}\)
+map regions to network buses. Define
 
 \[
 x^{\rm job}_{skd\tau}
@@ -420,17 +422,25 @@ x^{\rm job}_{skd\tau}
 X^{\rm job}_{d\tau}=\sum_{s,k}x^{\rm job}_{skd\tau}.
 \]
 
-If the aggregate profile used by the network is defined by
-\(X_{d\tau}=X^{\rm job}_{d\tau}\), then the two representations induce the
-same nodal demand and every downstream signed value, N--1 payment cap, and
-coalition allocation is evaluated on one committed state. The result follows
-by finite summation over the disjoint ledger partition; no optimization or
-rounding is involved in the mapping. Experiment 22 reconstructs the profile
-from all 5,465,157 stored job--slot variables and records a maximum residual of
-zero before either SCED solve. The coupled replay is pinned to the public
-IEEE RTS-24 case and uses a deterministic arithmetic-mean event-window
-representation; it is not evidence from a separately optimized aggregate
-trajectory.
+The machine-readable certificate additionally evaluates
+\[
+r^{\rm job}_j=\sum_{\tau=r_j}^{d_j-1}u_{j\tau}-E_j,\quad
+r^{\rm agg}_{d\tau}=X_{d\tau}-\sum_jB_{dj}u_{j\tau},\quad
+r^{\rm map}_{b\tau}=p_{b\tau}-P^{\rm fix}_{b\tau}
+-\Delta t^{-1}\sum_dM_{bd}X_{d\tau}.
+\]
+If the typed dimensions are satisfied and all three residual norms are at most
+\(\varepsilon\), the profile used by the network is the image of the same
+indexed witness up to \(\varepsilon\) in the declared units. At zero residual,
+an independently optimized aggregate trajectory cannot receive a network
+value. The result follows by finite summation over the disjoint ledger
+partition; no optimization or rounding is involved in the mapping. Experiment
+22 reconstructs the profile from all 12,293,445 stored job--slot variables,
+checks the job, aggregation, bus-mapping, GPU-bound, and site-capacity rows,
+and records zero residual before either SCED solve. The coupled replay is
+pinned to the public IEEE RTS-24 case and uses a deterministic arithmetic-mean
+event-window representation; it is not evidence from a separately optimized
+aggregate trajectory.
 
 ## Identification boundary
 

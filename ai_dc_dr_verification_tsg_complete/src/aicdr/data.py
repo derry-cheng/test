@@ -596,6 +596,7 @@ def load_mit_job_ledger(
     n_regions: int,
     deadline_mode: str = "observed",
     unbounded_timelimit_slots: int = 128,
+    submission_buffer_slots: int = 0,
     declared_per_gpu_power_cap_mw: float = 1.0e-3,
 ) -> pd.DataFrame:
     """Return the complete measured-job ledger used by exact replay checks.
@@ -604,12 +605,12 @@ def load_mit_job_ledger(
     :func:`_aggregate_mit_jobs`, but it retains release, execution, deadline,
     measured energy, GPU count and a deterministic spatial label.  ``observed``
     mode retains the scheduler completion time as a retrospective replay
-    witness.  ``declared_timelimit`` mode instead constructs an admissible
-    counterfactual window from the submitter-declared Slurm ``timelimit`` and
-    a precommitted fallback for the Slurm unlimited sentinel.  The latter is
-    the only deadline mode allowed for job-level counterfactual optimization;
-    it never reads ``time_end`` or measured energy to define a decision
-    constraint.
+    witness.  ``declared_timelimit`` mode constructs a service window from the
+    submitter-declared Slurm allocation runtime, a precommitted queue
+    allowance, and a finite fallback for Slurm's unlimited sentinel. Slurm
+    ``--time`` limits runtime after allocation starts; it is not a
+    submission-to-completion deadline. The observed ``time_end`` and measured
+    energy never define the decision window.
     """
     dcgm = pd.read_csv(
         dcgm_path,
@@ -660,6 +661,8 @@ def load_mit_job_ledger(
         )
     if int(unbounded_timelimit_slots) <= 0:
         raise ValueError("unbounded_timelimit_slots must be positive")
+    if int(submission_buffer_slots) < 0:
+        raise ValueError("submission_buffer_slots must be nonnegative")
     if float(declared_per_gpu_power_cap_mw) <= 0.0:
         raise ValueError("declared_per_gpu_power_cap_mw must be positive")
     requested_n_slots = n_slots
@@ -674,17 +677,16 @@ def load_mit_job_ledger(
     jobs["deadline_slot_observed"] = np.ceil(
         (jobs["time_end"].to_numpy(dtype=float) - origin) / float(interval_s)
     ).astype(np.int64)
-    # ``timelimit`` is a scheduler declaration available at submission, not an
-    # observed completion outcome. Slurm's UINT_MAX sentinel denotes an
-    # unlimited request; the study precommits a finite 128-slot service window
-    # for that case so the counterfactual remains a bounded LP.  A measured
-    # energy value is deliberately *not* allowed to enlarge a submitted
-    # window: doing so would use an outcome to define the counterfactual
-    # feasible set.  The nameplate calculation below is retained only as an
-    # auditable feasibility precheck.
+    # ``timelimit`` is an allocation run-time declaration, not a deadline from
+    # submission. The service window therefore consists of the submit time,
+    # a precommitted queue allowance, and the declared allocation duration.
+    # Slurm's UINT_MAX sentinel denotes an unlimited request; it is mapped to
+    # a finite declared runtime so the counterfactual remains a bounded LP.
+    # A measured energy value is never allowed to enlarge either component of
+    # the submitted window.
     timelimit_seconds = jobs["timelimit"].to_numpy(dtype=np.int64)
     unlimited = timelimit_seconds >= np.iinfo(np.uint32).max - 1
-    declared_window_slots = np.where(
+    declared_runtime_slots = np.where(
         unlimited,
         int(unbounded_timelimit_slots),
         np.maximum(
@@ -692,6 +694,7 @@ def load_mit_job_ledger(
             np.ceil(timelimit_seconds / float(interval_s)).astype(np.int64),
         ),
     ).astype(np.int64)
+    declared_window_slots = declared_runtime_slots + int(submission_buffer_slots)
     required_service_slots = np.ceil(
         (jobs["energy_j"].to_numpy(dtype=float) / 3.6e9)
         / (
@@ -702,10 +705,17 @@ def load_mit_job_ledger(
     ).astype(np.int64)
     required_service_slots = np.maximum(required_service_slots, 1)
     jobs["required_service_slots"] = required_service_slots.astype(np.int64)
+    jobs["declared_runtime_slots"] = declared_runtime_slots
     jobs["declared_window_slots"] = declared_window_slots
-    jobs["deadline_slot_declared_timelimit"] = (
+    jobs["deadline_slot_declared_runtime"] = (
         jobs["submit_slot"].to_numpy(dtype=np.int64) + declared_window_slots
     ).astype(np.int64)
+    # Historical consumers use this alias; all new metadata reports the
+    # runtime and queue components separately so the column cannot be read as
+    # a native Slurm deadline.
+    jobs["deadline_slot_declared_timelimit"] = jobs[
+        "deadline_slot_declared_runtime"
+    ]
     jobs["deadline_slot"] = (
         jobs["deadline_slot_observed"]
         if deadline_mode == "observed"
@@ -748,6 +758,7 @@ def load_mit_job_ledger(
     jobs.attrs["joined_jobs_after_horizon_filter"] = int(len(jobs))
     jobs.attrs["deadline_mode"] = deadline_mode
     jobs.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
+    jobs.attrs["submission_buffer_slots"] = int(submission_buffer_slots)
     jobs.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
     jobs.attrs["declared_window_infeasible_jobs"] = int(
         np.sum(
@@ -756,8 +767,9 @@ def load_mit_job_ledger(
         )
     )
     jobs.attrs["deadline_window_rule"] = (
-        "submit-time timelimit exactly; measured energy is a feasibility check, "
-        "never a deadline extension"
+        "submit-time allocation runtime plus a precommitted queue allowance; "
+        "Slurm timelimit is not a submission-to-completion deadline and measured "
+        "energy is a feasibility check, never a deadline extension or window extension"
     )
     return jobs.reset_index(drop=True)
 

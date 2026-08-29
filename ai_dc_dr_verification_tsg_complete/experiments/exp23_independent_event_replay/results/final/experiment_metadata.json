@@ -1,0 +1,47 @@
+{
+  "experiment": "independent controlled-event replay",
+  "locked_days": 54,
+  "event_gate_slot": 60,
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "truth_source": "independent_gate_causal_event_policy",
+  "event_intervention": true,
+  "causal_intervention_claim": false,
+  "identification_statement": "A predeclared tariff shock and service floor are applied to the gate-masked submitted ledger. The independently parameterized policy has no statistical target, risk envelope, candidate weights, or verifier output as an input. This is a controlled optimization replay, not a field utility-event estimate.",
+  "independent_policy": {
+    "objective": "exact release/deadline/capacity LP with a distinct event tariff and a predeclared event-service floor on the participating site set",
+    "response_price_per_mwh": 210.0,
+    "baseline_price_per_mwh": 120.0,
+    "participating_data_center_indices": [
+      0
+    ],
+    "minimum_participant_event_mwh": 5.0,
+    "tariff_pair_distinct_from_gate": true,
+    "structurally_distinct_from_gate": true,
+    "maximum_response_difference_from_gate_mw": 20.0,
+    "mean_event_response_difference_from_gate_mw": 0.625,
+    "post_gate_arrivals_used": false,
+    "future_arrivals_used_for_decision": false,
+    "risk_oracle_reused": false
+  },
+  "gate_policy": {
+    "objective": "same exact LP with the selected gate tariff and committed service constraint",
+    "response_price_per_mwh": 150.0,
+    "baseline_price_per_mwh": 120.0,
+    "committed_event_service_mwh": 5.0,
+    "post_gate_arrivals_used": false
+  },
+  "workers": 4,
+  "daily_file": "independent_event_replay_daily.csv",
+  "summary_file": "independent_event_replay_summary.csv",
+  "profiles_file": "independent_event_profiles.npz",
+  "figure": "fig26_independent_event_replay.pdf"
+}

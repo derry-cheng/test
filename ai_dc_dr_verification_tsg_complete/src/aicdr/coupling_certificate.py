@@ -13,6 +13,10 @@ from .optimization import (
     power_system_from_ppc,
     solve_n1_sced,
 )
+from .coupling_invariant import (
+    assert_valid_certificate,
+    validate_job_network_coupling,
+)
 from .utils import write_json
 
 
@@ -111,30 +115,33 @@ def run_exp22_coupled_job_network_certificate(
         np.min(site_capacity_mwh - reconstructed_capacity)
     )
     maximum_job_energy_residual = float(np.max(np.abs(job_energy_residual)))
-    if (
-        float(np.min(service, initial=0.0)) < -1e-12
-        or maximum_job_energy_residual > 1e-12
-        or maximum_gpu_bound_violation > 1e-12
-        or minimum_site_capacity_slack < -1e-12
-    ):
-        raise RuntimeError(
-            "The stored Exp19 service vector failed the independent job-level "
-            f"recheck (energy={maximum_job_energy_residual:.3e}, "
-            f"GPU-bound={maximum_gpu_bound_violation:.3e}, "
-            f"capacity-slack={minimum_site_capacity_slack:.3e})"
-        )
+    coupling_certificate = validate_job_network_coupling(
+        service_mwh=service,
+        job_energy_mwh=job_energy,
+        submit_slot=starts,
+        deadline_slot=ends,
+        region=regions,
+        aggregate_mwh=saved_counterfactual,
+        dt_h=dt_h,
+        measured_gpus=measured_gpus,
+        per_gpu_power_cap_mw=per_gpu_power_cap_mw,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    assert_valid_certificate(coupling_certificate)
+    # Keep the named residuals used by the existing report, but source them
+    # from the typed certificate so the network bridge and the audit use the
+    # same numerical contract.
+    maximum_job_energy_residual = coupling_certificate.max_job_energy_residual_mwh
+    maximum_gpu_bound_violation = coupling_certificate.maximum_gpu_bound_violation_mwh
+    minimum_gpu_bound_slack = coupling_certificate.minimum_gpu_bound_slack_mwh
+    minimum_site_capacity_slack = coupling_certificate.minimum_site_capacity_slack_mwh
     reconstructed = np.bincount(
         variable_regions * n_slots + slots,
         weights=service,
         minlength=n_regions * n_slots,
     ).reshape(n_regions, n_slots)
     aggregation_residual = reconstructed - saved_counterfactual
-    max_aggregation_residual = float(np.max(np.abs(aggregation_residual)))
-    if max_aggregation_residual > 1.0e-12:
-        raise RuntimeError(
-            "The saved Exp19 regional profile is not the aggregation of its job witness: "
-            f"max residual {max_aggregation_residual:.3e} MWh"
-        )
+    max_aggregation_residual = coupling_certificate.max_aggregation_residual_mwh
 
     # The indexed coupling certificate uses the same public RTS-24 benchmark
     # as the independently validated N--1 settlement panel.  IEEE-118 is
@@ -191,6 +198,24 @@ def run_exp22_coupled_job_network_certificate(
     counterfactual_load = base_load.copy()
     native_load[dc_buses] += native_event_profile / dt_h
     counterfactual_load[dc_buses] += counterfactual_event_profile / dt_h
+    mapping = np.zeros((len(system.bus), n_regions), dtype=float)
+    mapping[dc_buses, np.arange(n_regions)] = 1.0
+    # The profile passed to the mapping certificate retains every slot.  The
+    # network solve below uses the declared event-window mean only after this
+    # dimension-preserving check has completed.
+    network_profile_mw = mapping @ (reconstructed / dt_h)
+    mapped_certificate = validate_job_network_coupling(
+        service_mwh=service,
+        job_energy_mwh=job_energy,
+        submit_slot=starts,
+        deadline_slot=ends,
+        region=regions,
+        aggregate_mwh=saved_counterfactual,
+        dt_h=dt_h,
+        network_profile_mw=network_profile_mw,
+        network_mapping=mapping,
+    )
+    assert_valid_certificate(mapped_certificate)
     native_result = solve_n1_sced(
         system,
         native_load,
@@ -223,6 +248,8 @@ def run_exp22_coupled_job_network_certificate(
             "minimum_gpu_bound_slack_mwh": minimum_gpu_bound_slack,
             "minimum_site_capacity_slack_mwh": minimum_site_capacity_slack,
             "solver_success": bool(native_result.success and counterfactual_result.success),
+            "coupling_certificate_valid": bool(mapped_certificate.valid),
+            "network_mapping_residual_mw": float(mapped_certificate.max_network_mapping_residual_mw),
         }
     ]
     frame = pd.DataFrame(rows)
@@ -274,8 +301,18 @@ def run_exp22_coupled_job_network_certificate(
         "network_profile_is_same_job_witness": True,
         "post_solution_profile_reoptimization": False,
         "all_network_solves_successful": bool(frame["solver_success"].all()),
+        "coupling_invariant_certificate": coupling_certificate.to_dict(),
+        "network_mapping_certificate": mapped_certificate.to_dict(),
     }
     write_json(out / "experiment_metadata.json", metadata)
+    write_json(
+        out / "coupling_invariant_certificate.json",
+        {
+            "certificate": coupling_certificate.to_dict(),
+            "network_mapping_certificate": mapped_certificate.to_dict(),
+            "mapping_one_hot_bus_indices_zero_based": dc_buses.tolist(),
+        },
+    )
     logger.info(
         "Experiment 22 complete: %d job variables aggregated with max residual %.3e MWh; event network value %.6f USD",
         len(service),

@@ -12,9 +12,9 @@ certified_peak_mw,0.03516975742691621,MW
 minimum_capacity_slack_mwh,29.49120756064327,MWh
 capacity_proportional_minimum_capacity_slack_mwh,0.0,MWh
 event_native_mwh,0.20137705746634116,MWh
-event_counterfactual_mwh,0.028501391647697067,MWh
-event_gross_reduction_mwh,0.18984297036290088,MWh
-event_rebound_mwh,0.016967304544256816,MWh
-capacity_proportional_event_native_mwh,675.6513129329201,MWh
-capacity_proportional_event_counterfactual_mwh,95.62659684011209,MWh
-capacity_proportional_event_gross_reduction_mwh,636.9526588112876,MWh
+event_counterfactual_mwh,0.0,MWh
+event_gross_reduction_mwh,0.20137705746634116,MWh
+event_rebound_mwh,0.0,MWh
+capacity_proportional_event_native_mwh,675.6513129329202,MWh
+capacity_proportional_event_counterfactual_mwh,0.0,MWh
+capacity_proportional_event_gross_reduction_mwh,675.6513129329202,MWh

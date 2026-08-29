@@ -1,0 +1,40 @@
+{
+  "certificate": {
+    "version": "coupling-invariant-v1",
+    "jobs": 71128,
+    "service_variables": 12293445,
+    "regions": 4,
+    "slots": 12656,
+    "dt_h": 0.25,
+    "max_job_energy_residual_mwh": 0.0,
+    "max_aggregation_residual_mwh": 0.0,
+    "max_network_mapping_residual_mw": 0.0,
+    "minimum_service_mwh": 0.0,
+    "minimum_gpu_bound_slack_mwh": 8.629444444444452e-06,
+    "maximum_gpu_bound_violation_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 29.49151105611111,
+    "valid": true
+  },
+  "network_mapping_certificate": {
+    "version": "coupling-invariant-v1",
+    "jobs": 71128,
+    "service_variables": 12293445,
+    "regions": 4,
+    "slots": 12656,
+    "dt_h": 0.25,
+    "max_job_energy_residual_mwh": 0.0,
+    "max_aggregation_residual_mwh": 0.0,
+    "max_network_mapping_residual_mw": 0.0,
+    "minimum_service_mwh": 0.0,
+    "minimum_gpu_bound_slack_mwh": 0.0,
+    "maximum_gpu_bound_violation_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 0.0,
+    "valid": true
+  },
+  "mapping_one_hot_bus_indices_zero_based": [
+    2,
+    7,
+    14,
+    20
+  ]
+}

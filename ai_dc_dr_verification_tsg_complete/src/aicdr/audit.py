@@ -131,6 +131,7 @@ EXPECTED_FILES = {
         "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
         "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
         "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
         "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
         "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
     ],
@@ -240,7 +241,23 @@ EXPECTED_FILES = {
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
         "experiments/exp22_coupled_job_network_certificate/README.md",
+    ],
+    "experiment_23": [
+        "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
+        "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+        "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
+        "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
+        "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
+        "experiments/exp23_independent_event_replay/README.md",
+    ],
+    "experiment_24": [
+        "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+        "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+        "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
+        "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
+        "experiments/exp24_all_outage_security_panel/README.md",
     ],
     "manuscript_sources": [
         "manuscript/main.tex",
@@ -309,6 +326,8 @@ def run_audit(
         "exp20",
         "exp21",
         "exp22",
+        "exp23",
+        "exp24",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -2272,6 +2291,11 @@ def run_audit(
         / "experiments/exp9_payment_certificate/results/final/"
         "payment_target_selection_validation.csv"
     )
+    payment_non_tautology = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_non_tautology_audit.csv"
+    )
     payment_metadata = json.loads(
         (
             root
@@ -2363,6 +2387,28 @@ def run_audit(
             "solved daily certificates across three held-out conversion "
             "scenarios; maximum cap violation="
             f"{payment_certificates['payment_cap_violation_usd'].max():.3e} USD"
+        ),
+        checks,
+    )
+    _check(
+        set(payment_non_tautology["role"].astype(str))
+        == {"contractual payment cap", "payment target", "role separation"}
+        and len(payment_non_tautology) == 3
+        and bool(
+            payment_non_tautology.loc[
+                payment_non_tautology["role"] == "role separation", "test_days_used_for_selection"
+            ].eq(False).all()
+        )
+        and payment_metadata.get("reference_candidate")
+        != payment_metadata.get("payment_target_candidate")
+        and "different validation" in str(
+            payment_metadata.get("selection_role_separation", "")
+        ).lower(),
+        "payment_cap_and_target_are_not_a_fixed_plan_identity",
+        (
+            "the contractual cap is frozen by Experiment-2 nRMSE, while the "
+            "payment target is selected by an independent high-resolution N-1 "
+            "payment MAE on validation days; locked test days are excluded"
         ),
         checks,
     )
@@ -2919,12 +2965,15 @@ def run_audit(
         and int(counterfactual_metadata.get("declared_window_slots_min", 0)) >= 1
         and int(counterfactual_metadata.get("declared_window_slots_max", 0))
         >= int(counterfactual_metadata.get("unbounded_timelimit_slots", 0))
-        and int(counterfactual_metadata.get("declared_window_slots_max", 0)) == 584
+        and int(counterfactual_metadata.get("declared_window_slots_max", 0)) == 680
         and float(counterfactual_metadata.get("declared_per_gpu_power_cap_mw", 0.0))
         == 0.001
         and int(counterfactual_metadata.get("declared_window_infeasible_jobs", -1)) == 0
-        and "exact submit-time timelimit" in str(
+        and "allocation runtime plus a precommitted queue allowance" in str(
             counterfactual_metadata.get("deadline_window_rule", "")
+        )
+        and int(counterfactual_metadata.get("submission_buffer_slots", -1)) == int(
+            cfg["experiments"].get("job_level_submission_buffer_slots", 0)
         )
         and np.isfinite([native_event, counterfactual_event, net_reduction, gross_reduction, rebound]).all()
         and abs((native_event - counterfactual_event) - net_reduction) <= 1e-10
@@ -2932,7 +2981,8 @@ def run_audit(
         and rebound >= -1e-10,
         "declared_timelimit_counterfactual_boundary",
         (
-            f"submit-time declarations are used (window slots "
+            f"allocation-runtime declarations plus the precommitted queue allowance "
+            f"are used (window slots "
             f"{counterfactual_metadata.get('declared_window_slots_min')}--"
             f"{counterfactual_metadata.get('declared_window_slots_max')}), "
             "observed completion is excluded, and net/gross/rebound arithmetic is explicit"
@@ -2996,7 +3046,7 @@ def run_audit(
     )
     _check(
         int(coupled_values.get("positive_energy_jobs", -1)) == 71_128
-        and int(coupled_values.get("service_variables", -1)) == 5_465_157
+        and int(coupled_values.get("service_variables", -1)) == 12_293_445
         and float(coupled_values.get("maximum_job_to_aggregate_residual_mwh", np.inf))
         <= 1e-12
         and bool(coupled_values.get("all_network_solves_successful", 0.0))
@@ -3009,8 +3059,8 @@ def run_audit(
             float(coupled_metadata.get("network_load_multiplier", np.nan))
             - float(cfg["experiments"]["n1_load_multiplier"])
         ) <= 1e-12
-        and int(coupled_values.get("event_slots_replayed", -1)) == 1_048
-        and int(coupled_metadata.get("replayed_event_slot_count", 0)) == 1_048,
+        and int(coupled_values.get("event_slots_replayed", -1)) == 1_056
+        and int(coupled_metadata.get("replayed_event_slot_count", 0)) == 1_056,
         "exact_job_to_network_coupling_certificate",
         (
             "the 71,128-job indexed witness is aggregated before secure N-1 "
@@ -3020,7 +3070,7 @@ def run_audit(
     )
     _check(
         len(coupled_replay) == 1
-        and int(coupled_replay.loc[0, "event_slot_count"]) == 1_048
+        and int(coupled_replay.loc[0, "event_slot_count"]) == 1_056
         and int(coupled_replay.loc[0, "credible_contingencies"]) == 37
         and bool(coupled_replay.loc[0, "solver_success"]),
         "coupled_replay_covers_all_rts24_n1_contingencies",
@@ -3050,10 +3100,101 @@ def run_audit(
         ),
         checks,
     )
+    coupling_certificate_path = (
+        root
+        / "experiments/exp22_coupled_job_network_certificate/results/final/"
+        "coupling_invariant_certificate.json"
+    )
+    coupling_certificate = json.loads(coupling_certificate_path.read_text(encoding="utf-8"))
+    typed_certificate = coupling_certificate.get("certificate", {})
+    mapped_certificate = coupling_certificate.get("network_mapping_certificate", {})
+    _check(
+        typed_certificate.get("version") == "coupling-invariant-v1"
+        and typed_certificate.get("valid") is True
+        and float(typed_certificate.get("max_job_energy_residual_mwh", np.inf)) <= 1e-12
+        and float(typed_certificate.get("max_aggregation_residual_mwh", np.inf)) <= 1e-12
+        and mapped_certificate.get("valid") is True
+        and float(mapped_certificate.get("max_network_mapping_residual_mw", np.inf)) <= 1e-10,
+        "typed_dimension_preserving_coupling_certificate",
+        (
+            "one typed certificate checks job equalities, GPU/capacity bounds, "
+            "job-to-region aggregation, and MWh-to-MW network mapping before settlement"
+        ),
+        checks,
+    )
+
+    independent_event_summary = pd.read_csv(
+        root
+        / "experiments/exp23_independent_event_replay/results/final/"
+        "independent_event_replay_summary.csv"
+    )
+    independent_event_metadata = json.loads(
+        (
+            root
+            / "experiments/exp23_independent_event_replay/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    gate_row = independent_event_summary[
+        independent_event_summary["method"] == "Gate-committed response"
+    ]
+    _check(
+        len(independent_event_summary) == 2
+        and len(gate_row) == 1
+        and int(gate_row.iloc[0]["locked_days"]) == 54
+        and float(gate_row.iloc[0]["credit_f1"]) >= 0.99
+        and independent_event_metadata.get("event_intervention") is True
+        and independent_event_metadata.get("causal_intervention_claim") is False
+        and independent_event_metadata.get("truth_source") == "independent_gate_causal_event_policy"
+        and independent_event_metadata.get("independent_policy", {}).get("risk_oracle_reused") is False
+        and independent_event_metadata.get("independent_policy", {}).get("tariff_pair_distinct_from_gate") is True
+        and independent_event_metadata.get("independent_policy", {}).get("structurally_distinct_from_gate") is True
+        and float(independent_event_metadata.get("independent_policy", {}).get("minimum_participant_event_mwh", 0.0)) > 0.0
+        and float(independent_event_metadata.get("independent_policy", {}).get("maximum_response_difference_from_gate_mw", 0.0)) > 1e-8,
+        "independent_controlled_event_replay",
+        (
+            "54 locked days are replayed under a predeclared tariff intervention; "
+            "the gate response is scored against an independently solved meter and "
+            "the experiment makes no field-causal claim"
+        ),
+        checks,
+    )
+
+    all_outage_summary = pd.read_csv(
+        root
+        / "experiments/exp24_all_outage_security_panel/results/final/"
+        "all_outage_security_summary.csv"
+    )
+    all_outage_metadata = json.loads(
+        (
+            root
+            / "experiments/exp24_all_outage_security_panel/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(all_outage_summary) == 2
+        and set(all_outage_summary["locked_days"].astype(int)) == {54}
+        and set(all_outage_summary["replay_cells"].astype(int)) == {432}
+        and set(all_outage_summary["minimum_contingencies"].astype(int)) == {37}
+        and set(all_outage_summary["maximum_contingencies"].astype(int)) == {37}
+        and bool(all_outage_summary["all_cells_successful"].all())
+        and all_outage_metadata.get("all_finite_nonislanding_outages_evaluated") is True
+        and all_outage_metadata.get("ac_admissibility_screen") is False
+        and all_outage_metadata.get("outage_ranking_or_screening") is False
+        and all_outage_metadata.get("post_solution_profile_reoptimization") is False
+        and float(all_outage_metadata.get("maximum_postcontingency_loading", np.inf)) <= 1.000001,
+        "full_finite_n1_frozen_profile_panel",
+        (
+            "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding "
+            "outages without AC screening or post-solution workload adjustment"
+        ),
+        checks,
+    )
 
     stale_temporary_files = [
         str(path.relative_to(root))
-        for path in root.rglob(".*.tmp")
+        for path in list(root.rglob(".*.tmp")) + list(root.rglob("*.tmp.npz"))
         if path.is_file() and ".git" not in path.parts
     ]
     _check(

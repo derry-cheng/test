@@ -133,6 +133,9 @@ experiments:
   # contractual network value model; bounded threads avoid matrix duplication.
   coupled_network_generator_segments: 4
   coupled_network_parallel_workers: 1
+  # Full frozen-profile RTS-24 N−1 panel: 54 days × 8 event slots × 2
+  # profiles. The worker cap is checked centrally against the 20-core limit.
+  all_outage_panel_workers: 4
   # The transfer panel is a predeclared evenly spaced subset of the locked
   # days; the full 54-day independent evaluator remains the primary result.
   payment_unseen_transfer_days: 6
@@ -184,12 +187,29 @@ experiments:
   event_gate_reserve_cap_quantile: 0.75
   event_gate_reserve_validation_false_credit_budget_mwh: 0.25
   # Job-level counterfactuals use scheduler declarations available at submit
-  # time.  Slurm's unlimited timelimit sentinel is mapped to this bounded
-  # precommitted window; no observed completion time enters the LP deadline.
+  # time.  Slurm's ``--time`` is an allocation runtime, not a
+  # submission-to-completion deadline.  The counterfactual therefore adds a
+  # fixed, precommitted 24-hour queue allowance before that runtime; no
+  # observed completion time enters the LP window.
   job_level_unbounded_timelimit_slots: 128
+  job_level_submission_buffer_slots: 96
   # A precommitted one-kW/GPU nameplate keeps every finite submit-time window
   # feasible without extending a declared deadline.
   job_level_declared_per_gpu_power_cap_mw: 0.001
+  # Independent controlled-event replay: a separately parameterized exact LP
+  # uses this tariff and no statistical target or verifier candidate as an
+  # input.  Its predeclared service floor makes the event policy structurally
+  # distinct from the gate response LP; it is not selected from locked outcomes.
+  # The controlled-event policy uses a distinct tariff pair from the gate
+  # contract.  This prevents the meter replay from being a copy of the
+  # committed response objective while retaining a predeclared positive-price
+  # intervention.
+  independent_event_response_price_per_mwh: 210.0
+  independent_event_baseline_price_per_mwh: 120.0
+  independent_event_participating_data_center_indices: [0]
+  independent_event_minimum_service_mwh: 5.0
+  independent_gate_baseline_price_per_mwh: 120.0
+  independent_event_workers: 4
   preventive_ac_validation_day_rule: "first locked test day"
   # The preventive AC panel uses six predeclared locked snapshots rather than
   # a single outcome-selected day.  The two event endpoints test both the

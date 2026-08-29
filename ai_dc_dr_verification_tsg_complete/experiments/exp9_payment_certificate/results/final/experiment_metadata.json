@@ -35,6 +35,7 @@
   "reference_payment_cap": "Projection rho=0.3",
   "external_transfer_comparator": "Feasible Quantile Projection",
   "payment_target_selection": "validation-only independent N-1 payment MAE over all three held-out conversion scenarios and event slots",
+  "selection_role_separation": "The contractual cap and payment target are frozen by different validation criteria: the cap uses worst contiguous-fold nRMSE from Experiment 2, whereas the target uses independent high-resolution N-1 payment MAE. Neither criterion reads locked-test outcomes.",
   "payment_target_candidate": "Feasible Quantile Projection",
   "payment_target_candidate_index": 6,
   "payment_target_profile": "Feasible Quantile Projection",

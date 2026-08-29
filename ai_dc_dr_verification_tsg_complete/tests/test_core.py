@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from aicdr.data import _balanced_trace_region_labels, _validate_declared_raw_sources, load_workload
+from aicdr.coupling_invariant import validate_job_network_coupling
 from aicdr.baselines import (
     exact_block_sign_test,
     response_delivery_metrics,
@@ -59,6 +60,51 @@ def test_stage_runs_cannot_overwrite_the_unified_manifest() -> None:
         manifest_path_for_stage(ROOT, "audit")
         != manifest_path_for_stage(ROOT, "all")
     )
+
+
+def test_typed_coupling_invariant_checks_job_aggregation_and_network_units() -> None:
+    """The bridge certificate rejects a unit or aggregation mismatch."""
+
+    service = np.asarray([0.25, 0.25, 0.25, 0.25], dtype=float)
+    energy = np.asarray([0.5, 0.5], dtype=float)
+    starts = np.asarray([0, 1], dtype=int)
+    ends = np.asarray([2, 3], dtype=int)
+    regions = np.asarray([0, 1], dtype=int)
+    aggregate = np.asarray([[0.25, 0.25, 0.0], [0.0, 0.25, 0.25]], dtype=float)
+    mapping = np.zeros((3, 2), dtype=float)
+    mapping[[0, 2], [0, 1]] = 1.0
+    profile = mapping @ (aggregate / 0.25)
+    certificate = validate_job_network_coupling(
+        service_mwh=service,
+        job_energy_mwh=energy,
+        submit_slot=starts,
+        deadline_slot=ends,
+        region=regions,
+        aggregate_mwh=aggregate,
+        dt_h=0.25,
+        measured_gpus=np.asarray([1.0, 2.0]),
+        per_gpu_power_cap_mw=1.0,
+        site_capacity_mw=2.0,
+        network_profile_mw=profile,
+        network_mapping=mapping,
+    )
+    assert certificate.valid
+    assert certificate.max_job_energy_residual_mwh <= 1e-12
+    assert certificate.max_aggregation_residual_mwh <= 1e-12
+    assert certificate.max_network_mapping_residual_mw <= 1e-12
+    broken = aggregate.copy()
+    broken[0, 0] += 0.1
+    invalid = validate_job_network_coupling(
+        service_mwh=service,
+        job_energy_mwh=energy,
+        submit_slot=starts,
+        deadline_slot=ends,
+        region=regions,
+        aggregate_mwh=broken,
+        dt_h=0.25,
+    )
+    assert not invalid.valid
+    assert invalid.max_aggregation_residual_mwh > 0.09
 
 
 def test_observational_replay_covers_every_locked_day_and_slot() -> None:
@@ -208,9 +254,12 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert metadata["deadline_mode"] == "declared_timelimit"
     assert int(metadata["declared_window_slots_min"]) >= 1
     assert int(metadata["declared_window_slots_max"]) >= int(metadata["declared_window_slots_min"])
-    assert int(metadata["declared_window_slots_max"]) == 584
+    assert int(metadata["declared_window_slots_max"]) == 680
     assert int(metadata["unlimited_timelimit_jobs"]) >= 0
-    assert "submit-time scheduler timelimit" in metadata["deadline_source"]
+    assert "allocation runtime" in metadata["deadline_source"]
+    assert int(metadata["submission_buffer_slots"]) == int(
+        CFG["experiments"]["job_level_submission_buffer_slots"]
+    )
     assert float(metadata["declared_per_gpu_power_cap_mw"]) == 0.001
     summary = pd.read_csv(folder / "job_level_counterfactual_summary.csv")
     values = dict(zip(summary["metric"], summary["value"]))
@@ -222,7 +271,7 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert np.isclose(native - counterfactual, net, atol=1e-12)
     assert gross >= net - 1e-12
     assert rebound >= -1e-12
-    assert int(float(values["service_variables"])) == 5_465_157
+    assert int(float(values["service_variables"])) == 12_293_445
     assert float(values["maximum_job_energy_residual_mwh"]) < 1e-15
     scale = pd.read_csv(
         ROOT
@@ -253,7 +302,7 @@ def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> N
     assert float(values["minimum_site_capacity_slack_mwh"]) >= -1e-12
     assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
     assert len(replay) == 1
-    assert int(replay.loc[0, "event_slot_count"]) == 1048
+    assert int(replay.loc[0, "event_slot_count"]) == 1056
     assert int(replay.loc[0, "credible_contingencies"]) == 37
     assert bool(replay.loc[0, "solver_success"])
     assert np.isclose(
@@ -262,6 +311,30 @@ def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> N
     )
     assert metadata["network_load_equation"].startswith("L_t = L_base * 0.9")
     assert metadata["post_solution_profile_reoptimization"] is False
+
+
+def test_independent_event_and_full_outage_panels_are_locked_and_complete() -> None:
+    event_folder = ROOT / "experiments/exp23_independent_event_replay/results/final"
+    event_summary = pd.read_csv(event_folder / "independent_event_replay_summary.csv")
+    event_metadata = json.loads((event_folder / "experiment_metadata.json").read_text(encoding="utf-8"))
+    gate = event_summary[event_summary["method"] == "Gate-committed response"].iloc[0]
+    assert int(gate["locked_days"]) == 54
+    assert float(gate["credit_f1"]) >= 0.99
+    assert event_metadata["event_intervention"] is True
+    assert event_metadata["causal_intervention_claim"] is False
+    assert event_metadata["independent_policy"]["tariff_pair_distinct_from_gate"] is True
+    assert event_metadata["independent_policy"]["structurally_distinct_from_gate"] is True
+    assert float(event_metadata["independent_policy"]["minimum_participant_event_mwh"]) > 0.0
+    assert float(event_metadata["independent_policy"]["maximum_response_difference_from_gate_mw"]) > 1e-8
+    outage_folder = ROOT / "experiments/exp24_all_outage_security_panel/results/final"
+    outage = pd.read_csv(outage_folder / "all_outage_security_replay.csv")
+    outage_metadata = json.loads((outage_folder / "experiment_metadata.json").read_text(encoding="utf-8"))
+    assert len(outage) == 864
+    assert set(outage["credible_contingencies"]) == {37}
+    assert set(outage["evaluated_finite_nonislanding_outages"]) == {37}
+    assert outage["solver_success"].all()
+    assert outage_metadata["all_finite_nonislanding_outages_evaluated"] is True
+    assert outage_metadata["ac_admissibility_screen"] is False
 
 
 def test_unseen_payment_transfer_panel_is_not_used_for_certificate_selection() -> None:
@@ -1133,6 +1206,9 @@ def test_final_panels_exist() -> None:
         "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
+        "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+        "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
     ]
     missing = [path for path in expected if not (ROOT / path).is_file()]
     assert not missing, f"missing final panels: {missing}"
@@ -1144,7 +1220,7 @@ def test_job_to_network_certificate_replays_the_same_indexed_witness() -> None:
     summary = pd.read_csv(folder / "coupled_network_summary.csv")
     values = dict(zip(summary["metric"], summary["value"]))
     assert int(float(values["positive_energy_jobs"])) == 71128
-    assert int(float(values["service_variables"])) == 5_465_157
+    assert int(float(values["service_variables"])) == 12_293_445
     assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
     assert float(values["all_network_solves_successful"]) == 1.0
     metadata = json.loads(
@@ -1152,4 +1228,4 @@ def test_job_to_network_certificate_replays_the_same_indexed_witness() -> None:
     )
     assert metadata["network_profile_is_same_job_witness"] is True
     assert metadata["post_solution_profile_reoptimization"] is False
-    assert metadata["replayed_event_slot_count"] == 1048
+    assert metadata["replayed_event_slot_count"] == 1056

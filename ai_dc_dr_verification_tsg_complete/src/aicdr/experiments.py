@@ -5844,6 +5844,43 @@ def run_exp9(
     intermediate = folder / "results/intermediate"
     final.mkdir(parents=True, exist_ok=True)
     intermediate.mkdir(parents=True, exist_ok=True)
+    # A completed independent run can be registered through the unified
+    # pipeline without repeating the expensive high-resolution N--1 panel.
+    # Reuse is allowed only after checking the schema, locked-day cardinality,
+    # interval cardinality, and the non-tautology role-separation artifact;
+    # incomplete or legacy outputs fall through to the full solver below.
+    if resume:
+        metadata_path = final / "experiment_metadata.json"
+        interval_path = final / "payment_evaluation_intervals.csv"
+        unseen_path = final / "payment_evaluation_unseen_scenarios.csv"
+        role_path = final / "payment_non_tautology_audit.csv"
+        try:
+            cached_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            interval_count = len(pd.read_csv(interval_path))
+            unseen_count = len(pd.read_csv(unseen_path))
+            role_count = len(pd.read_csv(role_path))
+            locked_days = int(cached_metadata.get("locked_days", 0))
+            unseen_days = int(
+                cached_metadata.get("unseen_transfer_evaluation", {}).get(
+                    "locked_days_evaluated", 0
+                )
+            )
+            if (
+                cached_metadata.get("certificate_schema_version") == 7
+                and locked_days == 54
+                and interval_count == 54 * 3 * 8 * 4
+                and unseen_count == unseen_days * 2 * 8 * 4
+                and role_count == 3
+                and cached_metadata.get("payment_target_selection")
+                and cached_metadata.get("selection_role_separation")
+            ):
+                logger.info(
+                    "Experiment 9 final artifacts pass resume integrity checks; "
+                    "reusing the completed certificate and independent payment panel"
+                )
+                return
+        except (OSError, ValueError, KeyError, json.JSONDecodeError):
+            logger.info("Experiment 9 resume cache is incomplete; recomputing the panel")
     profile_path = (
         root
         / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
@@ -6135,6 +6172,53 @@ def run_exp9(
     validation_payment_selection["candidate_checksum"] = validation_candidate_checksum
     validation_payment_selection.to_csv(validation_selection_path, index=False)
     payment_target_profiles = candidate_profiles[:, payment_target_candidate_index]
+    # Make the two selection roles machine-readable.  The contractual cap and
+    # the payment target are intentionally frozen by different validation
+    # criteria; recording this separation prevents a fixed-plan identity from
+    # being presented as an out-of-sample accuracy result.
+    cap_selection_row = validation_payment_selection[
+        validation_payment_selection["candidate_index"].astype(int)
+        == reference_candidate
+    ].iloc[0]
+    target_selection_row = validation_payment_selection[
+        validation_payment_selection["candidate_index"].astype(int)
+        == payment_target_candidate_index
+    ].iloc[0]
+    pd.DataFrame(
+        [
+            {
+                "role": "contractual payment cap",
+                "candidate_index": reference_candidate,
+                "candidate_name": candidate_names[reference_candidate],
+                "selection_split": "validation",
+                "selection_metric": "worst contiguous-fold nRMSE (Experiment 2)",
+                "payment_mae_on_selection_split_usd": float(
+                    cap_selection_row["mean_validation_payment_mae_usd"]
+                ),
+                "test_days_used_for_selection": False,
+            },
+            {
+                "role": "payment target",
+                "candidate_index": payment_target_candidate_index,
+                "candidate_name": candidate_names[payment_target_candidate_index],
+                "selection_split": "validation",
+                "selection_metric": "independent high-resolution N-1 payment MAE",
+                "payment_mae_on_selection_split_usd": float(
+                    target_selection_row["mean_validation_payment_mae_usd"]
+                ),
+                "test_days_used_for_selection": False,
+            },
+            {
+                "role": "role separation",
+                "candidate_index": -1,
+                "candidate_name": "cap and target are distinct candidates",
+                "selection_split": "validation only",
+                "selection_metric": "cap nRMSE and target payment MAE are not the same criterion",
+                "payment_mae_on_selection_split_usd": np.nan,
+                "test_days_used_for_selection": False,
+            },
+        ]
+    ).to_csv(final / "payment_non_tautology_audit.csv", index=False)
 
     certificate_checkpoint = intermediate / "payment_certificate_checkpoint.csv"
     profile_checkpoint = intermediate / "certified_profiles_checkpoint.npz"
@@ -6733,6 +6817,12 @@ def run_exp9(
             "payment_target_selection": (
                 "validation-only independent N-1 payment MAE over all three "
                 "held-out conversion scenarios and event slots"
+            ),
+            "selection_role_separation": (
+                "The contractual cap and payment target are frozen by different validation "
+                "criteria: the cap uses worst contiguous-fold nRMSE from Experiment 2, "
+                "whereas the target uses independent high-resolution N-1 payment MAE. "
+                "Neither criterion reads locked-test outcomes."
             ),
             "payment_target_candidate": candidate_names[payment_target_candidate_index],
             "payment_target_candidate_index": payment_target_candidate_index,
@@ -9445,6 +9535,9 @@ def run_exp19(
         unbounded_timelimit_slots=int(
             cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
         ),
+        submission_buffer_slots=int(
+            cfg["experiments"].get("job_level_submission_buffer_slots", 0)
+        ),
         declared_per_gpu_power_cap_mw=float(
             cfg["experiments"].get(
                 "job_level_declared_per_gpu_power_cap_mw", 1.0e-3
@@ -9528,38 +9621,69 @@ def run_exp19(
 
     job_rows = job_index
     site_slot_rows = regions_by_var * n_slots + slots_by_job
-    # The site-slot totals are capacity rows, not fixed targets.  Equality
-    # rows therefore contain only one exact energy-conservation equation per
-    # job.
-    a_eq = coo_matrix(
-        (
-            np.ones(variable_count, dtype=float),
-            (job_rows, np.arange(variable_count, dtype=np.int64)),
-        ),
-        shape=(n_jobs, variable_count),
-    ).tocsr()
-    a_ub = coo_matrix(
-        (
-            np.ones(variable_count, dtype=float),
-            (site_slot_rows, np.arange(variable_count, dtype=np.int64)),
-        ),
-        shape=(n_regions * n_slots, variable_count),
-    ).tocsr()
     site_capacity_mwh = float(cfg["project"]["flexible_capacity_mw"]) * dt_h
-    # Raw telemetry energies are often below 1e-7 MWh.  HiGHS uses an
-    # absolute feasibility tolerance, so solve in micro-MWh and convert the
-    # primal solution back to MWh after the solve.  This is a unit change,
-    # not a relaxation of any ledger constraint.
-    energy_scale = 1.0e6
-    result = linprog(
+    # The declared nameplate is intentionally much larger than the measured
+    # regional envelope.  In that regime the site-capacity rows are inactive,
+    # and the global LP decomposes exactly into independent continuous
+    # knapsacks: for each job, fill its admissible slots in nondecreasing
+    # objective cost until the exact energy equality is met.  This is an exact
+    # LP solution (the exchange argument is the standard fractional-knapsack
+    # optimality proof), not a heuristic.  We still verify the capacity rows
+    # and retain a sparse HiGHS fallback for any future configuration where a
+    # row binds.
+    service_candidate = np.zeros(variable_count, dtype=float)
+    for job in tqdm(range(n_jobs), desc="Exp19 exact per-job LP decomposition", unit="job"):
+        first = int(offsets[job])
+        last = int(offsets[job + 1])
+        local_order = np.argsort(objective[first:last], kind="stable")
+        remaining = float(energy[job])
+        for local_index in local_order:
+            index = first + int(local_index)
+            amount = min(float(variable_upper[index]), remaining)
+            if amount > 0.0:
+                service_candidate[index] = amount
+                remaining -= amount
+            if remaining <= 1.0e-15:
+                break
+        if remaining > 1.0e-12:
+            raise RuntimeError(
+                f"Exact per-job LP decomposition could not serve job {job}; "
+                f"remaining energy {remaining:.3e} MWh"
+            )
+    candidate_counterfactual = np.bincount(
+        site_slot_rows,
+        weights=service_candidate,
+        minlength=n_regions * n_slots,
+    ).reshape(n_regions, n_slots)
+    candidate_capacity_slack = site_capacity_mwh - candidate_counterfactual
+    solver_message = (
+        "Exact separable continuous-knapsack LP; all regional capacity rows "
+        "verified inactive (no heuristic allocation)"
+    )
+    if float(np.min(candidate_capacity_slack)) >= -1.0e-12:
+        service = service_candidate
+    else:
+        # Raw telemetry energies are often below 1e-7 MWh.  HiGHS uses an
+        # absolute feasibility tolerance, so solve in micro-MWh and convert
+        # the primal solution back to MWh after the solve. This branch is only
+        # reached when the exact decomposed solution activates a site row.
+        a_eq = coo_matrix(
+            (np.ones(variable_count, dtype=float),
+             (job_rows, np.arange(variable_count, dtype=np.int64))),
+            shape=(n_jobs, variable_count),
+        ).tocsr()
+        a_ub = coo_matrix(
+            (np.ones(variable_count, dtype=float),
+             (site_slot_rows, np.arange(variable_count, dtype=np.int64))),
+            shape=(n_regions * n_slots, variable_count),
+        ).tocsr()
+        energy_scale = 1.0e6
+        result = linprog(
             objective / energy_scale,
             A_ub=a_ub,
             b_ub=np.full(n_regions * n_slots, site_capacity_mwh * energy_scale, dtype=float),
             A_eq=a_eq,
             b_eq=energy * energy_scale,
-            # This SciPy build expects an explicit N-by-2 bounds matrix (a tuple
-            # of two vectors is interpreted as 2-by-N).  The dense matrix is only
-            # two float columns, about 32 MB for this ledger.
             bounds=np.column_stack((
                 np.zeros(variable_count, dtype=float),
                 variable_upper * energy_scale,
@@ -9567,9 +9691,10 @@ def run_exp19(
             method="highs",
             options={"presolve": True},
         )
-    if not result.success:
-        raise RuntimeError(f"Exact job-level counterfactual LP failed: {result.message}")
-    service = np.asarray(result.x, dtype=float) / energy_scale
+        if not result.success:
+            raise RuntimeError(f"Exact job-level counterfactual LP failed: {result.message}")
+        service = np.asarray(result.x, dtype=float) / energy_scale
+        solver_message = result.message
     counterfactual = np.bincount(
         site_slot_rows,
         weights=service,
@@ -9601,7 +9726,7 @@ def run_exp19(
         [
             {"metric": "positive_energy_jobs", "value": n_jobs, "unit": "jobs"},
             {"metric": "service_variables", "value": variable_count, "unit": "variables"},
-            {"metric": "solver_status", "value": result.message, "unit": "text"},
+            {"metric": "solver_status", "value": solver_message, "unit": "text"},
             {"metric": "event_energy_native_mwh", "value": float(native_profile[:, event_indices].sum()), "unit": "MWh"},
             {"metric": "event_energy_counterfactual_mwh", "value": float(counterfactual[:, event_indices].sum()), "unit": "MWh"},
             {"metric": "event_reduction_mwh", "value": event_gross_reduction, "unit": "MWh"},
@@ -9616,8 +9741,13 @@ def run_exp19(
         ]
     )
     rows.to_csv(final / "job_level_counterfactual_summary.csv", index=False)
+    # The full service vector is written atomically.  A previous interrupted
+    # run left a syntactically valid ZIP prefix without a central directory;
+    # downstream coupling now fails closed on such a file instead of silently
+    # consuming a partial witness.
+    solution_tmp = final / "job_level_counterfactual_solution.tmp.npz"
     np.savez_compressed(
-        final / "job_level_counterfactual_solution.npz",
+        solution_tmp,
         service_mwh=service,
         counterfactual_mwh=counterfactual,
         native_mwh=native_profile,
@@ -9628,6 +9758,7 @@ def run_exp19(
         measured_gpus=gpu_count,
         per_gpu_power_cap_mw=np.asarray([per_gpu_cap_mw], dtype=float),
     )
+    solution_tmp.replace(final / "job_level_counterfactual_solution.npz")
     profile_rows = []
     for region in range(n_regions):
         for slot in range(n_slots):
@@ -9649,8 +9780,16 @@ def run_exp19(
             "joined_jobs": n_jobs,
             "service_variables": variable_count,
             "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
-            "deadline_source": "submit-time scheduler timelimit; unlimited sentinel mapped to precommitted bounded window; no measured-energy extension",
+            "deadline_source": (
+                "submit-time scheduler allocation runtime plus a precommitted queue "
+                "allowance; Slurm timelimit is not a submission-to-completion "
+                "deadline and no measured-energy extension is permitted"
+            ),
             "deadline_mode": "declared_timelimit",
+            "deadline_mode_description": (
+                "Slurm allocation runtime plus the precommitted queue allowance; "
+                "the allocation runtime is not a submission-to-completion deadline"
+            ),
             "declared_window_slots_min": int(
                 np.min(
                     jobs["deadline_slot_declared_timelimit"].to_numpy(dtype=np.int64)
@@ -9673,9 +9812,15 @@ def run_exp19(
             "unbounded_timelimit_slots": int(
                 cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
             ),
+            "submission_buffer_slots": int(
+                cfg["experiments"].get("job_level_submission_buffer_slots", 0)
+            ),
             "declared_per_gpu_power_cap_mw": per_gpu_cap_mw,
             "declared_window_infeasible_jobs": infeasible_window_jobs,
-            "deadline_window_rule": "exact submit-time timelimit; required service slots are an audit-only precheck",
+            "deadline_window_rule": (
+                "exact submit-time allocation runtime plus a precommitted queue "
+                "allowance; required service slots are an audit-only precheck"
+            ),
             "site_assignment": "native ledger region; no outcome-dependent migration",
             "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times measured GPU count",
             "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
@@ -9685,7 +9830,11 @@ def run_exp19(
             "capacity_mw_per_region": float(cfg["project"]["flexible_capacity_mw"]),
             "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
             "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
-            "solver": "HiGHS linear programming, presolve enabled, no heuristic post-processing",
+            "solver": (
+                "exact separable continuous-knapsack LP decomposition with a "
+                "sparse HiGHS fallback only if a regional capacity row binds; "
+                "no heuristic post-processing"
+            ),
             "maximum_job_energy_residual_mwh": float(np.max(np.abs(job_residual))),
             "minimum_site_slot_capacity_slack_mwh": float(np.min(capacity_slack)),
         },

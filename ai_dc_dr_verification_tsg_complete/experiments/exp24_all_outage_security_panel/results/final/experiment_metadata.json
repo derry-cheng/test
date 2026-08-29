@@ -1,0 +1,31 @@
+{
+  "experiment": "full finite N-1 frozen-profile security replay",
+  "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
+  "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
+  "profile_source": "Exp2 locked-test profiles frozen before network replay",
+  "evaluated_methods": [
+    "Risk-Constrained Convex Verifier",
+    "Single Feasible Projection"
+  ],
+  "locked_days": 54,
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "replay_cells": 864,
+  "credible_contingencies_per_cell": 37,
+  "all_finite_nonislanding_outages_evaluated": true,
+  "ac_admissibility_screen": false,
+  "outage_ranking_or_screening": false,
+  "post_solution_profile_reoptimization": false,
+  "workers": 4,
+  "maximum_postcontingency_loading": 1.0000000000000022,
+  "all_solver_cells_successful": true,
+  "figure": "fig27_all_outage_security.pdf"
+}

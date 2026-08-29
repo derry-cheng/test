@@ -4,7 +4,7 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `manuscript/` contains the LaTeX source and supporting formulation notes. The large BurstGPT and MIT SuperCloud releases are kept outside the repository; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
+`src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `manuscript/` contains the LaTeX source and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs; `code/` documents the executable implementation boundary. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
 ## Reproduction
 
@@ -29,7 +29,7 @@ standalone stages write under `artifacts/stage_runs/` and do not overwrite the
 canonical all-stage manifest. The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`.
 
-The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any measured job requires more service slots than its submit-time declared window. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
+The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any measured job requires more service slots than its submit-time declared window. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized controlled-event replay with a nonzero predeclared service floor, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
 PYTHONPATH=src .venv/bin/python experiments/exp20_trace_meter_replay/run.py
@@ -52,16 +52,18 @@ scenarios; all 24 region-to-bus permutations are evaluated in Experiment 11.
 
 The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--22 each own a README, final results,
+the LaTeX source. Experiments 1--24 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
 not pretend that a scaled witness is a second re-optimised LP. Experiment 22
 reconstructs the network profile from the exact Experiment 19 job--slot
-witness, checks a zero aggregation residual before dispatch, and reports a
+witness, checks typed zero residuals before dispatch, and reports a
 deterministic event-window-mean N--1 replay on the explicitly pinned public
-IEEE RTS-24 case. The larger IEEE-118/PGLib case is reserved for the separate
-cross-network and AC panels.
+IEEE RTS-24 case. Experiment 24 then freezes the profiles and covers all finite
+non-islanding outages without screening or post-solution reoptimization. The
+larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
+panels.
 
 ## Reproducibility boundaries
 

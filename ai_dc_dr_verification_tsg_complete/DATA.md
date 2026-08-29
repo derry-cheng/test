@@ -48,28 +48,41 @@ Experiment 9 embeds all three values in the same payment-certificate program;
 they form a declared finite empirical uncertainty set, not a tuned continuous
 distribution or a replacement for the measured scoring trace.
 
-Experiment 19 uses a separate job-indexed counterfactual. Its service endpoint
-is formed from the submit-time Slurm `timelimit`; finite declarations are kept
-at their declared duration, while the unlimited sentinel is mapped to a
-precommitted 128-slot horizon. A fixed 0.001 MW/GPU nameplate provides the
-per-slot service bound. The observed scheduler completion interval
-is retained only for the independent native replay and never defines the
-counterfactual deadline or power cap.
+Experiment 19 uses a separate job-indexed counterfactual. Slurm `timelimit` is
+an allocation run-time declaration, not a submission-to-completion deadline.
+Finite declarations are converted to 15-minute runtime slots and combined with
+a precommitted 96-slot queue allowance; the unlimited sentinel is mapped to a
+precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
+MW/GPU nameplate provides the per-slot service bound. The observed scheduler
+completion interval is retained only for the independent native replay and
+never defines the counterfactual deadline or power cap. The resulting witness
+contains 12,293,445 job--slot variables and is solved by an exact separable
+continuous-knapsack decomposition whenever the declared regional capacity rows
+are inactive, with a sparse LP fallback only when a row binds.
+
+Experiment 23 adds a structurally distinct controlled event: after the same
+slot-60 submission gate, an independently parameterized exact LP applies a
+predeclared event tariff and a 5-MWh service floor without receiving any
+verifier target, risk envelope, or locked outcome. It is a mechanism-isolation
+certificate, not a field treatment estimate.
 
 Experiment 22 reconstructs the regional network profile directly from the
-stored Experiment 19 job--slot service vector. It verifies the job-to-profile
-equality at every declared event slot before solving the secure network model;
-the reported network value is an arithmetic-mean event-window replay on the
+stored Experiment 19 job--slot service vector. A typed certificate checks job
+energy, job-to-region aggregation, region-to-bus mapping, GPU nameplate, and
+regional-capacity residuals before solving the secure network model. The
+reported network value is an arithmetic-mean event-window replay on the
 predeclared public PYPOWER IEEE RTS-24 case (four fixed generator-bus
-locations) and is not based on a second aggregate optimization. The public
-PGLib IEEE-118 case supplies the independent cross-network/AC benchmark.
+locations) and is not based on a second aggregate optimization. Experiment 24
+then freezes the two locked profiles and evaluates all 37 finite non-islanding
+RTS-24 outages in all 864 day/slot/profile cells. The public PGLib IEEE-118
+case supplies the independent cross-network/AC benchmark.
 
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The
 raw execution peaks are at most 0.008637 MW per region; after the train-fitted
-batch scaling used for the benchmark, the regional peaks are 43.808, 62.537,
-103.197, and 132.571 MW. The flexible nameplate of 118 MW is committed before
+batch scaling used for the benchmark, the regional peaks are 61.463, 97.836,
+102.619, and 37.460 MW. The flexible nameplate of 118 MW is committed before
 the validation/test split; Experiment 16 reconciles this predeclared value
 against the scaled benchmark envelope and verifies that it covers every
 observed region-slot. Locked outcomes do not select the nameplate.

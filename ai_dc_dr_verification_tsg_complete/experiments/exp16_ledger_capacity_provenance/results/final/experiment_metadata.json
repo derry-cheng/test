@@ -15,9 +15,9 @@
   },
   "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The raw MIT execution peak is reported separately from the scaled benchmark envelope used for the declared study scale; neither is used to tune a locked-day schedule.",
   "configured_capacity_mw": 118.0,
-  "maximum_raw_execution_peak_mw": 0.00863653603302321,
-  "maximum_scaled_benchmark_peak_mw": 132.57144147254564,
-  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 1.1234867921402174,
+  "maximum_raw_execution_peak_mw": 0.006685220843592108,
+  "maximum_scaled_benchmark_peak_mw": 102.6186147326332,
+  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.8696492773951966,
   "physical_calibration_summary": {
     "file": "physical_calibration_summary.csv",
     "test_mae_watts": 11.223035454787677,
