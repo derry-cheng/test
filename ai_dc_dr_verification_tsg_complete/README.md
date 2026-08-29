@@ -4,7 +4,7 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `manuscript/` contains the LaTeX source and supporting formulation notes. Raw BurstGPT, MIT SuperCloud, and PGLib inputs are intentionally kept outside the repository; their configured paths and provenance requirements are recorded in `data/processed/data_manifest.json` when a full preprocessing run is available.
+`src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `manuscript/` contains the LaTeX source and supporting formulation notes. The large BurstGPT and MIT SuperCloud releases are kept outside the repository; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
 ## Reproduction
 
@@ -44,8 +44,9 @@ common 121-day tensor window retains 68,664 jobs for the locked statistical
 panels; the remaining jobs are retained by the complete ledger stages. Source
 row counts, hashes, joins, temporal coverage, calibration, scaling, and all
 split rules are recorded in `data/processed/data_manifest.json` and
-`data/processed/data_flow_audit.csv`. Raw inputs are intentionally excluded
-from version control. Public traces do not expose facility geography, so the
+`data/processed/data_flow_audit.csv`. The large workload and telemetry inputs
+are intentionally excluded from version control; the tracked PGLib case is a
+public network benchmark rather than private telemetry. Public traces do not expose facility geography, so the
 four-region placement and trace-to-power conversion are declared benchmark
 scenarios; all 24 region-to-bus permutations are evaluated in Experiment 11.
 
@@ -58,7 +59,9 @@ capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
 not pretend that a scaled witness is a second re-optimised LP. Experiment 22
 reconstructs the network profile from the exact Experiment 19 job--slot
 witness, checks a zero aggregation residual before dispatch, and reports a
-deterministic event-window-mean N--1 replay.
+deterministic event-window-mean N--1 replay on the explicitly pinned public
+IEEE RTS-24 case. The larger IEEE-118/PGLib case is reserved for the separate
+cross-network and AC panels.
 
 ## Reproducibility boundaries
 

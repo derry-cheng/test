@@ -239,6 +239,31 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert float(scale_values["capacity_proportional_minimum_capacity_slack_mwh"]) >= -1e-9
 
 
+def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> None:
+    folder = ROOT / "experiments/exp22_coupled_job_network_certificate/results/final"
+    summary = pd.read_csv(folder / "coupled_network_summary.csv")
+    replay = pd.read_csv(folder / "coupled_network_event_replay.csv")
+    values = dict(zip(summary["metric"].astype(str), summary["value"].astype(float)))
+    metadata = json.loads((folder / "experiment_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["independent_job_feasibility_recheck"] is True
+    assert float(values["maximum_job_energy_recheck_residual_mwh"]) <= 1e-12
+    assert float(values["maximum_gpu_bound_violation_mwh"]) <= 1e-12
+    assert float(values["maximum_gpu_bound_violation_mwh"]) >= 0.0
+    assert float(values["minimum_gpu_bound_slack_mwh"]) >= -1e-12
+    assert float(values["minimum_site_capacity_slack_mwh"]) >= -1e-12
+    assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
+    assert len(replay) == 1
+    assert int(replay.loc[0, "event_slot_count"]) == 1048
+    assert int(replay.loc[0, "credible_contingencies"]) == 37
+    assert bool(replay.loc[0, "solver_success"])
+    assert np.isclose(
+        float(metadata["network_load_multiplier"]),
+        float(CFG["experiments"]["n1_load_multiplier"]),
+    )
+    assert metadata["network_load_equation"].startswith("L_t = L_base * 0.9")
+    assert metadata["post_solution_profile_reoptimization"] is False
+
+
 def test_unseen_payment_transfer_panel_is_not_used_for_certificate_selection() -> None:
     folder = ROOT / "experiments/exp9_payment_certificate/results/final"
     metadata = json.loads(

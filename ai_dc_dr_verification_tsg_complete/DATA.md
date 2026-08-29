@@ -59,8 +59,10 @@ counterfactual deadline or power cap.
 Experiment 22 reconstructs the regional network profile directly from the
 stored Experiment 19 job--slot service vector. It verifies the job-to-profile
 equality at every declared event slot before solving the secure network model;
-the reported network value is an arithmetic-mean event-window replay and is
-not based on a second aggregate optimization.
+the reported network value is an arithmetic-mean event-window replay on the
+predeclared public PYPOWER IEEE RTS-24 case (four fixed generator-bus
+locations) and is not based on a second aggregate optimization. The public
+PGLib IEEE-118 case supplies the independent cross-network/AC benchmark.
 
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-

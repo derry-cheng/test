@@ -3,9 +3,13 @@ positive_energy_jobs,71128.0,jobs
 service_variables,5465157.0,variables
 event_slots_replayed,1048.0,slots
 maximum_job_to_aggregate_residual_mwh,0.0,MWh
+maximum_job_energy_recheck_residual_mwh,2.168404344971009e-19,MWh
+maximum_gpu_bound_violation_mwh,0.0,MWh
+minimum_gpu_bound_slack_mwh,8.629444444444452e-06,MWh
+minimum_site_capacity_slack_mwh,29.49151105611111,MWh
 event_native_job_profile_mwh,0.19442596894717518,MWh
 event_counterfactual_job_profile_mwh,0.027517586944444443,MWh
-event_secure_network_value_usd_per_interval,0.005966066848486662,USD/interval
-maximum_counterfactual_base_loading,0.04166666666666669,ratio
-maximum_counterfactual_postcontingency_loading,0.042914220197693045,ratio
+event_secure_network_value_usd_per_interval,0.0037159000094106887,USD/interval
+maximum_counterfactual_base_loading,0.7521667790034876,ratio
+maximum_counterfactual_postcontingency_loading,1.0000000000000004,ratio
 all_network_solves_successful,1.0,boolean

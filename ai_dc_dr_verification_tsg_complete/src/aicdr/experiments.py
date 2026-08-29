@@ -9512,10 +9512,6 @@ def run_exp19(
     event_price = float(cfg["market"]["default_dr_price_per_mwh"])
     waiting = waiting_cost * (slots_by_job - np.repeat(starts, counts))
     objective = waiting + event_price * event_mask
-    # A deterministic microscopic tie-break keeps repeated HiGHS runs bitwise
-    # stable without changing the economic objective at reported precision.
-    objective += 1e-9 * slots_by_job.astype(float)
-
     # Each job may be paused, but no interval can consume more than the
     # precommitted per-GPU nameplate cap.  This cap is declared before the
     # counterfactual solve; it is independent of observed runtime and
@@ -9625,10 +9621,12 @@ def run_exp19(
         service_mwh=service,
         counterfactual_mwh=counterfactual,
         native_mwh=native_profile,
+        job_energy_mwh=energy,
         submit_slot=starts,
         deadline_slot=ends,
         region=jobs["region"].to_numpy(dtype=np.int64),
         measured_gpus=gpu_count,
+        per_gpu_power_cap_mw=np.asarray([per_gpu_cap_mw], dtype=float),
     )
     profile_rows = []
     for region in range(n_regions):

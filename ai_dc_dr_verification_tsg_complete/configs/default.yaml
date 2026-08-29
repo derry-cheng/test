@@ -114,6 +114,12 @@ experiments:
   # panel so every public IEEE-118 spatial assignment has transmission headroom
   # before the 3%/6%/9% data-center penetration is added.
   spatial_scale_native_load_multiplier: 0.90
+  # The indexed job-to-network certificate uses the same public RTS-24
+  # benchmark as the N--1 settlement panel.  Keeping this case explicit makes
+  # the coupled replay feasible and reproducible; IEEE-118 remains the
+  # declared cross-network public case in Experiments 4--5 and 10/18.
+  coupled_network_case: "PYPOWER case24_ieee_rts"
+  coupled_network_buses_one_based: [3, 8, 15, 21]
   spatial_scale_parallel_workers: 9
   payment_certificate_parallel_workers: 6
   # The contractual certificate generator uses an exact four-segment

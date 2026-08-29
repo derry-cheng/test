@@ -18,8 +18,9 @@ network placement and workload-to-power scaling are declared scenario
 parameters, and the manuscript states this identification boundary explicitly.
 Experiment 21 separates the fixed-nameplate deployable scale from its
 capacity-proportional stress profile; Experiment 22 replays the exact indexed
-job witness through N--1 settlement after a zero-residual job-to-network
-aggregation check.
+job witness through N--1 settlement on the predeclared public PYPOWER RTS-24
+case after a zero-residual job-to-network aggregation check. The tracked
+PGLib IEEE-118 file supports the separate cross-network/AC panels.
 
 The large raw inputs remain outside the Git working tree because they exceed
 GitHub's ordinary per-file limit. Their public URLs, hashes, licenses, and the

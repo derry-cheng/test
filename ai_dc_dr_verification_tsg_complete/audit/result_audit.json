@@ -1044,7 +1044,7 @@
     {
       "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78"
     },
     {
       "name": "full_burstgpt_rows",
@@ -1109,12 +1109,12 @@
     {
       "name": "sced_power_balance",
       "passed": true,
-      "detail": "gap=4.547e-12 MW"
+      "detail": "gap=0.000e+00 MW"
     },
     {
       "name": "sced_line_limits",
       "passed": true,
-      "detail": "max loading=0.038889 pu"
+      "detail": "max loading=1.000000 pu"
     },
     {
       "name": "complete_exp1_grid",
@@ -1495,6 +1495,21 @@
       "name": "exact_job_to_network_coupling_certificate",
       "passed": true,
       "detail": "the 71,128-job indexed witness is aggregated before secure N-1 settlement; residual is zero and no second profile optimization is used"
+    },
+    {
+      "name": "coupled_replay_covers_all_rts24_n1_contingencies",
+      "passed": true,
+      "detail": "the representative event-window replay solves the public RTS-24 native and counterfactual cases with all 37 finite non-islanding outages"
+    },
+    {
+      "name": "independent_job_primal_recheck_before_network_value",
+      "passed": true,
+      "detail": "the stored indexed service vector independently satisfies every job-energy equality, committed GPU nameplate bound, and regional capacity row before the network replay"
+    },
+    {
+      "name": "no_stale_atomic_temporary_artifacts",
+      "passed": true,
+      "detail": "no hidden atomic-writer temporary files remain"
     }
   ],
   "statistical_tests": {
@@ -2127,8 +2142,8 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
-      "bytes": 1508485,
-      "sha256": "793739041c1ae7403e89cd91b4ff5ec44bb8e0d30920cf3fe9240c36349e7f2d"
+      "bytes": 1926492,
+      "sha256": "1597c2c417f7532958a2868f6a812e34b80d53f68ba9279d218665c7668ef67b"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
@@ -2182,18 +2197,18 @@
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
-      "bytes": 600,
-      "sha256": "5d9170dbefa12e83e35f53bac4962cf2b65d43cbe0ee3ac92e7ce68ed1cfa75e"
+      "bytes": 785,
+      "sha256": "f10cfe77b6e8d6e75d7064fc047432dc5969eef3979d1fd00fefaba2fe7ffadd"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
-      "bytes": 541,
-      "sha256": "c68db209789990c44b18779da3cbe24637398403663332acabeb9ee199d256f3"
+      "bytes": 753,
+      "sha256": "c09f6ad8719e2d0c41ca7aea460e65676a0514d7effddbbb534718e0ede42379"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
-      "bytes": 1085,
-      "sha256": "a989d24916c6bdbf0e31fa942410c17867d6b06d7cc1a090e9e9287c803d36ab"
+      "bytes": 1440,
+      "sha256": "d6d639ec7eb695f9feb384786156f52e941fb8c7875a012a9c9a573388cea17c"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
@@ -2719,11 +2734,6 @@
       "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
       "bytes": 190467,
       "sha256": "2fc8e36dbeaa1cc0fbac51ef27fcdc11c9611e13176c7b7e1a9f111a4c882c4e"
-    },
-    {
-      "path": "experiments/exp2_baseline_verification/figures/.fig4b_intervention_robustness.pdf.tmp",
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",

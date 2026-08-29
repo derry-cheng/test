@@ -212,7 +212,7 @@ Overall status: **PASS**.
 - [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68664
 - [x] full_join_vs_common_trace_horizon_counts: full immutable join=71128, common tensor window=68664, excluded by horizon=2464
@@ -225,8 +225,8 @@ Overall status: **PASS**.
 - [x] workload_conservation: max gap=7.105e-15 MWh
 - [x] data_center_capacity: violation=0.000e+00 MW
 - [x] deadline_feasibility: violation=0.000e+00 MWh
-- [x] sced_power_balance: gap=4.547e-12 MW
-- [x] sced_line_limits: max loading=0.038889 pu
+- [x] sced_power_balance: gap=0.000e+00 MW
+- [x] sced_line_limits: max loading=1.000000 pu
 - [x] complete_exp1_grid: 56/56
 - [x] strategic_threshold_theory_matches_optimizer: 56/56 price-probability cells
 - [x] locked_test_set_complete: 648/648 outcomes
@@ -303,6 +303,9 @@ Overall status: **PASS**.
 - [x] heldout_power_conversion_capacity_safe_sensitivity: 5 held-out ratio endpoints are explicit; capacity-safe clipping remains below the precommitted nameplate
 - [x] physical_calibration_is_separate_from_utility_scale: 66,769/28,413 held-out GPU-power observations are reconciled with finite MAE/RMSE/R2 while raw measurement and declared spatial mapping remain explicitly separated from utility-scale claims
 - [x] exact_job_to_network_coupling_certificate: the 71,128-job indexed witness is aggregated before secure N-1 settlement; residual is zero and no second profile optimization is used
+- [x] coupled_replay_covers_all_rts24_n1_contingencies: the representative event-window replay solves the public RTS-24 native and counterfactual cases with all 37 finite non-islanding outages
+- [x] independent_job_primal_recheck_before_network_value: the stored indexed service vector independently satisfies every job-energy equality, committed GPU nameplate bound, and regional capacity row before the network replay
+- [x] no_stale_atomic_temporary_artifacts: no hidden atomic-writer temporary files remain
 
 ## Locked test-set baseline results
 

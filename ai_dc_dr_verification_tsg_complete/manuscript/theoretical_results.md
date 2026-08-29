@@ -427,9 +427,10 @@ coalition allocation is evaluated on one committed state. The result follows
 by finite summation over the disjoint ledger partition; no optimization or
 rounding is involved in the mapping. Experiment 22 reconstructs the profile
 from all 5,465,157 stored job--slot variables and records a maximum residual of
-zero before either SCED solve. Its network number is a deterministic
-arithmetic-mean event-window replay; it is not evidence from a separately
-optimized aggregate trajectory.
+zero before either SCED solve. The coupled replay is pinned to the public
+IEEE RTS-24 case and uses a deterministic arithmetic-mean event-window
+representation; it is not evidence from a separately optimized aggregate
+trajectory.
 
 ## Identification boundary
 

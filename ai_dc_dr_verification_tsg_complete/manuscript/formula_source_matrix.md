@@ -23,7 +23,7 @@
 | P3 | 线性节点结算与精确价值差之间的多面体 Bregman 间隙 | 原创应用命题 | 价值函数和次梯度理论 \cite{boyd2004convex} | 对实际实现的分段线性 SCED，证明全局不等式 \(0\leq\Delta V_{\rm lin}-\Delta V\leq\lVert \lambda^1-\lambda^0\rVert_*\lVert p^1-p^0\rVert\)，并用 \(\lambda\) 表示节点价值次梯度、用 \(g\) 表示发电，消除符号冲突。 |
 | M6 | 四站点及八合同组合的特征函数 \(v(S)\) | 原创应用定义 | 合作博弈框架 \cite{shapley1953value} | SCED 混合负荷如何构造必须逐联盟明确定义；八参与者组合份额仅用测试期之前的公开任务到达量确定。该价值函数不是文献直接提供。 |
 | M6b | Shapley 分摊公式、效率与同站点可交换合同的精确计数状态求和 | 采用定理、本文实现 | Shapley 原始定义与效率性质 \cite{shapley1953value} | 四/八参与者保留逐联盟枚举；4--20 参与者只在同一电气站点内的合同切片可交换时使用二项式重数精确合并，不是抽样或近似。 |
-| M7 | 岭回归、梯度提升树、极端随机树、分位数提升树和合成控制 | 采用 | \cite{hoerl1970ridge,friedman2001gradient,geurts2006extratrees,abadie2010synthetic} | 这些是基线，不是本文创新；超参数、特征、信息时点、供体窗口和训练窗口必须在实验设置完整报告。 |
+| M7 | 岭回归、梯度提升树、极端随机树、分位数提升树和合成控制 | 采用 | 岭回归与梯度提升依据 \cite{hoerl1970ridge,friedman2001gradient}；极端随机树与合成控制依据 \cite{geurts2006extratrees,abadie2010synthetic} | 这些是基线，不是本文创新；超参数、特征、信息时点、供体窗口和训练窗口必须在实验设置完整报告。 |
 | M8 | 移动区块自助置信区间与区块符号随机化 | 采用并实例化 | 相关序列的区块重采样 \cite{kunsch1989bootstrap} | 主分析使用 18 个互不重叠的三日区块并枚举 \(2^{18}\) 个符号；同时报告 6、9、18 日区块敏感性，不能把相邻日当成独立样本。 |
 | M9 | Holm 逐步校正 | 采用 | \cite{holm1979multiple} | 分别在 nRMSE、虚假响应比例和信用识别 \(F_1\) 三个预先声明的结果族内，对四个比较控制家族错误率。 |
 | M10 | 稀疏线性规划的全局最优数值求解 | 采用 | HiGHS 对偶修正单纯形实现 \cite{huangfu2018highs} | 求解器成功状态、原始可行性证书和独立约束残差必须同时通过；数值最优不替代模型有效性证明。 |
@@ -47,7 +47,7 @@
 | `eq:meter_cap` | P2.3 | 本文可部署结算定义：提交信用、冻结合同 no-event profile credit 与闭合电表 credit 的点式交集；trace-anchored no-event profile 仅用于事后 oracle overpayment/underpayment 诊断，不进入目标拟合、事件门决策或工作负载优化。 |
 | `eq:profit` | M2 | 基线内生操纵问题依据 \cite{wang2022baseline}；十参考日确定性等价式是本文场景化改写。 |
 | `eq:threshold` | P1 | 线性规划灵敏度依据 \cite{boyd2004convex}；充分必要条件由命题 1 证明。 |
-| `eq:sced` | M4 | 标准无损直流经济调度、网络模型与公开参数依据 \cite{stott2009dc,zimmerman2011matpower,babaeinejadsarookolaee2021pglib}。 |
+| `eq:sced` | M4 | 标准无损直流经济调度与对偶价格模型依据 \cite{stott2009dc,zimmerman2011matpower}；公开 PGLib 参数依据 \cite{babaeinejadsarookolaee2021pglib}。 |
 | `eq:value` | P3 | 基于 `eq:sced` 最优值函数的有符号差定义；与线性结算的关系由命题 3 证明。 |
 | `eq:projection` | C2、P2.2 | 绝对值上图与凸投影依据 \cite{boyd2004convex}；工作负载可行域保持性由命题 2 证明。 |
 | `eq:totalrisk` | P2.2 | 正部凸约束依据 \cite{boyd2004convex}；风险预算构造为本文方法。 |
@@ -62,7 +62,7 @@
 | `eq:capacityservice` | M5c | 需求响应容量信用与事后个体理性依据 \cite{satchidanandan2023twostage,chen2021incentive}。 |
 | `eq:operatorvalue` | M5b、M5c | 时空能量项与容量产品的组合定义；两部分分别依据 \cite{zhang2022remunerating,satchidanandan2023twostage}。 |
 | `eq:nashcontract` | M5c | 对称纳什议价解依据 \cite{nash1950bargaining}；不成交外部选择和机会成本口径在实验 12 逐日审计。 |
-| `eq:n1` | M4b | PTDF/LODF 与预防性安全约束依据 \cite{stott2009dc,tejada2018lodf,nerc2020tpl}。 |
+| `eq:n1` | M4b | PTDF/LODF 依据 \cite{stott2009dc,tejada2018lodf}；N--1 规划准则依据 \cite{nerc2020tpl}。 |
 | `eq:paymentcert` | P4 | SCED 原始可行域和线性规划上图依据 \cite{zimmerman2011matpower,boyd2004convex}；以验证期选定的单一可行投影为合同参考、以可行分位投影为外部转账比较的多换算场景词典序证书为本文方法。 |
 | `eq:paymentdominance` | P4 | 本文确定性推论；由 `eq:paymentcert` 的可行调度上界和同场景实际成本相消得到，完整证明见命题 4。参考对象是验证期选定的单一可行投影，不是分位投影。 |
 | `eq:paymentinterval` | P5 | 连续 workload-hull 支付区间是本文的确定性值函数定义与命题 5；有限换算场景和闭区间端点由验证期锁定候选 profile 生成，不宣称概率覆盖。 |

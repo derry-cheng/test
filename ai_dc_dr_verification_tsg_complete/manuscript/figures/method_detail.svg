@@ -1,11 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="500" viewBox="0 0 1400 500">
   <defs>
     <marker id="arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#334155"/></marker>
-    <filter id="shadow2" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity=".14"/></filter>
     <style>
       .title{font:700 25px Arial,sans-serif;fill:#0f172a}.head{font:700 19px Arial,sans-serif;fill:#0f172a}
       .body{font:400 15px Arial,sans-serif;fill:#334155}.eq{font:600 15px 'Courier New',monospace;fill:#0f766e}
-      .box{stroke:#cbd5e1;stroke-width:2;rx:18;filter:url(#shadow2)} .arrow{stroke:#334155;stroke-width:3;fill:none;marker-end:url(#arrow2)}
+      .box{stroke:#cbd5e1;stroke-width:2;rx:18} .arrow{stroke:#334155;stroke-width:3;fill:none;marker-end:url(#arrow2)}
       .num{font:700 15px Arial,sans-serif;fill:#fff}
     </style>
   </defs>

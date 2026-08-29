@@ -2979,6 +2979,11 @@ def run_audit(
         / "experiments/exp22_coupled_job_network_certificate/results/final/"
         "coupled_network_summary.csv"
     )
+    coupled_replay = pd.read_csv(
+        root
+        / "experiments/exp22_coupled_job_network_certificate/results/final/"
+        "coupled_network_event_replay.csv"
+    )
     coupled_values = dict(
         zip(coupled_summary["metric"].astype(str), coupled_summary["value"].astype(float))
     )
@@ -2997,12 +3002,66 @@ def run_audit(
         and bool(coupled_values.get("all_network_solves_successful", 0.0))
         and coupled_metadata.get("network_profile_is_same_job_witness") is True
         and coupled_metadata.get("post_solution_profile_reoptimization") is False
+        and coupled_metadata.get("network_case") == "IEEE RTS-24 (PYPOWER case24_ieee_rts)"
+        and coupled_metadata.get("network_source") == "PYPOWER case24_ieee_rts (public RTS-24 benchmark)"
+        and coupled_metadata.get("data_center_buses_one_based") == [3, 8, 15, 21]
+        and abs(
+            float(coupled_metadata.get("network_load_multiplier", np.nan))
+            - float(cfg["experiments"]["n1_load_multiplier"])
+        ) <= 1e-12
+        and int(coupled_values.get("event_slots_replayed", -1)) == 1_048
         and int(coupled_metadata.get("replayed_event_slot_count", 0)) == 1_048,
         "exact_job_to_network_coupling_certificate",
         (
             "the 71,128-job indexed witness is aggregated before secure N-1 "
             "settlement; residual is zero and no second profile optimization is used"
         ),
+        checks,
+    )
+    _check(
+        len(coupled_replay) == 1
+        and int(coupled_replay.loc[0, "event_slot_count"]) == 1_048
+        and int(coupled_replay.loc[0, "credible_contingencies"]) == 37
+        and bool(coupled_replay.loc[0, "solver_success"]),
+        "coupled_replay_covers_all_rts24_n1_contingencies",
+        (
+            "the representative event-window replay solves the public RTS-24 "
+            "native and counterfactual cases with all 37 finite non-islanding outages"
+        ),
+        checks,
+    )
+    _check(
+        coupled_metadata.get("independent_job_feasibility_recheck") is True
+        and float(coupled_values.get("maximum_job_energy_recheck_residual_mwh", np.inf))
+        <= 1e-12
+        and float(coupled_values.get("maximum_gpu_bound_violation_mwh", np.inf))
+        <= 1e-12
+        and float(coupled_values.get("maximum_gpu_bound_violation_mwh", -np.inf))
+        >= 0.0
+        and float(coupled_values.get("minimum_gpu_bound_slack_mwh", -np.inf))
+        >= -1e-12
+        and float(coupled_values.get("minimum_site_capacity_slack_mwh", -np.inf))
+        >= -1e-12,
+        "independent_job_primal_recheck_before_network_value",
+        (
+            "the stored indexed service vector independently satisfies every "
+            "job-energy equality, committed GPU nameplate bound, and regional "
+            "capacity row before the network replay"
+        ),
+        checks,
+    )
+
+    stale_temporary_files = [
+        str(path.relative_to(root))
+        for path in root.rglob(".*.tmp")
+        if path.is_file() and ".git" not in path.parts
+    ]
+    _check(
+        not stale_temporary_files,
+        "no_stale_atomic_temporary_artifacts",
+        "no hidden atomic-writer temporary files remain"
+        if not stale_temporary_files
+        else "; ".join(stale_temporary_files),
         checks,
     )
 

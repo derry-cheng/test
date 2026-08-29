@@ -8,7 +8,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .optimization import build_n1_security_factors, solve_n1_sced
+from .optimization import (
+    build_n1_security_factors,
+    power_system_from_ppc,
+    solve_n1_sced,
+)
 from .utils import write_json
 
 
@@ -45,10 +49,29 @@ def run_exp22_coupled_job_network_certificate(
     regions = np.asarray(data["region"], dtype=np.int64)
     saved_counterfactual = np.asarray(data["counterfactual_mwh"], dtype=float)
     saved_native = np.asarray(data["native_mwh"], dtype=float)
+    if "job_energy_mwh" not in data.files or "per_gpu_power_cap_mw" not in data.files:
+        raise ValueError(
+            "Exp19 witness must include job energies and the committed GPU nameplate "
+            "for an independent feasibility recheck"
+        )
+    job_energy = np.asarray(data["job_energy_mwh"], dtype=float)
+    measured_gpus = np.asarray(data["measured_gpus"], dtype=float)
+    per_gpu_power_cap_mw = float(
+        np.asarray(data["per_gpu_power_cap_mw"], dtype=float).reshape(-1)[0]
+    )
     if not (len(starts) == len(ends) == len(regions)):
         raise ValueError("Exp19 job arrays have inconsistent lengths")
+    if not (len(job_energy) == len(measured_gpus) == len(starts)):
+        raise ValueError("Exp19 job energy/GPU arrays have inconsistent lengths")
     if np.any(ends <= starts) or np.any(regions < 0):
         raise ValueError("Exp19 job release/deadline or region labels are invalid")
+    if (
+        not np.isfinite(service).all()
+        or not np.isfinite(job_energy).all()
+        or not np.isfinite(measured_gpus).all()
+        or per_gpu_power_cap_mw <= 0.0
+    ):
+        raise ValueError("Exp19 witness contains non-finite job-level quantities")
     n_jobs = len(starts)
     n_regions, n_slots = saved_counterfactual.shape
     offsets = np.concatenate([[0], np.cumsum(ends - starts, dtype=np.int64)])
@@ -62,6 +85,44 @@ def run_exp22_coupled_job_network_certificate(
     variable_regions = np.repeat(regions, ends - starts)
     if np.any(slots < 0) or np.any(slots >= n_slots):
         raise ValueError("Exp19 job windows exceed the saved network horizon")
+    dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
+    # Recheck the indexed primal independently of the Exp19 summary.  The
+    # network certificate must not trust a saved aggregate profile or a solver
+    # status without verifying each job equality, GPU nameplate bound, and
+    # regional capacity row from the stored service vector itself.
+    job_service = np.add.reduceat(service, offsets[:-1])
+    job_energy_residual = job_service - job_energy
+    gpu_upper = np.repeat(
+        measured_gpus * per_gpu_power_cap_mw * dt_h,
+        ends - starts,
+    )
+    gpu_bound_slack = gpu_upper - service
+    minimum_gpu_bound_slack = float(np.min(gpu_bound_slack, initial=np.inf))
+    maximum_gpu_bound_violation = float(
+        max(0.0, float(np.max(service - gpu_upper, initial=-np.inf)))
+    )
+    reconstructed_capacity = np.bincount(
+        variable_regions * n_slots + slots,
+        weights=service,
+        minlength=n_regions * n_slots,
+    ).reshape(n_regions, n_slots)
+    site_capacity_mwh = float(cfg["project"]["flexible_capacity_mw"]) * dt_h
+    minimum_site_capacity_slack = float(
+        np.min(site_capacity_mwh - reconstructed_capacity)
+    )
+    maximum_job_energy_residual = float(np.max(np.abs(job_energy_residual)))
+    if (
+        float(np.min(service, initial=0.0)) < -1e-12
+        or maximum_job_energy_residual > 1e-12
+        or maximum_gpu_bound_violation > 1e-12
+        or minimum_site_capacity_slack < -1e-12
+    ):
+        raise RuntimeError(
+            "The stored Exp19 service vector failed the independent job-level "
+            f"recheck (energy={maximum_job_energy_residual:.3e}, "
+            f"GPU-bound={maximum_gpu_bound_violation:.3e}, "
+            f"capacity-slack={minimum_site_capacity_slack:.3e})"
+        )
     reconstructed = np.bincount(
         variable_regions * n_slots + slots,
         weights=service,
@@ -75,26 +136,33 @@ def run_exp22_coupled_job_network_certificate(
             f"max residual {max_aggregation_residual:.3e} MWh"
         )
 
-    # Use the same public IEEE-118 network family as the compact audit path.
-    # Full-data runs substitute the declared PGLib case through Exp2's input
-    # loader; this certificate records which path was available.
-    network_path = root / cfg["data"]["pglib_case"]
-    if network_path.exists():
-        from .optimization import parse_pglib_case
+    # The indexed coupling certificate uses the same public RTS-24 benchmark
+    # as the independently validated N--1 settlement panel.  IEEE-118 is
+    # retained for the cross-network and AC panels.  Silently switching cases
+    # based on raw-file availability would make the certificate non-reproducible;
+    # the case is therefore explicit and immutable here.
+    coupled_case = str(
+        cfg["experiments"].get("coupled_network_case", "PYPOWER case24_ieee_rts")
+    )
+    if coupled_case != "PYPOWER case24_ieee_rts":
+        raise ValueError(
+            "coupled_network_case must be the predeclared PYPOWER case24_ieee_rts"
+        )
+    from pypower.case24_ieee_rts import case24_ieee_rts
 
-        system = parse_pglib_case(network_path)
-        network_source = str(network_path.relative_to(root))
-    else:
-        from pypower.case118 import case118
-        from .optimization import power_system_from_ppc
-
-        system = power_system_from_ppc(case118())
-        network_source = "vendored PYPOWER case118 (compact checkout fallback)"
+    system = power_system_from_ppc(case24_ieee_rts())
+    network_source = "PYPOWER case24_ieee_rts (public RTS-24 benchmark)"
     security = build_n1_security_factors(system)
-    dc_buses = np.asarray(cfg["project"]["data_center_buses"], dtype=int) - 1
-    if dc_buses.shape != (n_regions,) or np.any(dc_buses < 0) or np.any(dc_buses >= len(system.bus)):
+    dc_buses = np.asarray(
+        cfg["experiments"].get("coupled_network_buses_one_based", [3, 8, 15, 21]),
+        dtype=int,
+    ) - 1
+    if (
+        dc_buses.shape != (n_regions,)
+        or np.any(dc_buses < 0)
+        or np.any(dc_buses >= len(system.bus))
+    ):
         raise ValueError("Configured network data-center buses do not match the job regions")
-    dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     native_multiplier = float(cfg["experiments"].get("n1_load_multiplier", 0.9))
     base_load = np.asarray(system.bus[:, 2], dtype=float) * native_multiplier
     event_slots = set(map(int, cfg["market"]["event_slots"]))
@@ -150,6 +218,10 @@ def run_exp22_coupled_job_network_certificate(
             "native_max_postcontingency_loading": float(native_result.max_post_contingency_loading),
             "counterfactual_max_postcontingency_loading": float(counterfactual_result.max_post_contingency_loading),
             "credible_contingencies": int(counterfactual_result.credible_contingencies),
+            "maximum_job_energy_residual_mwh": maximum_job_energy_residual,
+            "maximum_gpu_bound_violation_mwh": maximum_gpu_bound_violation,
+            "minimum_gpu_bound_slack_mwh": minimum_gpu_bound_slack,
+            "minimum_site_capacity_slack_mwh": minimum_site_capacity_slack,
             "solver_success": bool(native_result.success and counterfactual_result.success),
         }
     ]
@@ -163,6 +235,10 @@ def run_exp22_coupled_job_network_certificate(
             {"metric": "service_variables", "value": len(service), "unit": "variables"},
             {"metric": "event_slots_replayed", "value": len(selected_slots), "unit": "slots"},
             {"metric": "maximum_job_to_aggregate_residual_mwh", "value": max_aggregation_residual, "unit": "MWh"},
+            {"metric": "maximum_job_energy_recheck_residual_mwh", "value": maximum_job_energy_residual, "unit": "MWh"},
+            {"metric": "maximum_gpu_bound_violation_mwh", "value": maximum_gpu_bound_violation, "unit": "MWh"},
+            {"metric": "minimum_gpu_bound_slack_mwh", "value": minimum_gpu_bound_slack, "unit": "MWh"},
+            {"metric": "minimum_site_capacity_slack_mwh", "value": minimum_site_capacity_slack, "unit": "MWh"},
             {"metric": "event_native_job_profile_mwh", "value": event_native, "unit": "MWh"},
             {"metric": "event_counterfactual_job_profile_mwh", "value": event_counterfactual, "unit": "MWh"},
             {"metric": "event_secure_network_value_usd_per_interval", "value": float(frame["secure_net_value_usd_per_interval"].sum()), "unit": "USD/interval"},
@@ -176,8 +252,12 @@ def run_exp22_coupled_job_network_certificate(
         "experiment": "exact job-to-network coupling certificate",
         "source_solution": str(source.relative_to(root)),
         "aggregation_equation": "p[r,t] = sum_{j:region_j=r, t in window_j} u[j,t]",
-        "network_load_equation": "L_t = L_base * 0.90 + B p_t / Delta t",
+        "network_load_equation": (
+            f"L_t = L_base * {native_multiplier:.6g} + B p_t / Delta t"
+        ),
+        "network_load_multiplier": native_multiplier,
         "network_value_model": "secure DC SCED with every finite non-islanding N-1 branch contingency",
+        "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
         "network_generator_segments": network_segments,
         "network_parallel_workers": workers,
         "network_time_aggregation": "arithmetic mean of every declared event slot; network value is reported per representative interval",
@@ -186,6 +266,11 @@ def run_exp22_coupled_job_network_certificate(
         "event_slots": sorted(event_slots),
         "replayed_event_slot_count": len(selected_slots),
         "maximum_job_to_aggregate_residual_mwh": max_aggregation_residual,
+        "independent_job_feasibility_recheck": True,
+        "maximum_job_energy_recheck_residual_mwh": maximum_job_energy_residual,
+        "maximum_gpu_bound_violation_mwh": maximum_gpu_bound_violation,
+        "minimum_gpu_bound_slack_mwh": minimum_gpu_bound_slack,
+        "minimum_site_capacity_slack_mwh": minimum_site_capacity_slack,
         "network_profile_is_same_job_witness": True,
         "post_solution_profile_reoptimization": False,
         "all_network_solves_successful": bool(frame["solver_success"].all()),

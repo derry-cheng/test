@@ -7,8 +7,8 @@ definition, or a proposition derived in this study. Citation keys resolve in
 `references.bib`.
 
 The related-work boundary is explicit. Recent power-system studies on non-wire
-alternatives, clean-energy flexibility, and data-center flexibility
-\cite{cao2024nonwire,riepin2025clean,takci2025flexibility}, together with
+alternatives and clean-energy flexibility \cite{cao2024nonwire,riepin2025clean}
+and a data-center flexibility review \cite{takci2025flexibility}, together with
 load-aggregator coordination and production-trace flexibility studies
 \cite{dcaopt2024,caprara2026}, motivate the structural analogue panel. None of
 these sources supplies the gate-causal ledger, submitted/frozen contract
@@ -209,8 +209,8 @@ vector and checks its maximum residual against the saved aggregate profile
 before any dispatch is solved. The network value is consequently attached to
 the committed indexed witness, not to a second aggregate optimization. The
 network replay uses the arithmetic mean of every declared event slot solely as
-a deterministic representative interval; the underlying equality is checked
-at every event slot.
+a deterministic representative interval on the public IEEE RTS-24 case; the
+underlying equality is checked at every event slot.
 
 For scale, let \(s_{\rm raw}\) be the source-to-energy normalization and
 \(s_{\rm cap}\) the largest factor that respects the committed network
@@ -629,7 +629,8 @@ from locked per-day records. Moving-block confidence intervals follow
 \cite{kunsch1989bootstrap}; Holm family-wise correction follows
 \cite{holm1979multiple}. Ridge regression, gradient boosting, and extremely
 randomized trees are comparator algorithms from
-\cite{hoerl1970ridge,friedman2001gradient,geurts2006extratrees}. The added
+\cite{hoerl1970ridge,friedman2001gradient}; the extremely randomized-tree
+implementation follows \cite{geurts2006extratrees}. The added
 pre-event synthetic control uses nonnegative simplex weights as in
 \cite{abadie2010synthetic}; the matched-information median gradient-boosting
 comparator uses the same complete submitted ledger as the verifier.

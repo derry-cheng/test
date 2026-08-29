@@ -1,11 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620">
   <defs>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#334155"/></marker>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0f172a" flood-opacity=".15"/></filter>
     <style>
       .title{font:700 27px Arial,sans-serif;fill:#0f172a}.head{font:700 20px Arial,sans-serif;fill:#0f172a}
       .body{font:400 16px Arial,sans-serif;fill:#334155}.small{font:400 14px Arial,sans-serif;fill:#475569}
-      .box{stroke:#cbd5e1;stroke-width:2;rx:18;filter:url(#shadow)} .arrow{stroke:#334155;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .box{stroke:#cbd5e1;stroke-width:2;rx:18} .arrow{stroke:#334155;stroke-width:3;fill:none;marker-end:url(#arrow)}
       .tag{font:700 13px Arial,sans-serif;fill:#fff;letter-spacing:.5px}
     </style>
   </defs>
@@ -51,7 +50,7 @@
   <text x="656" y="178" text-anchor="middle" class="small">ledger → load</text>
   <text x="1010" y="178" text-anchor="middle" class="small">verified state</text>
 
-  <rect x="360" y="390" width="1005" height="150" fill="#fff" stroke="#cbd5e1" stroke-width="2" rx="18" filter="url(#shadow)"/>
+  <rect x="360" y="390" width="1005" height="150" fill="#fff" stroke="#cbd5e1" stroke-width="2" rx="18"/>
   <rect x="380" y="407" width="151" height="26" rx="13" fill="#475569"/><text x="455" y="426" text-anchor="middle" class="tag">CONTRACT LAYER</text>
   <text x="565" y="429" class="head">Telemetry-calibrated payment certificate</text>
   <text x="565" y="459" class="body">finite q10/q50/q90 samplewise guarantee  •  q01/q99-cap capacity-safe interval audit</text>

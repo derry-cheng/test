@@ -28,34 +28,31 @@ Nodal Net-Value Settlement for Spatially Coupled AI Data Centers}
 
 \begin{abstract}
 Artificial-intelligence (AI) data centers can provide spatial--temporal
-demand response (DR), yet a meter-only baseline cannot establish whether a
+demand response (DR), but a meter-only baseline cannot determine whether a
 claimed reduction is supported by committed work or displaced by rebound. This
-paper develops an auditable verifier that couples scheduler--telemetry
-provenance to workload-feasible counterfactuals, security-aware network value,
-and settlement. A sparse cumulative linear program (LP) enforces release,
-deadline, conservation, capacity, migration, and cross-midnight completion; an
-independent job-indexed LP checks all 71,128 positive-energy jobs. A
-validation-only risk envelope and a pre-event information gate separate
-contract formation from locked execution truth, while signed nodal value and
-preventive N--1 certificates bound payment over three telemetry-derived
-conversion scenarios. On a 121-day trace-driven inventory, 16 earlier days
-select parameters and 54 later days remain locked. The complete-ledger
-verifier achieves normalized root-mean-square error (nRMSE) 0.342 with
-1.726 MWh/day of false credit; at a one-hour gate, the frozen committed
-baseline has nRMSE 0.567 and its separately scored rolling response delivers
-5.000 MWh/day of planned and meter-capped credit with 3.490 MWh/day false
-credit.
-The job-indexed witness spans 5,465,157 admissible job--slot variables, has
-maximum energy residual $2.17\times10^{-19}$ MWh, and yields a 0.167-MWh net
-event reduction. A four-network alternating-current (AC) panel evaluates 9,648
-native-connected outage cells with no voltage violation and maximum loading
-0.999999996. Exact scale analysis reaches 3475.108$\times$ as a
-network-capacity proportional stress scenario and 1.036$\times$ with the
-fixed 0.001-MW/GPU nameplate. An independent event-window replay aggregates
-that same job witness with zero job-to-profile residual before N--1 settlement
-and returns 0.00597 USD per representative event interval.
-The BurstGPT, MIT, and IEEE sources therefore form an auditable benchmark for
-security-aware DR verification under an observational, nonintervention setting.
+uncertainty can turn a local meter decrease into an unverified network payment.
+This paper introduces an auditable verifier that binds scheduler--telemetry
+provenance to workload-feasible counterfactuals and security-aware settlement.
+A sparse cumulative linear program (LP) enforces release, deadline,
+conservation, capacity, migration, and cross-midnight completion. A second
+job-indexed LP checks each positive-energy job, while a validation-only risk
+envelope and pre-event information gate separate contract formation from
+locked execution truth. Signed nodal value and preventive N--1 constraints
+then bound payment over three held-out power-conversion scenarios.
+The 121-day trace-driven inventory uses 16 earlier days for selection and 54
+locked days for evaluation. The complete-ledger verifier reaches normalized
+root-mean-square error (nRMSE) 0.342 with 1.726 MWh/day of
+mechanism-isolation false credit; at a one-hour gate, the committed baseline
+has nRMSE 0.567 and its separately scored response delivers 5.000 MWh/day of
+meter-capped credit with 3.490 MWh/day of closed-meter false credit. The
+indexed witness contains 5,465,157 admissible job--slot variables, has maximum
+energy residual $2.17\times10^{-19}$ MWh, and yields a 0.167-MWh net event
+reduction. A four-network alternating-current (AC) panel covers 9,648
+admissible outage cells without voltage violation. An independent replay of
+the same witness on public RTS-24 data has zero job-to-profile residual before
+N--1 settlement and returns 0.00372 USD per representative interval. These
+results establish an observational, auditable benchmark for security-aware DR
+verification.
 \end{abstract}
 
 \noindent\textbf{Index Terms---}AI data centers, counterfactual verification,
@@ -140,8 +137,9 @@ immutable ledger is additionally replayed with measured contiguous job
 intervals, runtime, GPU count, and native power so that task-level feasibility
 is not inferred from a divisible-flow residual. The network-facing profile is
 then defined by aggregating the same indexed witness, and Experiment~22
-replays that aggregation through the N--1 settlement model with a zero
-job-to-profile residual.
+independently rechecks its job equalities, GPU nameplate bounds, and regional
+capacity rows before replaying that aggregation through the N--1 settlement
+model with a zero job-to-profile residual.
 2) This paper constructs a validation-only, continuous-arrival counterfactual verifier
 with a pointwise credit envelope. The output is an attainable spatial--temporal
 load trajectory with constraints absent from an unconstrained meter-only prediction, and its
@@ -261,7 +259,8 @@ migration:
 \end{align}
 Aggregate migration remains a matched-workload control; (\ref{eq:jobnetworkcoupling})
 is the indexed replay profile. Experiment~22 reconstructs $X^{\rm job}$ from
-every stored $u_{j\tau}$ and verifies equality before network valuation, so no
+every stored $u_{j\tau}$, rechecks the indexed primal, and verifies equality
+before network valuation, so no
 separately optimized aggregate trajectory receives a network value. Workload
 deferral and geographic assignment follow
 \cite{liu2013dcdr,adnan2012geographical}, while rolling-state control follows
@@ -1226,9 +1225,10 @@ residual $2.17\times10^{-19}$ MWh, and minimum slack 29.492 MWh
 witness. Experiment~21 reports 3475.108$\times$ capacity-proportional stress
 and 1.036$\times$ fixed-nameplate deployable scales. Experiment~22 aggregates
 all indexed service over 1,048 event slots, checks zero residual, and evaluates
-the event-window mean under every finite non-islanding N--1 contingency. Its
-secure net value is \$0.00597 per representative interval and maximum
-counterfactual post-contingency loading is 0.0429 p.u.; no aggregate
+the event-window mean on the public IEEE RTS-24 case under every finite
+non-islanding N--1 contingency. Its secure net value is reported per
+representative interval and the maximum counterfactual post-contingency
+loading is at the unit limit within solver tolerance; no aggregate
 reoptimization is used.
 
 \begin{table}[t]
@@ -1250,8 +1250,8 @@ Capacity-proportional homogeneous scale ($\times$; stress scenario) & 3475.108\\
 Fixed 0.001-MW/GPU-nameplate scale ($\times$; deployable) & 1.036\\
 Job-to-network aggregation residual (MWh) & 0\\
 Event slots in coupled replay & 1,048\\
-Secure N--1 net value (USD/representative interval) & \textbf{0.00597}\\
-Maximum counterfactual post-contingency loading (p.u.) & 0.0429\\
+Secure N--1 net value (USD/representative interval) & \textbf{0.00372}\\
+Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1265,7 +1265,8 @@ response LPs, with a 0.567 gate-causal baseline and a 5.000-MWh planned
 response (Table~\ref{tab:decision}). The indexed counterfactual preserves 71,128 job
 energies and yields 0.167 MWh net reduction (0.183 gross, 0.016 rebound).
 The coupled replay verifies zero job-to-network aggregation residual before
-reporting \$0.00597 per representative event interval. The scale certificate
+reporting \$0.00372 per representative event interval on the public RTS-24
+case. The scale certificate
 reports both 3475.108$\times$ capacity-proportional stress and 1.036$\times$
 fixed-nameplate deployable witnesses under the declared ledger mapping.
 Deployment requires signed co-located telemetry, topology access, and
