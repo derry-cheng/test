@@ -61,6 +61,7 @@
   "arrival_source": "every released BurstGPT/MIT workload arrival in the continuous processed trace; no zero-arrival completion buffer",
   "projection": "two-stage lexicographic LP: minimum submitted event-window L1 distance, then minimum operating cost on the optimal-distance face; pre-event and recovery schedules are endogenous",
   "settlement": "signed nodal marginal-value remuneration over the entire pre-event, event, and deadline-complete recovery cycle",
+  "full_cycle_metric": "full_cycle_absolute_value_residual_usd is the absolute difference between complete-cycle space-time remuneration and the independently solved continuous no-event optimum; a zero value on the same minimum-cost face is an accounting certificate, not a second forecast-accuracy score",
   "bilateral_contract": "symmetric Nash bargaining with the no-activation outside option; nonnegative transaction surplus is split equally, while negative-surplus offers are not activated",
   "capacity_product": "signed event reduction at the predeclared participating data center indices [0] valued at the predeclared DR service price of 150 USD/MWh; complete-cycle nodal energy remuneration is added separately",
   "opportunity_cost_reference": "minimum-cost continuous no-event schedule under the identical real-arrival horizon and physical constraints",

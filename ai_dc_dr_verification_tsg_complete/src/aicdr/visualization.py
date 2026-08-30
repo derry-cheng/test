@@ -933,7 +933,7 @@ def plot_exp12(
         id_vars=["method_label", "day"],
         value_vars=[
             "event_only_absolute_error_usd",
-            "full_cycle_absolute_error_usd",
+            "full_cycle_absolute_value_residual_usd",
         ],
         var_name="accounting_window",
         value_name="absolute_error_usd",
@@ -942,8 +942,10 @@ def plot_exp12(
         "accounting_window"
     ].map(
         {
-            "event_only_absolute_error_usd": "Event window only",
-            "full_cycle_absolute_error_usd": "Complete response cycle",
+            "event_only_absolute_error_usd": "Event-window settlement error",
+            "full_cycle_absolute_value_residual_usd": (
+                "Complete-cycle value residual"
+            ),
         }
     )
     sns.barplot(
@@ -956,9 +958,9 @@ def plot_exp12(
         palette=[COLORS["orange"], COLORS["blue"]],
         ax=axes[0],
     )
-    axes[0].set_title("(a) Recovery-aware payment accuracy")
+    axes[0].set_title("(a) Recovery-aware settlement residuals")
     axes[0].set_xlabel("")
-    axes[0].set_ylabel("Mean absolute error ($/event)")
+    axes[0].set_ylabel("Mean absolute settlement error ($/day)")
     axes[0].legend(title="", fontsize=6.7)
     sns.boxplot(
         data=shown,

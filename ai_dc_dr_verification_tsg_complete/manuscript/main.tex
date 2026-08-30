@@ -286,8 +286,8 @@ class, and scheduler-state fields. The execution ledger separately stores
 start/end times, DCGM energy, and telemetry counts; its one-to-one join,
 release--execution order, and raw-to-join energy equality are checked only for
 post-event reconciliation. The Secure Hash Standard
-\cite{nist2015fips1804} and canonical ordering make $h_{\rm sub}$ independent
-of execution telemetry. Experiment~16 reconciles the measured envelope with
+\cite{nist2015fips1804} and canonical ordering make $h_{\rm sub}$ in
+(\ref{eq:ledgerdigest}) independent of execution telemetry. Experiment~16 reconciles the measured envelope with
 the 118-MW nameplate fixed before the validation/test split.
 
 The verifier treats scheduler/DCGM services as authoritative and assumes the
@@ -330,7 +330,7 @@ Q^{\rm pay}=\dt\sum_{d,t\in\mathcal E}
 Equation (\ref{eq:meter_cap}) uses only the submitted baseline, frozen contract,
 and closed meter. The trace-anchored $p^0$ is an offline over/underpayment
 diagnostic and never enters fitting, gate decisions, workload optimization, or
-transfer formation. We report gross, payable, oracle over/underpayment,
+transfer formation. The study reports gross, payable, oracle over/underpayment,
 nRMSE, bias, precision, recall, and $F_1$.
 
 \subsection{Strategic reference scheduling}
@@ -495,7 +495,7 @@ The pointwise cap in (\ref{eq:envelope}) is the upper side of the contractual
 credit band; it is evaluated on every event slot before settlement.
 \paragraph{Two-sided credit band.}
 The upper envelope alone would admit an arbitrarily conservative zero-credit
-profile. We therefore impose a lower band tied to the independently fitted
+profile. The method therefore imposes a lower band tied to the independently fitted
 convex target. Define the componentwise risk floor
 \(p^{\rm floor}_{dt}=\min\{p^{(\ell^\star)}_{dt},\bar p_{dt}\}\), where \(\bar p\)
 is the validation-fitted convex target before the final workload projection.
@@ -742,8 +742,8 @@ The exact allocation is
 This is the Shapley value \cite{shapley1953value}; the characteristic function
 based on signed grid value is the proposed specialization. Grouping
 (\ref{eq:shapley}) by coalition size cancels every intermediate value and gives
-$\sum_i\phi_i=v(N)$ when $v(\varnothing)=0$. We enumerate all 16 coalitions
-for four sites and all 256 coalitions for eight contractual portfolios; no
+$\sum_i\phi_i=v(N)$ when $v(\varnothing)=0$. All 16 coalitions for four sites
+and all 256 coalitions for eight contractual portfolios are enumerated; no
 permutation estimator is used. For larger auditable contracts, exchangeable
 slices at the same electrical site are grouped by their member count. The exact
 sum retains the binomial multiplicity of every labeled coalition and evaluates
@@ -1026,17 +1026,20 @@ the shared-active-plan certificate on its declared admissible AC set. The
 0.880/0.907/0.935 p.u. at 3\%/6\%/9\%). Experiment 11 spans
 24 regional permutations plus two deterministic concentration controls, three
 penetrations, four counterfactuals, and 54 days; averaged over all 26 declared
-assignments, RiskSafe/single MAE is \$105.250/\$211.555/\$315.490 and
+assignments, the RiskSafe and single-projection baselines (which coincide on
+the locked panel) give MAE \$105.250/\$211.555/\$315.490 and
 feasible-quantile is \$81.613/\$164.249/\$244.481 per day. Experiment 16 audits
 66,769/28,413 training/test jobs (MAE 11.223 W, RMSE 15.818 W, $R^2=0.8994$),
-while Experiment 12 reports complete-cycle/event-window MAE
-\$0.621/\$0.607/\$0/\$0 and \$26.937/\$15.969/\$5.325/\$5.325,
-respectively for feasible-quantile, payment-certified, RiskSafe, and single
-projection; all 54 contracts activate.
+while Experiment 12 reports event-window settlement-error MAE
+\$26.937/\$15.969/\$5.325/\$5.325 and complete-cycle settlement-value
+residual MAE \$0.621/\$0.607/\$0.000/\$0.000 for feasible-quantile,
+payment-certified, RiskSafe, and single projection, respectively. The zero
+residual for RiskSafe and single projection is expected within LP precision
+because their lexicographic cost stage attains the independent no-event
+optimum; it certifies accounting, while event-window error remains the
+predictive comparison. All 54 contracts activate.
 
-The cross-network preventive certificate is retained as a complete figure in
-the Experiment~18 artifact; its locked summary is the loading, voltage, and
-active-plan statistics above.
+The complete Experiment~18 cell-level figure is supplied with the artifact.
 
 \subsection{Independent trace and deployment-boundary audits}
 
@@ -1097,9 +1100,8 @@ an execution match, physical requested-nameplate coverage is 1.000, and no
 declared window is infeasible under the committed runtime-plus-queue rule. Its
 predeclared 689-job stress cohort is solved with 0.001 MW per region and a
 0.004-MWh event-service floor; 43.75\% of event capacity slots bind and the
-minimum capacity slack is above $-10^{-19}$ MWh. These figures are a separate
-binding-capacity certificate, not an observed-energy adjustment to Experiment
-19 (Table~\ref{tab:jobcounterfactual}).
+minimum capacity slack is above $-10^{-19}$ MWh. This is a separate capacity
+certificate, not an adjustment to Experiment~19 (Table~\ref{tab:jobcounterfactual}).
 
 Experiment~24 freezes two profiles and evaluates all 37 finite non-islanding
 RTS-24 outages in 54 days and 8 event slots (864 cells; 31,968 contingency

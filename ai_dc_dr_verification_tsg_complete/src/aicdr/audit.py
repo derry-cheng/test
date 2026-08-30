@@ -2851,6 +2851,19 @@ def run_audit(
         and set(rolling["counterfactual_method"].unique())
         == rolling_methods
         and bool((rolling_cells == expected_test).all())
+        and {
+            "full_cycle_value_residual_usd",
+            "full_cycle_absolute_value_residual_usd",
+            "no_event_objective_gap_usd",
+        }.issubset(rolling.columns)
+        and bool(
+            np.isfinite(
+                rolling["full_cycle_absolute_value_residual_usd"].to_numpy()
+            ).all()
+        )
+        and bool(
+            np.isfinite(rolling["no_event_objective_gap_usd"].to_numpy()).all()
+        )
         and float(rolling["baseline_projection_l1_mw"].max()) <= 2e-5
         and float(rolling["actual_projection_l1_mw"].max()) <= 2e-5
         and float(

@@ -21,6 +21,15 @@ is evaluated on all locked days. Site allocations, energy-conservation
 residuals, both budget-balance residuals, bilateral utilities, and paired block
 tests are reported.
 
+The row-level field `full_cycle_absolute_value_residual_usd` is the absolute
+difference between complete-cycle space-time remuneration and the independently
+solved continuous no-event optimum. It is a settlement-accounting residual, not
+a second forecast-accuracy score. A zero residual is expected (up to LP
+precision) when the lexicographic cost stage selects the same minimum-cost face
+as the no-event reference; event-window settlement error remains a separate
+metric. The companion `no_event_objective_gap_usd` records the direct
+second-stage objective difference to make that accounting identity auditable.
+
 Run independently with:
 
 ```bash

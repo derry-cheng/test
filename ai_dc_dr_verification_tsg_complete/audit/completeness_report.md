@@ -699,12 +699,12 @@ Overall status: **PASS**.
 
 ## Continuous-horizon space-time market validation
 
-| counterfactual_method | mean_event_only_error_usd | mean_full_cycle_error_usd | mean_recovery_adjustment_usd | mean_post_event_rebound_mwh | maximum_absolute_cycle_energy_residual_mwh | maximum_baseline_projection_l1_mw | space_time_only_participant_ir_rate | bilateral_contract_activation_rate | bilateral_individual_rationality_rate | minimum_participant_contract_utility_usd | minimum_operator_contract_utility_usd | maximum_budget_balance_residual_usd | maximum_bilateral_budget_balance_residual_usd |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Feasible Quantile Projection | 26.936862 | 0.620640 | -11.214153 | 0.118606 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Payment-Certified N-1 Verifier | 15.968885 | 0.606818 | -0.255946 | 0.118606 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Risk-Constrained Convex Verifier | 5.325029 | 0.000000 | -5.325019 | 0.199456 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Single Feasible Projection | 5.325029 | 0.000000 | -5.325019 | 0.199456 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| counterfactual_method | mean_event_only_absolute_error_usd | mean_full_cycle_absolute_value_residual_usd | maximum_absolute_no_event_objective_gap_usd | mean_recovery_adjustment_usd | mean_post_event_rebound_mwh | maximum_absolute_cycle_energy_residual_mwh | maximum_baseline_projection_l1_mw | space_time_only_participant_ir_rate | bilateral_contract_activation_rate | bilateral_individual_rationality_rate | minimum_participant_contract_utility_usd | minimum_operator_contract_utility_usd | maximum_budget_balance_residual_usd | maximum_bilateral_budget_balance_residual_usd |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Feasible Quantile Projection | 26.936862 | 0.620640 | 99.894857 | -11.214153 | 0.118606 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Payment-Certified N-1 Verifier | 15.968885 | 0.606818 | 100.762481 | -0.255946 | 0.118606 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Risk-Constrained Convex Verifier | 5.325029 | 0.000000 | 0.000000 | -5.325019 | 0.199456 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Single Feasible Projection | 5.325029 | 0.000000 | 0.000000 | -5.325019 | 0.199456 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
 
 ## Dependence-robust paired tests
 

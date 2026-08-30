@@ -23,3 +23,7 @@ Experiment 12 contains 216 complete-cycle outcomes with all 54 contracts
 activated, and Experiment 18 contains 9,648 fixed-active-plan AC N--1 outcomes
 across RTS-24, IEEE-30, IEEE-39, and IEEE-118. The unified manifest audit
 passes 327/327 checks; the regression suite and LaTeX release build also pass.
+Experiment 12 now names its complete-cycle metric as a settlement-value
+residual and records the no-event reference definition explicitly, preventing
+the zero residual on a shared minimum-cost face from being misread as forecast
+accuracy.

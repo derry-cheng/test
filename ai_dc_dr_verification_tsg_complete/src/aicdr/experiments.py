@@ -9009,6 +9009,13 @@ def run_exp12(
             post_event_adjustment = float(
                 np.sum(prices[:, post_event] * delta[:, post_event]) * dt_h
             )
+            full_cycle_value_residual = (
+                full_cycle_payment - reference_space_time_value
+            )
+            no_event_objective_gap = float(
+                objective_values[day_index, name_index]
+                - objective_values[day_index, reference_index]
+            )
             site_payments = (
                 np.sum(prices * delta, axis=1) * dt_h
             )
@@ -9036,20 +9043,21 @@ def run_exp12(
                     "reference_space_time_value_usd": (
                         reference_space_time_value
                     ),
+                    "no_event_objective_gap_usd": no_event_objective_gap,
                     "verified_capacity_service_mwh": (
                         capacity_service_mwh
                     ),
                     "capacity_service_price_usd_per_mwh": response_price,
                     "capacity_service_value_usd": capacity_service_value,
                     "total_operator_value_usd": total_operator_value,
-                    "full_cycle_payment_error_usd": (
-                        full_cycle_payment - reference_space_time_value
+                    "full_cycle_value_residual_usd": (
+                        full_cycle_value_residual
                     ),
                     "event_only_payment_error_usd": (
                         event_payment - reference_space_time_value
                     ),
-                    "full_cycle_absolute_error_usd": abs(
-                        full_cycle_payment - reference_space_time_value
+                    "full_cycle_absolute_value_residual_usd": abs(
+                        full_cycle_value_residual
                     ),
                     "event_only_absolute_error_usd": abs(
                         event_payment - reference_space_time_value
@@ -9112,13 +9120,17 @@ def run_exp12(
     summary = (
         results.groupby("counterfactual_method", as_index=False)
         .agg(
-            mean_event_only_error_usd=(
+            mean_event_only_absolute_error_usd=(
                 "event_only_absolute_error_usd",
                 "mean",
             ),
-            mean_full_cycle_error_usd=(
-                "full_cycle_absolute_error_usd",
+            mean_full_cycle_absolute_value_residual_usd=(
+                "full_cycle_absolute_value_residual_usd",
                 "mean",
+            ),
+            maximum_absolute_no_event_objective_gap_usd=(
+                "no_event_objective_gap_usd",
+                lambda values: float(np.max(np.abs(values))),
             ),
             mean_recovery_adjustment_usd=(
                 "recovery_adjustment_usd",
@@ -9176,8 +9188,8 @@ def run_exp12(
             results["counterfactual_method"] == comparator
         ].sort_values("day")
         effects = (
-            compared["full_cycle_absolute_error_usd"].to_numpy()
-            - payment["full_cycle_absolute_error_usd"].to_numpy()
+            compared["full_cycle_absolute_value_residual_usd"].to_numpy()
+            - payment["full_cycle_absolute_value_residual_usd"].to_numpy()
         )
         comparison_rows.append(
             {
@@ -9219,6 +9231,13 @@ def run_exp12(
             "settlement": (
                 "signed nodal marginal-value remuneration over the entire "
                 "pre-event, event, and deadline-complete recovery cycle"
+            ),
+            "full_cycle_metric": (
+                "full_cycle_absolute_value_residual_usd is the absolute "
+                "difference between complete-cycle space-time remuneration "
+                "and the independently solved continuous no-event optimum; "
+                "a zero value on the same minimum-cost face is an accounting "
+                "certificate, not a second forecast-accuracy score"
             ),
             "bilateral_contract": (
                 "symmetric Nash bargaining with the no-activation outside "
