@@ -1229,3 +1229,14 @@ def test_job_to_network_certificate_replays_the_same_indexed_witness() -> None:
     assert metadata["network_profile_is_same_job_witness"] is True
     assert metadata["post_solution_profile_reoptimization"] is False
     assert metadata["replayed_event_slot_count"] == 1056
+    typed = metadata["coupling_invariant_certificate"]
+    mapped = metadata["network_mapping_certificate"]
+    for field in (
+        "max_job_energy_residual_mwh",
+        "max_aggregation_residual_mwh",
+        "minimum_gpu_bound_slack_mwh",
+        "maximum_gpu_bound_violation_mwh",
+        "minimum_site_capacity_slack_mwh",
+    ):
+        assert abs(float(typed[field]) - float(mapped[field])) <= 1e-12
+    assert mapped["max_network_mapping_residual_mw"] <= 1e-10

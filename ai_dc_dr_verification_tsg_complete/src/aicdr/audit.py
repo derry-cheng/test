@@ -3114,7 +3114,21 @@ def run_audit(
         and float(typed_certificate.get("max_job_energy_residual_mwh", np.inf)) <= 1e-12
         and float(typed_certificate.get("max_aggregation_residual_mwh", np.inf)) <= 1e-12
         and mapped_certificate.get("valid") is True
-        and float(mapped_certificate.get("max_network_mapping_residual_mw", np.inf)) <= 1e-10,
+        and float(mapped_certificate.get("max_network_mapping_residual_mw", np.inf)) <= 1e-10
+        and all(
+            abs(
+                float(mapped_certificate.get(field, np.nan))
+                - float(typed_certificate.get(field, np.nan))
+            )
+            <= 1e-12
+            for field in (
+                "max_job_energy_residual_mwh",
+                "max_aggregation_residual_mwh",
+                "minimum_gpu_bound_slack_mwh",
+                "maximum_gpu_bound_violation_mwh",
+                "minimum_site_capacity_slack_mwh",
+            )
+        ),
         "typed_dimension_preserving_coupling_certificate",
         (
             "one typed certificate checks job equalities, GPU/capacity bounds, "

@@ -212,6 +212,9 @@ def run_exp22_coupled_job_network_certificate(
         region=regions,
         aggregate_mwh=saved_counterfactual,
         dt_h=dt_h,
+        measured_gpus=measured_gpus,
+        per_gpu_power_cap_mw=per_gpu_power_cap_mw,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
         network_profile_mw=network_profile_mw,
         network_mapping=mapping,
     )

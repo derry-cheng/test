@@ -26,9 +26,9 @@
     "max_aggregation_residual_mwh": 0.0,
     "max_network_mapping_residual_mw": 0.0,
     "minimum_service_mwh": 0.0,
-    "minimum_gpu_bound_slack_mwh": 0.0,
+    "minimum_gpu_bound_slack_mwh": 8.629444444444452e-06,
     "maximum_gpu_bound_violation_mwh": 0.0,
-    "minimum_site_capacity_slack_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 29.49151105611111,
     "valid": true
   },
   "mapping_one_hot_bus_indices_zero_based": [
