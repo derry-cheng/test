@@ -34,6 +34,7 @@ from .scale_audit import run_exp21_scale_consistency
 from .coupling_certificate import run_exp22_coupled_job_network_certificate
 from .independent_event import run_exp23_independent_event_replay
 from .all_outage_security import run_exp24_all_outage_security_panel
+from .exante_validation import run_exp25_exante_job_validation
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -127,6 +128,7 @@ def run_pipeline(
         ("exp22", lambda: run_exp22_coupled_job_network_certificate(root, cfg, logger)),
         ("exp23", lambda: run_exp23_independent_event_replay(root, cfg, logger)),
         ("exp24", lambda: run_exp24_all_outage_security_panel(root, cfg, logger)),
+        ("exp25", lambda: run_exp25_exante_job_validation(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
@@ -173,6 +175,14 @@ def run_pipeline(
                     "status": "completed",
                     "migration_note": "reused independently completed stage artifact",
                 }
+            elif manifest.get("stages", {}).get(name, {}).get("status") == "completed":
+                # Preserve a previously completed immutable artifact when no
+                # standalone rerun record exists.  The audit revalidates its
+                # contents; silently forcing every legacy stage to rerun would
+                # turn a resume into an unbounded recomputation.
+                manifest["stages"][name]["migration_note"] = (
+                    "reused previously completed immutable artifact"
+                )
             else:
                 manifest["stages"][name]["status"] = "pending"
                 manifest["stages"][name]["migration_note"] = (

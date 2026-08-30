@@ -181,13 +181,25 @@ def run_exp23_independent_event_replay(
     gate_baseline_price = float(
         cfg["experiments"].get("independent_gate_baseline_price_per_mwh", 120.0)
     )
+    gate_participants = [
+        int(value)
+        for value in cfg["market"].get("participating_data_center_indices", [0])
+    ]
+    committed_service = float(
+        cfg["experiments"].get("decision_time_committed_event_service_mwh", 0.0)
+    )
     if np.isclose(response_price, gate_price) and np.isclose(
         baseline_price, gate_baseline_price
     ):
         raise ValueError(
             "The independent controlled-event tariff pair must differ from the gate tariff pair"
         )
-    committed_service = float(cfg["experiments"].get("decision_time_committed_event_service_mwh", 0.0))
+    if independent_participants == gate_participants and np.isclose(
+        independent_minimum_service, committed_service
+    ):
+        raise ValueError(
+            "The independent controlled-event participant set or service floor must differ from the gate contract"
+        )
     if gate < 0 or gate >= min(event_slots):
         raise ValueError("The independent event replay requires a gate before the event")
 
@@ -302,6 +314,10 @@ def run_exp23_independent_event_replay(
         np.abs(row["independent_response"] - row["gate_response"])
         for row in profile_rows
     ]
+    baseline_differences = [
+        np.abs(row["independent_baseline"] - row["gate_baseline"])
+        for row in profile_rows
+    ]
     maximum_response_difference = float(
         max((float(np.max(value)) for value in response_differences), default=0.0)
     )
@@ -310,10 +326,23 @@ def run_exp23_independent_event_replay(
         if response_differences
         else 0.0
     )
+    maximum_baseline_difference = float(
+        max((float(np.max(value)) for value in baseline_differences), default=0.0)
+    )
+    mean_baseline_difference = float(
+        np.mean([float(np.mean(value[:, event_slots])) for value in baseline_differences])
+        if baseline_differences
+        else 0.0
+    )
     if maximum_response_difference <= 1e-8:
         raise RuntimeError(
             "The independent event policy collapsed to the gate response; "
             "the controlled replay must retain a predeclared structural difference"
+        )
+    if maximum_baseline_difference <= 1e-8:
+        raise RuntimeError(
+            "The independent event policy collapsed to the gate baseline; "
+            "the baseline objective and participant set must remain distinct"
         )
     np.savez_compressed(
         final / "independent_event_profiles.npz",
@@ -367,9 +396,13 @@ def run_exp23_independent_event_replay(
             "participating_data_center_indices": independent_participants,
             "minimum_participant_event_mwh": independent_minimum_service,
             "tariff_pair_distinct_from_gate": True,
+            "participant_set_distinct_from_gate": independent_participants != gate_participants,
             "structurally_distinct_from_gate": True,
+            "policy_family": "exact release/deadline LP with independent tariff and participant set",
             "maximum_response_difference_from_gate_mw": maximum_response_difference,
             "mean_event_response_difference_from_gate_mw": mean_response_difference,
+            "maximum_baseline_difference_from_gate_mw": maximum_baseline_difference,
+            "mean_event_baseline_difference_from_gate_mw": mean_baseline_difference,
             "post_gate_arrivals_used": False,
             "future_arrivals_used_for_decision": False,
             "risk_oracle_reused": False,

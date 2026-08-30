@@ -21,6 +21,9 @@
   "raw_to_join_energy_residual_j": 0.0,
   "canonical_joined_ledger_sha256": "fdf49ad75d301580595cabc24656db9d20da9f27ca33249b49095197246ce950",
   "canonical_row_count": 71128,
+  "canonical_submission_ledger_sha256": "122179c57225f383322b073c3d6f5d6a8f62c75293ca172e234bc2c1ee0666bc",
+  "submission_row_count": 216572,
+  "submission_gpu_parseable_fraction": 1.0,
   "integrity_conditions": {
     "one_to_one_scheduler_record_after_declared_last_record_rule": true,
     "positive_energy_join_only": true,
@@ -29,16 +32,17 @@
     "start_before_end": true,
     "raw_to_join_energy_conservation": true,
     "no_synthetic_rows": true,
-    "no_imputation": true
+    "no_imputation": true,
+    "submission_digest_excludes_execution_telemetry": true
   },
   "capacity_measurement": {
     "interval_hours": 0.25,
     "observed_profile_slots": 11616,
     "configured_capacity_mw": 118.0,
-    "batch_scale_to_benchmark_envelope": 15350.071019866877,
-    "maximum_raw_execution_peak_mw": 0.006685220843592108,
-    "maximum_scaled_benchmark_peak_mw": 102.6186147326332,
-    "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.8696492773951966,
+    "batch_scale_to_benchmark_envelope": 15350.07101986688,
+    "maximum_raw_execution_peak_mw": 0.00863653603302321,
+    "maximum_scaled_benchmark_peak_mw": 132.57144147254564,
+    "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 1.1234867921402174,
     "capacity_rows_are_scaled_benchmark_envelope": true,
     "raw_execution_is_unscaled_source_measurement": true
   }

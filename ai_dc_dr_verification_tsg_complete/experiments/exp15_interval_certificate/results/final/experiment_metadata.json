@@ -2,10 +2,12 @@
   "audit_type": "independent continuous-segment audit of the locked payment-certified profile",
   "interval": {
     "lower_endpoint": 0.5844748596130233,
-    "upper_endpoint": 1.1498888413904444,
+    "upper_endpoint": 2.6930887095833507,
     "unclipped_upper_endpoint": 2.6930887095833507,
-    "source": "held-out per-job measured-to-predicted energy ratio q01 and q99, with the upper endpoint clipped by the predeclared 118-MW capacity commitment",
-    "upper_endpoint_policy": "min(held-out q99, capacity-safe calibration factor); the clipping factor is selected from the immutable ledger capacity audit before interval evaluation"
+    "source": "complete held-out per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
+    "upper_endpoint_policy": "retain raw q99; activate payment only when the predeclared capacity certificate covers the endpoint, otherwise report q99 as a non-eligible stress scenario",
+    "q99_capacity_safe_upper": 0.890086120278301,
+    "q99_capacity_activation_eligible": false
   },
   "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
   "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
@@ -24,16 +26,20 @@
   ],
   "parallel_workers": 4,
   "interval_certificate_valid": true,
-  "certificate_scope": "continuous-segment payment interval from q01 to the capacity-safe q99 endpoint, with exact joint-LP lower bound and convex endpoint upper bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
-  "maximum_payment_cap_violation_usd": 1.1525116860866547e-08,
+  "certificate_scope": "continuous-segment stress interval from raw q01 to raw q99, with exact joint-LP lower bound and convex endpoint upper bound; only capacity-eligible endpoints can be activated for payment, while finite q01/q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
+  "maximum_payment_cap_violation_usd": 1.2951204553246498e-09,
   "payment_value_interval": {
     "endpoint_file": "payment_value_interval_certificates.csv",
     "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
     "unclipped_upper_endpoint": 2.6930887095833507,
-    "capacity_safe_upper_endpoint": 1.1498888413904444,
+    "capacity_safe_upper_endpoint": 0.890086120278301,
+    "raw_upper_endpoint": 2.6930887095833507,
+    "q99_capacity_activation_eligible": false,
     "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
     "oracle_used_only_for_coverage_audit": true,
     "mean_oracle_coverage": 0.037037037037037035,
-    "intervals_are_contractual": true
+    "intervals_are_contractual": true,
+    "capacity_eligible_endpoints_only": true,
+    "raw_q99_is_stress_only": true
   }
 }

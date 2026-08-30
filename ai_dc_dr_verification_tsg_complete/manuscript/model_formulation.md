@@ -551,7 +551,7 @@ feasible-quantile projection as an external transfer comparator. Its
 contractual reference is the validation-selected single feasible projection.
 The program embeds one copy of the full N--1
 SCED primal per event interval and per telemetry-calibrated conversion
-scenario. The finite scenario set is the 10th, 50th, and 90th percentile of
+scenario. The finite scenario set is the 1st, 10th, 50th, and 90th percentile of
 held-out per-job measured-to-predicted GPU energy ratios from the complete MIT
 DCGM table \cite{samsi2021supercloud}. The risk-constrained verifier is used
 only as the absolute-deviation target and is not a selectable member of this

@@ -19,15 +19,20 @@
   "independent_policy": {
     "objective": "exact release/deadline/capacity LP with a distinct event tariff and a predeclared event-service floor on the participating site set",
     "response_price_per_mwh": 210.0,
-    "baseline_price_per_mwh": 120.0,
+    "baseline_price_per_mwh": 85.0,
     "participating_data_center_indices": [
-      0
+      0,
+      1
     ],
-    "minimum_participant_event_mwh": 5.0,
+    "minimum_participant_event_mwh": 7.0,
     "tariff_pair_distinct_from_gate": true,
+    "participant_set_distinct_from_gate": true,
     "structurally_distinct_from_gate": true,
-    "maximum_response_difference_from_gate_mw": 20.0,
-    "mean_event_response_difference_from_gate_mw": 0.625,
+    "policy_family": "exact release/deadline LP with independent tariff and participant set",
+    "maximum_response_difference_from_gate_mw": 28.000000000000007,
+    "mean_event_response_difference_from_gate_mw": 0.875,
+    "maximum_baseline_difference_from_gate_mw": 118.0,
+    "mean_event_baseline_difference_from_gate_mw": 30.479144527000336,
     "post_gate_arrivals_used": false,
     "future_arrivals_used_for_decision": false,
     "risk_oracle_reused": false

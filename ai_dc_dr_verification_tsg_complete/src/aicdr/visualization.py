@@ -404,7 +404,7 @@ def plot_exp15_interval_certificate(
         constrained_layout=True,
     )
     sns.scatterplot(
-        data=shown,
+        data=shown[np.isfinite(shown["reference_cost_usd"]) & np.isfinite(shown["certified_cost_usd"])],
         x="reference_cost_usd",
         y="certified_cost_usd",
         hue="endpoint",
@@ -414,14 +414,24 @@ def plot_exp15_interval_certificate(
         alpha=0.8,
         ax=axes[0],
     )
-    lower = min(float(shown["reference_cost_usd"].min()), float(shown["certified_cost_usd"].min()))
-    upper = max(float(shown["reference_cost_usd"].max()), float(shown["certified_cost_usd"].max()))
+    finite_shown = shown[
+        np.isfinite(shown["reference_cost_usd"])
+        & np.isfinite(shown["certified_cost_usd"])
+    ]
+    if finite_shown.empty:
+        raise ValueError("Exp15 endpoint plot has no finite cost certificate")
+    lower = min(float(finite_shown["reference_cost_usd"].min()), float(finite_shown["certified_cost_usd"].min()))
+    upper = max(float(finite_shown["reference_cost_usd"].max()), float(finite_shown["certified_cost_usd"].max()))
     axes[0].plot([lower, upper], [lower, upper], "--", color=COLORS["red"], linewidth=1)
     axes[0].set_title("(a) Endpoint N-1 cost certificate")
     axes[0].set_xlabel("Reference cost ($)")
     axes[0].set_ylabel("Certified cost ($)")
     axes[0].legend(fontsize=6.5, title_fontsize=6.5)
-    margin = shown.groupby(["method", "endpoint"], as_index=False)["margin_usd"].mean()
+    margin = (
+        shown[np.isfinite(shown["margin_usd"])]
+        .groupby(["method", "endpoint"], as_index=False)["margin_usd"]
+        .mean()
+    )
     sns.barplot(data=margin, x="endpoint", y="margin_usd", hue="method", palette="colorblind", ax=axes[1])
     axes[1].axhline(0, color=COLORS["black"], linewidth=0.8)
     axes[1].set_title("(b) Endpoint payment-cap margin")
@@ -430,7 +440,7 @@ def plot_exp15_interval_certificate(
     axes[1].legend(fontsize=6.5, title_fontsize=6.5)
     if ncols == 3:
         sns.boxplot(
-            data=intervals,
+            data=intervals[np.isfinite(intervals["payment_interval_width_usd"])],
             x="endpoint",
             y="payment_interval_width_usd",
             color=COLORS["sky"],

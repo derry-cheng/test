@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,84 @@ from .utils import sha256, write_json
 
 
 CLASS_NAMES = ("realtime_inference", "elastic_inference", "batch_gpu")
+
+
+_GPU_REQUEST_PATTERN = re.compile(r"(?:gpu|gres/gpu)([^,;\s]*)", re.IGNORECASE)
+
+
+def _parse_requested_gpu_count(value: object) -> int | None:
+    """Parse a Slurm GPU request without consulting allocation telemetry.
+
+    The MIT scheduler release uses forms such as ``gpu:1`` and
+    ``gpu:volta:8``.  A missing request is treated as unknown and is rejected
+    by the submission-ledger loader; silently replacing it with one GPU would
+    be an outcome-dependent capacity heuristic.
+    """
+    if value is None or (isinstance(value, float) and not np.isfinite(value)):
+        return None
+    match = _GPU_REQUEST_PATTERN.search(str(value))
+    if match is None:
+        return None
+    # Vendor/type identifiers can contain digits (e.g., ``gpu:a100:8``); the
+    # final numeric token is the requested count.
+    tokens = re.findall(r"[0-9]+", match.group(1))
+    if not tokens:
+        return None
+    count = int(tokens[-1])
+    return count if count > 0 else None
+
+
+def _declared_runtime_slots(
+    timelimit: np.ndarray,
+    interval_s: int,
+    unbounded_timelimit_slots: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Convert the submitted allocation runtime to finite interval slots."""
+    values = np.asarray(timelimit, dtype=float)
+    if not np.isfinite(values).all():
+        raise ValueError("timelimit contains non-finite values")
+    if int(unbounded_timelimit_slots) <= 0:
+        raise ValueError("unbounded_timelimit_slots must be positive")
+    unlimited = values >= np.iinfo(np.uint32).max - 1
+    runtime = np.where(
+        unlimited,
+        int(unbounded_timelimit_slots),
+        np.maximum(1, np.ceil(values / float(interval_s)).astype(np.int64)),
+    ).astype(np.int64)
+    return runtime, unlimited
+
+
+def _balanced_submission_region_labels(frame: pd.DataFrame, n_regions: int) -> np.ndarray:
+    """Assign deterministic scenario regions from submit-time fields only."""
+    if n_regions <= 0:
+        raise ValueError("n_regions must be positive")
+    required = {
+        "id_job",
+        "time_submit",
+        "requested_gpus",
+        "declared_runtime_slots",
+        "job_type",
+        "gres_req",
+    }
+    if not required.issubset(frame.columns):
+        missing = sorted(required.difference(frame.columns))
+        raise ValueError(f"missing columns for submission region scenario: {missing}")
+    work = frame.copy()
+    job_codes = pd.Categorical(work["job_type"].fillna("").astype(str)).codes
+    gres_codes = pd.Categorical(work["gres_req"].fillna("").astype(str)).codes
+    order = np.lexsort(
+        (
+            work["id_job"].to_numpy(dtype=np.int64),
+            work["time_submit"].to_numpy(dtype=float),
+            work["declared_runtime_slots"].to_numpy(dtype=np.int64),
+            work["requested_gpus"].to_numpy(dtype=np.int64),
+            gres_codes,
+            job_codes,
+        )
+    )
+    labels = np.empty(len(work), dtype=np.int64)
+    labels[order] = np.arange(len(work), dtype=np.int64) % int(n_regions)
+    return labels
 
 
 def _balanced_trace_region_labels(frame: pd.DataFrame, n_regions: int) -> np.ndarray:
@@ -115,6 +194,18 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         scheduler_path, dcgm_path, n_slots, interval_s, n_regions, logger
     )
     calibration = _fit_dcgm_power_calibration(dcgm_path, int(cfg["project"]["seed"]), logger)
+    submission_calibration = _fit_submission_energy_calibration(
+        scheduler_path=scheduler_path,
+        dcgm_path=dcgm_path,
+        interval_s=interval_s,
+        declared_per_gpu_power_cap_mw=float(
+            cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+        ),
+        unbounded_timelimit_slots=int(
+            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        ),
+        logger=logger,
+    )
 
     dt_h = cfg["project"]["interval_minutes"] / 60.0
     q = float(cfg["data"]["percentile_for_scaling"])
@@ -200,6 +291,7 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         "burstgpt": raw_stats,
         "mit_supercloud": batch_stats,
         "power_calibration": calibration,
+        "submission_calibration": submission_calibration,
         "processing": {
             "interval_seconds": interval_s,
             "regions": n_regions,
@@ -224,6 +316,12 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
             ),
             "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
             "maximum_initial_batch_backlog_mwh": float(initial_batch_backlog.max()),
+            "submission_energy_fraction": float(
+                submission_calibration["declared_service_fraction"]
+            ),
+            "submission_energy_fraction_source": (
+                "training-only scheduler/DCGM join; immutable job IDs with id_job mod 10 < 7"
+            ),
         },
     }
     write_json(out_dir / "data_manifest.json", manifest)
@@ -263,6 +361,18 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "retained_records": int(calibration["test_observations"]),
                 "split_or_join_rule": "disjoint immutable-job test split",
                 "downstream_role": "conversion scenarios and calibration scoring",
+            },
+            {
+                "stage": "Submit-time energy-envelope calibration",
+                "input_records": int(submission_calibration["joined_positive_jobs"]),
+                "retained_records": int(submission_calibration["training_jobs"]),
+                "split_or_join_rule": (
+                    "immutable scheduler/DCGM job join with id_job mod 10 < 7; "
+                    "telemetry is used only to fit the frozen envelope"
+                ),
+                "downstream_role": (
+                    "ex-ante declared service quantity and physical upper bound for Exp19"
+                ),
             },
             {
                 "stage": "15-minute joint trace",
@@ -583,6 +693,114 @@ def _fit_dcgm_power_calibration(path: Path, seed: int, logger: logging.Logger) -
     return payload
 
 
+def _fit_submission_energy_calibration(
+    *,
+    scheduler_path: Path,
+    dcgm_path: Path,
+    interval_s: int,
+    declared_per_gpu_power_cap_mw: float,
+    unbounded_timelimit_slots: int,
+    logger: logging.Logger,
+) -> dict[str, Any]:
+    """Fit the ex-ante service fraction on the immutable training partition.
+
+    Slurm exposes a requested GPU count and an allocation runtime, but no
+    energy entitlement.  The submitted ledger therefore commits an energy
+    *quantity* equal to a training-only utilization fraction times the
+    requested nameplate and declared runtime.  DCGM appears here only to fit
+    that fraction before the validation/test split; it is never joined into
+    the submission digest and never enters the Exp19 feasibility constraints.
+    The physical upper bound remains the full requested nameplate, so the
+    conversion audit can report coverage instead of silently widening a
+    deadline when an observed job exceeds its central estimate.
+    """
+    if float(declared_per_gpu_power_cap_mw) <= 0.0:
+        raise ValueError("declared_per_gpu_power_cap_mw must be positive")
+    scheduler_columns = ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
+    scheduler = pd.read_csv(scheduler_path, usecols=scheduler_columns)
+    scheduler["id_job"] = pd.to_numeric(scheduler["id_job"], errors="coerce")
+    scheduler["time_submit"] = pd.to_numeric(scheduler["time_submit"], errors="coerce")
+    scheduler["timelimit"] = pd.to_numeric(scheduler["timelimit"], errors="coerce")
+    scheduler["requested_gpus"] = scheduler["gres_req"].map(_parse_requested_gpu_count)
+    scheduler = scheduler.sort_values(
+        ["id_job", "time_submit", "timelimit", "gres_req"],
+        kind="mergesort",
+        na_position="first",
+    ).drop_duplicates("id_job", keep="last")
+    scheduler = scheduler[
+        scheduler["id_job"].notna()
+        & scheduler["time_submit"].notna()
+        & scheduler["timelimit"].notna()
+        & scheduler["requested_gpus"].notna()
+        & (scheduler["requested_gpus"] > 0)
+        & (scheduler["timelimit"] > 0)
+    ].copy()
+    runtime_slots, unlimited = _declared_runtime_slots(
+        scheduler["timelimit"].to_numpy(dtype=float), interval_s, unbounded_timelimit_slots
+    )
+    scheduler["declared_runtime_slots"] = runtime_slots
+    scheduler["unlimited_timelimit"] = unlimited
+    dcgm = pd.read_csv(
+        dcgm_path,
+        usecols=["id_job", "energyconsumed_joules"],
+    )
+    dcgm = dcgm.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=["id_job", "energyconsumed_joules"]
+    )
+    measured = dcgm.groupby("id_job", as_index=False).agg(
+        measured_energy_joules=("energyconsumed_joules", "sum")
+    )
+    joined = scheduler.merge(measured, on="id_job", how="inner", validate="one_to_one")
+    joined = joined[joined["measured_energy_joules"] > 0].copy()
+    if joined.empty:
+        raise RuntimeError("No positive-energy jobs are available for submit-time calibration")
+    dt_h = float(interval_s) / 3600.0
+    nameplate_mwh = (
+        joined["requested_gpus"].to_numpy(dtype=float)
+        * float(declared_per_gpu_power_cap_mw)
+        * joined["declared_runtime_slots"].to_numpy(dtype=float)
+        * dt_h
+    )
+    joined["nameplate_energy_mwh"] = nameplate_mwh
+    joined["measured_energy_mwh"] = joined["measured_energy_joules"] / 3.6e9
+    joined["measured_to_nameplate_fraction"] = (
+        joined["measured_energy_mwh"] / joined["nameplate_energy_mwh"]
+    )
+    training = joined[(joined["id_job"].astype(np.int64) % 10) < 7].copy()
+    training = training[np.isfinite(training["measured_to_nameplate_fraction"])].copy()
+    training = training[training["measured_to_nameplate_fraction"] > 0]
+    if training.empty:
+        raise RuntimeError("Submit-time calibration training split is empty")
+    fractions = training["measured_to_nameplate_fraction"].to_numpy(dtype=float)
+    quantiles = {str(q): float(np.quantile(fractions, q)) for q in [0.01, 0.10, 0.50, 0.90, 0.99]}
+    payload = {
+        "joined_positive_jobs": int(len(joined)),
+        "training_jobs": int(len(training)),
+        "test_jobs": int(len(joined) - len(training)),
+        "training_rule": "id_job mod 10 < 7; immutable job IDs are assigned before any locked-day selection",
+        "declared_per_gpu_power_cap_mw": float(declared_per_gpu_power_cap_mw),
+        "interval_seconds": int(interval_s),
+        "unbounded_timelimit_slots": int(unbounded_timelimit_slots),
+        "fraction_quantiles": quantiles,
+        "declared_service_fraction": float(quantiles["0.5"]),
+        "physical_upper_service_fraction": 1.0,
+        "training_fraction_above_physical_upper": int(np.sum(fractions > 1.0 + 1e-12)),
+        "all_joined_fraction_quantiles": {
+            str(q): float(np.quantile(joined["measured_to_nameplate_fraction"], q))
+            for q in [0.01, 0.10, 0.50, 0.90, 0.99]
+        },
+        "central_estimate_is_not_observed_energy": True,
+        "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
+    }
+    logger.info(
+        "Submit-time energy calibration: %d/%d training jobs, central utilization %.6g",
+        len(training),
+        len(joined),
+        payload["declared_service_fraction"],
+    )
+    return payload
+
+
 def load_workload(path: Path) -> dict[str, np.ndarray]:
     with np.load(path, allow_pickle=False) as data:
         return {key: data[key] for key in data.files}
@@ -774,6 +992,167 @@ def load_mit_job_ledger(
     return jobs.reset_index(drop=True)
 
 
+def load_mit_submission_ledger(
+    scheduler_path: Path,
+    interval_s: int,
+    n_slots: int | None,
+    n_regions: int,
+    declared_service_fraction: float,
+    declared_per_gpu_power_cap_mw: float,
+    unbounded_timelimit_slots: int = 128,
+    submission_buffer_slots: int = 0,
+    eligible_job_ids: set[int] | None = None,
+) -> pd.DataFrame:
+    """Return a submit-time-only job ledger for ex-ante scheduling.
+
+    This function deliberately does not read the DCGM file.  Every decision
+    field is available when a job is submitted: immutable job ID, submit time,
+    requested GPUs, job class, and Slurm allocation runtime.  The central
+    energy entitlement is the training-fitted utilization fraction times the
+    requested GPU nameplate and declared runtime.  ``energy_upper_mwh`` is the
+    physical nameplate bound and is kept separately for post-event coverage.
+    An optional ``eligible_job_ids`` set fixes only the retrospective benchmark
+    population; it is never converted into an energy or deadline value.
+    """
+    if int(interval_s) <= 0:
+        raise ValueError("interval_s must be positive")
+    if int(submission_buffer_slots) < 0:
+        raise ValueError("submission_buffer_slots must be nonnegative")
+    if float(declared_service_fraction) <= 0.0 or float(declared_service_fraction) > 1.0:
+        raise ValueError("declared_service_fraction must lie in (0, 1]")
+    if float(declared_per_gpu_power_cap_mw) <= 0.0:
+        raise ValueError("declared_per_gpu_power_cap_mw must be positive")
+    scheduler_columns = ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
+    scheduler = pd.read_csv(scheduler_path, usecols=scheduler_columns)
+    scheduler["id_job"] = pd.to_numeric(scheduler["id_job"], errors="coerce")
+    scheduler["time_submit"] = pd.to_numeric(scheduler["time_submit"], errors="coerce")
+    scheduler["timelimit"] = pd.to_numeric(scheduler["timelimit"], errors="coerce")
+    scheduler["requested_gpus"] = scheduler["gres_req"].map(_parse_requested_gpu_count)
+    scheduler = scheduler.sort_values(
+        ["id_job", "time_submit", "timelimit", "gres_req"],
+        kind="mergesort",
+        na_position="first",
+    ).drop_duplicates("id_job", keep="last")
+    before_filter = len(scheduler)
+    if eligible_job_ids is not None:
+        eligible = {int(value) for value in eligible_job_ids}
+        scheduler = scheduler[scheduler["id_job"].isin(eligible)].copy()
+    scheduler = scheduler[
+        scheduler["id_job"].notna()
+        & scheduler["time_submit"].notna()
+        & scheduler["timelimit"].notna()
+        & scheduler["requested_gpus"].notna()
+        & (scheduler["requested_gpus"] > 0)
+        & (scheduler["timelimit"] > 0)
+    ].copy()
+    if scheduler.empty:
+        raise RuntimeError("No GPU jobs with valid submit-time declarations were retained")
+    runtime_slots, unlimited = _declared_runtime_slots(
+        scheduler["timelimit"].to_numpy(dtype=float), interval_s, unbounded_timelimit_slots
+    )
+    scheduler["declared_runtime_slots"] = runtime_slots
+    scheduler["unlimited_timelimit"] = unlimited
+    origin = float(scheduler["time_submit"].min())
+    scheduler["submit_slot_raw"] = np.floor(
+        (scheduler["time_submit"].to_numpy(dtype=float) - origin) / float(interval_s)
+    ).astype(np.int64)
+    scheduler["submit_slot"] = np.maximum(scheduler["submit_slot_raw"].to_numpy(dtype=np.int64), 0)
+    scheduler["declared_window_slots"] = (
+        scheduler["declared_runtime_slots"].to_numpy(dtype=np.int64)
+        + int(submission_buffer_slots)
+    )
+    scheduler["deadline_slot_raw"] = (
+        scheduler["submit_slot"].to_numpy(dtype=np.int64)
+        + scheduler["declared_window_slots"].to_numpy(dtype=np.int64)
+    )
+    dt_h = float(interval_s) / 3600.0
+    requested_gpu = scheduler["requested_gpus"].to_numpy(dtype=float)
+    runtime = scheduler["declared_runtime_slots"].to_numpy(dtype=float)
+    nameplate = requested_gpu * float(declared_per_gpu_power_cap_mw) * runtime * dt_h
+    scheduler["declared_energy_mwh"] = nameplate * float(declared_service_fraction)
+    scheduler["declared_energy_lower_mwh"] = nameplate * float(declared_service_fraction)
+    scheduler["declared_energy_upper_mwh"] = nameplate
+    scheduler["required_service_slots"] = np.maximum(
+        1,
+        np.ceil(
+            scheduler["declared_energy_mwh"].to_numpy(dtype=float)
+            / (requested_gpu * float(declared_per_gpu_power_cap_mw) * dt_h)
+        ).astype(np.int64),
+    )
+    scheduler["region"] = _balanced_submission_region_labels(scheduler, n_regions)
+    if n_slots is None:
+        horizon = int(scheduler["deadline_slot_raw"].max())
+    else:
+        horizon = int(n_slots)
+        scheduler = scheduler[scheduler["submit_slot_raw"] < horizon].copy()
+        if scheduler.empty:
+            raise RuntimeError("No submit-time jobs fall within the requested horizon")
+    scheduler["deadline_slot"] = np.clip(
+        scheduler["deadline_slot_raw"].to_numpy(dtype=np.int64), 1, horizon
+    )
+    scheduler["within_horizon"] = (
+        (scheduler["submit_slot_raw"].to_numpy(dtype=np.int64) < horizon)
+        & (scheduler["deadline_slot"].to_numpy(dtype=np.int64) > scheduler["submit_slot"].to_numpy(dtype=np.int64))
+        & (scheduler["declared_energy_mwh"].to_numpy(dtype=float) > 0.0)
+    )
+    scheduler = scheduler[scheduler["within_horizon"]].copy()
+    if scheduler.empty:
+        raise RuntimeError("No feasible submit-time windows remain in the horizon")
+    scheduler["deadline_slot"] = np.maximum(
+        scheduler["deadline_slot"].to_numpy(dtype=np.int64),
+        scheduler["submit_slot"].to_numpy(dtype=np.int64) + 1,
+    )
+    scheduler["deadline_slot"] = np.minimum(
+        scheduler["deadline_slot"].to_numpy(dtype=np.int64), horizon
+    )
+    scheduler["declared_window_infeasible"] = (
+        scheduler["required_service_slots"].to_numpy(dtype=np.int64)
+        > scheduler["declared_window_slots"].to_numpy(dtype=np.int64)
+    )
+    canonical_columns = [
+        "id_job",
+        "time_submit",
+        "timelimit",
+        "gres_req",
+        "job_type",
+        "state",
+        "requested_gpus",
+        "declared_runtime_slots",
+        "declared_window_slots",
+        "declared_energy_mwh",
+        "declared_energy_upper_mwh",
+        "submit_slot",
+        "deadline_slot",
+        "region",
+    ]
+    canonical = scheduler[canonical_columns].sort_values("id_job", kind="mergesort")
+    canonical_text = canonical.to_csv(
+        index=False, lineterminator="\n", float_format="%.17g"
+    ).encode("utf-8")
+    scheduler.attrs["canonical_submission_ledger_sha256"] = hashlib.sha256(canonical_text).hexdigest()
+    scheduler.attrs["time_origin_seconds"] = origin
+    scheduler.attrs["scheduler_rows"] = int(before_filter)
+    scheduler.attrs["retained_submission_jobs"] = int(len(scheduler))
+    scheduler.attrs["dropped_invalid_submission_rows"] = int(before_filter - len(scheduler))
+    scheduler.attrs["population_rule"] = (
+        "positive-energy DCGM job IDs define the retrospective benchmark population; "
+        "all LP fields remain submit-time declarations"
+        if eligible_job_ids is not None
+        else "all scheduler rows with valid GPU requests and timelimits"
+    )
+    scheduler.attrs["deadline_mode"] = "submit_time_declaration"
+    scheduler.attrs["declared_service_fraction"] = float(declared_service_fraction)
+    scheduler.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
+    scheduler.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
+    scheduler.attrs["submission_buffer_slots"] = int(submission_buffer_slots)
+    scheduler.attrs["declared_window_infeasible_jobs"] = int(
+        scheduler["declared_window_infeasible"].sum()
+    )
+    scheduler.attrs["digest_fields_exclude_execution_telemetry"] = True
+    scheduler.attrs["execution_telemetry_is_post_event_only"] = True
+    return scheduler.reset_index(drop=True)
+
+
 def audit_mit_ledger_provenance(
     scheduler_path: Path,
     dcgm_path: Path,
@@ -793,7 +1172,7 @@ def audit_mit_ledger_provenance(
     the configured study capacity alongside the observed per-region envelope.
     """
     scheduler_columns = [
-        "id_job", "time_start", "time_end", "time_submit",
+        "id_job", "time_start", "time_end", "time_submit", "timelimit",
         "gres_req", "job_type", "state",
     ]
     dcgm_columns = [
@@ -823,6 +1202,42 @@ def audit_mit_ledger_provenance(
         & (joined["time_end"] > joined["time_start"])
         & (joined["energy_j"] > 0)
     ].copy()
+    # The submit ledger is committed before an event and therefore receives a
+    # separate digest over scheduler declarations only.  In particular,
+    # time_start/time_end and every DCGM-derived quantity are absent from this
+    # tuple.  The joined execution digest below remains available for the
+    # retrospective telemetry reconciliation.
+    submission_last = scheduler_raw.copy()
+    submission_last["requested_gpus"] = submission_last["gres_req"].map(
+        _parse_requested_gpu_count
+    )
+    submission_last = submission_last.sort_values(
+        ["id_job", "time_submit", "timelimit", "gres_req"],
+        kind="mergesort",
+        na_position="first",
+    ).drop_duplicates("id_job", keep="last")
+    submission_canonical = submission_last[
+        [
+            "id_job",
+            "time_submit",
+            "timelimit",
+            "gres_req",
+            "job_type",
+            "state",
+            "requested_gpus",
+        ]
+    ].copy()
+    submission_canonical = submission_canonical[
+        submission_canonical["id_job"].notna()
+        & submission_canonical["time_submit"].notna()
+        & submission_canonical["timelimit"].notna()
+        & (submission_canonical["timelimit"] > 0)
+        & submission_canonical["requested_gpus"].notna()
+    ].sort_values("id_job", kind="mergesort")
+    submission_text = submission_canonical[
+        ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
+    ].to_csv(index=False, lineterminator="\n", float_format="%.17g").encode("utf-8")
+    submission_digest = hashlib.sha256(submission_text).hexdigest()
     canonical_columns = [
         "id_job", "time_submit", "time_start", "time_end", "energy_j",
         "telemetry_rows", "gres_req", "job_type", "state",
@@ -909,6 +1324,13 @@ def audit_mit_ledger_provenance(
         "raw_to_join_energy_residual_j": float(retained_dcgm_energy_j - joined_energy_j),
         "canonical_joined_ledger_sha256": digest,
         "canonical_row_count": int(len(canonical)),
+        "canonical_submission_ledger_sha256": submission_digest,
+        "submission_row_count": int(len(submission_canonical)),
+        "submission_gpu_parseable_fraction": float(
+            submission_canonical["requested_gpus"].notna().mean()
+        )
+        if len(submission_canonical)
+        else 0.0,
         "integrity_conditions": {
             "one_to_one_scheduler_record_after_declared_last_record_rule": True,
             "positive_energy_join_only": True,
@@ -920,6 +1342,7 @@ def audit_mit_ledger_provenance(
             ),
             "no_synthetic_rows": True,
             "no_imputation": True,
+            "submission_digest_excludes_execution_telemetry": True,
         },
         "capacity_measurement": {
             "interval_hours": dt_h,

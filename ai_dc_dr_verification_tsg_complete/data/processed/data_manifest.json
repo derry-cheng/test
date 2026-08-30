@@ -119,6 +119,34 @@
     },
     "heldout_aggregate_measured_to_predicted_energy_ratio": 1.064379669196887
   },
+  "submission_calibration": {
+    "joined_positive_jobs": 71144,
+    "training_jobs": 49916,
+    "test_jobs": 21228,
+    "training_rule": "id_job mod 10 < 7; immutable job IDs are assigned before any locked-day selection",
+    "declared_per_gpu_power_cap_mw": 0.001,
+    "interval_seconds": 900,
+    "unbounded_timelimit_slots": 128,
+    "fraction_quantiles": {
+      "0.01": 2.1701388888888887e-07,
+      "0.1": 4.027777777777778e-06,
+      "0.5": 0.0011572222222222222,
+      "0.9": 0.04038708333333334,
+      "0.99": 0.2198844444444442
+    },
+    "declared_service_fraction": 0.0011572222222222222,
+    "physical_upper_service_fraction": 1.0,
+    "training_fraction_above_physical_upper": 0,
+    "all_joined_fraction_quantiles": {
+      "0.01": 2.1701388888888887e-07,
+      "0.1": 4.102490011415526e-06,
+      "0.5": 0.0011577777777777778,
+      "0.9": 0.04255898148148166,
+      "0.99": 0.21913945555555434
+    },
+    "central_estimate_is_not_observed_energy": true,
+    "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints"
+  },
   "processing": {
     "interval_seconds": 900,
     "regions": 4,
@@ -298,6 +326,8 @@
     "total_observed_execution_mwh": 68590.65661516429,
     "counterfactual_reference": "trace-anchored no-event execution reference; the demand-response intervention is generated separately by the declared event scheduling optimization",
     "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
-    "maximum_initial_batch_backlog_mwh": 115.70546058698775
+    "maximum_initial_batch_backlog_mwh": 115.70546058698775,
+    "submission_energy_fraction": 0.0011572222222222222,
+    "submission_energy_fraction_source": "training-only scheduler/DCGM join; immutable job IDs with id_job mod 10 < 7"
   }
 }

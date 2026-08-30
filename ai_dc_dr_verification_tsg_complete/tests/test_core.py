@@ -271,19 +271,19 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert np.isclose(native - counterfactual, net, atol=1e-12)
     assert gross >= net - 1e-12
     assert rebound >= -1e-12
-    assert int(float(values["service_variables"])) == 12_293_445
+    assert int(float(values["service_variables"])) == 12_296_675
     assert float(values["maximum_job_energy_residual_mwh"]) < 1e-15
     scale = pd.read_csv(
         ROOT
         / "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv"
     )
     scale_values = dict(zip(scale["metric"], scale["value"]))
-    assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 3475.1083746250592)
+    assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 2146.2043512110617)
     assert np.isclose(
         float(scale_values["capacity_proportional_network_scale_factor"]),
-        3475.1083746250592,
+        2146.2043512110617,
     )
-    assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.0357518522695626)
+    assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.4796888050033212)
     assert float(scale_values["certified_peak_mw"]) <= 118.0 + 1e-9
     assert float(scale_values["capacity_proportional_minimum_capacity_slack_mwh"]) >= -1e-9
 
@@ -377,7 +377,7 @@ def test_interval_endpoint_audit_is_complete_and_within_solver_tolerance() -> No
     folder = ROOT / "experiments/exp15_interval_certificate/results/final"
     rows = np.genfromtxt(folder / "interval_endpoint_certificates.csv", delimiter=",", names=True, dtype=None, encoding="utf-8")
     assert len(rows) == 216
-    assert set(rows["endpoint"]) == {"q01", "q99-cap"}
+    assert set(rows["endpoint"]) == {"q01", "q99"}
     assert set(rows["method"]) == {"Selected Single Feasible Projection", "Payment-Certified N-1 Verifier"}
     metadata = json.loads((folder / "experiment_metadata.json").read_text(encoding="utf-8"))
     assert metadata["interval_certificate_valid"] is True
@@ -1209,6 +1209,7 @@ def test_final_panels_exist() -> None:
         "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
         "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
         "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+        "experiments/exp25_exante_job_validation/results/final/exante_job_validation_summary.csv",
     ]
     missing = [path for path in expected if not (ROOT / path).is_file()]
     assert not missing, f"missing final panels: {missing}"
@@ -1220,7 +1221,7 @@ def test_job_to_network_certificate_replays_the_same_indexed_witness() -> None:
     summary = pd.read_csv(folder / "coupled_network_summary.csv")
     values = dict(zip(summary["metric"], summary["value"]))
     assert int(float(values["positive_energy_jobs"])) == 71128
-    assert int(float(values["service_variables"])) == 12_293_445
+    assert int(float(values["service_variables"])) == 12_296_675
     assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
     assert float(values["all_network_solves_successful"]) == 1.0
     metadata = json.loads(

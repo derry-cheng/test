@@ -53,26 +53,30 @@ def run_exp22_coupled_job_network_certificate(
     regions = np.asarray(data["region"], dtype=np.int64)
     saved_counterfactual = np.asarray(data["counterfactual_mwh"], dtype=float)
     saved_native = np.asarray(data["native_mwh"], dtype=float)
-    if "job_energy_mwh" not in data.files or "per_gpu_power_cap_mw" not in data.files:
+    execution_match = np.asarray(
+        data["execution_match"] if "execution_match" in data.files else np.ones(len(starts)),
+        dtype=bool,
+    )
+    if "declared_job_energy_mwh" not in data.files or "requested_gpus" not in data.files or "per_gpu_power_cap_mw" not in data.files:
         raise ValueError(
-            "Exp19 witness must include job energies and the committed GPU nameplate "
-            "for an independent feasibility recheck"
+            "Exp19 witness must include declared job energies, requested GPUs, and "
+            "the committed GPU nameplate for an independent feasibility recheck"
         )
-    job_energy = np.asarray(data["job_energy_mwh"], dtype=float)
-    measured_gpus = np.asarray(data["measured_gpus"], dtype=float)
+    job_energy = np.asarray(data["declared_job_energy_mwh"], dtype=float)
+    requested_gpus = np.asarray(data["requested_gpus"], dtype=float)
     per_gpu_power_cap_mw = float(
         np.asarray(data["per_gpu_power_cap_mw"], dtype=float).reshape(-1)[0]
     )
     if not (len(starts) == len(ends) == len(regions)):
         raise ValueError("Exp19 job arrays have inconsistent lengths")
-    if not (len(job_energy) == len(measured_gpus) == len(starts)):
+    if not (len(job_energy) == len(requested_gpus) == len(starts)):
         raise ValueError("Exp19 job energy/GPU arrays have inconsistent lengths")
     if np.any(ends <= starts) or np.any(regions < 0):
         raise ValueError("Exp19 job release/deadline or region labels are invalid")
     if (
         not np.isfinite(service).all()
         or not np.isfinite(job_energy).all()
-        or not np.isfinite(measured_gpus).all()
+        or not np.isfinite(requested_gpus).all()
         or per_gpu_power_cap_mw <= 0.0
     ):
         raise ValueError("Exp19 witness contains non-finite job-level quantities")
@@ -97,7 +101,7 @@ def run_exp22_coupled_job_network_certificate(
     job_service = np.add.reduceat(service, offsets[:-1])
     job_energy_residual = job_service - job_energy
     gpu_upper = np.repeat(
-        measured_gpus * per_gpu_power_cap_mw * dt_h,
+        requested_gpus * per_gpu_power_cap_mw * dt_h,
         ends - starts,
     )
     gpu_bound_slack = gpu_upper - service
@@ -123,7 +127,7 @@ def run_exp22_coupled_job_network_certificate(
         region=regions,
         aggregate_mwh=saved_counterfactual,
         dt_h=dt_h,
-        measured_gpus=measured_gpus,
+        requested_gpus=requested_gpus,
         per_gpu_power_cap_mw=per_gpu_power_cap_mw,
         site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
     )
@@ -212,7 +216,7 @@ def run_exp22_coupled_job_network_certificate(
         region=regions,
         aggregate_mwh=saved_counterfactual,
         dt_h=dt_h,
-        measured_gpus=measured_gpus,
+        requested_gpus=requested_gpus,
         per_gpu_power_cap_mw=per_gpu_power_cap_mw,
         site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
         network_profile_mw=network_profile_mw,
@@ -261,7 +265,8 @@ def run_exp22_coupled_job_network_certificate(
     event_counterfactual = float(reconstructed[:, selected_slots].sum())
     summary = pd.DataFrame(
         [
-            {"metric": "positive_energy_jobs", "value": n_jobs, "unit": "jobs"},
+            {"metric": "submitted_jobs", "value": n_jobs, "unit": "jobs"},
+            {"metric": "execution_matched_jobs", "value": int(execution_match.sum()), "unit": "jobs"},
             {"metric": "service_variables", "value": len(service), "unit": "variables"},
             {"metric": "event_slots_replayed", "value": len(selected_slots), "unit": "slots"},
             {"metric": "maximum_job_to_aggregate_residual_mwh", "value": max_aggregation_residual, "unit": "MWh"},
@@ -281,6 +286,9 @@ def run_exp22_coupled_job_network_certificate(
     metadata = {
         "experiment": "exact job-to-network coupling certificate",
         "source_solution": str(source.relative_to(root)),
+        "submitted_jobs": n_jobs,
+        "execution_matched_jobs": int(execution_match.sum()),
+        "execution_ledger_role": "post-event scoring only",
         "aggregation_equation": "p[r,t] = sum_{j:region_j=r, t in window_j} u[j,t]",
         "network_load_equation": (
             f"L_t = L_base * {native_multiplier:.6g} + B p_t / Delta t"

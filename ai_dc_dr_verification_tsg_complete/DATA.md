@@ -33,7 +33,8 @@ burstiness, job durations, energy, and class mix are preserved. Four regions are
 assigned by a deterministic feature-stratified round-robin rule over workload
 class, GPU count, runtime, submission time, and energy; identifiers only break
 exact ties. Neither dataset provides usable multi-site geography, so the labels
-are declared scenario factors and all 24 region-to-bus permutations are audited.
+are declared scenario factors and all 24 region-to-bus permutations plus two
+predeclared concentration controls are audited.
 
 The exact hashes, row counts, empirical quantiles, inferred scale factors, missing
 trace days, valid evaluation days, and held-out DCGM calibration diagnostics are
@@ -43,8 +44,8 @@ source-to-join-to-split accounting table, including the disjoint calibration
 training and held-out partitions and the final valid-slot count.
 The calibration split is deterministic by immutable job ID. On the 21,919
 held-out jobs with positive predicted energy, the measured-to-predicted energy
-ratio has 10th, 50th, and 90th percentiles 0.734154, 0.995724, and 1.278023.
-Experiment 9 embeds all three values in the same payment-certificate program;
+ratio has 1st, 10th, 50th, and 90th percentiles 0.584475, 0.734154, 0.995724, and 1.278023.
+Experiment 9 embeds all four values in the same payment-certificate program;
 they form a declared finite empirical uncertainty set, not a tuned continuous
 distribution or a replacement for the measured scoring trace.
 
@@ -56,7 +57,7 @@ precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
 MW/GPU nameplate provides the per-slot service bound. The observed scheduler
 completion interval is retained only for the independent native replay and
 never defines the counterfactual deadline or power cap. The resulting witness
-contains 12,293,445 job--slot variables and is solved by an exact separable
+contains 12,296,675 job--slot variables and is solved by an exact separable
 continuous-knapsack decomposition whenever the declared regional capacity rows
 are inactive, with a sparse LP fallback only when a row binds.
 
@@ -81,8 +82,8 @@ Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The
 raw execution peaks are at most 0.008637 MW per region; after the train-fitted
-batch scaling used for the benchmark, the regional peaks are 61.463, 97.836,
-102.619, and 37.460 MW. The flexible nameplate of 118 MW is committed before
+batch scaling used for the benchmark, the regional peaks are 43.808, 62.537,
+103.197, and 132.571 MW. The flexible nameplate of 118 MW is committed before
 the validation/test split; Experiment 16 reconciles this predeclared value
 against the scaled benchmark envelope and verifies that it covers every
 observed region-slot. Locked outcomes do not select the nameplate.
@@ -104,9 +105,9 @@ operator requires confidential co-located telemetry.
 The deployment information boundary is explicit: Experiment 17 removes all
 arrivals after the pre-event commitment gate (slot 60, one hour before the
 event window) before solving and uses the locked execution trace only for
-scoring. Experiment 18 fixes the first locked day, first event slot, native-case
-connected/finite-AC outage rule, and a generator-bus electrical-role mapping for
-each public network before
+scoring. Experiment 18 fixes three locked days crossed with the first and last
+event slots (six snapshots), the native-case connected/finite-AC outage rule,
+and a generator-bus electrical-role mapping for each public network before
 evaluating RTS-24, IEEE-30, IEEE-39, and IEEE-118 AC contingencies at the same
 0.90 native-load multiplier used by the primary preventive DC panel. It freezes
 the intact AC-OPF non-reference active plan and enforces apparent-power and

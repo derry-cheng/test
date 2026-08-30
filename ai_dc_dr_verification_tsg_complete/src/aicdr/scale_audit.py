@@ -42,7 +42,8 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
     )
     starts = np.asarray(data["submit_slot"], dtype=np.int64)
     ends = np.asarray(data["deadline_slot"], dtype=np.int64)
-    gpus = np.asarray(data["measured_gpus"], dtype=float)
+    gpu_key = "requested_gpus" if "requested_gpus" in data.files else "measured_gpus"
+    gpus = np.asarray(data[gpu_key], dtype=float)
     counts = np.maximum(0, ends - starts)
     service = np.asarray(data["service_mwh"], dtype=float)
     variable_cap = np.repeat(gpus * fixed_gpu_cap_mw * dt_h, counts)
@@ -114,6 +115,7 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
         "certified_scale": fixed_scale,
         "capacity_proportional_profile_is_stress_scenario": True,
         "deployable_profile_respects_fixed_gpu_nameplate": True,
+        "resource_count_source": "submit-time requested_gpus" if gpu_key == "requested_gpus" else "legacy measured_gpus",
         "capacity_mw": capacity_mw, "re_solved": False,
     }, indent=2), encoding="utf-8")
     logger.info(

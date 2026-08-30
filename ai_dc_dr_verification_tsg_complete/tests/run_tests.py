@@ -1,57 +1,62 @@
-"""Dependency-free runner for the project's assertion-style test suite."""
+"""Small deterministic regression suite for the ex-ante evidence boundary."""
 
 from __future__ import annotations
 
-import inspect
-import sys
 import tempfile
-import traceback
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
-sys.path.insert(0, str(ROOT / "vendor"))
-
-import test_core  # noqa: E402
-import test_deadline_ledger  # noqa: E402
+from aicdr.coupling_invariant import validate_job_network_coupling
+from aicdr.data import _parse_requested_gpu_count, load_mit_submission_ledger
 
 
-def main() -> int:
-    tests = [
-        (name, function)
-        for module in (test_core, test_deadline_ledger)
-        for name, function in inspect.getmembers(module, inspect.isfunction)
-        if name.startswith("test_")
-    ]
-    failures = 0
-    for name, function in tests:
-        try:
-            # Keep the runner dependency-free while supporting the two
-            # filesystem-isolated regression tests that use pytest's
-            # ``tmp_path`` convention.  A fresh directory is supplied only
-            # when the test explicitly declares one positional parameter.
-            parameters = inspect.signature(function).parameters
-            if not parameters:
-                function()
-            elif len(parameters) == 1 and "tmp_path" in parameters:
-                with tempfile.TemporaryDirectory(prefix="aicdr-test-") as path:
-                    function(Path(path))
-            else:
-                raise TypeError(
-                    f"unsupported test signature for {name}: {list(parameters)}"
-                )
-            print(f"PASS {name}", flush=True)
-        except Exception:
-            failures += 1
-            print(f"FAIL {name}", flush=True)
-            traceback.print_exc()
-    print(
-        f"{len(tests) - failures}/{len(tests)} tests passed",
-        flush=True,
+def main() -> None:
+    assert _parse_requested_gpu_count("gpu:4") == 4
+    assert _parse_requested_gpu_count("gpu:a100:8") == 8
+    assert _parse_requested_gpu_count("(null)") is None
+
+    with tempfile.TemporaryDirectory() as tmp:
+        scheduler = Path(tmp) / "scheduler.csv"
+        pd.DataFrame(
+            [
+                {"id_job": 1, "time_submit": 0, "timelimit": 60, "gres_req": "gpu:2", "job_type": "batch", "state": "COMPLETED"},
+                {"id_job": 2, "time_submit": 900, "timelimit": 120, "gres_req": "gpu:1", "job_type": "interactive", "state": "COMPLETED"},
+            ]
+        ).to_csv(scheduler, index=False)
+        ledger = load_mit_submission_ledger(
+            scheduler,
+            interval_s=900,
+            n_slots=8,
+            n_regions=2,
+            declared_service_fraction=0.5,
+            declared_per_gpu_power_cap_mw=0.001,
+            unbounded_timelimit_slots=4,
+            submission_buffer_slots=1,
+        )
+        assert len(ledger) == 2
+        assert "energyconsumed_joules" not in ledger.columns
+        assert "time_start" not in ledger.columns
+        assert ledger.attrs["digest_fields_exclude_execution_telemetry"] is True
+        assert np.all(ledger["declared_energy_mwh"] > 0)
+
+    cert = validate_job_network_coupling(
+        service_mwh=np.array([0.001, 0.001]),
+        job_energy_mwh=np.array([0.002]),
+        submit_slot=np.array([0]),
+        deadline_slot=np.array([2]),
+        region=np.array([0]),
+        aggregate_mwh=np.array([[0.001, 0.001]]),
+        dt_h=0.25,
+        requested_gpus=np.array([2.0]),
+        per_gpu_power_cap_mw=0.004,
+        site_capacity_mw=0.01,
     )
-    return int(failures > 0)
+    assert cert.valid
+    assert cert.max_job_energy_residual_mwh <= 1e-12
+    print("all regression tests passed")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

@@ -1,0 +1,34 @@
+{
+  "experiment": "independent submit-time declaration validation",
+  "submission_ledger_digest": "a8819b9a777f4e8042c37e937d4a18f0a1259084ad08950412b0078ed6f8b357",
+  "execution_ledger_role": "post-event scoring only",
+  "telemetry_used_in_exp19_decision": false,
+  "submitted_jobs": 71144,
+  "execution_matched_jobs": 71128,
+  "declared_service_fraction": 0.0011572222222222222,
+  "physical_upper_service_fraction": 1.0,
+  "declared_per_gpu_power_cap_mw": 0.001,
+  "unbounded_timelimit_slots": 128,
+  "submission_buffer_slots": 96,
+  "results": {
+    "summary": "exante_job_validation_summary.csv",
+    "by_type": "exante_job_validation_by_type.csv",
+    "capacity_stress_summary": "job_level_capacity_stress_summary.csv",
+    "capacity_stress_solution": "job_level_capacity_stress_solution.npz",
+    "capacity_stress_event_slots": "job_level_capacity_stress_event_slots.csv"
+  },
+  "capacity_stress_panel": {
+    "stress_day_index": 20,
+    "cohort_jobs": 689,
+    "service_variables": 161194,
+    "capacity_mw_per_region": 0.001,
+    "event_service_floor_mwh": 0.004,
+    "event_service_delivered_mwh": 0.0040000000000000105,
+    "active_event_capacity_slot_fraction": 0.4375,
+    "minimum_event_capacity_slack_mwh": -5.421010862427522e-20,
+    "maximum_job_energy_residual_mwh": 2.710505431213761e-20,
+    "solver_success": true,
+    "solution_file": "job_level_capacity_stress_solution.npz"
+  },
+  "interpretation": "The central declaration is a training-only ex-ante entitlement; the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality."
+}

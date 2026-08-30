@@ -402,60 +402,97 @@ def solve_n1_sced(
     imposed simultaneously in one linear program.  No contingency screening,
     rating adjustment, or outcome-dependent line selection is used.
     """
-    active = system.gen[:, 7] > 0
-    gen = system.gen[active]
-    gencost = system.gencost[active]
-    gen_bus = system.gen_bus[active]
-    pmax = gen[:, 8]
-    pmin = gen[:, 9]
-    widths: list[float] = []
-    costs: list[float] = []
-    segment_gen: list[int] = []
-    fixed_cost = 0.0
-    for g in range(len(gen)):
-        model = int(gencost[g, 0])
-        if model != 2:
-            raise ValueError("Only polynomial generator costs are supported")
-        ncoef = int(gencost[g, 3])
-        coeff = gencost[g, 4 : 4 + ncoef]
-        if ncoef == 3:
-            a, b, c0 = coeff
-        elif ncoef == 2:
-            a, b, c0 = 0.0, coeff[0], coeff[1]
-        else:
-            a, b, c0 = 0.0, 0.0, coeff[-1] if len(coeff) else 0.0
-        fixed_cost += a * pmin[g] ** 2 + b * pmin[g] + c0
-        width = max(0.0, pmax[g] - pmin[g]) / segments
-        for s in range(segments):
-            midpoint = pmin[g] + (s + 0.5) * width
-            widths.append(width)
-            costs.append(2.0 * a * midpoint + b)
-            segment_gen.append(g)
-
-    widths_a = np.asarray(widths)
-    c = np.asarray(costs)
-    cg = np.zeros((system.bus.shape[0], len(gen)))
-    cg[gen_bus, np.arange(len(gen))] = 1.0
     if security_factors is None:
         security_factors = build_n1_security_factors(system)
-    contingency_factors, contingency_limits, outage_ids, credible = (
-        security_factors
-    )
-    base_limits = system.branch[:, 5].copy()
-    base_limits[base_limits <= 0] = 1e6
-    security_factors = np.vstack([system.ptdf, contingency_factors])
-    security_limits = np.concatenate([base_limits, contingency_limits])
-    hgen = security_factors @ cg
-    hseg = hgen[:, np.asarray(segment_gen)]
+    # The network, generator segments, PTDF/LODF rows, and all LP matrix
+    # coefficients are invariant across load vectors. Caching this structure
+    # removes repeated Python-side matrix construction in the large payment
+    # and cross-network replay panels without changing any LP or tolerance.
+    cache = getattr(system, "_n1_sced_structure_cache", None)
+    if cache is None:
+        cache = {}
+        setattr(system, "_n1_sced_structure_cache", cache)
+    cache_key = (int(segments), tuple(id(value) for value in security_factors))
+    structure = cache.get(cache_key)
+    if structure is None:
+        active = system.gen[:, 7] > 0
+        gen = system.gen[active]
+        gencost = system.gencost[active]
+        gen_bus = system.gen_bus[active]
+        pmax = gen[:, 8]
+        pmin = gen[:, 9]
+        widths: list[float] = []
+        costs: list[float] = []
+        segment_gen: list[int] = []
+        fixed_cost = 0.0
+        for g in range(len(gen)):
+            model = int(gencost[g, 0])
+            if model != 2:
+                raise ValueError("Only polynomial generator costs are supported")
+            ncoef = int(gencost[g, 3])
+            coeff = gencost[g, 4 : 4 + ncoef]
+            if ncoef == 3:
+                a, b, c0 = coeff
+            elif ncoef == 2:
+                a, b, c0 = 0.0, coeff[0], coeff[1]
+            else:
+                a, b, c0 = 0.0, 0.0, coeff[-1] if len(coeff) else 0.0
+            fixed_cost += a * pmin[g] ** 2 + b * pmin[g] + c0
+            width = max(0.0, pmax[g] - pmin[g]) / segments
+            for s in range(segments):
+                midpoint = pmin[g] + (s + 0.5) * width
+                widths.append(width)
+                costs.append(2.0 * a * midpoint + b)
+                segment_gen.append(g)
+
+        widths_a = np.asarray(widths)
+        c = np.asarray(costs)
+        cg = np.zeros((system.bus.shape[0], len(gen)))
+        cg[gen_bus, np.arange(len(gen))] = 1.0
+        contingency_factors, contingency_limits, _, credible = security_factors
+        base_limits = system.branch[:, 5].copy()
+        base_limits[base_limits <= 0] = 1e6
+        factor_matrix = np.vstack([system.ptdf, contingency_factors])
+        security_limits = np.concatenate([base_limits, contingency_limits])
+        hgen = factor_matrix @ cg
+        hseg = hgen[:, np.asarray(segment_gen)]
+        aub = np.vstack([hseg, -hseg])
+        structure = {
+            "active": active,
+            "pmin": pmin,
+            "widths": widths_a,
+            "costs": c,
+            "segment_gen": np.asarray(segment_gen, dtype=int),
+            "fixed_cost": float(fixed_cost),
+            "cg": cg,
+            "factor_matrix": factor_matrix,
+            "security_limits": security_limits,
+            "base_limits": base_limits,
+            "contingency_limits": np.asarray(contingency_limits),
+            "aub": csr_matrix(aub),
+            "credible": int(credible),
+        }
+        cache[cache_key] = structure
+    active = structure["active"]
+    pmin = structure["pmin"]
+    widths_a = structure["widths"]
+    c = structure["costs"]
+    segment_gen = structure["segment_gen"]
+    fixed_cost = structure["fixed_cost"]
+    cg = structure["cg"]
+    factor_matrix = structure["factor_matrix"]
+    security_limits = structure["security_limits"]
+    base_limits = structure["base_limits"]
+    contingency_limits = structure["contingency_limits"]
+    credible = structure["credible"]
     fixed_injection = cg @ pmin - load_mw
-    fixed_flow = security_factors @ fixed_injection
-    aub = np.vstack([hseg, -hseg])
+    fixed_flow = factor_matrix @ fixed_injection
     bub = np.concatenate(
         [security_limits - fixed_flow, security_limits + fixed_flow]
     )
     result = linprog(
         c,
-        A_ub=csr_matrix(aub),
+        A_ub=structure["aub"],
         b_ub=bub,
         A_eq=csr_matrix(np.ones((1, len(c)))),
         b_eq=np.array([float(load_mw.sum() - pmin.sum())]),
@@ -468,13 +505,13 @@ def solve_n1_sced(
             f"N-1 SCED failed: {result.message}; demand={load_mw.sum():.2f} MW"
         )
     q_by_gen = np.bincount(
-        np.asarray(segment_gen), weights=result.x, minlength=len(gen)
+        np.asarray(segment_gen), weights=result.x, minlength=len(pmin)
     )
     pg_active = pmin + q_by_gen
     pg_all = np.zeros(system.gen.shape[0])
     pg_all[np.where(active)[0]] = pg_active
     injection = cg @ pg_active - load_mw
-    all_flows = security_factors @ injection
+    all_flows = factor_matrix @ injection
     base_flow = all_flows[: system.branch.shape[0]]
     contingency_loading = (
         np.abs(all_flows[system.branch.shape[0] :]) / contingency_limits
@@ -482,7 +519,7 @@ def solve_n1_sced(
     mu_upper = result.ineqlin.marginals[: len(security_limits)]
     mu_lower = result.ineqlin.marginals[len(security_limits) :]
     lambda_energy = float(result.eqlin.marginals[0])
-    lmp = lambda_energy + security_factors.T @ (mu_upper - mu_lower)
+    lmp = lambda_energy + factor_matrix.T @ (mu_upper - mu_lower)
     base_loading = np.abs(base_flow) / base_limits
     return SCEDResult(
         success=True,

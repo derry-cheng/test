@@ -42,8 +42,8 @@
       15.0
     ],
     "validation_false_credit_budget_mwh": 20.0,
-    "selected_dr_price_per_mwh": 10.0,
-    "selected_projection_weight": 1.0,
+    "selected_dr_price_per_mwh": 100.0,
+    "selected_projection_weight": 15.0,
     "committed_event_service_mwh": 5.0,
     "selection_rule": "among candidates satisfying the validation false-credit budget, maximize credit F1, then recall, then minimize nRMSE and false credit",
     "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
@@ -71,8 +71,8 @@
     "rolling_commitment": true,
     "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
     "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
-    "selected_dr_price_per_mwh": 10.0,
-    "selected_projection_weight": 1.0,
+    "selected_dr_price_per_mwh": 100.0,
+    "selected_projection_weight": 15.0,
     "committed_event_service_mwh": 5.0,
     "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response",
     "profile_semantics": {

@@ -53,7 +53,7 @@
   <rect x="360" y="390" width="1005" height="150" fill="#fff" stroke="#cbd5e1" stroke-width="2" rx="18"/>
   <rect x="380" y="407" width="151" height="26" rx="13" fill="#475569"/><text x="455" y="426" text-anchor="middle" class="tag">CONTRACT LAYER</text>
   <text x="565" y="429" class="head">Telemetry-calibrated payment certificate</text>
-  <text x="565" y="459" class="body">finite q10/q50/q90 samplewise guarantee  •  q01/q99-cap capacity-safe interval audit</text>
+  <text x="565" y="459" class="body">finite q01/q10/q50/q90 samplewise guarantee  •  q99 capacity-safe interval stress audit</text>
   <text x="565" y="487" class="body">bilateral net-value transfer  •  exact Shapley allocation  •  numerical residual audit</text>
   <path d="M1205 305V368" class="arrow"/><path d="M630 305V368H840" class="arrow"/>
   <text x="1215" y="343" class="small">prices + contingencies</text><text x="650" y="343" class="small">state certificate</text>

@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-08-29T10:59:50.897419+00:00",
+  "started_utc": "2026-08-30T05:19:15.044094+00:00",
   "stage_requested": "audit",
   "resume": true,
   "environment": {
@@ -10,16 +10,14 @@
     "pandas": "2.2.3",
     "scipy": "1.17.0",
     "scikit_learn": "1.8.0",
-    "git_commit": "6591626b5b51b1614654d703efc5702cf39e3813"
+    "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
   },
   "stages": {
     "audit": {
-      "started_utc": "2026-08-29T10:59:50.900722+00:00",
-      "status": "completed",
-      "finished_utc": "2026-08-29T10:59:51.692099+00:00",
-      "elapsed_seconds": 0.791377
+      "started_utc": "2026-08-30T05:19:15.047275+00:00",
+      "status": "failed",
+      "finished_utc": "2026-08-30T05:19:15.716938+00:00",
+      "error": "RuntimeError(\"Audit failed: ['canonical_unified_manifest_preserved']\")"
     }
-  },
-  "finished_utc": "2026-08-29T10:59:51.692843+00:00",
-  "status": "completed"
+  }
 }

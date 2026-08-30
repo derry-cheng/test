@@ -47,13 +47,13 @@ def validate_job_network_coupling(
     region: np.ndarray,
     aggregate_mwh: np.ndarray,
     dt_h: float,
-    measured_gpus: np.ndarray | None = None,
+    requested_gpus: np.ndarray | None = None,
     per_gpu_power_cap_mw: float | None = None,
     site_capacity_mw: float | np.ndarray | None = None,
     network_profile_mw: np.ndarray | None = None,
     network_mapping: np.ndarray | None = None,
 ) -> CouplingInvariantCertificate:
-    """Check indexed conservation, resource bounds, aggregation, and mapping.
+    """Check indexed conservation, requested-resource bounds, aggregation, and mapping.
 
     ``service_mwh`` is concatenated in job-window order.  ``aggregate_mwh`` is
     the exact regional profile sent to the network, and an optional
@@ -107,10 +107,10 @@ def validate_job_network_coupling(
 
     minimum_gpu_slack = 0.0
     maximum_gpu_violation = 0.0
-    if measured_gpus is not None or per_gpu_power_cap_mw is not None:
-        if measured_gpus is None or per_gpu_power_cap_mw is None:
-            raise ValueError("measured_gpus and per_gpu_power_cap_mw must be supplied together")
-        gpus = np.asarray(measured_gpus, dtype=float).reshape(-1)
+    if requested_gpus is not None or per_gpu_power_cap_mw is not None:
+        if requested_gpus is None or per_gpu_power_cap_mw is None:
+            raise ValueError("requested_gpus and per_gpu_power_cap_mw must be supplied together")
+        gpus = np.asarray(requested_gpus, dtype=float).reshape(-1)
         if len(gpus) != len(energy) or np.any(gpus <= 0.0) or float(per_gpu_power_cap_mw) <= 0.0:
             raise ValueError("GPU counts and per-GPU cap are invalid")
         upper = np.repeat(gpus * float(per_gpu_power_cap_mw) * float(dt_h), widths)

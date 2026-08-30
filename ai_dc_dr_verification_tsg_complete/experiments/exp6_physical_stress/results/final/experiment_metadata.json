@@ -76,17 +76,17 @@
     10.0
   ],
   "convex_ensemble_weights": [
-    0.036015318244308134,
-    0.8675284930795976,
-    0.0964561886760866,
-    0.0,
-    3.5649282569036525e-16,
-    0.0,
-    7.315593829827855e-15
+    0.3597737931991514,
+    0.35977379320058694,
+    1.697402283995018e-06,
+    1.911235306005751e-08,
+    1.5499527697268434e-08,
+    8.678624577808118e-09,
+    0.2804506729074721
   ],
   "single_projection_weight": 0.03,
-  "risk_envelope_projection_weight": 0.03,
+  "risk_envelope_projection_weight": 0.1,
   "estimator_schema_version": 3,
-  "estimator_checksum": "bb53c649b88195cc52c1a972bd4cd92d7903b8c284794c803fbd45149fb57e7c",
+  "estimator_checksum": "2b6a85460913ed59818c8a4c066da4c062867b60b9a59affdbd1748303e08b4d",
   "solver": "HiGHS linear programming; all declared cells must be feasible and optimal"
 }

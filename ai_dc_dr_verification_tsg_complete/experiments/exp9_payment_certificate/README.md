@@ -11,7 +11,7 @@ approximation target, not a selectable candidate. A lexicographic pair of
 linear programs first minimizes target deviation and then maximizes the worst
 fractional grid-cost margin without degrading that optimum. The resulting daily
 N-1 baseline cost is constrained to be no larger than the selected single
-projection in every held-out conversion scenario.
+projection in every held-out q01/q10/q50/q90 conversion scenario.
 
 Run with:
 

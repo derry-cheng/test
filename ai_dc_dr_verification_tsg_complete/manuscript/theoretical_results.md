@@ -371,7 +371,7 @@ first-stage workload-feasible projections and the validation-selected
 feasible-quantile comparator. The contractual reference \(p^{\rm ref}\) is
 the validation-selected single feasible projection. The risk-constrained verifier is
 an external approximation target and cannot be selected directly. Let \(\Xi\)
-be the 10th, 50th, and 90th percentile of held-out per-job
+be the 1st, 10th, 50th, and 90th percentile of held-out per-job
 measured-to-predicted GPU energy. For each \(\xi\in\Xi\), embed a feasible
 N--1 dispatch \(g_t^\xi\) for
 \(p_t^{\rm native}+M\xi p^\alpha_t\) in every event interval and impose
@@ -435,7 +435,7 @@ indexed witness up to \(\varepsilon\) in the declared units. At zero residual,
 an independently optimized aggregate trajectory cannot receive a network
 value. The result follows by finite summation over the disjoint ledger
 partition; no optimization or rounding is involved in the mapping. Experiment
-22 reconstructs the profile from all 12,293,445 stored job--slot variables,
+22 reconstructs the profile from all 12,296,675 stored job--slot variables,
 checks the job, aggregation, bus-mapping, GPU-bound, and site-capacity rows,
 and records zero residual before either SCED solve. The coupled replay is
 pinned to the public IEEE RTS-24 case and uses a deterministic arithmetic-mean

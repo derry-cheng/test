@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-08-25T06:20:12.520501+00:00",
+  "started_utc": "2026-08-30T05:23:09.646924+00:00",
   "stage_requested": "exp17",
   "resume": false,
   "environment": {
@@ -10,16 +10,16 @@
     "pandas": "2.2.3",
     "scipy": "1.17.0",
     "scikit_learn": "1.8.0",
-    "git_commit": "f733211b74fda80e68f3e30f77a76934667a1910"
+    "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
   },
   "stages": {
     "exp17": {
-      "started_utc": "2026-08-25T06:20:12.744541+00:00",
+      "started_utc": "2026-08-30T05:23:09.836134+00:00",
       "status": "completed",
-      "finished_utc": "2026-08-25T06:22:10.646795+00:00",
-      "elapsed_seconds": 117.902254
+      "finished_utc": "2026-08-30T05:25:19.369098+00:00",
+      "elapsed_seconds": 129.532964
     }
   },
-  "finished_utc": "2026-08-25T06:22:10.647229+00:00",
+  "finished_utc": "2026-08-30T05:25:19.369464+00:00",
   "status": "completed"
 }

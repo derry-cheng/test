@@ -48,11 +48,12 @@ split rules are recorded in `data/processed/data_manifest.json` and
 are intentionally excluded from version control; the tracked PGLib case is a
 public network benchmark rather than private telemetry. Public traces do not expose facility geography, so the
 four-region placement and trace-to-power conversion are declared benchmark
-scenarios; all 24 region-to-bus permutations are evaluated in Experiment 11.
+scenarios; all 24 region-to-bus permutations plus two predeclared concentration
+controls are evaluated in Experiment 11.
 
 The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--24 each own a README, final results,
+the LaTeX source. Experiments 1--25 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does

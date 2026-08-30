@@ -10,6 +10,20 @@
   ],
   "complete_spatial_assignments": 24,
   "concentration_control_assignments": 2,
+  "concentration_control_mappings_one_based": [
+    [
+      80,
+      80,
+      80,
+      80
+    ],
+    [
+      80,
+      80,
+      116,
+      116
+    ]
+  ],
   "total_assignment_cases": 26,
   "peak_data_center_penetrations": [
     0.03,
@@ -26,7 +40,7 @@
   "settlement_generator_segments": 10,
   "independent_evaluation_generator_segments": 80,
   "enumeration": "all 4! one-to-one mappings plus deterministic co-location and two-bus concentration controls crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
-  "profile_checksum": "326fbec8ca10a624b8d52f313b56cd5c72a74e88eeb1c1eaa19794eb622c1873",
+  "profile_checksum": "9288446be63eecffd354e301bbc27361a86d3598bf408e5ed3d1144c5570f755",
   "expected_rows": 16848,
   "parallel_workers": 9
 }

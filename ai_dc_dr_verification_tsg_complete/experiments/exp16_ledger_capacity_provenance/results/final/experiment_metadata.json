@@ -5,6 +5,9 @@
   "synthetic_rows": 0,
   "imputed_deadlines": 0,
   "canonical_joined_ledger_sha256": "fdf49ad75d301580595cabc24656db9d20da9f27ca33249b49095197246ce950",
+  "canonical_submission_ledger_sha256": "122179c57225f383322b073c3d6f5d6a8f62c75293ca172e234bc2c1ee0666bc",
+  "submission_ledger_row_count": 216572,
+  "submission_digest_excludes_execution_telemetry": true,
   "integrity_passed": true,
   "capacity_commitment": {
     "path": "configs/capacity_commitment.json",
@@ -15,9 +18,9 @@
   },
   "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The raw MIT execution peak is reported separately from the scaled benchmark envelope used for the declared study scale; neither is used to tune a locked-day schedule.",
   "configured_capacity_mw": 118.0,
-  "maximum_raw_execution_peak_mw": 0.006685220843592108,
-  "maximum_scaled_benchmark_peak_mw": 102.6186147326332,
-  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.8696492773951966,
+  "maximum_raw_execution_peak_mw": 0.00863653603302321,
+  "maximum_scaled_benchmark_peak_mw": 132.57144147254564,
+  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 1.1234867921402174,
   "physical_calibration_summary": {
     "file": "physical_calibration_summary.csv",
     "test_mae_watts": 11.223035454787677,
@@ -37,5 +40,12 @@
     ],
     "locked_test_observations_used_for_scaling": false,
     "interpretation": "The power conversion is a declared held-out uncertainty interval. Network conclusions are evaluated at its endpoints and are not treated as geography-free evidence."
+  },
+  "submission_energy_calibration": {
+    "file": "submission_calibration_summary.csv",
+    "training_rule": "id_job mod 10 < 7; immutable job IDs are assigned before any locked-day selection",
+    "declared_service_fraction": 0.0011572222222222222,
+    "physical_upper_service_fraction": 1.0,
+    "telemetry_used_in_exp19_decision": false
   }
 }

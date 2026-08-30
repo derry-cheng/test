@@ -95,7 +95,7 @@
     "IEEE 39-bus": 11,
     "IEEE 118-bus": 0
   },
-  "validation_trace_peak_mw": 252.92852185302465,
+  "validation_trace_peak_mw": 252.92852185302473,
   "load_multiplier": 0.9,
   "fixed_active_plan_tolerance_mw": 1e-08,
   "power_factor": 0.95,
@@ -106,7 +106,7 @@
   "test_outcomes_used_for_scaling": false,
   "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
   "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
-  "solver_fallback_calls": 80,
+  "solver_fallback_calls": 85,
   "isolated_solver_calls": 19,
   "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",
   "ac_limits_enforced": true,

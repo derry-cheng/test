@@ -79,6 +79,7 @@ experiments:
   # boundary cell identified before mechanism claims are finalized.
   cross_network_resolution_pairs: [[10, 40], [20, 80], [40, 160], [80, 320]]
   cross_network_resolution_workers: 4
+  network_robustness_workers: 4
   n1_load_multiplier: 0.9
   n1_dc_peak_penetration: 0.06
   n1_security_parallel_workers: 6
@@ -127,7 +128,7 @@ experiments:
   # replayed at n1_evaluation_generator_segments=40.
   payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 6
-  payment_evaluation_parallel_workers: 8
+  payment_evaluation_parallel_workers: 4
   # Experiment 22 replays the exact job witness through the same finite
   # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
   # contractual network value model; bounded threads avoid matrix duplication.
@@ -196,6 +197,17 @@ experiments:
   # A precommitted one-kW/GPU nameplate keeps every finite submit-time window
   # feasible without extending a declared deadline.
   job_level_declared_per_gpu_power_cap_mw: 0.001
+  # Exact binding-capacity stress replay for the indexed job model.  This is
+  # solved as a second LP with the same declarations, not by clipping the
+  # primary witness or selecting a capacity from locked outcomes.
+  # The binding panel is solved by Exp25 on a predeclared event-day cohort so
+  # its sparse capacity rows remain memory-bounded while retaining every job
+  # in that cohort. Exp19's full-horizon certificate keeps the committed
+  # 118-MW capacity unchanged.
+  job_level_stress_capacity_mw: 0.0
+  job_level_stress_panel_capacity_mw: 0.001
+  job_level_stress_panel_day_index: 20
+  job_level_stress_panel_minimum_event_service_mwh: 0.004
   # Independent controlled-event replay: a separately parameterized exact LP
   # uses this tariff and no statistical target or verifier candidate as an
   # input.  Its predeclared service floor makes the event policy structurally
@@ -205,9 +217,9 @@ experiments:
   # committed response objective while retaining a predeclared positive-price
   # intervention.
   independent_event_response_price_per_mwh: 210.0
-  independent_event_baseline_price_per_mwh: 120.0
-  independent_event_participating_data_center_indices: [0]
-  independent_event_minimum_service_mwh: 5.0
+  independent_event_baseline_price_per_mwh: 85.0
+  independent_event_participating_data_center_indices: [0, 1]
+  independent_event_minimum_service_mwh: 7.0
   independent_gate_baseline_price_per_mwh: 120.0
   independent_event_workers: 4
   preventive_ac_validation_day_rule: "first locked test day"

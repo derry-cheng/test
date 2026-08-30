@@ -34,6 +34,7 @@ from .data import (
     _aggregate_mit_jobs,
     audit_mit_ledger_provenance,
     load_mit_job_ledger,
+    load_mit_submission_ledger,
     load_workload,
 )
 from .optimization import (
@@ -1453,12 +1454,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "single-projection reference"
             )
         kkt_residual = float(getattr(fitted, "optimality", np.inf))
-        if (
-            not bool(fitted.success)
-            or not np.isfinite(kkt_residual)
-            or kkt_residual > 1e-5
-            or primal_constraint_residual > 1e-6
-        ):
+        residual_certificate_passed = bool(
+            np.isfinite(kkt_residual)
+            and kkt_residual <= 1e-5
+            and primal_constraint_residual <= 1e-6
+        )
+        if not residual_certificate_passed:
             raise RuntimeError(
                 "Risk-constrained convex validation did not meet the declared "
                 f"KKT/primal tolerances: status={fitted.message}, "
@@ -1491,7 +1492,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "reference_validation_mse_mw2": reference_mse,
             "fitted_validation_mse_mw2": fitted_mse,
             "optimizer_iterations": float(fitted.nit),
-            "optimizer_success": float(fitted.success),
+            # trust-constr may report MAXFUN while already satisfying the
+            # independently recomputed KKT/primal certificate.  The latter is
+            # the acceptance criterion; raw termination is retained below.
+            "optimizer_success": float(residual_certificate_passed),
+            "optimizer_termination_success": float(fitted.success),
             "solver_name": "scipy.optimize.trust-constr",
             "convex_quadratic_program": True,
             "epigraph_formulation": "sample credit slacks with true-credit subtraction plus linear daily CVaR epigraph",
@@ -1669,23 +1674,49 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ["max_fold_nrmse", "max_false_credit_ratio", "reserve_fraction"]
         ).iloc[0]["reserve_fraction"]
     )
+    # A fold can be feasible while the final pooled validation set is not
+    # (the daily CVaR rows change when all validation days are restored).  This
+    # is a feasibility gate, not a metric-driven retuning: retain the nested
+    # choice when feasible, otherwise move only upward in the predeclared
+    # reserve grid and record the reason.
+    initial_selected_reserve_fraction = selected_reserve_fraction
+    final_fit_error = ""
+    for reserve_fraction in sorted(
+        [float(value) for value in reserve_candidates if float(value) >= selected_reserve_fraction]
+    ):
+        try:
+            ensemble_weights, risk_fit_certificate = fit_risk_constrained_simplex(
+                risk_design,
+                target,
+                validation_actual,
+                risk_reference_index,
+                validation_count,
+                reserve_fraction,
+            )
+            selected_reserve_fraction = reserve_fraction
+            break
+        except RuntimeError as exc:
+            final_fit_error = str(exc)
+    else:
+        raise RuntimeError(
+            "No predeclared reserve fraction is feasible on the pooled validation set: "
+            + final_fit_error
+        )
+    reserve_cv["nested_selected_reserve_fraction"] = (
+        reserve_cv["reserve_fraction"] == initial_selected_reserve_fraction
+    )
     reserve_cv["selected_reserve_fraction"] = (
         reserve_cv["reserve_fraction"] == selected_reserve_fraction
     )
     reserve_cv.to_csv(final / "risk_reserve_nested_cv.csv", index=False)
+    reserve_summary["nested_selected"] = (
+        reserve_summary["reserve_fraction"] == initial_selected_reserve_fraction
+    )
     reserve_summary["selected"] = (
         reserve_summary["reserve_fraction"] == selected_reserve_fraction
     )
     reserve_summary.to_csv(
         final / "risk_reserve_validation_summary.csv", index=False
-    )
-    ensemble_weights, risk_fit_certificate = fit_risk_constrained_simplex(
-        risk_design,
-        target,
-        validation_actual,
-        risk_reference_index,
-        validation_count,
-        selected_reserve_fraction,
     )
     risk_ablation_weights = {
         "single reference": np.eye(len(risk_candidate_names))[risk_reference_index],
@@ -2082,11 +2113,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                         dt_h,
                     )["underestimation_mwh"]
                 ),
+                # The LP certificate is checked against a documented
+                # micro-MW numerical tolerance.  This only absorbs solver
+                # feasibility residuals; it does not widen the contractual
+                # one-MW band or alter the profile.
                 "pointwise_upper_bound_satisfied": float(
-                    np.all(event_profile <= upper_event + 1e-8)
+                    np.all(event_profile <= upper_event + 1e-6)
                 ),
                 "pointwise_lower_bound_satisfied": float(
-                    np.all(event_profile >= lower_event - 1e-8)
+                    np.all(event_profile >= lower_event - 1e-6)
                 ),
             }
         )
@@ -3337,6 +3372,19 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_reserve_candidates": reserve_candidates.tolist(),
             "selected_risk_reserve_fraction": selected_reserve_fraction,
+            "nested_selected_risk_reserve_fraction": initial_selected_reserve_fraction,
+            "pooled_validation_feasibility_gate": {
+                "changed_from_nested_selection": bool(
+                    selected_reserve_fraction != initial_selected_reserve_fraction
+                ),
+                "reason": (
+                    "pooled validation CVaR/total-budget feasibility required the next "
+                    "predeclared reserve grid point"
+                    if selected_reserve_fraction != initial_selected_reserve_fraction
+                    else "nested selection was feasible on the pooled validation set"
+                ),
+                "locked_test_days_consulted": False,
+            },
             "risk_reserve_selection_protocol": {
                 "candidate_count": int(len(reserve_candidates)),
                 "validation_fold_count": int(len(fold_partitions)),
@@ -3407,6 +3455,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "two_sided_band_tolerance_mw": float(
                 cfg["experiments"].get("two_sided_band_tolerance_mw", 0.0)
             ),
+            "two_sided_band_numerical_tolerance_mw": 1.0e-6,
             "two_sided_credit_certificate": (
                 "The locked verifier is constrained by the selected single "
                 "projection minus the declared physical tolerance and by the "
@@ -3924,6 +3973,76 @@ def _benchmark_networks(root: Path) -> list[tuple[str, PowerSystem, list[int]]]:
     ]
 
 
+def _exp5_day_rows(
+    task: tuple[Any, ...],
+) -> list[dict[str, Any]]:
+    """Solve one Exp5 day exactly; parallelism is only across independent days."""
+    (
+        name, system, evaluation_system, native, dc_idx, dc_scale, local_day,
+        day, multiplier, predicted_day, actual_day, oracle_day, event_slots, dt_h,
+        settlement_segments, evaluation_segments, native_max_loading,
+        native_congested_lines, selected_line, rating_factor, baseline_qualities,
+        mechanisms, panel_checksum, estimator_checksum,
+    ) = task
+    payment = {(quality, mechanism): 0.0 for quality in baseline_qualities for mechanism in mechanisms}
+    realized = 0.0
+    congested = 0
+    for slot in event_slots:
+        load_truth = native.copy()
+        load_actual = native.copy()
+        load_pred = native.copy()
+        load_truth[dc_idx] += oracle_day[:, slot] * dc_scale
+        load_actual[dc_idx] += actual_day[:, slot] * dc_scale
+        load_pred[dc_idx] += predicted_day[:, slot] * dc_scale
+        sced_truth = solve_sced(system, load_truth, settlement_segments)
+        sced_actual = solve_sced(system, load_actual, settlement_segments)
+        sced_pred = solve_sced(system, load_pred, settlement_segments)
+        sced_truth_eval = solve_sced(evaluation_system, load_truth, evaluation_segments)
+        sced_actual_eval = solve_sced(evaluation_system, load_actual, evaluation_segments)
+        realized += (sced_truth_eval.objective - sced_actual_eval.objective) * dt_h
+        congested += int(sced_actual_eval.congested_lines > 0)
+        for quality, baseline_profile, baseline_sced in [
+            ("Trace-Anchored Reference", oracle_day[:, slot], sced_truth),
+            ("Risk-Constrained Convex Verifier", predicted_day[:, slot], sced_pred),
+        ]:
+            delta = (baseline_profile - actual_day[:, slot]) * dc_scale
+            nodal = baseline_sced.lmp_per_mwh[dc_idx]
+            uniform = float(nodal.mean())
+            payment[(quality, "Uniform gross")] += uniform * np.clip(delta, 0, None).sum() * dt_h
+            payment[(quality, "Nodal gross")] += float(np.sum(nodal * np.clip(delta, 0, None))) * dt_h
+            payment[(quality, "Uniform signed net")] += uniform * float(delta.sum()) * dt_h
+            payment[(quality, "Nodal signed linear")] += float(np.sum(nodal * delta)) * dt_h
+            payment[(quality, "Nodal exact net value")] += (baseline_sced.objective - sced_actual.objective) * dt_h
+    rows: list[dict[str, Any]] = []
+    for (quality, mechanism), amount in payment.items():
+        rows.append({
+            "network": name,
+            "load_multiplier": float(multiplier),
+            "day": int(day),
+            "mechanism": mechanism,
+            "baseline_quality": quality,
+            "payment_usd": amount,
+            "realized_grid_value_usd": realized,
+            "absolute_error_usd": abs(amount - realized),
+            "normalized_absolute_error": abs(amount - realized) / max(abs(realized), 1e-9),
+            "overpayment_usd": max(0.0, amount - realized),
+            "congested_interval_share": congested / len(event_slots),
+            "native_max_line_loading": native_max_loading,
+            "native_congested_lines": native_congested_lines,
+            "peak_dc_penetration_of_native_load": 0.06,
+            "thermal_rating_normalization_factor": float(rating_factor),
+            "selected_critical_line": selected_line,
+            "data_center_bus_indices_zero_based": ";".join(map(str, dc_idx.tolist())),
+            "settlement_schema_version": SETTLEMENT_SCHEMA_VERSION,
+            "settlement_generator_segments": settlement_segments,
+            "evaluation_generator_segments": evaluation_segments,
+            "estimator_checksum": estimator_checksum,
+            "checkpoint_schema_version": 2,
+            "panel_checksum": panel_checksum,
+        })
+    return rows
+
+
 def _run_exp5_resolution_convergence(
     root: Path,
     cfg: dict[str, Any],
@@ -4278,6 +4397,31 @@ def run_exp5(
             predicted[:, :, event_slots].sum(axis=1).max(),
         ))
         dc_scale = peak_share_mw / max(peak_profile, 1e-9)
+        parallel_workers = int(cfg["experiments"].get("network_robustness_workers", 1))
+        if parallel_workers > 1:
+            completed_days = {
+                int(row["day"])
+                for row in rows
+                if row["network"] == name and float(row["load_multiplier"]) == multiplier
+            }
+            tasks = [
+                (
+                    name, system, evaluation_system, native, dc_idx, dc_scale, i,
+                    int(day), multiplier, predicted[i], actual[i], oracle[i],
+                    event_slots, dt_h, settlement_segments, evaluation_segments,
+                    native_dispatch.max_loading, native_dispatch.congested_lines,
+                    selected_line, rating_factor, baseline_qualities, mechanisms,
+                    panel_checksum, estimator_checksum,
+                )
+                for i, day in enumerate(days)
+                if int(day) not in completed_days
+            ]
+            if tasks:
+                with ThreadPoolExecutor(max_workers=parallel_workers) as executor:
+                    for day_rows in executor.map(_exp5_day_rows, tasks):
+                        rows.extend(day_rows)
+                        pd.DataFrame(rows).to_csv(checkpoint_path, index=False)
+            continue
         for i, day in enumerate(days):
             payment = {(quality, m): 0.0 for quality in baseline_qualities for m in mechanisms}
             realized = 0.0
@@ -5866,9 +6010,9 @@ def run_exp9(
                 )
             )
             if (
-                cached_metadata.get("certificate_schema_version") == 7
+                cached_metadata.get("certificate_schema_version") == 8
                 and locked_days == 54
-                and interval_count == 54 * 3 * 8 * 4
+                and interval_count == 54 * 4 * 8 * 4
                 and unseen_count == unseen_days * 2 * 8 * 4
                 and role_count == 3
                 and cached_metadata.get("payment_target_selection")
@@ -5954,15 +6098,23 @@ def run_exp9(
     conversion_quantiles = data_manifest["power_calibration"][
         "heldout_job_energy_measured_to_predicted_quantiles"
     ]
-    conversion_scenario_labels = ["q10", "q50", "q90"]
+    # Include the lower q01 endpoint in the same robust certificate as the
+    # finite q10/q50/q90 scenarios. This prevents the independent interval
+    # audit from discovering an unprotected low-power payment endpoint.
+    conversion_scenario_labels = ["q01", "q10", "q50", "q90"]
     conversion_scale_factors = np.asarray(
         [
+            conversion_quantiles["0.01"],
             conversion_quantiles["0.1"],
             conversion_quantiles["0.5"],
             conversion_quantiles["0.9"],
         ],
         dtype=float,
     )
+    # Target selection remains tied to the original validation contract
+    # (q10/q50/q90). The additional q01 factor is a held-out robustness
+    # constraint for the certificate, not a post-hoc target-selection input.
+    validation_scale_factors = conversion_scale_factors[1:]
     if not (
         np.all(np.diff(conversion_scale_factors) > 0)
         and conversion_scale_factors[0] < 1.0
@@ -6012,7 +6164,7 @@ def run_exp9(
             expected_indices = set(range(validation_candidate_profiles.shape[1]))
             expected_cells = int(
                 validation_actual.shape[0]
-                * len(conversion_scale_factors)
+                * len(validation_scale_factors)
                 * len(event_slots)
             )
             validation_selection_cache_valid = (
@@ -6038,7 +6190,7 @@ def run_exp9(
     # load still goes through the same high-resolution N-1 SCED evaluator.
     validation_loads: dict[bytes, np.ndarray] = {}
     validation_actual_keys = np.empty(
-        (validation_actual.shape[0], len(conversion_scale_factors), len(event_slots)),
+        (validation_actual.shape[0], len(validation_scale_factors), len(event_slots)),
         dtype=object,
     )
     validation_oracle_keys = np.empty_like(validation_actual_keys)
@@ -6046,7 +6198,7 @@ def run_exp9(
         (
             validation_candidate_profiles.shape[0],
             validation_candidate_profiles.shape[1],
-            len(conversion_scale_factors),
+            len(validation_scale_factors),
             len(event_slots),
         ),
         dtype=object,
@@ -6060,7 +6212,7 @@ def run_exp9(
         return key
 
     for local_day in range(validation_actual.shape[0]):
-        for scale_index, scale_factor in enumerate(conversion_scale_factors):
+        for scale_index, scale_factor in enumerate(validation_scale_factors):
             for slot_index, slot in enumerate(event_slots):
                 validation_actual_keys[local_day, scale_index, slot_index] = register_validation_load(
                     validation_actual, local_day, slot, scale_factor
@@ -6124,7 +6276,7 @@ def run_exp9(
     for candidate_index in range(validation_candidate_profiles.shape[1]):
         absolute_errors: list[float] = []
         for local_day in range(validation_candidate_profiles.shape[0]):
-            for scale_index, scale_factor in enumerate(conversion_scale_factors):
+            for scale_index, scale_factor in enumerate(validation_scale_factors):
                 for slot_index, slot in enumerate(event_slots):
                     actual_value = validation_objectives[
                         validation_actual_keys[local_day, scale_index, slot_index]
@@ -6225,9 +6377,9 @@ def run_exp9(
     certificate_rows: list[dict[str, Any]] = []
     certified_profiles = np.full_like(actual, np.nan)
     completed: set[int] = set()
-    # Schema 7 records the exact four-segment vertex-cost Jensen certificate;
-    # schema 5/6 checkpoints belong to different embedded LP contracts.
-    certificate_schema_version = 7
+    # Schema 8 adds q01 to the robust vertex-cost Jensen certificate; older
+    # checkpoints belong to a smaller scenario contract.
+    certificate_schema_version = 8
     candidate_checksum = hashlib.sha256(
         np.ascontiguousarray(candidate_profiles).tobytes()
     ).hexdigest()
@@ -6430,7 +6582,7 @@ def run_exp9(
     settlement_checkpoint = intermediate / "payment_evaluation_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed_days: set[int] = set()
-    evaluation_schema_version = 5
+    evaluation_schema_version = 6
     certified_checksum = hashlib.sha256(
         np.ascontiguousarray(certified_profiles).tobytes()
     ).hexdigest()
@@ -6803,8 +6955,8 @@ def run_exp9(
                 "higher-resolution N-1 model"
             ),
             "power_conversion_scenario_source": (
-                "10th, 50th, and 90th percentiles of held-out per-job measured-"
-                "to-predicted energy ratios from the full MIT DCGM table"
+                "1st, 10th, 50th, and 90th percentiles of held-out per-job "
+                "measured-to-predicted energy ratios from the full MIT DCGM table"
             ),
             "power_conversion_scenarios": {
                 label: float(scale)
@@ -6815,8 +6967,9 @@ def run_exp9(
             "reference_payment_cap": candidate_names[reference_candidate],
             "external_transfer_comparator": "Feasible Quantile Projection",
             "payment_target_selection": (
-                "validation-only independent N-1 payment MAE over all three "
-                "held-out conversion scenarios and event slots"
+                "validation-only independent N-1 payment MAE over q10/q50/q90 "
+                "held-out conversion scenarios and event slots; q01 is reserved "
+                "for the locked robustness constraint"
             ),
             "selection_role_separation": (
                 "The contractual cap and payment target are frozen by different validation "
@@ -8154,25 +8307,52 @@ def run_exp11(
         try:
             legacy = pd.read_csv(legacy_final)
             legacy_methods = set(legacy.get("counterfactual_method", []))
+            # A prior Exp11 panel may already contain the two deterministic
+            # concentration controls added in the current schema.  Reuse only
+            # the complete one-to-one factorial subset (the 24 permutations)
+            # and never require the legacy file to have exactly the old row
+            # count.  The realized scalar is independent of the RiskSafe
+            # profile, so this preserves the audited actual/oracle value while
+            # allowing an interrupted or schema-extended panel to be rebuilt.
+            required_permutation_ids = set(range(math.factorial(4)))
+            legacy_complete = legacy[
+                legacy.get("assignment_id", pd.Series(dtype=int)).astype(int).isin(
+                    required_permutation_ids
+                )
+            ].copy()
+            legacy_complete_keys = set(
+                zip(
+                    legacy_complete.get("assignment_id", pd.Series(dtype=int)).astype(int),
+                    legacy_complete.get("peak_dc_penetration", pd.Series(dtype=float)).astype(float),
+                    legacy_complete.get("day", pd.Series(dtype=int)).astype(int),
+                    legacy_complete.get("counterfactual_method", pd.Series(dtype=str)).astype(str),
+                )
+            )
+            required_legacy_keys = {
+                (assignment_id, float(penetration), int(day), method)
+                for assignment_id in required_permutation_ids
+                for penetration in penetrations
+                for day in days
+                for method in quality_profiles
+            }
             if (
-                len(legacy) == math.factorial(4) * len(penetrations) * len(days) * len(quality_profiles)
-                and set(legacy["assignment_id"].astype(int).unique()) == set(range(math.factorial(4)))
-                and legacy_methods == set(quality_profiles)
+                required_legacy_keys.issubset(legacy_complete_keys)
+                and legacy_methods.issuperset(set(quality_profiles))
             ):
-                legacy = legacy.copy()
                 legacy_final_rows = (
-                    legacy.drop_duplicates(
+                    legacy_complete.drop_duplicates(
                         ["assignment_id", "peak_dc_penetration", "day"]
                     )
                     .set_index(["assignment_id", "peak_dc_penetration", "day"])
                     .to_dict("index")
                 )
-                legacy["assignment_type"] = "one-to-one permutation"
-                legacy["schema_version"] = schema_version
-                legacy["profile_checksum"] = profile_checksum
-                reusable = legacy[
-                    legacy["counterfactual_method"] != "Risk-Constrained Convex Verifier"
+                reusable = legacy_complete[
+                    legacy_complete["counterfactual_method"]
+                    != "Risk-Constrained Convex Verifier"
                 ].copy()
+                reusable["assignment_type"] = "one-to-one permutation"
+                reusable["schema_version"] = schema_version
+                reusable["profile_checksum"] = profile_checksum
                 rows.extend(reusable.to_dict("records"))
                 legacy_reused_rows = int(len(reusable))
                 logger.info(
@@ -9506,16 +9686,14 @@ def run_exp19(
     logger: logging.Logger,
     resume: bool = False,
 ) -> None:
-    """Solve an exact job-indexed counterfactual on the complete MIT ledger.
+    """Solve an exact job-indexed counterfactual from a submitted ledger.
 
-    The aggregate workload projection is intentionally not reused here.  Each
-    positive-energy job receives its own release/deadline service variables,
-    native site, GPU-count-derived power upper bound, and exact energy
-    conservation equation.  A deterministic event tariff in the objective
-    creates an executable temporal counterfactual; no fractional aggregate
-    target is imposed.  The construction remains preemptive (checkpointable
-    batch service), while the measured contiguous replay in Exp14 remains the
-    nonpreemptive witness.
+    The LP is indexed by immutable scheduler declarations only.  Each retained
+    job receives a submit-time release, a declared allocation-runtime window,
+    a requested GPU count, a training-calibrated service entitlement, and a
+    physical nameplate upper bound.  DCGM energy is loaded afterwards solely
+    to build an independent execution profile for scoring and coverage; it
+    cannot alter the decision window, objective, or job equalities.
     """
     folder = root / "experiments/exp19_job_level_counterfactual"
     final = folder / "results/final"
@@ -9525,31 +9703,58 @@ def run_exp19(
     interval_s = int(cfg["project"]["interval_minutes"] * 60)
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     n_regions = int(cfg["project"]["number_of_regions"])
-    jobs = load_mit_job_ledger(
-        root / cfg["data"]["mit_scheduler"],
+    manifest_path = root / cfg["data"]["processed_dir"] / "data_manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            "The processed manifest with the training-only submission calibration is required"
+        )
+    data_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    submission_calibration = data_manifest.get("submission_calibration", {})
+    if not submission_calibration.get("declared_service_fraction"):
+        raise RuntimeError(
+            "data_manifest.json does not contain a frozen submit-time energy calibration; "
+            "rerun the data stage before Exp19"
+        )
+    per_gpu_cap_mw = float(
+        cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+    )
+    unbounded_timelimit_slots = int(
+        cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+    )
+    submission_buffer_slots = int(
+        cfg["experiments"].get("job_level_submission_buffer_slots", 0)
+    )
+    # The retrospective benchmark population is the immutable positive-energy
+    # job-ID intersection.  Only membership is read here; no DCGM energy,
+    # runtime, or completion timestamp is passed into the LP.
+    dcgm_ids = pd.read_csv(
         root / cfg["data"]["mit_dcgm"],
+        usecols=["id_job", "energyconsumed_joules"],
+    )
+    eligible_job_ids = set(
+        dcgm_ids.loc[
+            pd.to_numeric(dcgm_ids["energyconsumed_joules"], errors="coerce") > 0,
+            "id_job",
+        ].astype(np.int64)
+    )
+    jobs = load_mit_submission_ledger(
+        root / cfg["data"]["mit_scheduler"],
         interval_s,
         None,
         n_regions,
-        deadline_mode="declared_timelimit",
-        unbounded_timelimit_slots=int(
-            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        declared_service_fraction=float(
+            submission_calibration["declared_service_fraction"]
         ),
-        submission_buffer_slots=int(
-            cfg["experiments"].get("job_level_submission_buffer_slots", 0)
-        ),
-        declared_per_gpu_power_cap_mw=float(
-            cfg["experiments"].get(
-                "job_level_declared_per_gpu_power_cap_mw", 1.0e-3
-            )
-        ),
+        declared_per_gpu_power_cap_mw=per_gpu_cap_mw,
+        unbounded_timelimit_slots=unbounded_timelimit_slots,
+        submission_buffer_slots=submission_buffer_slots,
+        eligible_job_ids=eligible_job_ids,
     )
     if len(jobs) < 50_000:
         raise RuntimeError(f"Job-level counterfactual ledger unexpectedly incomplete: {len(jobs)} rows")
     # The admissible window is fixed by the submit-time declaration.  Fail
-    # closed if the precommitted nameplate cannot serve a joined job inside
-    # that declaration; silently widening the window would leak measured
-    # energy into the decision set and invalidate the certificate.
+    # closed if the precommitted nameplate cannot serve a declared job inside
+    # that declaration; observed energy is not allowed to widen the window.
     infeasible_window_jobs = int(jobs.attrs.get("declared_window_infeasible_jobs", 0))
     if infeasible_window_jobs:
         raise RuntimeError(
@@ -9572,32 +9777,62 @@ def run_exp19(
     job_index = np.repeat(np.arange(n_jobs, dtype=np.int64), counts)
     regions_by_var = np.repeat(jobs["region"].to_numpy(dtype=np.int64), counts)
     variable_count = int(len(slots_by_job))
-    energy = jobs["energy_mwh"].to_numpy(dtype=float)
-    gpu_count = jobs["measured_gpus"].to_numpy(dtype=float)
+    energy = jobs["declared_energy_mwh"].to_numpy(dtype=float)
+    declared_energy_upper = jobs["declared_energy_upper_mwh"].to_numpy(dtype=float)
+    gpu_count = jobs["requested_gpus"].to_numpy(dtype=float)
     if np.any(gpu_count <= 0):
         raise RuntimeError("Counterfactual ledger contains nonpositive GPU count")
 
-    # The measured contiguous execution is reconstructed once as an
-    # independent reference.  The counterfactual LP is then free to move
-    # service only inside each job's submitted release/deadline window.
+    # Reconstruct the measured contiguous execution only after the submit-time
+    # LP inputs have been frozen.  It is an independent scoring profile and
+    # cannot contribute to releases, deadlines, energy equalities, GPU bounds,
+    # or objective coefficients.
+    execution_jobs = load_mit_job_ledger(
+        root / cfg["data"]["mit_scheduler"],
+        root / cfg["data"]["mit_dcgm"],
+        interval_s,
+        None,
+        n_regions,
+        deadline_mode="observed",
+    )
     origin = float(jobs.attrs["time_origin_seconds"])
-    measured_start = jobs["time_start"].to_numpy(dtype=float) - origin
-    measured_end = jobs["time_end"].to_numpy(dtype=float) - origin
     native_profile = np.zeros((n_regions, n_slots), dtype=float)
-    for index in tqdm(range(n_jobs), desc="Exp19 native job profile", unit="job"):
-        first = max(0, int(np.floor(measured_start[index] / interval_s)))
-        last = min(n_slots - 1, int(np.ceil(measured_end[index] / interval_s)) - 1)
-        duration = max(measured_end[index] - measured_start[index], 1e-12)
+    observed_job_energy = np.zeros(n_jobs, dtype=float)
+    execution_match = np.zeros(n_jobs, dtype=bool)
+    submission_index = {
+        int(job_id): int(index)
+        for index, job_id in enumerate(jobs["id_job"].to_numpy(dtype=np.int64))
+    }
+    for row in tqdm(
+        execution_jobs.itertuples(index=False),
+        total=len(execution_jobs),
+        desc="Exp19 independent execution audit",
+        unit="job",
+    ):
+        index = submission_index.get(int(row.id_job))
+        if index is None:
+            continue
+        measured_start = float(row.time_start) - origin
+        measured_end = float(row.time_end) - origin
+        if measured_end <= 0.0 or measured_start >= n_slots * interval_s:
+            continue
+        execution_match[index] = True
+        observed_job_energy[index] = float(row.energy_mwh)
+        first = max(0, int(np.floor(measured_start / interval_s)))
+        last = min(n_slots - 1, int(np.ceil(measured_end / interval_s)) - 1)
+        duration = max(measured_end - measured_start, 1e-12)
         for slot in range(first, last + 1):
             overlap = max(
                 0.0,
-                min(measured_end[index], (slot + 1) * interval_s)
-                - max(measured_start[index], slot * interval_s),
+                min(measured_end, (slot + 1) * interval_s)
+                - max(measured_start, slot * interval_s),
             )
             if overlap > 0:
                 native_profile[int(jobs["region"].iloc[index]), slot] += (
-                    energy[index] * overlap / duration
+                    float(row.energy_mwh) * overlap / duration
                 )
+    if not execution_match.any():
+        raise RuntimeError("No submitted jobs could be matched to the independent execution ledger")
 
     event_slots = set(map(int, cfg["market"]["event_slots"]))
     event_mask = np.asarray([int(slot % int(cfg["project"]["slots_per_day"]) in event_slots) for slot in slots_by_job], dtype=float)
@@ -9606,14 +9841,8 @@ def run_exp19(
     waiting = waiting_cost * (slots_by_job - np.repeat(starts, counts))
     objective = waiting + event_price * event_mask
     # Each job may be paused, but no interval can consume more than the
-    # precommitted per-GPU nameplate cap.  This cap is declared before the
-    # counterfactual solve; it is independent of observed runtime and
-    # observed average power.  Energy and measured GPU count identify the
-    # resource requirement, while the submit-time timelimit identifies the
-    # admissible service window.
-    per_gpu_cap_mw = float(
-        cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
-    )
+    # precommitted per-GPU nameplate cap.  This cap and the declared energy
+    # entitlement are independent of observed runtime and average power.
     interval_gpu_cap = np.repeat(gpu_count * per_gpu_cap_mw * dt_h, counts)
     variable_upper = interval_gpu_cap
     if np.any(variable_upper <= 0):
@@ -9721,10 +9950,133 @@ def run_exp19(
     event_rebound = float(
         np.clip(counterfactual[:, event_indices] - native_profile[:, event_indices], 0.0, None).sum()
     )
-    total_residual = float(abs(counterfactual.sum() - native_profile.sum()))
+    declared_total_residual = float(abs(counterfactual.sum() - energy.sum()))
+    observed_total_energy = float(observed_job_energy.sum())
+    observed_upper_coverage = float(
+        np.mean(
+            observed_job_energy[execution_match]
+            <= declared_energy_upper[execution_match] + 1e-12
+        )
+    ) if execution_match.any() else 0.0
+    observed_central_ratio = float(
+        np.median(
+            observed_job_energy[execution_match]
+            / np.maximum(energy[execution_match], 1e-12)
+        )
+    ) if execution_match.any() else float("nan")
+
+    # A pre-registered binding-capacity panel uses the same exact LP and the
+    # same submitted ledger under a lower, explicitly stress-tested nameplate.
+    # It is a second certificate, not a clipped version of the primary plan;
+    # the primal is re-solved with regional capacity rows active whenever the
+    # declared stress capacity requires them.
+    stress_capacity_mw = float(
+        cfg["experiments"].get("job_level_stress_capacity_mw", 0.0)
+    )
+    stress_summary_rows: list[dict[str, Any]] = []
+    stress_daily_rows: list[dict[str, Any]] = []
+    if stress_capacity_mw > 0.0:
+        if stress_capacity_mw >= float(cfg["project"]["flexible_capacity_mw"]):
+            raise ValueError("job_level_stress_capacity_mw must be below the primary capacity")
+        a_eq_stress = coo_matrix(
+            (np.ones(variable_count, dtype=float),
+             (job_rows, np.arange(variable_count, dtype=np.int64))),
+            shape=(n_jobs, variable_count),
+        ).tocsr()
+        a_ub_stress = coo_matrix(
+            (np.ones(variable_count, dtype=float),
+             (site_slot_rows, np.arange(variable_count, dtype=np.int64))),
+            shape=(n_regions * n_slots, variable_count),
+        ).tocsr()
+        stress_scale = 1.0e6
+        stress_result = linprog(
+            objective / stress_scale,
+            A_ub=a_ub_stress,
+            b_ub=np.full(
+                n_regions * n_slots,
+                stress_capacity_mw * dt_h * stress_scale,
+                dtype=float,
+            ),
+            A_eq=a_eq_stress,
+            b_eq=energy * stress_scale,
+            bounds=np.column_stack((
+                np.zeros(variable_count, dtype=float),
+                variable_upper * stress_scale,
+            )),
+            method="highs",
+            options={"presolve": True},
+        )
+        if not stress_result.success:
+            raise RuntimeError(
+                "Binding-capacity job-level LP failed: " + str(stress_result.message)
+            )
+        stress_service = np.asarray(stress_result.x, dtype=float) / stress_scale
+        stress_counterfactual = np.bincount(
+            site_slot_rows,
+            weights=stress_service,
+            minlength=n_regions * n_slots,
+        ).reshape(n_regions, n_slots)
+        stress_residual = np.bincount(
+            job_rows, weights=stress_service, minlength=n_jobs
+        ) - energy
+        stress_slack = stress_capacity_mw * dt_h - stress_counterfactual
+        stress_event_reduction = float(
+            native_profile[:, event_indices].sum()
+            - stress_counterfactual[:, event_indices].sum()
+        )
+        stress_summary_rows = [
+            {"metric": "capacity_mw_per_region", "value": stress_capacity_mw, "unit": "MW"},
+            {"metric": "service_variables", "value": variable_count, "unit": "variables"},
+            {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(stress_residual))), "unit": "MWh"},
+            {"metric": "minimum_site_slot_capacity_slack_mwh", "value": float(np.min(stress_slack)), "unit": "MWh"},
+            {"metric": "active_capacity_slot_fraction", "value": float(np.mean(stress_slack <= 1e-10)), "unit": "fraction"},
+            {"metric": "event_net_reduction_mwh", "value": stress_event_reduction, "unit": "MWh"},
+            {"metric": "event_counterfactual_mwh", "value": float(stress_counterfactual[:, event_indices].sum()), "unit": "MWh"},
+            {"metric": "solver_success", "value": 1, "unit": "boolean"},
+        ]
+        for day in range(int(np.ceil(n_slots / slots_per_day))):
+            sl = slice(day * slots_per_day, min((day + 1) * slots_per_day, n_slots))
+            if sl.start >= sl.stop:
+                continue
+            stress_daily_rows.append(
+                {
+                    "day": day,
+                    "capacity_mw_per_region": stress_capacity_mw,
+                    "maximum_slot_loading_mw": float(stress_counterfactual[:, sl].max() / dt_h),
+                    "minimum_capacity_slack_mwh": float(stress_slack[:, sl].min()),
+                    "event_counterfactual_mwh": float(
+                        stress_counterfactual[:, sl][:, [
+                            i for i in range(sl.stop - sl.start)
+                            if (sl.start + i) % slots_per_day in event_slots
+                        ]].sum()
+                    ) if any((sl.start + i) % slots_per_day in event_slots for i in range(sl.stop - sl.start)) else 0.0,
+                }
+            )
+        np.savez_compressed(
+            final / "job_level_capacity_stress_solution.npz",
+            service_mwh=stress_service,
+            counterfactual_mwh=stress_counterfactual,
+            declared_job_energy_mwh=energy,
+            submit_slot=starts,
+            deadline_slot=ends,
+            region=jobs["region"].to_numpy(dtype=np.int64),
+            requested_gpus=gpu_count,
+        )
+    else:
+        stress_summary_rows = [
+            {"metric": "solver_success", "value": 0, "unit": "boolean"},
+            {"metric": "capacity_stress_configured", "value": 0, "unit": "boolean"},
+        ]
+    pd.DataFrame(stress_summary_rows).to_csv(
+        final / "job_level_capacity_stress_summary.csv", index=False
+    )
+    pd.DataFrame(stress_daily_rows).to_csv(
+        final / "job_level_capacity_stress_daily.csv", index=False
+    )
     rows = pd.DataFrame(
         [
-            {"metric": "positive_energy_jobs", "value": n_jobs, "unit": "jobs"},
+            {"metric": "submitted_jobs", "value": n_jobs, "unit": "jobs"},
+            {"metric": "execution_matched_jobs", "value": int(execution_match.sum()), "unit": "jobs"},
             {"metric": "service_variables", "value": variable_count, "unit": "variables"},
             {"metric": "solver_status", "value": solver_message, "unit": "text"},
             {"metric": "event_energy_native_mwh", "value": float(native_profile[:, event_indices].sum()), "unit": "MWh"},
@@ -9733,7 +10085,12 @@ def run_exp19(
             {"metric": "event_gross_reduction_mwh", "value": event_gross_reduction, "unit": "MWh"},
             {"metric": "event_net_reduction_mwh", "value": event_net_reduction, "unit": "MWh"},
             {"metric": "event_rebound_mwh", "value": event_rebound, "unit": "MWh"},
-            {"metric": "total_energy_conservation_residual_mwh", "value": total_residual, "unit": "MWh"},
+            {"metric": "declared_energy_conservation_residual_mwh", "value": declared_total_residual, "unit": "MWh"},
+            {"metric": "observed_execution_energy_mwh", "value": observed_total_energy, "unit": "MWh"},
+            {"metric": "declared_service_energy_mwh", "value": float(energy.sum()), "unit": "MWh"},
+            {"metric": "execution_match_fraction", "value": float(execution_match.mean()), "unit": "fraction"},
+            {"metric": "observed_within_physical_nameplate_fraction", "value": observed_upper_coverage, "unit": "fraction"},
+            {"metric": "median_observed_to_declared_energy_ratio", "value": observed_central_ratio, "unit": "ratio"},
             {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(job_residual))), "unit": "MWh"},
             {"metric": "minimum_site_slot_capacity_slack_mwh", "value": float(np.min(capacity_slack)), "unit": "MWh"},
             {"metric": "maximum_gpu_count", "value": float(np.max(gpu_count)), "unit": "GPUs"},
@@ -9751,12 +10108,17 @@ def run_exp19(
         service_mwh=service,
         counterfactual_mwh=counterfactual,
         native_mwh=native_profile,
-        job_energy_mwh=energy,
+        declared_job_energy_mwh=energy,
+        declared_job_energy_upper_mwh=declared_energy_upper,
+        observed_job_energy_mwh=observed_job_energy,
+        execution_match=execution_match.astype(np.int8),
         submit_slot=starts,
         deadline_slot=ends,
         region=jobs["region"].to_numpy(dtype=np.int64),
-        measured_gpus=gpu_count,
+        requested_gpus=gpu_count,
         per_gpu_power_cap_mw=np.asarray([per_gpu_cap_mw], dtype=float),
+        source_scale_factor=np.asarray([1.0], dtype=float),
+        submission_digest=np.asarray([str(jobs.attrs["canonical_submission_ledger_sha256"])]),
     )
     solution_tmp.replace(final / "job_level_counterfactual_solution.npz")
     profile_rows = []
@@ -9776,31 +10138,27 @@ def run_exp19(
     write_json(
         final / "experiment_metadata.json",
         {
-            "experiment": "exact job-indexed temporal counterfactual",
-            "joined_jobs": n_jobs,
+            "experiment": "exact submit-time job-indexed temporal counterfactual",
+            "submission_jobs": n_jobs,
+            "submitted_jobs": n_jobs,
+            "execution_matched_jobs": int(execution_match.sum()),
             "service_variables": variable_count,
-            "release_deadline_constraints": "one variable per job and admissible slot; exact job-energy equality",
+            "release_deadline_constraints": "one variable per submitted job and admissible slot; exact declared-energy equality",
             "deadline_source": (
                 "submit-time scheduler allocation runtime plus a precommitted queue "
                 "allowance; Slurm timelimit is not a submission-to-completion "
                 "deadline and no measured-energy extension is permitted"
             ),
-            "deadline_mode": "declared_timelimit",
+            "deadline_mode": "submit_time_declaration",
             "deadline_mode_description": (
                 "Slurm allocation runtime plus the precommitted queue allowance; "
                 "the allocation runtime is not a submission-to-completion deadline"
             ),
             "declared_window_slots_min": int(
-                np.min(
-                    jobs["deadline_slot_declared_timelimit"].to_numpy(dtype=np.int64)
-                    - jobs["submit_slot_raw"].to_numpy(dtype=np.int64)
-                )
+                np.min(jobs["declared_window_slots"].to_numpy(dtype=np.int64))
             ),
             "declared_window_slots_max": int(
-                np.max(
-                    jobs["deadline_slot_declared_timelimit"].to_numpy(dtype=np.int64)
-                    - jobs["submit_slot_raw"].to_numpy(dtype=np.int64)
-                )
+                np.max(jobs["declared_window_slots"].to_numpy(dtype=np.int64))
             ),
             "unlimited_timelimit_jobs": int(
                 np.sum(
@@ -9809,20 +10167,27 @@ def run_exp19(
                 )
             ),
             "observed_time_end_used_as_deadline": False,
-            "unbounded_timelimit_slots": int(
-                cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
-            ),
-            "submission_buffer_slots": int(
-                cfg["experiments"].get("job_level_submission_buffer_slots", 0)
-            ),
+            "observed_energy_used_in_decision": False,
+            "unbounded_timelimit_slots": unbounded_timelimit_slots,
+            "submission_buffer_slots": submission_buffer_slots,
             "declared_per_gpu_power_cap_mw": per_gpu_cap_mw,
             "declared_window_infeasible_jobs": infeasible_window_jobs,
+            "declared_service_fraction": float(
+                submission_calibration["declared_service_fraction"]
+            ),
+            "declared_service_fraction_source": (
+                "training-only scheduler/DCGM calibration in data_manifest.json"
+            ),
+            "submission_ledger_digest": str(
+                jobs.attrs["canonical_submission_ledger_sha256"]
+            ),
+            "execution_ledger_digest": "post-event telemetry digest stored by Exp16",
             "deadline_window_rule": (
                 "exact submit-time allocation runtime plus a precommitted queue "
                 "allowance; required service slots are an audit-only precheck"
             ),
-            "site_assignment": "native ledger region; no outcome-dependent migration",
-            "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times measured GPU count",
+            "site_assignment": "submit-time scenario region; no outcome-dependent migration",
+            "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times requested GPU count",
             "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
             "event_slots": sorted(event_slots),
             "event_tariff_per_mwh": event_price,
@@ -9837,6 +10202,22 @@ def run_exp19(
             ),
             "maximum_job_energy_residual_mwh": float(np.max(np.abs(job_residual))),
             "minimum_site_slot_capacity_slack_mwh": float(np.min(capacity_slack)),
+            "observed_execution_energy_mwh": observed_total_energy,
+            "declared_service_energy_mwh": float(energy.sum()),
+            "execution_match_fraction": float(execution_match.mean()),
+            "observed_within_physical_nameplate_fraction": observed_upper_coverage,
+            "central_declaration_is_scoring_independent": True,
+            "capacity_stress": {
+                "planned": bool(
+                    float(cfg["experiments"].get("job_level_stress_capacity_mw", 0.0)) > 0.0
+                ),
+                "capacity_mw": float(
+                    cfg["experiments"].get("job_level_stress_capacity_mw", 0.0)
+                ),
+                "result_file": "job_level_capacity_stress_summary.csv",
+                "delegated_binding_panel": "exp25_exante_job_validation",
+            },
+            "population_rule": "submitted_scheduler_jobs_with_positive_execution_energy_membership_only",
         },
     )
     logger.info(
@@ -9920,11 +10301,16 @@ def run_exp15(
             "Experiment 16 must provide one predeclared q99 capacity audit row"
         )
     capacity_safe_upper = float(q99_row.iloc[0]["capacity_safe_scale_factor"])
-    endpoint_labels = ["q01", "q99-cap"]
+    # Keep the complete held-out q99 endpoint in the interval audit.  If the
+    # raw endpoint exceeds the committed flexible nameplate, the contract is
+    # marked ineligible for activation; the stress value is still solved and
+    # reported instead of being silently clipped into a different experiment.
+    endpoint_labels = ["q01", "q99"]
     endpoint_scales = np.asarray(
-        [raw_endpoint_scales[0], min(raw_endpoint_scales[1], capacity_safe_upper)],
+        [raw_endpoint_scales[0], raw_endpoint_scales[1]],
         dtype=float,
     )
+    q99_capacity_eligible = bool(raw_endpoint_scales[1] <= capacity_safe_upper + 1e-12)
     if not (endpoint_scales[0] < 1.0 < endpoint_scales[1]):
         raise RuntimeError("Held-out q01/q99 interval must bracket unity")
     # Every endpoint cache is tied to the exact frozen profiles and endpoint
@@ -9953,11 +10339,10 @@ def run_exp15(
     # The endpoint audit is tied to the current N-1 load calibration and the
     # Experiment 9 certificate.  Bump the schema whenever either upstream
     # contract changes so resume cannot reuse an older certificate audit.
-    # Schema 9 adds an upstream profile checksum to invalidate stale endpoint
-    # costs as well as the independent oracle-payment coverage audit. Earlier
-    # endpoint-only checkpoints cannot be resumed because they contain NaN
-    # coverage fields.
-    schema = 9
+    # Schema 10 changes the upper endpoint from the silently clipped q99-cap
+    # value to the raw q99 stress case. Earlier checkpoints are therefore not
+    # eligible for resume.
+    schema = 10
     rows: list[dict[str, Any]] = []
     interval_rows: list[dict[str, Any]] = []
     existing_endpoint_path = final / "interval_endpoint_certificates.csv"
@@ -10054,6 +10439,54 @@ def run_exp15(
             return float(total)
 
         for endpoint, scale in zip(endpoint_labels, endpoint_scales):
+            if endpoint == "q99" and not q99_capacity_eligible:
+                # Preserve the raw held-out endpoint as an explicit stress
+                # case.  It is intentionally not forced through an infeasible
+                # network solve and cannot be activated for payment.
+                for method in profiles:
+                    result_rows.append(
+                        {
+                            "day": int(day),
+                            "endpoint": endpoint,
+                            "conversion_scale_factor": float(scale),
+                            "unclipped_conversion_scale_factor": float(scale),
+                            "capacity_activation_eligible": False,
+                            "solver_status": "infeasible_under_committed_capacity",
+                            "method": method,
+                            "certified_cost_usd": np.nan,
+                            "reference_cost_usd": np.nan,
+                            "margin_usd": np.nan,
+                            "payment_cap_violation_usd": np.nan,
+                            "independent_segments": segments,
+                            "schema_version": schema,
+                            "endpoint_profile_checksum": endpoint_profile_checksum,
+                        }
+                    )
+                interval_rows.append(
+                    {
+                        "day": int(day),
+                        "endpoint": endpoint,
+                        "conversion_scale_factor": float(scale),
+                        "unclipped_conversion_scale_factor": float(scale),
+                        "capacity_activation_eligible": False,
+                        "solver_status": "infeasible_under_committed_capacity",
+                        "hull_baseline_cost_min_usd": np.nan,
+                        "hull_baseline_cost_max_usd": np.nan,
+                        "continuous_segment_minimum_baseline_cost_usd": np.nan,
+                        "counterfactual_cost_usd": np.nan,
+                        "payment_interval_lower_usd": np.nan,
+                        "payment_interval_upper_usd": np.nan,
+                        "payment_interval_width_usd": np.nan,
+                        "selected_reference_payment_usd": np.nan,
+                        "oracle_payment_usd": np.nan,
+                        "oracle_inside_interval": np.nan,
+                        "candidate_hull_vertices": int(candidate_profiles.shape[0]),
+                        "candidate_hull_definition": "raw q99 stress endpoint retained without payment activation",
+                        "schema_version": schema,
+                        "endpoint_profile_checksum": endpoint_profile_checksum,
+                    }
+                )
+                continue
             costs: dict[str, float] = {}
             for method, profile in profiles.items():
                 known = known_endpoint_costs.get((int(day), endpoint, method))
@@ -10071,6 +10504,10 @@ def run_exp15(
                         "conversion_scale_factor": float(scale),
                         "unclipped_conversion_scale_factor": float(
                             raw_endpoint_scales[endpoint_labels.index(endpoint)]
+                        ),
+                        "solver_status": "optimal",
+                        "capacity_activation_eligible": bool(
+                            endpoint != "q99" or q99_capacity_eligible
                         ),
                         "method": method,
                         "certified_cost_usd": float(cost),
@@ -10161,6 +10598,10 @@ def run_exp15(
                     "unclipped_conversion_scale_factor": float(
                         raw_endpoint_scales[endpoint_labels.index(endpoint)]
                     ),
+                    "solver_status": "optimal",
+                    "capacity_activation_eligible": bool(
+                        endpoint != "q99" or q99_capacity_eligible
+                    ),
                     "hull_baseline_cost_min_usd": float(hull_costs.min()),
                     "hull_baseline_cost_max_usd": float(hull_costs.max()),
                     "continuous_segment_minimum_baseline_cost_usd": float(
@@ -10244,8 +10685,14 @@ def run_exp15(
                 "lower_endpoint": float(endpoint_scales[0]),
                 "upper_endpoint": float(endpoint_scales[1]),
                 "unclipped_upper_endpoint": float(raw_endpoint_scales[1]),
-                "source": "held-out per-job measured-to-predicted energy ratio q01 and q99, with the upper endpoint clipped by the predeclared 118-MW capacity commitment",
-                "upper_endpoint_policy": "min(held-out q99, capacity-safe calibration factor); the clipping factor is selected from the immutable ledger capacity audit before interval evaluation",
+                "source": "complete held-out per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
+                "upper_endpoint_policy": (
+                    "retain raw q99; activate payment only when the predeclared "
+                    "capacity certificate covers the endpoint, otherwise report q99 "
+                    "as a non-eligible stress scenario"
+                ),
+                "q99_capacity_safe_upper": capacity_safe_upper,
+                "q99_capacity_activation_eligible": q99_capacity_eligible,
             },
             "continuous_segment_theorem": (
                 "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound."
@@ -10257,17 +10704,21 @@ def run_exp15(
             "event_slots": event_slots,
             "parallel_workers": workers,
             "interval_certificate_valid": bool(max_violation <= 1e-6),
-            "certificate_scope": "continuous-segment payment interval from q01 to the capacity-safe q99 endpoint, with exact joint-LP lower bound and convex endpoint upper bound; finite q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
+            "certificate_scope": "continuous-segment stress interval from raw q01 to raw q99, with exact joint-LP lower bound and convex endpoint upper bound; only capacity-eligible endpoints can be activated for payment, while finite q01/q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
             "maximum_payment_cap_violation_usd": max_violation,
             "payment_value_interval": {
                 "endpoint_file": "payment_value_interval_certificates.csv",
                 "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
                 "unclipped_upper_endpoint": float(raw_endpoint_scales[1]),
-                "capacity_safe_upper_endpoint": float(endpoint_scales[1]),
+                "capacity_safe_upper_endpoint": capacity_safe_upper,
+                "raw_upper_endpoint": float(raw_endpoint_scales[1]),
+                "q99_capacity_activation_eligible": q99_capacity_eligible,
                 "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
                 "oracle_used_only_for_coverage_audit": True,
                 "mean_oracle_coverage": float(interval_summary["oracle_coverage"].mean()),
                 "intervals_are_contractual": True,
+                "capacity_eligible_endpoints_only": True,
+                "raw_q99_is_stress_only": True,
             },
         },
     )
@@ -10407,6 +10858,31 @@ def run_exp16(
         final / "workload_power_calibration_sensitivity.csv", index=False
     )
     calibration_summary = manifest["power_calibration"]
+    submission_calibration = manifest.get("submission_calibration", {})
+    if not submission_calibration:
+        raise RuntimeError(
+            "The data manifest lacks the training-only submission energy calibration"
+        )
+    pd.DataFrame(
+        [
+            {
+                "training_jobs": int(submission_calibration["training_jobs"]),
+                "test_jobs": int(submission_calibration["test_jobs"]),
+                "declared_service_fraction": float(
+                    submission_calibration["declared_service_fraction"]
+                ),
+                "physical_upper_service_fraction": float(
+                    submission_calibration["physical_upper_service_fraction"]
+                ),
+                "q01": float(submission_calibration["fraction_quantiles"]["0.01"]),
+                "q10": float(submission_calibration["fraction_quantiles"]["0.1"]),
+                "q50": float(submission_calibration["fraction_quantiles"]["0.5"]),
+                "q90": float(submission_calibration["fraction_quantiles"]["0.9"]),
+                "q99": float(submission_calibration["fraction_quantiles"]["0.99"]),
+                "telemetry_role": submission_calibration["telemetry_role"],
+            }
+        ]
+    ).to_csv(final / "submission_calibration_summary.csv", index=False)
     pd.DataFrame(
         [
             {
@@ -10454,6 +10930,11 @@ def run_exp16(
         "synthetic_rows": 0,
         "imputed_deadlines": 0,
         "canonical_joined_ledger_sha256": summary["canonical_joined_ledger_sha256"],
+        "canonical_submission_ledger_sha256": summary[
+            "canonical_submission_ledger_sha256"
+        ],
+        "submission_ledger_row_count": int(summary["submission_row_count"]),
+        "submission_digest_excludes_execution_telemetry": True,
         "integrity_passed": bool(all(summary["integrity_conditions"].values())),
         "capacity_commitment": {
             "path": str(commitment_path.relative_to(root)),
@@ -10501,6 +10982,17 @@ def run_exp16(
                 "Network conclusions are evaluated at its endpoints and are not "
                 "treated as geography-free evidence."
             ),
+        },
+        "submission_energy_calibration": {
+            "file": "submission_calibration_summary.csv",
+            "training_rule": submission_calibration["training_rule"],
+            "declared_service_fraction": float(
+                submission_calibration["declared_service_fraction"]
+            ),
+            "physical_upper_service_fraction": float(
+                submission_calibration["physical_upper_service_fraction"]
+            ),
+            "telemetry_used_in_exp19_decision": False,
         },
     }
     write_json(final / "experiment_metadata.json", metadata)

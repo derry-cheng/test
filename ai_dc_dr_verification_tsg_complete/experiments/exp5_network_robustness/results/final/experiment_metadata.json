@@ -30,6 +30,6 @@
   "independent_evaluation_generator_segments": 40,
   "independent_cost_parameterization": "public benchmark quadratic costs at 10-segment settlement and 40-segment independent evaluation resolution; for PGLib IEEE-118, PYPOWER IEEE-118 quadratic curves are aligned by the identical 54 generator buses while PGLib topology, limits, and capacities are retained in both layers",
   "settlement_schema_version": 6,
-  "estimator_checksum": "bb53c649b88195cc52c1a972bd4cd92d7903b8c284794c803fbd45149fb57e7c",
+  "estimator_checksum": "2b6a85460913ed59818c8a4c066da4c062867b60b9a59affdbd1748303e08b4d",
   "resolution_convergence": "complete 54-day IEEE RTS 24-bus 0.98-load boundary-cell panel at 10/40, 20/80, 40/160, and 80/320 settlement/evaluation segments"
 }

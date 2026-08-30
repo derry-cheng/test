@@ -13,13 +13,15 @@ dispatch objective. Realized value is evaluated independently with an
 the selected single projection, the risk-constrained verifier, and the
 trace-anchored mechanism-isolation reference.
 
-The completed factorial contains 16,848 outcomes. At 3%, 6%, and 9% peak
-penetration, the risk-constrained verifier has mean absolute payment errors of
-$103.80, $208.89, and $315.38/day, compared with $106.05, $213.47, and
-$322.39/day for the closest feasible-quantile projection. Its mapping-level
-mean error is lower in all 72 mapping--scale cells. The maximum native-rating
-line loading is 1.000 p.u., and the maximum data-center LMP spread is
-$13.03/MWh.
+The completed factorial contains 16,848 outcomes. Averaged over all 26
+declared assignments and 54 locked days, the risk-constrained verifier and
+the selected single projection have mean absolute payment errors of
+$105.250, $211.555, and $315.490/day at 3%, 6%, and 9% peak penetration;
+the feasible-quantile projection gives $81.613, $164.249, and $244.481/day.
+The two concentration controls are retained in these aggregates rather than
+treated as post-hoc exclusions. The maximum native-rating line loading is
+1.000 p.u.; the maximum data-center LMP spread is $16.94/MWh in the complete
+panel.
 
 Run independently with:
 

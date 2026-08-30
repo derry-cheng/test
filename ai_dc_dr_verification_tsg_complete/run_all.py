@@ -2,8 +2,23 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
+
+# Keep numerical backends from multiplying the declared experiment worker
+# counts.  The paper's largest process pool remains below 20 workers, and a
+# single BLAS/HiGHS thread per worker gives a deterministic workstation bound.
+for _thread_env in (
+    "OMP_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+    "BLIS_NUM_THREADS",
+):
+    os.environ[_thread_env] = "1"
+os.environ["HIGHS_NUM_THREADS"] = "1"
 
 from aicdr.pipeline import run_pipeline
 from aicdr.utils import configure_logging, load_config
@@ -43,6 +58,7 @@ def main() -> int:
             "exp22",
             "exp23",
             "exp24",
+            "exp25",
             "audit",
         ],
         default="all",

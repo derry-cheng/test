@@ -1,0 +1,3 @@
+metric,value,unit
+solver_success,0,boolean
+capacity_stress_configured,0,boolean
