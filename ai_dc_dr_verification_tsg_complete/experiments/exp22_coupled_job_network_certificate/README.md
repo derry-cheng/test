@@ -9,7 +9,12 @@ with the secure DC security-constrained economic dispatch (SCED) model and all
 finite non-islanding N–1 line contingencies. The
 network-facing profile is therefore the same primal witness as the job-level
 ledger, rather than a separately optimized aggregate schedule; the reported
-network value is explicitly per representative event interval.
+network value is explicitly per representative event interval. In addition to
+the raw witness, the audit replays two homogeneous transforms from Experiment
+21: fixed-nameplate and capacity-proportional. Each transform scales the
+indexed service vector and every associated resource cap before rebuilding the
+regional profile, so job-to-network scale is tested rather than inferred from a
+single tiny witness.
 
 The coupled certificate is pinned to the public PYPOWER IEEE RTS-24 case
 (`case24_ieee_rts`) and to four predeclared generator-bus locations.  This

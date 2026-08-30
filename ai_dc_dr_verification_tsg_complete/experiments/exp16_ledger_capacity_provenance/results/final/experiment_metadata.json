@@ -39,7 +39,10 @@
       "0.99"
     ],
     "locked_test_observations_used_for_scaling": false,
-    "interpretation": "The power conversion is a declared held-out uncertainty interval. Network conclusions are evaluated at its endpoints and are not treated as geography-free evidence."
+    "capacity_sensitivity_scope": "flexible workload batch only; this diagnostic does not gate network activation",
+    "capacity_clip_is_batch_only_diagnostic": true,
+    "network_activation_scale_source": "Experiment 9 q99-calibrated fixed/flexible conversion with the fixed facility component carried separately",
+    "interpretation": "The power conversion is a declared held-out uncertainty interval. The q99 capacity-safe factor is a flexible-batch diagnostic; network activation uses the separate fixed/flexible conversion certificate in Experiment 9. These results are not treated as geography-free evidence."
   },
   "submission_energy_calibration": {
     "file": "submission_calibration_summary.csv",

@@ -10,7 +10,9 @@
   "fixed_nameplate_certified_scale": 1.4796888050033212,
   "certified_scale": 1.4796888050033212,
   "capacity_proportional_profile_is_stress_scenario": true,
+  "homogeneous_scale_replay_scales_all_resource_caps": true,
   "deployable_profile_respects_fixed_gpu_nameplate": true,
+  "scale_semantics": "The scale factors are reference transforms. Exp22 scales the job service, declared job energy, GPU cap, site capacity, and network load together before rechecking the typed coupling invariant.",
   "resource_count_source": "submit-time requested_gpus",
   "capacity_mw": 118.0,
   "re_solved": false

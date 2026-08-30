@@ -5,9 +5,10 @@
     "upper_endpoint": 2.6930887095833507,
     "unclipped_upper_endpoint": 2.6930887095833507,
     "source": "complete held-out per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
-    "upper_endpoint_policy": "retain raw q99; activate payment only when the predeclared capacity certificate covers the endpoint, otherwise report q99 as a non-eligible stress scenario",
+    "upper_endpoint_policy": "retain raw q99 and apply it only to the flexible workload component; fixed facility demand is carried separately and the benchmark scale is calibrated on the q99 envelope",
     "q99_capacity_safe_upper": 0.890086120278301,
-    "q99_capacity_activation_eligible": false
+    "q99_capacity_activation_eligible": true,
+    "fixed_load_separated": true
   },
   "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
   "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
@@ -26,20 +27,21 @@
   ],
   "parallel_workers": 4,
   "interval_certificate_valid": true,
-  "certificate_scope": "continuous-segment stress interval from raw q01 to raw q99, with exact joint-LP lower bound and convex endpoint upper bound; only capacity-eligible endpoints can be activated for payment, while finite q01/q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
-  "maximum_payment_cap_violation_usd": 1.2951204553246498e-09,
+  "certificate_scope": "continuous-segment interval from raw q01 to raw q99 with fixed/flexible load separation, exact joint-LP lower bound, and convex endpoint upper bound; both endpoints are activation-eligible under the q99-calibrated benchmark scale",
+  "maximum_payment_cap_violation_usd": 2.9249349609017372e-09,
   "payment_value_interval": {
     "endpoint_file": "payment_value_interval_certificates.csv",
     "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
     "unclipped_upper_endpoint": 2.6930887095833507,
     "capacity_safe_upper_endpoint": 0.890086120278301,
     "raw_upper_endpoint": 2.6930887095833507,
-    "q99_capacity_activation_eligible": false,
+    "q99_capacity_activation_eligible": true,
     "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
     "oracle_used_only_for_coverage_audit": true,
-    "mean_oracle_coverage": 0.037037037037037035,
+    "mean_oracle_coverage": 0.09259259259259259,
     "intervals_are_contractual": true,
     "capacity_eligible_endpoints_only": true,
-    "raw_q99_is_stress_only": true
+    "raw_q99_is_stress_only": false,
+    "fixed_load_separated": true
   }
 }

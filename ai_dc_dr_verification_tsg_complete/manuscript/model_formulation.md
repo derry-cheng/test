@@ -56,7 +56,7 @@ x_{skdt}\geq 0
 
 is the energy from origin \(s\), class \(k\), served at \(d\) during \(t\).
 Deadline-constrained temporal deferral and geographic assignment follow the
-data-center scheduling foundations in \cite{liu2013dcdr,adnan2012geographical}.
+data-center scheduling foundations in \cite{cao2022flexibility,cao2024nonwire}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters rather than facts inferred from those papers.
 
@@ -170,7 +170,7 @@ y_{sk,T^+}=A_{sk,\max\{T^0,T^+-D_k\}}.
 These constraints respectively impose state evolution, no service before
 release, deadline completion, destination capacity, and terminal conservation.
 The underlying scheduling requirements are standard in
-\cite{liu2013dcdr,adnan2012geographical}; their \(O(T)\) cumulative-state
+\cite{cao2022flexibility,cao2024nonwire}; their \(O(T)\) cumulative-state
 representation and its equivalence proof are Proposition 2 of this study. The
 continuous rolling horizon follows the state-retention logic of
 \cite{zhang2023receding}. It begins one maximum deadline plus one day before
@@ -232,7 +232,7 @@ For energy cost, migration charge \(m_{sd}\), and class waiting coefficient
 \]
 
 Data-center energy-aware scheduling, temporal deferral, and geographic balancing
-are adapted from \cite{liu2013dcdr,adnan2012geographical}. We denote the
+are adapted from \cite{cao2022flexibility,cao2024nonwire}. We denote the
 resulting workload operating cost by \(\mathcal C_{\mathrm w}(x)\), reserving
 \(V(p)\) for the network dispatch value and \(C_i(g_i)\) for generator-segment
 costs. The linear migration and waiting coefficients are declared experimental

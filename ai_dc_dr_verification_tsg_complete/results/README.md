@@ -9,8 +9,11 @@ index only; generated checkpoints and raw releases are not copied here.
 The revised closure stages are:
 
 - `exp19_job_level_counterfactual`: 12,296,675-variable indexed witness.
+- `exp20_trace_meter_replay`: independent 54-day observed-meter replay.
+- `exp21_scale_consistency`: fixed-nameplate and capacity-proportional
+  homogeneous transforms of the same indexed witness.
 - `exp22_coupled_job_network_certificate`: typed job/aggregation/mapping
-  certificate before settlement.
+  certificate before settlement, including both scale replays.
 - `exp23_independent_event_replay`: independently generated controlled-event
   response replay.
 - `exp24_all_outage_security_panel`: all 37 finite RTS-24 outages in every

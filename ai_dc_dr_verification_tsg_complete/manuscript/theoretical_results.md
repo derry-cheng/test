@@ -55,7 +55,7 @@ y_{skt}=\sum_{\tau=0}^{t}\sum_d x_{skd\tau}.
 \]
 
 Deadline-constrained workload deferral and geographical assignment follow the
-modeling foundations in \cite{liu2013dcdr,adnan2012geographical}. The cumulative
+modeling foundations in \cite{cao2022flexibility,cao2024nonwire}. The cumulative
 state equivalence below is this paper's sparse reformulation.
 
 The release and deadline conditions are exactly equivalent to

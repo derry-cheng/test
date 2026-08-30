@@ -8,4 +8,6 @@ raw-data file belongs in this directory.
 The job-indexed stage uses a certified exact continuous-knapsack decomposition
 when regional capacity rows are inactive and switches to a sparse HiGHS LP only
 when those rows bind. Worker counts are configured explicitly and validated to
-remain at or below 20.
+remain at or below 20; the payment target uses 12 workers, the evaluation uses
+8, and direct runs set BLAS/OpenMP thread counts to one to avoid hidden
+oversubscription.

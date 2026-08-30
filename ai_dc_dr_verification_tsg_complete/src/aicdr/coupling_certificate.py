@@ -237,6 +237,8 @@ def run_exp22_coupled_job_network_certificate(
     )
     rows = [
         {
+            "scenario": "raw_job_witness",
+            "scale_factor": 1.0,
             "slot": "event_window_mean",
             "event_slot_count": len(selected_slots),
             "native_profile_mwh": float(native_event_profile.sum()),
@@ -259,8 +261,123 @@ def run_exp22_coupled_job_network_certificate(
             "network_mapping_residual_mw": float(mapped_certificate.max_network_mapping_residual_mw),
         }
     ]
+
+    # The raw MIT witness is intentionally tiny relative to the declared
+    # benchmark nameplate.  Exp21 supplies two predeclared homogeneous scale
+    # factors; replaying the *same* indexed service vector at those scales
+    # closes the job-to-network scale gap without inventing a second aggregate
+    # trajectory.  Every physical quantity in the certificate is scaled: job
+    # energy, service, GPU nameplate, site capacity, and the network profile.
+    scale_path = (
+        root
+        / "experiments/exp21_scale_consistency/results/final/"
+        "scale_consistency_summary.csv"
+    )
+    if not scale_path.exists():
+        raise FileNotFoundError(
+            "Exp21 scale-consistency summary is required before the coupled replay"
+        )
+    scale_frame = pd.read_csv(scale_path)
+    scale_values = {
+        "fixed_nameplate_homogeneous": float(
+            scale_frame.loc[
+                scale_frame["metric"].astype(str)
+                == "fixed_nameplate_certified_scale_factor",
+                "value",
+            ].iloc[0]
+        ),
+        "capacity_proportional_homogeneous": float(
+            scale_frame.loc[
+                scale_frame["metric"].astype(str)
+                == "capacity_proportional_network_scale_factor",
+                "value",
+            ].iloc[0]
+        ),
+    }
+    scaled_rows: list[dict[str, Any]] = []
+    for scenario, scale_factor in scale_values.items():
+        if not np.isfinite(scale_factor) or scale_factor <= 0.0:
+            raise RuntimeError(f"Invalid Exp21 scale factor for {scenario}")
+        scaled_service = service * scale_factor
+        scaled_job_energy = job_energy * scale_factor
+        scaled_aggregate = saved_counterfactual * scale_factor
+        scaled_reconstructed = np.bincount(
+            variable_regions * n_slots + slots,
+            weights=scaled_service,
+            minlength=n_regions * n_slots,
+        ).reshape(n_regions, n_slots)
+        scaled_certificate = validate_job_network_coupling(
+            service_mwh=scaled_service,
+            job_energy_mwh=scaled_job_energy,
+            submit_slot=starts,
+            deadline_slot=ends,
+            region=regions,
+            aggregate_mwh=scaled_aggregate,
+            dt_h=dt_h,
+            requested_gpus=requested_gpus,
+            per_gpu_power_cap_mw=per_gpu_power_cap_mw * scale_factor,
+            site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]) * scale_factor,
+            network_profile_mw=mapping @ (scaled_aggregate / dt_h),
+            network_mapping=mapping,
+        )
+        assert_valid_certificate(scaled_certificate)
+        scaled_native_event = (saved_native * scale_factor)[:, selected_slots].mean(axis=1)
+        scaled_counterfactual_event = scaled_aggregate[:, selected_slots].mean(axis=1)
+        scaled_native_load = base_load.copy()
+        scaled_counterfactual_load = base_load.copy()
+        scaled_native_load[dc_buses] += scaled_native_event / dt_h
+        scaled_counterfactual_load[dc_buses] += scaled_counterfactual_event / dt_h
+        scaled_native_result = solve_n1_sced(
+            system, scaled_native_load, network_segments, security_factors=security
+        )
+        scaled_counterfactual_result = solve_n1_sced(
+            system,
+            scaled_counterfactual_load,
+            network_segments,
+            security_factors=security,
+        )
+        scaled_rows.append(
+            {
+                "scenario": scenario,
+                "scale_factor": float(scale_factor),
+                "slot": "event_window_mean",
+                "event_slot_count": len(selected_slots),
+                "native_profile_mwh": float((saved_native * scale_factor)[:, selected_slots].sum()),
+                "counterfactual_profile_mwh": float(scaled_aggregate[:, selected_slots].sum()),
+                "aggregation_residual_mwh": float(
+                    np.abs(
+                        (scaled_reconstructed - scaled_aggregate)[:, selected_slots]
+                    ).sum()
+                ),
+                "native_secure_cost_usd_per_interval": float(scaled_native_result.objective * dt_h),
+                "counterfactual_secure_cost_usd_per_interval": float(scaled_counterfactual_result.objective * dt_h),
+                "secure_net_value_usd_per_interval": float(
+                    (scaled_native_result.objective - scaled_counterfactual_result.objective) * dt_h
+                ),
+                "native_max_base_loading": float(scaled_native_result.max_loading),
+                "counterfactual_max_base_loading": float(scaled_counterfactual_result.max_loading),
+                "native_max_postcontingency_loading": float(scaled_native_result.max_post_contingency_loading),
+                "counterfactual_max_postcontingency_loading": float(scaled_counterfactual_result.max_post_contingency_loading),
+                "credible_contingencies": int(scaled_counterfactual_result.credible_contingencies),
+                "maximum_job_energy_residual_mwh": scaled_certificate.max_job_energy_residual_mwh,
+                "maximum_gpu_bound_violation_mwh": scaled_certificate.maximum_gpu_bound_violation_mwh,
+                "minimum_gpu_bound_slack_mwh": scaled_certificate.minimum_gpu_bound_slack_mwh,
+                "minimum_site_capacity_slack_mwh": scaled_certificate.minimum_site_capacity_slack_mwh,
+                "solver_success": bool(
+                    scaled_native_result.success and scaled_counterfactual_result.success
+                ),
+                "coupling_certificate_valid": bool(scaled_certificate.valid),
+                "network_mapping_residual_mw": float(
+                    scaled_certificate.max_network_mapping_residual_mw
+                ),
+            }
+        )
+    rows.extend(scaled_rows)
     frame = pd.DataFrame(rows)
     frame.to_csv(out / "coupled_network_event_replay.csv", index=False)
+    frame[frame["scenario"] != "raw_job_witness"].to_csv(
+        out / "coupled_network_scale_replay.csv", index=False
+    )
     event_native = float(saved_native[:, selected_slots].sum())
     event_counterfactual = float(reconstructed[:, selected_slots].sum())
     summary = pd.DataFrame(
@@ -276,7 +393,9 @@ def run_exp22_coupled_job_network_certificate(
             {"metric": "minimum_site_capacity_slack_mwh", "value": minimum_site_capacity_slack, "unit": "MWh"},
             {"metric": "event_native_job_profile_mwh", "value": event_native, "unit": "MWh"},
             {"metric": "event_counterfactual_job_profile_mwh", "value": event_counterfactual, "unit": "MWh"},
-            {"metric": "event_secure_network_value_usd_per_interval", "value": float(frame["secure_net_value_usd_per_interval"].sum()), "unit": "USD/interval"},
+            {"metric": "event_secure_network_value_usd_per_interval", "value": float(rows[0]["secure_net_value_usd_per_interval"]), "unit": "USD/interval"},
+            {"metric": "homogeneous_scaled_scenario_count", "value": len(scaled_rows), "unit": "scenarios"},
+            {"metric": "maximum_homogeneous_scaled_network_value_usd_per_interval", "value": float(max(row["secure_net_value_usd_per_interval"] for row in scaled_rows)), "unit": "USD/interval"},
             {"metric": "maximum_counterfactual_base_loading", "value": float(frame["counterfactual_max_base_loading"].max()), "unit": "ratio"},
             {"metric": "maximum_counterfactual_postcontingency_loading", "value": float(frame["counterfactual_max_postcontingency_loading"].max()), "unit": "ratio"},
             {"metric": "all_network_solves_successful", "value": int(frame["solver_success"].all()), "unit": "boolean"},
@@ -299,6 +418,19 @@ def run_exp22_coupled_job_network_certificate(
         "network_generator_segments": network_segments,
         "network_parallel_workers": workers,
         "network_time_aggregation": "arithmetic mean of every declared event slot; network value is reported per representative interval",
+        "scale_replay_file": "coupled_network_scale_replay.csv",
+        "scale_replay_definition": (
+            "The raw indexed witness and two predeclared homogeneous transforms "
+            "(fixed-nameplate and capacity-proportional) are replayed through the "
+            "same RTS-24 N-1 evaluator. Each transform scales service, declared "
+            "job energy, GPU cap, site capacity, and network load together."
+        ),
+        "scale_factors": {
+            "raw_job_witness": 1.0,
+            **{key: float(value) for key, value in scale_values.items()},
+        },
+        "raw_witness_is_not_118mw": True,
+        "capacity_proportional_network_stress_is_same_job_witness": True,
         "network_source": network_source,
         "data_center_buses_one_based": (dc_buses + 1).tolist(),
         "event_slots": sorted(event_slots),

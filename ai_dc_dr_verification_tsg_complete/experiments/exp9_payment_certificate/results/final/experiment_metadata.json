@@ -20,36 +20,48 @@
     10.0
   ],
   "reference_projection_weight": 0.03,
-  "certificate_candidate_set": "six first-stage workload-feasible projection schedules plus the validation-selected feasible-quantile comparator; the contractual cap is anchored to the validation-selected single feasible projection, while the risk-constrained verifier remains an external approximation target and cannot be selected directly",
+  "certificate_candidate_set": "six first-stage workload-feasible projection schedules plus the validation-selected feasible-quantile comparator; the contractual cap is anchored to the validation-selected single feasible projection, while the risk-constrained verifier is reported as the separately fitted total-plus-CVaR convex profile",
   "reference_candidate": "Projection rho=0.03",
   "contractual_cap_profile": "Projection rho=0.03",
   "contractual_cap_selection": "single feasible projection selected by worst contiguous-fold validation nRMSE; its rho is recorded in Experiment 2 and is the sole payment-cap reference",
-  "certificate_schema_version": 8,
+  "certificate_schema_version": 10,
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
-  "power_conversion_scenario_source": "1st, 10th, 50th, and 90th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table",
+  "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {
     "q01": 0.5844748596130233,
     "q10": 0.734154196797104,
     "q50": 0.9957235602389071,
-    "q90": 1.2780232437772188
+    "q90": 1.2780232437772188,
+    "q99": 2.6930887095833507
+  },
+  "q99_conversion_factor": 2.6930887095833507,
+  "network_conversion_decomposition": {
+    "fixed_facility_load_mw_per_site": 6.0,
+    "fixed_component_scaled_once": true,
+    "flexible_component_scaled_by_conversion_factor": true,
+    "validation_flexible_peak_mw": 228.92852185302473,
+    "fixed_total_mw_before_network_scale": 24.0,
+    "network_scale_calibrated_on_q99": true,
+    "network_peak_target_mw": 153.9,
+    "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))"
   },
   "reference_payment_cap": "Projection rho=0.03",
   "external_transfer_comparator": "Feasible Quantile Projection",
-  "payment_target_selection": "validation-only independent N-1 payment MAE over q10/q50/q90 held-out conversion scenarios and event slots; q01 is reserved for the locked robustness constraint",
+  "payment_target_selection": "validation-only independent N-1 payment MAE over q10/q50/q90 held-out conversion scenarios and event slots; q01 and q99 are reserved as locked robustness constraints",
   "selection_role_separation": "The contractual cap and payment target are frozen by different validation criteria: the cap uses worst contiguous-fold nRMSE from Experiment 2, whereas the target uses independent high-resolution N-1 payment MAE. Neither criterion reads locked-test outcomes.",
-  "payment_target_candidate": "Feasible Quantile Projection",
-  "payment_target_candidate_index": 6,
-  "payment_target_profile": "Feasible Quantile Projection",
+  "payment_target_candidate": "Projection rho=1",
+  "payment_target_candidate_index": 3,
+  "payment_target_profile": "Projection rho=1",
   "profile_lineage": {
     "p_cap": "Projection rho=0.03",
-    "p_pay": "Feasible Quantile Projection",
+    "p_pay": "Projection rho=1",
     "p_cert": "locked-day convex combination constrained by the p_cap cost cap and targeted to p_pay"
   },
   "credible_non_islanding_line_contingencies": 37,
   "settlement_generator_segments": 10,
   "payment_certificate_generator_segments": 4,
   "independent_evaluation_generator_segments": 40,
-  "independent_evaluation_parallel_workers": 4,
+  "independent_evaluation_parallel_workers": 8,
   "unseen_transfer_evaluation": {
     "daily_file": "payment_evaluation_unseen_scenarios.csv",
     "summary_file": "payment_evaluation_unseen_summary.csv",
@@ -64,8 +76,9 @@
     "interpretation": "Frozen certificate profiles are replayed at two interior conversion factors that were not included in the certificate LP or validation target selection."
   },
   "certificate_parallel_workers": 6,
-  "maximum_payment_cap_violation_usd": 3.7834979593753815e-09,
-  "dc_power_scale": 0.608472302263445,
+  "maximum_payment_cap_violation_usd": 2.954038791358471e-09,
+  "dc_power_scale": 0.24027172061766713,
   "validation_peak_trace_mw": 252.92852185302473,
+  "validation_flexible_peak_mw": 228.92852185302473,
   "test_peak_used_for_scaling": false
 }

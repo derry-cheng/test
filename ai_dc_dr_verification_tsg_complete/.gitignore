@@ -13,7 +13,7 @@ manuscript/*.blg
 manuscript/*.log
 manuscript/*.out
 tmp/
-logs/full_run.log
+logs/*.log
 
 # The raw public releases are restored locally for reproduction but are not
 # committed to the source package.  Their sizes and SHA-256 digests are pinned

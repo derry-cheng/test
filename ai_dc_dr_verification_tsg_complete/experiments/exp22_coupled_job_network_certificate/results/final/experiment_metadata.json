@@ -12,6 +12,15 @@
   "network_generator_segments": 4,
   "network_parallel_workers": 1,
   "network_time_aggregation": "arithmetic mean of every declared event slot; network value is reported per representative interval",
+  "scale_replay_file": "coupled_network_scale_replay.csv",
+  "scale_replay_definition": "The raw indexed witness and two predeclared homogeneous transforms (fixed-nameplate and capacity-proportional) are replayed through the same RTS-24 N-1 evaluator. Each transform scales service, declared job energy, GPU cap, site capacity, and network load together.",
+  "scale_factors": {
+    "raw_job_witness": 1.0,
+    "fixed_nameplate_homogeneous": 1.4796888050033212,
+    "capacity_proportional_homogeneous": 2146.2043512110617
+  },
+  "raw_witness_is_not_118mw": true,
+  "capacity_proportional_network_stress_is_same_job_witness": true,
   "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
   "data_center_buses_one_based": [
     3,

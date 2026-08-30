@@ -19,7 +19,7 @@
     * 引出两个必须分别识别的问题：反事实基线是否物理可行，以及结算是否等于电网实际价值。
 * **B. Literature Review（文献综述）**
     * 历史日基线及其内生操纵依据 CAISO 规则和基线操纵模型 \cite{caiso2017baseline,wang2022baseline}。
-    * 数据中心移峰与期限调度、空间协调依据 \cite{liu2013dcdr,adnan2012geographical}；非线性灵活性与清洁能源协调研究依据 \cite{cao2024nonwire,riepin2025clean}。近期负荷聚合协调和生产轨迹研究 \cite{dcaopt2024,caprara2026} 提供结构性对照。现有工作主要优化运营成本或评估可调能力，未把任务守恒用作独立反事实核验证书。
+    * 数据中心移峰与期限调度、空间协调依据 \cite{cao2022flexibility,cao2024nonwire}；非线性灵活性与清洁能源协调研究依据 \cite{cao2024nonwire,riepin2025clean}。近期负荷聚合协调和生产轨迹研究 \cite{dcaopt2024,caprara2026} 提供结构性对照。现有工作主要优化运营成本或评估可调能力，未把任务守恒用作独立反事实核验证书。
     * 直流最优潮流、节点边际价格和公开网络基准依据 \cite{zimmerman2011matpower,babaeinejadsarookolaee2021pglib}；节点线性结算不能消除活动约束切换和正向截断造成的价值误差。
     * 合作博弈分摊依据 Shapley 原始理论 \cite{shapley1953value}；本文不把分摊公式本身包装为创新，而是构造有符号调度价值联盟函数并完成逐时段全联盟枚举。
 * **C. Contributions（主要贡献）**
@@ -37,7 +37,7 @@
 
 * **A. Spatial AI Workload State（空间人工智能工作负载状态）**
     * 定义到达能量 \(a_{skt}\)、服务决策 \(x_{skdt}\)、累计服务 \(y_{skt}\)、期限 \(D_k\)、站点容量 \(\bar P_d\) 和迁移成本。
-    * 完整约束为状态演化、不可提前执行、截止期限、站点容量与终端守恒；基础调度依据 \cite{liu2013dcdr,adnan2012geographical}，累计状态等价形式及其证明属于本文。
+    * 完整约束为状态演化、不可提前执行、截止期限、站点容量与终端守恒；基础调度依据 \cite{cao2022flexibility,cao2024nonwire}，累计状态等价形式及其证明属于本文。
 * **B. Counterfactual and Strategic Reference Days（反事实与战略参考日）**
     * 观测真值由 BurstGPT 实际服务和 MIT DCGM 实测执行能量构成，评分真值不由核验器生成 \cite{wang2024burstgpt,samsi2021supercloud}。
     * 十日平均基线增量为

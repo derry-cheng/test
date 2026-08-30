@@ -301,10 +301,25 @@ def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> N
     assert float(values["minimum_gpu_bound_slack_mwh"]) >= -1e-12
     assert float(values["minimum_site_capacity_slack_mwh"]) >= -1e-12
     assert float(values["maximum_job_to_aggregate_residual_mwh"]) <= 1e-12
-    assert len(replay) == 1
-    assert int(replay.loc[0, "event_slot_count"]) == 1056
-    assert int(replay.loc[0, "credible_contingencies"]) == 37
-    assert bool(replay.loc[0, "solver_success"])
+    assert len(replay) == 3
+    assert set(replay["scenario"]) == {
+        "raw_job_witness",
+        "fixed_nameplate_homogeneous",
+        "capacity_proportional_homogeneous",
+    }
+    assert np.all(replay["event_slot_count"] == 1056)
+    assert np.all(replay["credible_contingencies"] == 37)
+    assert replay["solver_success"].astype(bool).all()
+    scale_replay = pd.read_csv(
+        folder / "coupled_network_scale_replay.csv"
+    )
+    assert len(scale_replay) == 2
+    assert set(scale_replay["scenario"]) == {
+        "fixed_nameplate_homogeneous",
+        "capacity_proportional_homogeneous",
+    }
+    assert scale_replay["coupling_certificate_valid"].astype(bool).all()
+    assert np.isfinite(scale_replay["secure_event_value_usd"]).all()
     assert np.isclose(
         float(metadata["network_load_multiplier"]),
         float(CFG["experiments"]["n1_load_multiplier"]),
@@ -361,7 +376,7 @@ def test_literature_controls_share_the_locked_information_contract() -> None:
         / "experiments/exp2_baseline_verification/results/final/"
         "baseline_fairness_audit.csv"
     )
-    assert len(audit) == 6
+    assert len(audit) == 8
     assert audit["same_locked_days"].eq(54).all()
     for column in (
         "same_arrivals",
@@ -1205,6 +1220,7 @@ def test_final_panels_exist() -> None:
         "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
         "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
+        "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_scale_replay.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
         "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
         "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",

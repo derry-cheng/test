@@ -7,8 +7,8 @@
 | M1 | 历史日基线及事件响应 \(\hat p_t-p_t^{\mathrm{event}}\) | 采用 | CAISO 的历史日基线规则 \cite{caiso2017baseline} | High-5-of-10 是审查用代表性规则，不宣称复刻任一市场的全部日型筛选与当日修正条款。 |
 | M2 | 基线操纵的期望收益 \(q\pi^{\mathrm{DR}}\Delta B-\sum_{j=1}^{10}\Delta C_j\) | 改写 | 基线内生操纵问题 \cite{wang2022baseline} | 十日平均只作用于奖励基线；十个参考日的物理成本必须求和。本文将多期行为写成十个参考日上的确定性等价线性规划，概率、价格和参考日数量均显式给出。 |
 | P1 | 边际操纵条件 \(q\pi^{\mathrm{DR}}/10>\min_j c'_j\) | 原创特例推导 | 问题动机来自 \cite{wang2022baseline}；右端项影子价格依据线性规划对偶理论 \cite{boyd2004convex} | \(c'_j\) 由诚实调度中事件服务下界的对偶边际值独立计算；正文必须区分严格不等式、等号处多重最优调度和严格获利，不能从战略求解结果反推阈值。 |
-| M3 | 延迟容忍任务、完成期限、容量和跨地域服务变量 | 采用并扩展 | 数据中心工作负载移峰与需求响应综述 \cite{liu2013dcdr,cao2022flexibility}；带期限的动态延迟、地域平衡和批任务灵活性评估 \cite{adnan2012geographical,cao2022flexibility} | 来源支持可延迟任务与期限约束；四地域和三服务类别是本文实验设定，不具有外部统计代表性。 |
-| P2 | 累计状态约束 \(y_{skt}\le A_{skt}\)、\(y_{skt}\ge A_{sk,t-D_k}\) | 原创等价改写 | 基础期限调度见 \cite{adnan2012geographical} | 本文必须证明累计状态形式与逐任务释放—期限可行性等价，并报告终端守恒条件。 |
+| M3 | 延迟容忍任务、完成期限、容量和跨地域服务变量 | 采用并扩展 | 数据中心工作负载移峰与需求响应综述 \cite{cao2022flexibility,cao2024nonwire}；带期限的动态延迟、地域平衡和批任务灵活性评估 \cite{cao2022flexibility,cao2024nonwire} | 来源支持可延迟任务与期限约束；四地域和三服务类别是本文实验设定，不具有外部统计代表性。 |
+| P2 | 累计状态约束 \(y_{skt}\le A_{skt}\)、\(y_{skt}\ge A_{sk,t-D_k}\) | 原创等价改写 | 基础期限调度见 \cite{cao2022flexibility} | 本文必须证明累计状态形式与逐任务释放—期限可行性等价，并报告终端守恒条件。 |
 | M3b | 连续滚动终端条件 \(y_{skT^+}=A_{sk,\max\{T^0,T^+-D_k\}}\) 与两阶段词典序轨迹嵌入 | 采用并扩展 | 滚动时域数据中心调度依据 \cite{zhang2023receding}；最优面与绝对值上图依据 \cite{boyd2004convex} | 窗口保留全部真实未来到达，不补零、不循环复制；第一阶段只最小化轨迹 L1 距离，第二阶段在该最优面最小化运行成本，数值容差必须显式审计。 |
 | C2 | 可行解凸组合仍可行 | 采用并实例化 | 凸集与仿射约束的标准性质 \cite{boyd2004convex} | 引用支撑一般性质；本文还必须逐项确认六个投影共享同一到达量和同一线性可行域。 |
 | P2.2 | 总暴露—日尾部条件风险约束与点式安全包络 | 原创方法与推论 | 凸二次规划与正部函数依据 \cite{boyd2004convex}；条件风险价值依据 \cite{rockafellar2000cvar} | 验证问题同时约束总虚假信用与日级 75% 条件风险价值；\(\beta\) 只通过连续时间折叠选择。最终再解一个带 \(p^{\rm safe}_{dt}\le p^{(\ell^\star)}_{dt}\) 事件上界的完整任务规划，由正部函数单调性得到相对于所选工作负载可行参考的逐点虚假信用 MWh 非劣保证；这不等同于对任意运营商无事件电表的分布无关预测覆盖。双侧带的下界与额外欠信用上界见 P2.2b，不使用测试标签。 |
@@ -37,11 +37,11 @@
 
 | 正文标签 | 对应条目 | 依据或证明位置 |
 |---|---|---|
-| `eq:cumulative` | M3、P2 | 可延迟工作建模依据 \cite{adnan2012geographical,cao2022flexibility}；累计状态等价性由命题 2 及释放—期限约束共同证明。 |
+| `eq:cumulative` | M3、P2 | 可延迟工作建模依据 \cite{cao2022flexibility,cao2024nonwire}；累计状态等价性由命题 2 及释放—期限约束共同证明。 |
 | `eq:ledgerdigest` | P6 | SHA-256 摘要与篡改检测依据 NIST Secure Hash Standard \cite{nist2015fips1804}；规范化任务账本、连接守恒和容量包络证书由命题 6 与实验 16 实现。 |
-| `eq:release` | M3、P2 | 释放时刻约束依据 \cite{adnan2012geographical}；累计写法是本文等价改写。 |
-| `eq:deadline` | M3、P2 | 完成期限依据 \cite{adnan2012geographical,cao2022flexibility}；累计写法是本文等价改写。 |
-| `eq:power` | M3 | 计算服务到设施功率的线性映射依据数据中心负荷调度模型 \cite{liu2013dcdr,cao2022flexibility}。 |
+| `eq:release` | M3、P2 | 释放时刻约束依据 \cite{cao2022flexibility}；累计写法是本文等价改写。 |
+| `eq:deadline` | M3、P2 | 完成期限依据 \cite{cao2024nonwire,cao2022flexibility}；累计写法是本文等价改写。 |
+| `eq:power` | M3 | 计算服务到设施功率的线性映射依据数据中心负荷调度模型 \cite{cao2022flexibility,cao2024nonwire}。 |
 | `eq:rollingterminal` | M3b | 滚动时域状态保留依据 \cite{zhang2023receding}；本文针对真实未来到达给出终端等式并由命题 2 审计可行性。 |
 | `eq:falsecredit` | M1、P2.2 | 历史基线与事件响应语境依据 \cite{caiso2017baseline}；提交信用与真实信用分别定义，源特定正部差额由命题 2 证明。观测电表和机制隔离轨迹分开审计，不能把离线 oracle 当成部署输入。 |
 | `eq:meter_cap` | P2.3 | 本文可部署结算定义：提交信用、冻结合同 no-event profile credit 与闭合电表 credit 的点式交集；trace-anchored no-event profile 仅用于事后 oracle overpayment/underpayment 诊断，不进入目标拟合、事件门决策或工作负载优化。 |

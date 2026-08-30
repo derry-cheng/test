@@ -11,6 +11,8 @@ minimum_site_capacity_slack_mwh,29.48625480375,MWh
 event_native_job_profile_mwh,0.19442596894717518,MWh
 event_counterfactual_job_profile_mwh,0.0,MWh
 event_secure_network_value_usd_per_interval,0.004293061909265816,USD/interval
+homogeneous_scaled_scenario_count,2.0,scenarios
+maximum_homogeneous_scaled_network_value_usd_per_interval,9.213788146713341,USD/interval
 maximum_counterfactual_base_loading,0.7521667859623549,ratio
 maximum_counterfactual_postcontingency_loading,1.0,ratio
 all_network_solves_successful,1.0,boolean

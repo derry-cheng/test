@@ -14,10 +14,10 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
     """Report network-proportional and fixed-nameplate scale certificates.
 
     Uniform scaling is an exact witness only when every declared resource cap
-    is scaled with it.  The study therefore reports the larger
-    capacity-proportional network stress scenario separately and uses the
-    fixed per-GPU nameplate as the deployable certificate.  No profile is
-    repaired by clipping or by a heuristic post-processing rule.
+    is scaled with it.  The study therefore reports both a fixed-nameplate
+    reference scale and a larger capacity-proportional network stress scale;
+    Exp22 replays each as a homogeneous transform of the same indexed witness.
+    No profile is repaired by clipping or by a heuristic post-processing rule.
     """
     source = root / "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz"
     if not source.exists():
@@ -84,6 +84,7 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
         {"metric": "capacity_proportional_event_native_mwh", "value": float(capacity_native[:, event_idx].sum()), "unit": "MWh"},
         {"metric": "capacity_proportional_event_counterfactual_mwh", "value": float(capacity_cf[:, event_idx].sum()), "unit": "MWh"},
         {"metric": "capacity_proportional_event_gross_reduction_mwh", "value": float(np.clip(capacity_native[:, event_idx]-capacity_cf[:, event_idx], 0, None).sum()), "unit": "MWh"},
+        {"metric": "homogeneous_resource_scaling_for_coupling", "value": 1.0, "unit": "boolean"},
     ])
     rows.to_csv(out / "scale_consistency_summary.csv", index=False)
     profile = []
@@ -114,7 +115,13 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
         "fixed_nameplate_certified_scale": fixed_scale,
         "certified_scale": fixed_scale,
         "capacity_proportional_profile_is_stress_scenario": True,
+        "homogeneous_scale_replay_scales_all_resource_caps": True,
         "deployable_profile_respects_fixed_gpu_nameplate": True,
+        "scale_semantics": (
+            "The scale factors are reference transforms. Exp22 scales the job "
+            "service, declared job energy, GPU cap, site capacity, and network "
+            "load together before rechecking the typed coupling invariant."
+        ),
         "resource_count_source": "submit-time requested_gpus" if gpu_key == "requested_gpus" else "legacy measured_gpus",
         "capacity_mw": capacity_mw, "re_solved": False,
     }, indent=2), encoding="utf-8")

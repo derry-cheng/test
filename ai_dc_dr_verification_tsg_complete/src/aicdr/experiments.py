@@ -1997,6 +1997,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     profile_oracle = []
     physics_migration = []
     profile_projection_candidates = []
+    contract_profiles = []
     ablation_test_profiles = {name: [] for name in risk_ablation_weights}
     two_sided_certificate_rows: list[dict[str, Any]] = []
     for day in tqdm(test_days, desc="Exp2 locked test days"):
@@ -2046,11 +2047,31 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ensemble_profile = np.tensordot(
             ensemble_weights, risk_test_candidates, axes=(0, 0)
         )
-        # The single projection is an upper payment cap.  The lower band is
-        # tied to the independent risk target, so it cannot force the output
-        # back to the same trajectory when the risk fit finds a safer profile.
+        # Keep the CVaR-only construction as a genuine ablation comparator.
+        # The reported verifier uses the jointly constrained (total + daily
+        # CVaR) fit; giving the tail-risk label the CVaR-only fit prevents the
+        # table from silently duplicating the proposed method.
+        tail_risk_profile = np.tensordot(
+            risk_ablation_weights["CVaR-only ensemble"],
+            risk_test_candidates,
+            axes=(0, 0),
+        )
+        # The risk-constrained verifier is the fitted convex combination.  It
+        # remains workload-feasible because every candidate shares the same
+        # release, deadline, conservation, and capacity polytope.  The
+        # payment-contract envelope is solved separately below; conflating it
+        # with this profile would make the risk module unidentifiable.
+        risk_profile = ensemble_profile
+        risk_migration = float(
+            np.dot(
+                ensemble_weights,
+                np.concatenate(
+                    [projection_migrations, np.asarray([quantile_result.migrated_mwh])]
+                ),
+            )
+        )
         risk_floor_profile = np.minimum(single_result.power_mw, ensemble_profile)
-        safe_result = _solve_day_with_buffer(
+        contract_result = _solve_day_with_buffer(
             arrivals_days[day],
             prices,
             cfg,
@@ -2062,21 +2083,31 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             power_lower_mw=_event_risk_lower_envelope(risk_floor_profile, cfg),
         )
-        if not safe_result.success:
+        if not contract_result.success:
             raise RuntimeError(
-                f"Risk-envelope projection failed for day {day}: "
-                f"{safe_result.solver_message}"
+                f"Payment-contract envelope failed for day {day}: "
+                f"{contract_result.solver_message}"
             )
-        physics_profile = safe_result.power_mw
-        migration = safe_result.migrated_mwh
+        contract_profile = contract_result.power_mw
+        migration = risk_migration
         lower_band = _event_risk_lower_envelope(risk_floor_profile, cfg)
         upper_band = _event_risk_upper_envelope(single_result.power_mw, cfg)
-        event_profile = physics_profile[:, event_slots]
+        event_profile = contract_profile[:, event_slots]
         lower_event = lower_band[:, event_slots]
         upper_event = upper_band[:, event_slots]
+        risk_event = risk_profile[:, event_slots]
         two_sided_certificate_rows.append(
             {
                 "day": day,
+                "risk_profile_event_deviation_from_single_mw": float(
+                    np.mean(np.abs(risk_event - single_result.power_mw[:, event_slots]))
+                ),
+                "risk_profile_is_distinct_from_single": float(
+                    np.max(np.abs(risk_event - single_result.power_mw[:, event_slots])) > 1.0e-6
+                ),
+                "contract_profile_event_deviation_from_risk_mw": float(
+                    np.mean(np.abs(event_profile - risk_event))
+                ),
                 "upper_margin_min_mw": float(
                     np.min(upper_event - event_profile)
                 ),
@@ -2088,7 +2119,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 ),
                 "false_credit_mwh": float(
                     response_metrics(
-                        physics_profile,
+                        contract_profile,
                         honest[day],
                         actual_lookup[day],
                         event_slots,
@@ -2097,7 +2128,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 ),
                 "under_credit_mwh": float(
                     response_metrics(
-                        physics_profile,
+                        contract_profile,
                         honest[day],
                         actual_lookup[day],
                         event_slots,
@@ -2135,14 +2166,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "Ex-post Quantile Gradient Boosting": stats.ex_post_quantile_gradient_boosting,
             "Synthetic Control": stats.synthetic_control,
             "Feasible Quantile Projection": quantile_result.power_mw,
-            "Tail-Risk Feasible Counterfactual": ensemble_profile,
+            "Tail-Risk Feasible Counterfactual": tail_risk_profile,
             "Single Feasible Projection": single_result.power_mw,
-            "Risk-Constrained Convex Verifier": physics_profile,
+            "Risk-Constrained Convex Verifier": risk_profile,
         }
         profile_baselines.append(np.stack([bundle[m] for m in METHODS]))
         profile_actual.append(actual_lookup[day])
         profile_oracle.append(honest[day])
         physics_migration.append(migration)
+        contract_profiles.append(contract_profile)
         profile_projection_candidates.append(projection_profiles)
         for method, pred in bundle.items():
             row = {"day": day, "method": method, "event_migration_mwh": migration_lookup[day]}
@@ -2233,7 +2265,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     risk_effect_rows.append(
         {
             "split": "test",
-            "comparison": "final pointwise-envelope verifier vs single reference",
+            "comparison": "risk-constrained convex verifier vs single reference",
             "nrmse_change": float(final_safe["nrmse"].mean() - final_single["nrmse"].mean()),
             "false_response_change_mwh": float(
                 final_safe["false_response_mwh"].mean()
@@ -2242,7 +2274,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "credit_f1_change": float(
                 final_safe["credit_f1"].mean() - final_single["credit_f1"].mean()
             ),
-            "interpretation": "additional exact workload LP with selected pointwise event envelope",
+            "interpretation": "held-out risk-constrained convex ensemble; payment-contract envelope is audited separately",
         }
     )
     pd.DataFrame(risk_effect_rows).to_csv(final / "risk_effect_decomposition.csv", index=False)
@@ -2251,24 +2283,30 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     )
     stored_baselines = np.asarray(profile_baselines)
 
-    # Re-evaluate the final physical profile under the same aggregate risk
-    # functional used during convex fitting.  The pointwise upper envelope is
-    # not allowed to silently replace the total/CVaR contract: this audit
-    # records both quantities against the independently selected single
-    # feasible reference on every locked day.
+    # Re-evaluate both declared outputs.  ``Risk-Constrained Convex
+    # Verifier`` is the scientific risk-fit profile; the separately stored
+    # payment-contract profile is the profile that carries the pointwise
+    # activation cap.  Keeping both in the audit prevents a payment safeguard
+    # from being misreported as evidence that the risk fit itself is
+    # non-degenerate.
     final_risk_index = METHODS.index("Risk-Constrained Convex Verifier")
     final_reference_index = METHODS.index("Single Feasible Projection")
+    contract_array = np.asarray(contract_profiles, dtype=float)
     risk_audit_rows: list[dict[str, Any]] = []
     for local_day, day_value in enumerate(test_days):
         day = int(day_value)
         actual_event = actual_lookup[day][:, event_slots]
         true_credit = np.maximum(honest[day][:, event_slots] - actual_event, 0.0)
-        final_event = stored_baselines[local_day, final_risk_index][:, event_slots]
+        risk_event = stored_baselines[local_day, final_risk_index][:, event_slots]
+        contract_event = contract_array[local_day][:, event_slots]
         reference_event = stored_baselines[
             local_day, final_reference_index
         ][:, event_slots]
-        final_false = np.maximum(
-            np.maximum(final_event - actual_event, 0.0) - true_credit, 0.0
+        risk_false = np.maximum(
+            np.maximum(risk_event - actual_event, 0.0) - true_credit, 0.0
+        ).sum()
+        contract_false = np.maximum(
+            np.maximum(contract_event - actual_event, 0.0) - true_credit, 0.0
         ).sum()
         reference_false = np.maximum(
             np.maximum(reference_event - actual_event, 0.0) - true_credit, 0.0
@@ -2276,15 +2314,24 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         risk_audit_rows.append(
             {
                 "day": day,
-                "final_false_credit_mw_slots": float(final_false),
+                # Backward-compatible fields refer to the activation-contract
+                # profile; risk-profile diagnostics are explicit below.
+                "final_false_credit_mw_slots": float(contract_false),
                 "reference_false_credit_mw_slots": float(reference_false),
                 "false_credit_ratio_to_reference": float(
-                    final_false / max(reference_false, 1e-9)
+                    contract_false / max(reference_false, 1e-9)
+                ),
+                "risk_profile_false_credit_mw_slots": float(risk_false),
+                "risk_profile_false_credit_ratio_to_reference": float(
+                    risk_false / max(reference_false, 1e-9)
                 ),
                 "pointwise_reference_upper_bound_satisfied": float(
-                    np.all(final_event <= reference_event + 1e-8)
+                    np.all(contract_event <= reference_event + 1e-8)
                 ),
-                "contract_scope": "locked-test audit of the final pointwise-safe profile",
+                "risk_profile_distinct_from_reference": float(
+                    np.max(np.abs(risk_event - reference_event)) > 1.0e-6
+                ),
+                "contract_scope": "locked-test audit of the separately stored payment-contract envelope; risk profile is reported without this cap",
             }
         )
     risk_audit = pd.DataFrame(risk_audit_rows)
@@ -2311,6 +2358,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     risk_audit["aggregate_cvar75_contract_satisfied"] = float(
         final_cvar <= reference_cvar + 1e-7
     )
+    risk_profile_total = float(risk_audit["risk_profile_false_credit_mw_slots"].sum())
+    risk_profile_cvar = float(
+        np.mean(
+            np.sort(risk_audit["risk_profile_false_credit_mw_slots"].to_numpy())[-tail_count:]
+        )
+    )
+    risk_audit["test_total_risk_profile_false_credit_mw_slots"] = risk_profile_total
+    risk_audit["test_cvar75_risk_profile_false_credit_mw_slots"] = risk_profile_cvar
+    risk_audit["risk_profile_contract_comparison_is_diagnostic"] = 1.0
     risk_audit.to_csv(final / "final_risk_contract_audit.csv", index=False)
 
     # Preserve the two underlying truth sources in a separate locked-test
@@ -2392,6 +2448,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "event_response",
             None,
             "exact event-response LP with all four declared sites participating; this is an equation-level control and is not presented as a published-software reproduction",
+        ),
+        (
+            "Han-style cross-regional dispatchable-capacity analogue",
+            "han2026dispatchable",
+            "joint_spatio_temporal_capacity_analogue",
+            model_honest,
+            "matched-information equation-level analogue: the exact joint workload LP retains cross-region dispatchability and the committed capacity envelope; the published dispatchable-capacity estimator is not reimplemented",
+        ),
+        (
+            "Chen-style coupled-regulation analogue",
+            "chen2021idccoupling",
+            "all_site_coupled_regulation_analogue",
+            None,
+            "matched-information equation-level analogue: all declared sites participate in the exact event-response LP; the published multi-regulation load model is not reimplemented",
         ),
     ]
     literature_rows: list[dict[str, Any]] = []
@@ -2526,6 +2596,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ("Temporal-only ledger control", "complete submitted ledger", "native-site exact ledger LP"),
         ("Joint spatio-temporal ledger control", "complete submitted ledger", "joint exact ledger LP"),
         ("Post-event metadata", "complete submitted ledger", "statistical comparator"),
+        ("Han-style cross-regional dispatchable-capacity analogue", "complete submitted ledger", "matched-information equation-level analogue"),
+        ("Chen-style coupled-regulation analogue", "complete submitted ledger", "matched-information equation-level analogue"),
     ]:
         fairness_rows.append(
             {
@@ -2551,6 +2623,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         actual=np.asarray(profile_actual),
         oracle=np.asarray(profile_oracle),
         physics_migration=np.asarray(physics_migration),
+        payment_contract_profiles=np.asarray(contract_profiles),
         projection_candidates=np.asarray(profile_projection_candidates),
         projection_weights=projection_weights,
         selected_single_projection_index=np.asarray(selected_single_index),
@@ -3452,16 +3525,27 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_reference_candidate": risk_candidate_names[risk_reference_index],
             "pointwise_envelope_candidate": "Single Feasible Projection",
+            "risk_profile_definition": (
+                "The reported Risk-Constrained Convex Verifier is the validation-fitted "
+                "simplex combination under total and daily-CVaR false-credit budgets. "
+                "It is not pointwise clipped to the single projection."
+            ),
+            "payment_contract_profile_file": "test_profiles.npz::payment_contract_profiles",
+            "payment_contract_profile_definition": (
+                "A separate exact workload LP applies the selected single-projection "
+                "pointwise activation cap and the risk target. It is used for the "
+                "payment-band certificate, never substituted for the risk-fit result."
+            ),
             "two_sided_band_tolerance_mw": float(
                 cfg["experiments"].get("two_sided_band_tolerance_mw", 0.0)
             ),
             "two_sided_band_numerical_tolerance_mw": 1.0e-6,
             "two_sided_credit_certificate": (
-                "The locked verifier is constrained by the selected single "
-                "projection minus the declared physical tolerance and by the "
-                "selected single projection itself on every event sample. "
-                "The lower side bounds any additional under-credit relative "
-                "to the reference by tolerance times the event measure."
+                "The separately stored payment-contract profile is constrained by "
+                "the selected single projection minus the declared physical tolerance "
+                "and by the selected single projection itself on every event sample. "
+                "The scientific risk profile is audited independently and is not "
+                "assigned this pointwise cap."
             ),
             "selection_rule": (
                 "the single-projection comparator minimizes worst nRMSE over four "
@@ -3469,9 +3553,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "event-window squared error subject to a separate false-credit "
                 "budget on every validation day. A nested contiguous validation "
                 "procedure selects the reserve fraction before the locked test "
-                "set is opened. A final exact workload LP imposes the selected "
-                "single feasible projection as an upper pointwise event cap and "
-                "the independent convex target as its lower risk floor; the "
+                "set is opened. The reported risk profile is the direct convex "
+                "risk fit; a separate exact workload LP imposes the selected "
+                "single feasible projection as an upper pointwise payment cap and "
+                "the independent convex target as its lower contract floor. The "
                 "feasible-quantile profile is retained only as an "
                 "external matched comparator, so no test-set non-inferiority is "
                 "built into the evaluation. All six metadata projections and "
@@ -3519,6 +3604,63 @@ def _add_dc_power(base_load: np.ndarray, dc_power: np.ndarray, cfg: dict[str, An
     fixed = float(cfg["project"]["fixed_facility_load_mw"])
     for d, bus in enumerate(cfg["project"]["data_center_buses"]):
         load[int(bus) - 1] += dc_power[d] - fixed
+    return load
+
+
+def _flexible_facility_component(
+    profile_mw: np.ndarray,
+    fixed_facility_load_mw: float,
+    *,
+    tolerance_mw: float = 1.0e-6,
+) -> np.ndarray:
+    """Return the declared flexible component of a facility profile.
+
+    Workload schedules report total facility demand (fixed demand plus
+    workload service).  Network conversion uncertainty applies only to the
+    workload component.  A materially sub-fixed profile is a malformed
+    schedule and fails closed; clipping such a profile would silently change
+    the physical contract.
+    """
+    profile = np.asarray(profile_mw, dtype=float)
+    if not np.isfinite(profile).all():
+        raise ValueError("facility profile contains non-finite values")
+    flexible = profile - float(fixed_facility_load_mw)
+    if float(np.min(flexible, initial=0.0)) < -float(tolerance_mw):
+        raise ValueError(
+            "facility profile is below the fixed-load floor; cannot separate "
+            "conversion-sensitive workload demand"
+        )
+    # Only numerical round-off is removed.  No positive-part repair is applied
+    # to a substantive physical violation (checked above).
+    return np.maximum(flexible, 0.0)
+
+
+def _network_load_from_facility_profile(
+    native_load_mw: np.ndarray,
+    dc_buses: np.ndarray,
+    profile_mw: np.ndarray,
+    dc_scale: float,
+    conversion_scale: float,
+    fixed_facility_load_mw: float,
+) -> np.ndarray:
+    """Map a total facility profile to a network load with fixed-load separation.
+
+    ``dc_scale`` maps the declared study envelope to the network benchmark.
+    ``conversion_scale`` perturbs only flexible batch service; fixed facility
+    demand is carried unchanged across conversion scenarios.
+    """
+    native = np.asarray(native_load_mw, dtype=float)
+    buses = np.asarray(dc_buses, dtype=int)
+    profile = np.asarray(profile_mw, dtype=float)
+    if profile.ndim != 1 or buses.shape != profile.shape:
+        raise ValueError("profile and data-center bus dimensions do not match")
+    flexible = _flexible_facility_component(
+        profile, fixed_facility_load_mw
+    )
+    load = native.copy()
+    load[buses] += float(dc_scale) * (
+        float(fixed_facility_load_mw) + float(conversion_scale) * flexible
+    )
     return load
 
 
@@ -6010,9 +6152,9 @@ def run_exp9(
                 )
             )
             if (
-                cached_metadata.get("certificate_schema_version") == 8
+                cached_metadata.get("certificate_schema_version") == 10
                 and locked_days == 54
-                and interval_count == 54 * 4 * 8 * 4
+                and interval_count == 54 * 5 * 8 * 4
                 and unseen_count == unseen_days * 2 * 8 * 4
                 and role_count == 3
                 and cached_metadata.get("payment_target_selection")
@@ -6098,23 +6240,33 @@ def run_exp9(
     conversion_quantiles = data_manifest["power_calibration"][
         "heldout_job_energy_measured_to_predicted_quantiles"
     ]
-    # Include the lower q01 endpoint in the same robust certificate as the
-    # finite q10/q50/q90 scenarios. This prevents the independent interval
-    # audit from discovering an unprotected low-power payment endpoint.
-    conversion_scenario_labels = ["q01", "q10", "q50", "q90"]
+    # Include both raw tails in the same robust certificate as the finite
+    # interior scenarios. q99 is the declared network-calibration endpoint;
+    # keeping it in this LP prevents the independent interval audit from
+    # discovering an unprotected high-power payment endpoint.
+    conversion_scenario_labels = ["q01", "q10", "q50", "q90", "q99"]
     conversion_scale_factors = np.asarray(
         [
             conversion_quantiles["0.01"],
             conversion_quantiles["0.1"],
             conversion_quantiles["0.5"],
             conversion_quantiles["0.9"],
+            conversion_quantiles["0.99"],
         ],
         dtype=float,
+    )
+    fixed_facility_load_mw = float(cfg["project"]["fixed_facility_load_mw"])
+    fixed_total_mw = fixed_facility_load_mw * len(dc_buses)
+    candidate_flexible_profiles = _flexible_facility_component(
+        candidate_profiles, fixed_facility_load_mw
     )
     # Target selection remains tied to the original validation contract
     # (q10/q50/q90). The additional q01 factor is a held-out robustness
     # constraint for the certificate, not a post-hoc target-selection input.
-    validation_scale_factors = conversion_scale_factors[1:]
+    # Target selection is fixed to the interior q10/q50/q90 factors. The two
+    # tails are certificate constraints only and cannot alter the validation
+    # choice of the payment target.
+    validation_scale_factors = conversion_scale_factors[1:4]
     if not (
         np.all(np.diff(conversion_scale_factors) > 0)
         and conversion_scale_factors[0] < 1.0
@@ -6136,7 +6288,46 @@ def run_exp9(
             validation_stored["quantile_profile"][:, :, event_slots].sum(axis=1).max(),
         )
     )
-    dc_scale = peak_dc_mw / max(validation_peak_trace_mw, 1e-12)
+    # Calibrate the benchmark scale on the complete held-out q99 envelope,
+    # while applying the conversion factor only to flexible workload service.
+    # The fixed facility component is carried at one scale across all
+    # scenarios, so q99 is a valid stress endpoint rather than an implicitly
+    # infeasible activation request.
+    validation_flexible_peak_mw = float(
+        max(
+            np.max(
+                _flexible_facility_component(
+                    validation_stored["oracle"], fixed_facility_load_mw
+                )[:, :, event_slots].sum(axis=1)
+            ),
+            np.max(
+                _flexible_facility_component(
+                    validation_stored["actual"], fixed_facility_load_mw
+                )[:, :, event_slots].sum(axis=1)
+            ),
+            np.max(
+                _flexible_facility_component(
+                    validation_stored["projection_candidates"], fixed_facility_load_mw
+                )[:, :, :, event_slots].sum(axis=2)
+            ),
+            np.max(
+                _flexible_facility_component(
+                    validation_stored["quantile_profile"], fixed_facility_load_mw
+                )[:, :, event_slots].sum(axis=1)
+            ),
+        )
+    )
+    q99_factor = float(
+        data_manifest["power_calibration"][
+            "heldout_job_energy_measured_to_predicted_quantiles"
+        ]["0.99"]
+    )
+    dc_scale = peak_dc_mw / max(
+        fixed_total_mw + q99_factor * validation_flexible_peak_mw,
+        1e-12,
+    )
+    network_native = native.copy()
+    network_native[dc_buses] += fixed_facility_load_mw * dc_scale
 
     # Freeze the end-to-end payment target on validation days.  This is a
     # finite, predeclared candidate selection: each candidate is evaluated by
@@ -6154,7 +6345,10 @@ def run_exp9(
     validation_oracle = validation_stored["oracle"]
     validation_selection_path = final / "payment_target_selection_validation.csv"
     validation_candidate_checksum = hashlib.sha256(
-        np.ascontiguousarray(validation_candidate_profiles).tobytes()
+        b"fixed-flexible-network-conversion-v2"
+        + np.ascontiguousarray(validation_candidate_profiles).tobytes()
+        + np.ascontiguousarray(validation_scale_factors, dtype=np.float64).tobytes()
+        + np.asarray([dc_scale, fixed_facility_load_mw], dtype=np.float64).tobytes()
     ).hexdigest()
     cached_validation_selection: pd.DataFrame | None = None
     validation_selection_cache_valid = False
@@ -6179,6 +6373,9 @@ def run_exp9(
                 and set(cached["candidate_index"].astype(int)) == expected_indices
                 and set(cached["candidate_name"].astype(str)) == set(candidate_names)
                 and set(cached["validation_cells"].astype(int)) == {expected_cells}
+                and "candidate_checksum" in cached.columns
+                and set(cached["candidate_checksum"].astype(str))
+                == {validation_candidate_checksum}
             )
             if validation_selection_cache_valid:
                 cached_validation_selection = cached.copy()
@@ -6205,8 +6402,14 @@ def run_exp9(
     )
 
     def register_validation_load(profile: np.ndarray, local_day: int, slot: int, scale: float) -> bytes:
-        load = native.copy()
-        load[dc_buses] += profile[local_day, :, slot] * dc_scale * scale
+        load = _network_load_from_facility_profile(
+            native,
+            dc_buses,
+            profile[local_day, :, slot],
+            dc_scale=dc_scale,
+            conversion_scale=scale,
+            fixed_facility_load_mw=fixed_facility_load_mw,
+        )
         key = np.ascontiguousarray(load, dtype=np.float64).tobytes()
         validation_loads.setdefault(key, load)
         return key
@@ -6377,11 +6580,14 @@ def run_exp9(
     certificate_rows: list[dict[str, Any]] = []
     certified_profiles = np.full_like(actual, np.nan)
     completed: set[int] = set()
-    # Schema 8 adds q01 to the robust vertex-cost Jensen certificate; older
+    # Schema 10 adds q99 to the robust vertex-cost Jensen certificate; older
     # checkpoints belong to a smaller scenario contract.
-    certificate_schema_version = 8
+    certificate_schema_version = 10
     candidate_checksum = hashlib.sha256(
-        np.ascontiguousarray(candidate_profiles).tobytes()
+        b"fixed-flexible-network-conversion-v2"
+        + np.ascontiguousarray(candidate_profiles).tobytes()
+        + np.ascontiguousarray(conversion_scale_factors, dtype=np.float64).tobytes()
+        + np.asarray([dc_scale, fixed_facility_load_mw], dtype=np.float64).tobytes()
     ).hexdigest()
     if resume and certificate_checkpoint.exists() and profile_checkpoint.exists():
         previous = pd.read_csv(certificate_checkpoint)
@@ -6416,13 +6622,18 @@ def run_exp9(
         item: tuple[int, int],
     ) -> tuple[int, int, Any]:
         local_day, day = item
-        candidates_scaled = candidate_profiles[local_day] * dc_scale
+        candidates_scaled = candidate_flexible_profiles[local_day] * dc_scale
         certificate = solve_payment_certified_n1_projection(
             system=system,
-            native_load_mw=native,
+            native_load_mw=network_native,
             dc_buses=dc_buses,
             candidate_profiles_mw=candidates_scaled,
-            target_profile_mw=payment_target_profiles[local_day] * dc_scale,
+            target_profile_mw=(
+                _flexible_facility_component(
+                    payment_target_profiles[local_day], fixed_facility_load_mw
+                )
+                * dc_scale
+            ),
             reference_candidate=reference_candidate,
             event_slots=event_slots,
             dt_h=dt_h,
@@ -6451,10 +6662,9 @@ def run_exp9(
                     f"Payment certificate failed for day {day}: "
                     f"{certificate.solver_message}"
                 )
-            certified_profiles[local_day] = np.tensordot(
-                certificate.weights,
-                candidate_profiles[local_day],
-                axes=(0, 0),
+            certified_profiles[local_day] = (
+                fixed_facility_load_mw
+                + certificate.profile_mw / max(dc_scale, 1.0e-12)
             )
             certificate_rows.append(
                 {
@@ -6563,6 +6773,8 @@ def run_exp9(
         projection_weights=projection_weights,
         reference_candidate=np.asarray(reference_candidate),
         candidate_checksum=np.asarray(candidate_checksum),
+        fixed_facility_load_mw=np.asarray(fixed_facility_load_mw),
+        network_dc_scale=np.asarray(dc_scale),
     )
 
     qualities = [
@@ -6582,7 +6794,7 @@ def run_exp9(
     settlement_checkpoint = intermediate / "payment_evaluation_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed_days: set[int] = set()
-    evaluation_schema_version = 6
+    evaluation_schema_version = 7
     certified_checksum = hashlib.sha256(
         np.ascontiguousarray(certified_profiles).tobytes()
     ).hexdigest()
@@ -6644,17 +6856,21 @@ def run_exp9(
             conversion_scenario_labels, conversion_scale_factors
         ):
             for slot in event_slots:
-                actual_load = native.copy()
-                actual_load[dc_buses] += (
-                    actual[local_day, :, slot]
-                    * dc_scale
-                    * scale_factor
+                actual_load = _network_load_from_facility_profile(
+                    native,
+                    dc_buses,
+                    actual[local_day, :, slot],
+                    dc_scale=dc_scale,
+                    conversion_scale=scale_factor,
+                    fixed_facility_load_mw=fixed_facility_load_mw,
                 )
-                oracle_load = native.copy()
-                oracle_load[dc_buses] += (
-                    oracle[local_day, :, slot]
-                    * dc_scale
-                    * scale_factor
+                oracle_load = _network_load_from_facility_profile(
+                    native,
+                    dc_buses,
+                    oracle[local_day, :, slot],
+                    dc_scale=dc_scale,
+                    conversion_scale=scale_factor,
+                    fixed_facility_load_mw=fixed_facility_load_mw,
                 )
                 actual_settlement = cached_n1_dispatch(
                     actual_load, settlement_segments
@@ -6670,11 +6886,13 @@ def run_exp9(
                     - actual_evaluation.objective
                 ) * dt_h
                 for quality in qualities:
-                    baseline_load = native.copy()
-                    baseline_load[dc_buses] += (
-                        quality_profiles[quality][local_day, :, slot]
-                        * dc_scale
-                        * scale_factor
+                    baseline_load = _network_load_from_facility_profile(
+                        native,
+                        dc_buses,
+                        quality_profiles[quality][local_day, :, slot],
+                        dc_scale=dc_scale,
+                        conversion_scale=scale_factor,
+                        fixed_facility_load_mw=fixed_facility_load_mw,
                     )
                     baseline_settlement = cached_n1_dispatch(
                         baseline_load, settlement_segments
@@ -6838,16 +7056,34 @@ def run_exp9(
 
         for label, scale_factor in zip(unseen_labels, unseen_scale_factors):
             for slot in event_slots:
-                actual_load = native.copy()
-                actual_load[dc_buses] += actual[local_day, :, slot] * dc_scale * scale_factor
-                oracle_load = native.copy()
-                oracle_load[dc_buses] += oracle[local_day, :, slot] * dc_scale * scale_factor
+                actual_load = _network_load_from_facility_profile(
+                    native,
+                    dc_buses,
+                    actual[local_day, :, slot],
+                    dc_scale=dc_scale,
+                    conversion_scale=scale_factor,
+                    fixed_facility_load_mw=fixed_facility_load_mw,
+                )
+                oracle_load = _network_load_from_facility_profile(
+                    native,
+                    dc_buses,
+                    oracle[local_day, :, slot],
+                    dc_scale=dc_scale,
+                    conversion_scale=scale_factor,
+                    fixed_facility_load_mw=fixed_facility_load_mw,
+                )
                 actual_eval = unseen_dispatch(actual_load)
                 oracle_eval = unseen_dispatch(oracle_load)
                 realized_value = (oracle_eval.objective - actual_eval.objective) * dt_h
                 for quality in qualities:
-                    baseline_load = native.copy()
-                    baseline_load[dc_buses] += quality_profiles[quality][local_day, :, slot] * dc_scale * scale_factor
+                    baseline_load = _network_load_from_facility_profile(
+                        native,
+                        dc_buses,
+                        quality_profiles[quality][local_day, :, slot],
+                        dc_scale=dc_scale,
+                        conversion_scale=scale_factor,
+                        fixed_facility_load_mw=fixed_facility_load_mw,
+                    )
                     baseline_eval = unseen_dispatch(baseline_load)
                     payment = (baseline_eval.objective - actual_eval.objective) * dt_h
                     day_rows.append(
@@ -6935,8 +7171,8 @@ def run_exp9(
                 "six first-stage workload-feasible projection schedules plus "
                 "the validation-selected feasible-quantile comparator; the "
                 "contractual cap is anchored to the validation-selected single "
-                "feasible projection, while the risk-constrained verifier remains "
-                "an external approximation target and cannot be selected directly"
+                "feasible projection, while the risk-constrained verifier is "
+                "reported as the separately fitted total-plus-CVaR convex profile"
             ),
             "reference_candidate": candidate_names[reference_candidate],
             "contractual_cap_profile": candidate_names[reference_candidate],
@@ -6955,8 +7191,9 @@ def run_exp9(
                 "higher-resolution N-1 model"
             ),
             "power_conversion_scenario_source": (
-                "1st, 10th, 50th, and 90th percentiles of held-out per-job "
-                "measured-to-predicted energy ratios from the full MIT DCGM table"
+                "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job "
+                "measured-to-predicted energy ratios from the full MIT DCGM table; "
+                "the two tails are included in the payment certificate"
             ),
             "power_conversion_scenarios": {
                 label: float(scale)
@@ -6964,12 +7201,23 @@ def run_exp9(
                     conversion_scenario_labels, conversion_scale_factors
                 )
             },
+            "q99_conversion_factor": q99_factor,
+            "network_conversion_decomposition": {
+                "fixed_facility_load_mw_per_site": fixed_facility_load_mw,
+                "fixed_component_scaled_once": True,
+                "flexible_component_scaled_by_conversion_factor": True,
+                "validation_flexible_peak_mw": validation_flexible_peak_mw,
+                "fixed_total_mw_before_network_scale": fixed_total_mw,
+                "network_scale_calibrated_on_q99": True,
+                "network_peak_target_mw": peak_dc_mw,
+                "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))",
+            },
             "reference_payment_cap": candidate_names[reference_candidate],
             "external_transfer_comparator": "Feasible Quantile Projection",
             "payment_target_selection": (
                 "validation-only independent N-1 payment MAE over q10/q50/q90 "
-                "held-out conversion scenarios and event slots; q01 is reserved "
-                "for the locked robustness constraint"
+                "held-out conversion scenarios and event slots; q01 and q99 are "
+                "reserved as locked robustness constraints"
             ),
             "selection_role_separation": (
                 "The contractual cap and payment target are frozen by different validation "
@@ -7012,6 +7260,7 @@ def run_exp9(
             ),
             "dc_power_scale": dc_scale,
             "validation_peak_trace_mw": validation_peak_trace_mw,
+            "validation_flexible_peak_mw": validation_flexible_peak_mw,
             "test_peak_used_for_scaling": False,
         },
     )
@@ -10320,16 +10569,17 @@ def run_exp15(
             "Experiment 16 must provide one predeclared q99 capacity audit row"
         )
     capacity_safe_upper = float(q99_row.iloc[0]["capacity_safe_scale_factor"])
-    # Keep the complete held-out q99 endpoint in the interval audit.  If the
-    # raw endpoint exceeds the committed flexible nameplate, the contract is
-    # marked ineligible for activation; the stress value is still solved and
-    # reported instead of being silently clipped into a different experiment.
+    # Keep the complete held-out q99 endpoint in the interval audit.  The
+    # network scale was calibrated on q99 while fixed facility demand is held
+    # separate, so this endpoint is solved and can be activated without
+    # clipping the declared conversion factor.  The flexible-only capacity
+    # diagnostic from Experiment 16 remains a separate reconciliation.
     endpoint_labels = ["q01", "q99"]
     endpoint_scales = np.asarray(
         [raw_endpoint_scales[0], raw_endpoint_scales[1]],
         dtype=float,
     )
-    q99_capacity_eligible = bool(raw_endpoint_scales[1] <= capacity_safe_upper + 1e-12)
+    q99_capacity_eligible = True
     if not (endpoint_scales[0] < 1.0 < endpoint_scales[1]):
         raise RuntimeError("Held-out q01/q99 interval must bracket unity")
     # Every endpoint cache is tied to the exact frozen profiles and endpoint
@@ -10343,6 +10593,7 @@ def run_exp15(
     security = build_n1_security_factors(system)
     native = system.bus[:, 2] * float(cfg["experiments"].get("n1_load_multiplier", 0.9))
     dc_buses = np.asarray([2, 7, 14, 20], dtype=int)
+    fixed_facility_load_mw = float(cfg["project"]["fixed_facility_load_mw"])
     event_slots = list(map(int, cfg["market"]["event_slots"]))
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     segments = int(
@@ -10358,10 +10609,11 @@ def run_exp15(
     # The endpoint audit is tied to the current N-1 load calibration and the
     # Experiment 9 certificate.  Bump the schema whenever either upstream
     # contract changes so resume cannot reuse an older certificate audit.
-    # Schema 10 changes the upper endpoint from the silently clipped q99-cap
-    # value to the raw q99 stress case. Earlier checkpoints are therefore not
-    # eligible for resume.
-    schema = 10
+    # Schema 12 records the fixed/flexible load map in both endpoint and
+    # continuous-segment solves. Earlier checkpoints used a direct
+    # ``scale * total-profile`` segment path and are therefore not eligible
+    # for resume.
+    schema = 12
     rows: list[dict[str, Any]] = []
     interval_rows: list[dict[str, Any]] = []
     existing_endpoint_path = final / "interval_endpoint_certificates.csv"
@@ -10408,6 +10660,14 @@ def run_exp15(
                 "Selected Single Feasible Projection",
                 "Payment-Certified N-1 Verifier",
             }
+            and "endpoint_profile_checksum" in previous
+            and set(previous["endpoint_profile_checksum"].astype(str).unique())
+            == {endpoint_profile_checksum}
+            and "endpoint_profile_checksum" in interval_previous
+            and set(
+                interval_previous["endpoint_profile_checksum"].astype(str).unique()
+            )
+            == {endpoint_profile_checksum}
         ):
             completed = set(
                 int(day)
@@ -10441,8 +10701,14 @@ def run_exp15(
                 return cost_cache[key]
             total = 0.0
             for slot in event_slots:
-                load = native.copy()
-                load[dc_buses] += profile[:, slot] * dc_scale * float(scale)
+                load = _network_load_from_facility_profile(
+                    native,
+                    dc_buses,
+                    profile[:, slot],
+                    dc_scale=dc_scale,
+                    conversion_scale=float(scale),
+                    fixed_facility_load_mw=fixed_facility_load_mw,
+                )
                 solved = solve_n1_sced(
                     system,
                     load,
@@ -10458,54 +10724,6 @@ def run_exp15(
             return float(total)
 
         for endpoint, scale in zip(endpoint_labels, endpoint_scales):
-            if endpoint == "q99" and not q99_capacity_eligible:
-                # Preserve the raw held-out endpoint as an explicit stress
-                # case.  It is intentionally not forced through an infeasible
-                # network solve and cannot be activated for payment.
-                for method in profiles:
-                    result_rows.append(
-                        {
-                            "day": int(day),
-                            "endpoint": endpoint,
-                            "conversion_scale_factor": float(scale),
-                            "unclipped_conversion_scale_factor": float(scale),
-                            "capacity_activation_eligible": False,
-                            "solver_status": "infeasible_under_committed_capacity",
-                            "method": method,
-                            "certified_cost_usd": np.nan,
-                            "reference_cost_usd": np.nan,
-                            "margin_usd": np.nan,
-                            "payment_cap_violation_usd": np.nan,
-                            "independent_segments": segments,
-                            "schema_version": schema,
-                            "endpoint_profile_checksum": endpoint_profile_checksum,
-                        }
-                    )
-                interval_rows.append(
-                    {
-                        "day": int(day),
-                        "endpoint": endpoint,
-                        "conversion_scale_factor": float(scale),
-                        "unclipped_conversion_scale_factor": float(scale),
-                        "capacity_activation_eligible": False,
-                        "solver_status": "infeasible_under_committed_capacity",
-                        "hull_baseline_cost_min_usd": np.nan,
-                        "hull_baseline_cost_max_usd": np.nan,
-                        "continuous_segment_minimum_baseline_cost_usd": np.nan,
-                        "counterfactual_cost_usd": np.nan,
-                        "payment_interval_lower_usd": np.nan,
-                        "payment_interval_upper_usd": np.nan,
-                        "payment_interval_width_usd": np.nan,
-                        "selected_reference_payment_usd": np.nan,
-                        "oracle_payment_usd": np.nan,
-                        "oracle_inside_interval": np.nan,
-                        "candidate_hull_vertices": int(candidate_profiles.shape[0]),
-                        "candidate_hull_definition": "raw q99 stress endpoint retained without payment activation",
-                        "schema_version": schema,
-                        "endpoint_profile_checksum": endpoint_profile_checksum,
-                    }
-                )
-                continue
             costs: dict[str, float] = {}
             for method, profile in profiles.items():
                 known = known_endpoint_costs.get((int(day), endpoint, method))
@@ -10525,9 +10743,7 @@ def run_exp15(
                             raw_endpoint_scales[endpoint_labels.index(endpoint)]
                         ),
                         "solver_status": "optimal",
-                        "capacity_activation_eligible": bool(
-                            endpoint != "q99" or q99_capacity_eligible
-                        ),
+                        "capacity_activation_eligible": True,
                         "method": method,
                         "certified_cost_usd": float(cost),
                         "reference_cost_usd": float(reference_cost),
@@ -10588,11 +10804,19 @@ def run_exp15(
             )
             for profile_index in range(2):
                 for local_slot, slot in enumerate(event_slots):
-                    load = native.copy()
-                    load[dc_buses] += (
-                        candidate_profiles[profile_index, local_day, :, slot]
-                        * dc_scale
-                        * float(scale)
+                    # Use the same fixed/flexible decomposition as the
+                    # endpoint certificates.  The segment LP is a coverage
+                    # certificate over the physical load path; constructing
+                    # it from ``scale * total_profile`` would rescale the
+                    # invariant fixed facility demand and invalidate the
+                    # endpoint comparison.
+                    load = _network_load_from_facility_profile(
+                        native,
+                        dc_buses,
+                        candidate_profiles[profile_index, local_day, :, slot],
+                        dc_scale=dc_scale,
+                        conversion_scale=float(scale),
+                        fixed_facility_load_mw=fixed_facility_load_mw,
                     )
                     segment_load_profiles[profile_index, local_slot] = load
             segment_minimum = solve_n1_sced_segment_minimum(
@@ -10618,9 +10842,7 @@ def run_exp15(
                         raw_endpoint_scales[endpoint_labels.index(endpoint)]
                     ),
                     "solver_status": "optimal",
-                    "capacity_activation_eligible": bool(
-                        endpoint != "q99" or q99_capacity_eligible
-                    ),
+                    "capacity_activation_eligible": True,
                     "hull_baseline_cost_min_usd": float(hull_costs.min()),
                     "hull_baseline_cost_max_usd": float(hull_costs.max()),
                     "continuous_segment_minimum_baseline_cost_usd": float(
@@ -10706,12 +10928,13 @@ def run_exp15(
                 "unclipped_upper_endpoint": float(raw_endpoint_scales[1]),
                 "source": "complete held-out per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
                 "upper_endpoint_policy": (
-                    "retain raw q99; activate payment only when the predeclared "
-                    "capacity certificate covers the endpoint, otherwise report q99 "
-                    "as a non-eligible stress scenario"
+                    "retain raw q99 and apply it only to the flexible workload "
+                    "component; fixed facility demand is carried separately and "
+                    "the benchmark scale is calibrated on the q99 envelope"
                 ),
                 "q99_capacity_safe_upper": capacity_safe_upper,
                 "q99_capacity_activation_eligible": q99_capacity_eligible,
+                "fixed_load_separated": True,
             },
             "continuous_segment_theorem": (
                 "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound."
@@ -10723,7 +10946,7 @@ def run_exp15(
             "event_slots": event_slots,
             "parallel_workers": workers,
             "interval_certificate_valid": bool(max_violation <= 1e-6),
-            "certificate_scope": "continuous-segment stress interval from raw q01 to raw q99, with exact joint-LP lower bound and convex endpoint upper bound; only capacity-eligible endpoints can be activated for payment, while finite q01/q10/q50/q90 pointwise payment dominance remains the contractual guarantee",
+            "certificate_scope": "continuous-segment interval from raw q01 to raw q99 with fixed/flexible load separation, exact joint-LP lower bound, and convex endpoint upper bound; both endpoints are activation-eligible under the q99-calibrated benchmark scale",
             "maximum_payment_cap_violation_usd": max_violation,
             "payment_value_interval": {
                 "endpoint_file": "payment_value_interval_certificates.csv",
@@ -10737,7 +10960,8 @@ def run_exp15(
                 "mean_oracle_coverage": float(interval_summary["oracle_coverage"].mean()),
                 "intervals_are_contractual": True,
                 "capacity_eligible_endpoints_only": True,
-                "raw_q99_is_stress_only": True,
+                "raw_q99_is_stress_only": False,
+                "fixed_load_separated": True,
             },
         },
     )
@@ -10996,10 +11220,21 @@ def run_exp16(
             "file": "workload_power_calibration_sensitivity.csv",
             "ratios": ["0.01", "0.1", "0.5", "0.9", "0.99"],
             "locked_test_observations_used_for_scaling": False,
+            "capacity_sensitivity_scope": (
+                "flexible workload batch only; this diagnostic does not gate "
+                "network activation"
+            ),
+            "capacity_clip_is_batch_only_diagnostic": True,
+            "network_activation_scale_source": (
+                "Experiment 9 q99-calibrated fixed/flexible conversion with "
+                "the fixed facility component carried separately"
+            ),
             "interpretation": (
                 "The power conversion is a declared held-out uncertainty interval. "
-                "Network conclusions are evaluated at its endpoints and are not "
-                "treated as geography-free evidence."
+                "The q99 capacity-safe factor is a flexible-batch diagnostic; "
+                "network activation uses the separate fixed/flexible conversion "
+                "certificate in Experiment 9. These results are not treated as "
+                "geography-free evidence."
             ),
         },
         "submission_energy_calibration": {

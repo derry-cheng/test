@@ -18,3 +18,4 @@ event_rebound_mwh,0.0,MWh
 capacity_proportional_event_native_mwh,417.27786054285417,MWh
 capacity_proportional_event_counterfactual_mwh,0.0,MWh
 capacity_proportional_event_gross_reduction_mwh,417.27786054285417,MWh
+homogeneous_resource_scaling_for_coupling,1.0,boolean
