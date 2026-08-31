@@ -10,7 +10,7 @@ profile and is never silently substituted for the payment cap. A lexicographic
 pair of linear programs first minimizes target deviation and then maximizes the
 worst fractional grid-cost margin without degrading that optimum. The resulting
 daily N-1 baseline cost is constrained to be no larger than the selected single
-projection in every held-out q01/q10/q50/q90 conversion scenario.
+projection in every held-out q01/q10/q50/q90/q99 conversion scenario.
 
 Facility conversion uses a fixed/flexible decomposition. The benchmark scale is
 calibrated on the held-out q99 flexible peak; fixed 6-MW/site demand is carried

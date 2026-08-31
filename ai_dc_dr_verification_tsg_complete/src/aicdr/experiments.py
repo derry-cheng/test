@@ -6138,11 +6138,17 @@ def run_exp9(
     if resume:
         metadata_path = final / "experiment_metadata.json"
         interval_path = final / "payment_evaluation_intervals.csv"
+        daily_path = final / "payment_evaluation_daily.csv"
+        scenario_path = final / "conversion_scenario_certificates.csv"
+        paired_path = final / "paired_payment_noninferiority.csv"
         unseen_path = final / "payment_evaluation_unseen_scenarios.csv"
         role_path = final / "payment_non_tautology_audit.csv"
         try:
             cached_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
             interval_count = len(pd.read_csv(interval_path))
+            daily_count = len(pd.read_csv(daily_path))
+            scenario_count = len(pd.read_csv(scenario_path))
+            paired_count = len(pd.read_csv(paired_path))
             unseen_count = len(pd.read_csv(unseen_path))
             role_count = len(pd.read_csv(role_path))
             locked_days = int(cached_metadata.get("locked_days", 0))
@@ -6155,10 +6161,20 @@ def run_exp9(
                 cached_metadata.get("certificate_schema_version") == 10
                 and locked_days == 54
                 and interval_count == 54 * 5 * 8 * 4
+                and daily_count == 54 * 5 * 4
+                and scenario_count == 54 * 5
+                and paired_count == 54 * 5
                 and unseen_count == unseen_days * 2 * 8 * 4
                 and role_count == 3
                 and cached_metadata.get("payment_target_selection")
                 and cached_metadata.get("selection_role_separation")
+                and set(
+                    cached_metadata.get("power_conversion_scenarios", {}).keys()
+                ) == {"q01", "q10", "q50", "q90", "q99"}
+                and cached_metadata.get("network_conversion_decomposition", {}).get(
+                    "network_scale_calibrated_on_q99"
+                )
+                is True
             ):
                 logger.info(
                     "Experiment 9 final artifacts pass resume integrity checks; "
@@ -6260,12 +6276,9 @@ def run_exp9(
     candidate_flexible_profiles = _flexible_facility_component(
         candidate_profiles, fixed_facility_load_mw
     )
-    # Target selection remains tied to the original validation contract
-    # (q10/q50/q90). The additional q01 factor is a held-out robustness
-    # constraint for the certificate, not a post-hoc target-selection input.
-    # Target selection is fixed to the interior q10/q50/q90 factors. The two
-    # tails are certificate constraints only and cannot alter the validation
-    # choice of the payment target.
+    # Target selection remains tied to the predeclared validation contract
+    # (q10/q50/q90). The two raw tails are held-out robustness constraints and
+    # cannot alter the validation choice of the payment target.
     validation_scale_factors = conversion_scale_factors[1:4]
     if not (
         np.all(np.diff(conversion_scale_factors) > 0)
@@ -10125,9 +10138,9 @@ def run_exp19(
     # knapsacks: for each job, fill its admissible slots in nondecreasing
     # objective cost until the exact energy equality is met.  This is an exact
     # LP solution (the exchange argument is the standard fractional-knapsack
-    # optimality proof), not a heuristic.  We still verify the capacity rows
-    # and retain a sparse HiGHS fallback for any future configuration where a
-    # row binds.
+    # optimality proof), not a heuristic.  We still verify the capacity rows;
+    # if a row binds, the same objective is solved by the exact sparse global
+    # HiGHS LP so that the certificate remains a single optimization problem.
     service_candidate = np.zeros(variable_count, dtype=float)
     for job in tqdm(range(n_jobs), desc="Exp19 exact per-job LP decomposition", unit="job"):
         first = int(offsets[job])
@@ -10464,9 +10477,9 @@ def run_exp19(
             "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
             "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
             "solver": (
-                "exact separable continuous-knapsack LP decomposition with a "
-                "sparse HiGHS fallback only if a regional capacity row binds; "
-                "no heuristic post-processing"
+                "exact separable continuous-knapsack LP decomposition; when a "
+                "regional capacity row binds, the same objective is solved by "
+                "the sparse global HiGHS LP, with no heuristic post-processing"
             ),
             "maximum_job_energy_residual_mwh": float(np.max(np.abs(job_residual))),
             "minimum_site_slot_capacity_slack_mwh": float(np.min(capacity_slack)),
@@ -10525,7 +10538,28 @@ def run_exp15(
     metadata_path = root / "experiments/exp9_payment_certificate/results/final/experiment_metadata.json"
     if not profile_path.exists():
         run_exp2(root, cfg, logger)
-    if not certified_path.exists():
+    # Experiment 15 is downstream of the q99-inclusive Experiment 9
+    # certificate.  A file can exist while still belonging to an older
+    # five-scenario schema, so validate the upstream contract before loading
+    # any profile.  This makes a resumed run fail closed instead of mixing
+    # endpoint costs from incompatible certificates.
+    exp9_refresh_required = not certified_path.exists()
+    try:
+        exp9_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        scenario_keys = set(
+            exp9_metadata.get("power_conversion_scenarios", {}).keys()
+        )
+        exp9_refresh_required = exp9_refresh_required or not (
+            exp9_metadata.get("certificate_schema_version") == 10
+            and scenario_keys == {"q01", "q10", "q50", "q90", "q99"}
+            and exp9_metadata.get("network_conversion_decomposition", {}).get(
+                "network_scale_calibrated_on_q99"
+            )
+            is True
+        )
+    except (OSError, ValueError, KeyError, json.JSONDecodeError):
+        exp9_refresh_required = True
+    if exp9_refresh_required:
         run_exp9(root, cfg, logger, resume=True)
     stored = np.load(profile_path, allow_pickle=False)
     certified = np.load(certified_path, allow_pickle=False)
@@ -10548,6 +10582,7 @@ def run_exp15(
     )
     exp9_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     dc_scale = float(exp9_metadata["dc_power_scale"])
+    fixed_facility_load_mw = float(cfg["project"]["fixed_facility_load_mw"])
     manifest = json.loads((root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8"))
     conversion = manifest["power_calibration"]["heldout_job_energy_measured_to_predicted_quantiles"]
     raw_endpoint_scales = np.asarray(
@@ -10588,12 +10623,14 @@ def run_exp15(
     endpoint_profile_checksum = hashlib.sha256(
         np.ascontiguousarray(candidate_profiles, dtype=np.float64).tobytes()
         + np.ascontiguousarray(endpoint_scales, dtype=np.float64).tobytes()
+        + np.asarray(
+            [dc_scale, fixed_facility_load_mw], dtype=np.float64
+        ).tobytes()
     ).hexdigest()
     system = power_system_from_ppc(case24_ieee_rts())
     security = build_n1_security_factors(system)
     native = system.bus[:, 2] * float(cfg["experiments"].get("n1_load_multiplier", 0.9))
     dc_buses = np.asarray([2, 7, 14, 20], dtype=int)
-    fixed_facility_load_mw = float(cfg["project"]["fixed_facility_load_mw"])
     event_slots = list(map(int, cfg["market"]["event_slots"]))
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     segments = int(
@@ -10662,11 +10699,6 @@ def run_exp15(
             }
             and "endpoint_profile_checksum" in previous
             and set(previous["endpoint_profile_checksum"].astype(str).unique())
-            == {endpoint_profile_checksum}
-            and "endpoint_profile_checksum" in interval_previous
-            and set(
-                interval_previous["endpoint_profile_checksum"].astype(str).unique()
-            )
             == {endpoint_profile_checksum}
         ):
             completed = set(

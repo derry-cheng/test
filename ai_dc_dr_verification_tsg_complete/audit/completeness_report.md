@@ -225,19 +225,19 @@ Overall status: **PASS**.
 - [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
 - [x] canonical_unified_manifest_preserved: 27/27 stages recorded; canonical request=all; audit status=completed
 - [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1253; fig27_all_outage_security.png=2309x1253; fig3_baseline_verification_performance.png=4261x1205; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
-- [x] model_formula_citation_traceability: 32/32 required source keys in bibliography, formula-source matrix, and complete formulation
+- [x] model_formula_citation_traceability: 33/33 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
-- [x] maximum_two_sources_per_citation_group: 41 in-text citation groups checked
-- [x] complete_manuscript_bibliography: 35 verified bibliography entries; 35 unique in-text citations; uncited=[]; missing=[]
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
+- [x] maximum_two_sources_per_citation_group: 42 in-text citation groups checked
+- [x] complete_manuscript_bibliography: 37 verified bibliography entries; 37 unique in-text citations; uncited=[]; missing=[]
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68664
 - [x] full_join_vs_common_trace_horizon_counts: full immutable join=71128, common tensor window=68664, excluded by horizon=2464
-- [x] heldout_power_conversion_scenarios_complete: 21,919 held-out jobs; q01/q10/q50/q90 measured-to-predicted energy factors=0.584475, 0.734154, 0.995724, 1.278023
+- [x] heldout_power_conversion_scenarios_complete: 21,919 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors=0.584475, 0.734154, 0.995724, 1.278023, 2.693089
 - [x] complete_source_to_evaluation_data_flow: 7 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 66769 train + 28413 held out
 - [x] processed_data_finite_nonnegative: (11616, 4, 3)
 - [x] processed_data_nonempty: 68641.934 MWh
@@ -304,9 +304,9 @@ Overall status: **PASS**.
 - [x] complete_binding_constraint_panel: 810/810 rows; 15/15 complete cells; max capacity binding=0.094
 - [x] complete_n1_security_panel: 2592/2592 interval-mechanism outcomes; all 37 non-islanding line outages enforced
 - [x] n1_mechanism_identification: trace-reference N-1 exact MAE=0.990 USD versus base-case exact MAE=139.221 USD and N-1 linear MAE=2.208 USD
-- [x] scenario_robust_exact_n1_payment_noninferiority_certificate: 54/54 lexicographically solved daily certificates across five held-out conversion scenarios; maximum cap violation=2.954e-09 USD; independent 40-segment transfer mean certified-minus-single=-29.742 USD/day
+- [x] scenario_robust_exact_n1_payment_noninferiority_certificate: 54/54 lexicographically solved daily certificates across five held-out conversion scenarios; formal four-segment maximum cap violation=2.954e-09 USD; the independent 40-segment transfer comparison is evaluated by its paired mean
 - [x] payment_cap_and_target_are_not_a_fixed_plan_identity: the contractual cap is frozen by Experiment-2 nRMSE, while the payment target is selected by an independent high-resolution N-1 payment MAE on validation days; locked test days are excluded
-- [x] complete_independent_payment_model_transfer_evaluation: 1080 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4
+- [x] complete_independent_payment_model_transfer_evaluation: 1080 method-day-scenario outcomes scored across five held-out conversion factors with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4
 - [x] unseen_conversion_factor_transfer_panel: 8 frozen-profile outcomes across two interior conversion factors absent from the certificate and target selection; the finer N-1 replay is independent of the contractual RHS
 - [x] independent_endpoint_certificate_uses_selected_single_reference: 216/216 endpoint rows compare the payment-certified profile with the preselected single feasible reference; the quantile profile remains external
 - [x] payment_uncertainty_interval_has_posthoc_oracle_audit_only: 108/108 endpoint rows retain the raw q01/q99 interval; fixed and flexible demand are separated and both endpoints are solved under the q99-calibrated scale, while oracle values remain post-hoc coverage diagnostics (10/108 inside)

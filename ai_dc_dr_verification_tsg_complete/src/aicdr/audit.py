@@ -386,8 +386,8 @@ def run_audit(
     required_citation_keys = {
         "wang2022baseline",
         "caiso2017baseline",
-        "cao2022flexibility",
-        "cao2024nonwire",
+        "liu2013dcdr",
+        "adnan2012geographical",
         "zimmerman2011matpower",
         "babaeinejadsarookolaee2021pglib",
         "boyd2004convex",
@@ -533,6 +533,7 @@ def run_audit(
             conversion_quantiles["0.1"],
             conversion_quantiles["0.5"],
             conversion_quantiles["0.9"],
+            conversion_quantiles["0.99"],
         ],
         dtype=float,
     )
@@ -546,7 +547,7 @@ def run_audit(
         and float(declared_conversion_factors[-1]) > 1.0,
         "heldout_power_conversion_scenarios_complete",
         (
-            "21,919 held-out jobs; q01/q10/q50/q90 measured-to-predicted energy factors="
+            "21,919 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors="
             + ", ".join(
                 f"{value:.6f}" for value in declared_conversion_factors
             )
@@ -2297,6 +2298,10 @@ def run_audit(
         root
         / "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv"
     )
+    payment_evaluation_intervals = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv"
+    )
     paired_payment = pd.read_csv(
         root
         / "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv"
@@ -2362,6 +2367,17 @@ def run_audit(
         len(payment_certificates) == expected_test
         and payment_certificates["day"].nunique() == expected_test
         and bool((payment_certificates["solver_success"] == 1).all())
+        and payment_metadata.get("certificate_schema_version") == 10
+        and set(payment_metadata.get("power_conversion_scenarios", {}).keys())
+        == {"q01", "q10", "q50", "q90", "q99"}
+        and payment_metadata.get("network_conversion_decomposition", {}).get(
+            "network_scale_calibrated_on_q99"
+        )
+        is True
+        and int(
+            payment_metadata.get("independent_evaluation_generator_segments", -1)
+        )
+        == 40
         and float(
             np.max(
                 np.abs(
@@ -2383,35 +2399,39 @@ def run_audit(
         >= -1e-9
         and float(payment_certificates["payment_cap_violation_usd"].max()) <= 1e-6
         and len(payment_daily) == expected_test * 5 * 4
+        and len(payment_evaluation_intervals)
+        == expected_test * 5 * len(cfg["market"]["event_slots"]) * 4
+        and set(payment_evaluation_intervals["conversion_scenario"].astype(str))
+        == {"q01", "q10", "q50", "q90", "q99"}
+        and np.isfinite(
+            payment_evaluation_intervals[
+                ["absolute_error_usd", "overpayment_usd"]
+            ].to_numpy(dtype=float)
+        ).all()
         and len(conversion_certificates) == expected_test * 5
-        and conversion_certificates["conversion_scenario"].nunique() == 5
+        and len(paired_payment) == expected_test * 5
         and set(conversion_certificates["conversion_scenario"].astype(str))
         == {"q01", "q10", "q50", "q90", "q99"}
-        and len(paired_payment) == expected_test * 5
-        and paired_payment["conversion_scenario"].nunique() == 5
         and float(
             conversion_certificates["payment_cap_violation_usd"].max()
         )
         <= 1e-6
-        and bool(
-            np.isfinite(
-                paired_payment["certified_minus_single_payment_usd"]
-            ).all()
-        )
         and float(
             paired_payment[
                 "certified_minus_single_payment_usd"
             ].mean()
         )
-        < -1e-6,
+        < -1e-6
+        and np.isfinite(
+            paired_payment["certified_minus_single_payment_usd"].to_numpy(dtype=float)
+        ).all(),
         "scenario_robust_exact_n1_payment_noninferiority_certificate",
         (
             f"{len(payment_certificates)}/{expected_test} lexicographically "
-            "solved daily certificates across five held-out conversion "
-            "scenarios; maximum cap violation="
+            "solved daily certificates across five held-out conversion scenarios; "
+            "formal four-segment maximum cap violation="
             f"{payment_certificates['payment_cap_violation_usd'].max():.3e} USD; "
-            "independent 40-segment transfer mean certified-minus-single="
-            f"{paired_payment['certified_minus_single_payment_usd'].mean():.3f} USD/day"
+            "the independent 40-segment transfer comparison is evaluated by its paired mean"
         ),
         checks,
     )
@@ -2448,13 +2468,15 @@ def run_audit(
             "Risk-Constrained Convex Verifier",
             "Payment-Certified N-1 Verifier",
         }
-        and payment_daily["conversion_scenario"].nunique() == 5
+        and set(payment_daily["conversion_scenario"].astype(str))
+        == {"q01", "q10", "q50", "q90", "q99"}
         and payment_daily["day"].nunique() == expected_test
         and np.isfinite(payment_daily["absolute_error_usd"]).all()
         and np.isfinite(payment_daily["overpayment_usd"]).all(),
         "complete_independent_payment_model_transfer_evaluation",
         (
-            f"{len(payment_daily)} method-day-scenario outcomes scored with "
+            f"{len(payment_daily)} method-day-scenario outcomes scored across five "
+            "held-out conversion factors with "
             "the independent 40-segment N-1 evaluator; accuracy is reported "
             "as model-transfer evidence and is not part of Proposition 4"
         ),
@@ -2515,6 +2537,9 @@ def run_audit(
         and bool((interval_endpoint.loc[interval_endpoint["endpoint"] == "q99", "capacity_activation_eligible"] == True).all())
         and bool((interval_endpoint.loc[interval_endpoint["endpoint"] == "q99", "solver_status"] == "optimal").all())
         and bool(np.isfinite(interval_endpoint["payment_cap_violation_usd"].to_numpy(dtype=float)).all())
+        and bool(
+            interval_endpoint["payment_cap_violation_usd"].max() <= 1e-6
+        )
         and interval_metadata.get("external_transfer_comparator")
         == "Feasible Quantile Projection"
         and "selected single feasible" in str(
@@ -2585,6 +2610,9 @@ def run_audit(
         and interval_metadata.get("payment_value_interval", {}).get(
             "capacity_eligible_endpoints_only"
         ) is True
+        and interval_metadata.get("interval_certificate_valid") is True
+        and float(interval_metadata.get("maximum_payment_cap_violation_usd", np.inf))
+        <= 1e-6
         and not payment_intervals["candidate_hull_definition"].astype(str).str.contains(
             "oracle", case=False, regex=False
         ).any(),

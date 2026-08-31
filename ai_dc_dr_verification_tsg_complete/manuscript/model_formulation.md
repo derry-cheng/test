@@ -56,7 +56,7 @@ x_{skdt}\geq 0
 
 is the energy from origin \(s\), class \(k\), served at \(d\) during \(t\).
 Deadline-constrained temporal deferral and geographic assignment follow the
-data-center scheduling foundations in \cite{cao2022flexibility,cao2024nonwire}.
+data-center scheduling foundations in \cite{liu2013dcdr,adnan2012geographical}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters rather than facts inferred from those papers.
 
@@ -170,7 +170,7 @@ y_{sk,T^+}=A_{sk,\max\{T^0,T^+-D_k\}}.
 These constraints respectively impose state evolution, no service before
 release, deadline completion, destination capacity, and terminal conservation.
 The underlying scheduling requirements are standard in
-\cite{cao2022flexibility,cao2024nonwire}; their \(O(T)\) cumulative-state
+\cite{liu2013dcdr,adnan2012geographical}; their \(O(T)\) cumulative-state
 representation and its equivalence proof are Proposition 2 of this study. The
 continuous rolling horizon follows the state-retention logic of
 \cite{zhang2023receding}. It begins one maximum deadline plus one day before
@@ -232,7 +232,7 @@ For energy cost, migration charge \(m_{sd}\), and class waiting coefficient
 \]
 
 Data-center energy-aware scheduling, temporal deferral, and geographic balancing
-are adapted from \cite{cao2022flexibility,cao2024nonwire}. We denote the
+are adapted from \cite{liu2013dcdr,adnan2012geographical}. We denote the
 resulting workload operating cost by \(\mathcal C_{\mathrm w}(x)\), reserving
 \(V(p)\) for the network dispatch value and \(C_i(g_i)\) for generator-segment
 costs. The linear migration and waiting coefficients are declared experimental
@@ -551,9 +551,9 @@ feasible-quantile projection as an external transfer comparator. Its
 contractual reference is the validation-selected single feasible projection.
 The program embeds one copy of the full N--1
 SCED primal per event interval and per telemetry-calibrated conversion
-scenario. The finite scenario set is the 1st, 10th, 50th, and 90th percentile of
-held-out per-job measured-to-predicted GPU energy ratios from the complete MIT
-DCGM table \cite{samsi2021supercloud}. The risk-constrained verifier is used
+scenario. The finite scenario set is the 1st, 10th, 50th, 90th, and 99th
+percentile of held-out per-job measured-to-predicted GPU energy ratios from the
+complete MIT DCGM table \cite{samsi2021supercloud}. The risk-constrained verifier is used
 only as the absolute-deviation target and is not a selectable member of this
 hull. In every scenario, summed dispatch cost is constrained by the cost of the
 same selected-single reference; the quantile profile is not the contractual

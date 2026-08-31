@@ -371,7 +371,7 @@ first-stage workload-feasible projections and the validation-selected
 feasible-quantile comparator. The contractual reference \(p^{\rm ref}\) is
 the validation-selected single feasible projection. The risk-constrained verifier is
 an external approximation target and cannot be selected directly. Let \(\Xi\)
-be the 1st, 10th, 50th, and 90th percentile of held-out per-job
+be the 1st, 10th, 50th, 90th, and 99th percentile of held-out per-job
 measured-to-predicted GPU energy. For each \(\xi\in\Xi\), embed a feasible
 N--1 dispatch \(g_t^\xi\) for
 \(p_t^{\rm native}+M\xi p^\alpha_t\) in every event interval and impose

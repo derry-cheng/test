@@ -44,10 +44,11 @@ source-to-join-to-split accounting table, including the disjoint calibration
 training and held-out partitions and the final valid-slot count.
 The calibration split is deterministic by immutable job ID. On the 21,919
 held-out jobs with positive predicted energy, the measured-to-predicted energy
-ratio has 1st, 10th, 50th, and 90th percentiles 0.584475, 0.734154, 0.995724, and 1.278023.
-Experiment 9 embeds all four values in the same payment-certificate program;
-they form a declared finite empirical uncertainty set, not a tuned continuous
-distribution or a replacement for the measured scoring trace.
+ratio has 1st, 10th, 50th, 90th, and 99th percentiles 0.584475, 0.734154,
+0.995724, 1.278023, and 2.693089. Experiment 9 embeds all five values in the
+same payment-certificate program; they form a declared finite empirical
+uncertainty set, not a tuned continuous distribution or a replacement for the
+measured scoring trace.
 
 Experiment 19 uses a separate job-indexed counterfactual. Slurm `timelimit` is
 an allocation run-time declaration, not a submission-to-completion deadline.
@@ -59,7 +60,8 @@ completion interval is retained only for the independent native replay and
 never defines the counterfactual deadline or power cap. The resulting witness
 contains 12,296,675 job--slot variables and is solved by an exact separable
 continuous-knapsack decomposition whenever the declared regional capacity rows
-are inactive, with a sparse LP fallback only when a row binds.
+are inactive; if a row binds, the same objective is solved by the sparse global
+LP.
 
 Experiment 23 adds a structurally distinct controlled event: after the same
 slot-60 submission gate, an independently parameterized exact LP applies a

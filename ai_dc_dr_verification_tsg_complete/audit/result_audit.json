@@ -1109,7 +1109,7 @@
     {
       "name": "model_formula_citation_traceability",
       "passed": true,
-      "detail": "32/32 required source keys in bibliography, formula-source matrix, and complete formulation"
+      "detail": "33/33 required source keys in bibliography, formula-source matrix, and complete formulation"
     },
     {
       "name": "official_ieee_journal_template",
@@ -1119,32 +1119,32 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "41 in-text citation groups checked"
+      "detail": "42 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
       "passed": true,
-      "detail": "35 verified bibliography entries; 35 unique in-text citations; uncited=[]; missing=[]"
+      "detail": "37 verified bibliography entries; 37 unique in-text citations; uncited=[]; missing=[]"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
       "passed": true,
-      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
       "passed": true,
-      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
       "passed": true,
-      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
       "passed": true,
-      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
@@ -1169,7 +1169,7 @@
     {
       "name": "heldout_power_conversion_scenarios_complete",
       "passed": true,
-      "detail": "21,919 held-out jobs; q01/q10/q50/q90 measured-to-predicted energy factors=0.584475, 0.734154, 0.995724, 1.278023"
+      "detail": "21,919 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors=0.584475, 0.734154, 0.995724, 1.278023, 2.693089"
     },
     {
       "name": "complete_source_to_evaluation_data_flow",
@@ -1504,7 +1504,7 @@
     {
       "name": "scenario_robust_exact_n1_payment_noninferiority_certificate",
       "passed": true,
-      "detail": "54/54 lexicographically solved daily certificates across five held-out conversion scenarios; maximum cap violation=2.954e-09 USD; independent 40-segment transfer mean certified-minus-single=-29.742 USD/day"
+      "detail": "54/54 lexicographically solved daily certificates across five held-out conversion scenarios; formal four-segment maximum cap violation=2.954e-09 USD; the independent 40-segment transfer comparison is evaluated by its paired mean"
     },
     {
       "name": "payment_cap_and_target_are_not_a_fixed_plan_identity",
@@ -1514,7 +1514,7 @@
     {
       "name": "complete_independent_payment_model_transfer_evaluation",
       "passed": true,
-      "detail": "1080 method-day-scenario outcomes scored with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
+      "detail": "1080 method-day-scenario outcomes scored across five held-out conversion factors with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
     },
     {
       "name": "unseen_conversion_factor_transfer_panel",
@@ -2148,12 +2148,12 @@
     {
       "path": "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
       "bytes": 46440,
-      "sha256": "89418d7eb40020d6c799f2225590fec5ae673cddba0e12ed313139a1af31cc81"
+      "sha256": "f2b0454a03ab3fa75b4b8dca8674a687f9a3e08654c54f91098ec7f1ac6a3ba4"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
       "bytes": 47987,
-      "sha256": "b0a927a874c5c4afbcfb597a64aed28f90b9e0ffbca71eaf93b0c364e5676155"
+      "sha256": "9653d8e197c86702732453131cbcafa013f1797c2065f0b49d0704e6309d64c3"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
@@ -2267,8 +2267,8 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
-      "bytes": 3199,
-      "sha256": "7a2e1d2fdc65a2c22bbd204476b4585abe37dd0850df29121c98dd625d6d03c7"
+      "bytes": 3227,
+      "sha256": "48c0465b9dbcbbff346f5ee469306e9ff68d79edaba913c620055551656566e4"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_capacity_stress_daily.csv",
@@ -2772,13 +2772,13 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
-      "bytes": 23486,
-      "sha256": "5d066c6274286253e3dc3f23120dc63d00e4bc4c7c07d022bc1d1564a7e4fb2b"
+      "bytes": 23143,
+      "sha256": "b2def05b7a04785ae47fd833a4e5b556f76acbbaa67f7cc079237439b8fe24b3"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
-      "bytes": 31783,
-      "sha256": "52881c9b11fab962a5a0c0d76857c65d2fdbc6678bfdc6c7e77e4267d867765f"
+      "bytes": 31589,
+      "sha256": "2da689f4321fafb2399d3c18d00c26f3a9a012b26fddf59ebb834e3f4a518a46"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
@@ -2787,23 +2787,23 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
-      "bytes": 21607,
-      "sha256": "1acccbfd92214b4f4d8394e41eeab3a18e8dc381aa7084d756598b7e40ef83b1"
+      "bytes": 21604,
+      "sha256": "39b4cf96e86c5893b454354766af0f1f87c569074723daa5ff8f2e030b8f1c1f"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
-      "bytes": 148632,
-      "sha256": "5a0fa080462a45112e5e4bc1caa55f90a8abfe025ffd7c5fabc78f92b5658b94"
+      "bytes": 148678,
+      "sha256": "3b8f49a8f2213770649cb33f07ff5edfa397a2444411230869d189e2ed9172bd"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
-      "bytes": 1808698,
-      "sha256": "9e44631530a85db125105f0cd23fad8805eec95082773b755fc2ea5a1377b066"
+      "bytes": 1804726,
+      "sha256": "e4beea5148fea4f363d34a746ab702c1b820aadefbe0581383ca33cdd1a4ba2a"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
-      "bytes": 3123,
-      "sha256": "df329f349d449b7ab8d762c6e7752307c497aef1bd4b1bd33f26a81da4cbdef7"
+      "bytes": 3126,
+      "sha256": "5593eff85b4df3175903e09ff4f3e3f9f10339d92b18205baf67398483dcbc97"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
@@ -2898,7 +2898,7 @@
     {
       "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.pdf",
       "bytes": 44681,
-      "sha256": "afa7843ea2d759a62266def12413def73b72276cde232140ea6d354dea685b27"
+      "sha256": "639315ed00dfd6f230ce5299a657918198346d1f9f3c2c76b4e2c28045f671ec"
     },
     {
       "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
@@ -3127,8 +3127,8 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
-      "bytes": 23066,
-      "sha256": "69646dd3c43778298afb8587f188d5c83fde08625f9b212094efbeaefad016ee"
+      "bytes": 23065,
+      "sha256": "705e476553480216f83ae368302732d04f42c95f32a4e32e26f0c9171814ddfa"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",

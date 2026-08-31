@@ -5,9 +5,8 @@ single orchestration entry point, while each `experiments/exp*/run.py` is a
 standalone stage wrapper. Tests live under `tests/`; no generated result or
 raw-data file belongs in this directory.
 
-The job-indexed stage uses a certified exact continuous-knapsack decomposition
-when regional capacity rows are inactive and switches to a sparse HiGHS LP only
-when those rows bind. Worker counts are configured explicitly and validated to
-remain at or below 20; the payment target uses 12 workers, the evaluation uses
-8, and direct runs set BLAS/OpenMP thread counts to one to avoid hidden
-oversubscription.
+The job-indexed stage uses an exact separable continuous-knapsack decomposition
+followed by typed capacity, energy, and region-to-bus residual checks; the
+coupled network certificate is solved by the global sparse HiGHS LP with no
+heuristic post-processing. Worker counts are configured explicitly and
+validated to remain at or below 20.

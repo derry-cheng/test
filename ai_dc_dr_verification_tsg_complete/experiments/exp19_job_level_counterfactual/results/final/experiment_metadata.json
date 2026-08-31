@@ -40,7 +40,7 @@
   "capacity_mw_per_region": 118.0,
   "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
   "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
-  "solver": "exact separable continuous-knapsack LP decomposition with a sparse HiGHS fallback only if a regional capacity row binds; no heuristic post-processing",
+  "solver": "exact separable continuous-knapsack LP decomposition; if a regional capacity row binds, the same objective is solved by the sparse global HiGHS LP; no heuristic post-processing",
   "maximum_job_energy_residual_mwh": 0.0,
   "minimum_site_slot_capacity_slack_mwh": 29.48625480375,
   "observed_execution_energy_mwh": 2.6573461425000002,
