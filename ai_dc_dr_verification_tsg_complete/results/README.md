@@ -8,7 +8,8 @@ index only; generated checkpoints and raw releases are not copied here.
 
 The revised closure stages are:
 
-- `exp19_job_level_counterfactual`: 12,296,675-variable indexed witness.
+- `exp19_job_level_counterfactual`: 13,198,247-admissible-start exact
+  contiguous indexed witness.
 - `exp20_trace_meter_replay`: independent 54-day observed-meter replay.
 - `exp21_scale_consistency`: fixed-nameplate and capacity-proportional
   homogeneous transforms of the same indexed witness.

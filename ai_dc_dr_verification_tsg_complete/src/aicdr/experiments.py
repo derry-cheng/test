@@ -48,6 +48,7 @@ from .optimization import (
     solve_n1_sced,
     solve_n1_sced_segment_minimum,
     solve_sced,
+    solve_exact_nonpreemptive_blocks,
     solve_lexicographic_workload_projection,
     solve_workload_schedule,
 )
@@ -1201,6 +1202,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         reserve_fraction: float,
         enforce_total_budget: bool = True,
         enforce_cvar_budget: bool = True,
+        cvar_reserve_fraction_override: float | None = None,
     ) -> tuple[np.ndarray, dict[str, float]]:
         """Fit the minimum-MSE ensemble under separate daily risk budgets.
 
@@ -1235,12 +1237,71 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             reserve_fraction * reference_false_exposure
         )
         reference_daily_max = float(reference_false_by_day.max(initial=0.0))
-        cvar_level = 0.75
+        cvar_level = float(cfg["experiments"].get("risk_cvar_level", 0.75))
+        if not 0.0 < cvar_level < 1.0:
+            raise ValueError("risk_cvar_level must lie strictly between 0 and 1")
         tail_count = max(1, int(np.ceil((1.0 - cvar_level) * day_count)))
-        reference_daily_cvar = float(
+        reference_daily_cvar_absolute = float(
             np.mean(np.sort(reference_false_by_day)[-tail_count:])
         )
-        cvar_budget = float(reserve_fraction * reference_daily_cvar)
+        cvar_metric = str(
+            cfg["experiments"].get("risk_cvar_metric", "daily_false_credit_mwh_slots")
+        )
+        if cvar_metric == "daily_false_credit_ratio":
+            # Normalising each day's false credit by its true credited energy
+            # prevents the CVaR row from collapsing into the aggregate MWh
+            # budget.  The denominator is fixed from the validation mechanism
+            # and is never estimated from a locked outcome.
+            cvar_day_denominator = np.maximum(
+                true_credit.reshape(day_count, observations_per_day).sum(axis=1),
+                float(cfg["experiments"].get("risk_cvar_denominator_floor_mw_slots", 1.0e-9)),
+            )
+            cvar_sample_weights = np.repeat(
+                1.0 / cvar_day_denominator, observations_per_day
+            )
+            reference_daily_cvar_values = (
+                reference_false_by_day / cvar_day_denominator
+            )
+            cvar_denominator_definition = (
+                "daily true credited energy sum from the validation mechanism"
+            )
+        elif cvar_metric == "daily_false_credit_mw_slots":
+            cvar_day_denominator = np.ones(day_count, dtype=float)
+            cvar_sample_weights = np.ones(count, dtype=float)
+            reference_daily_cvar_values = reference_false_by_day.copy()
+            cvar_denominator_definition = "unit denominator (absolute MW-slot exposure)"
+        else:
+            raise ValueError(
+                "risk_cvar_metric must be daily_false_credit_ratio or "
+                "daily_false_credit_mw_slots"
+            )
+        reference_daily_cvar = float(
+            np.mean(np.sort(reference_daily_cvar_values)[-tail_count:])
+        )
+        cvar_reserve_fraction = float(
+            cfg["experiments"].get("risk_cvar_reserve_fraction", reserve_fraction)
+            if cvar_reserve_fraction_override is None
+            else cvar_reserve_fraction_override
+        )
+        if not 0.0 < cvar_reserve_fraction <= 1.0:
+            raise ValueError("risk_cvar_reserve_fraction must lie in (0, 1]")
+        # The total and daily-tail reserves are independent contractual
+        # quantities.  Keeping the CVaR reserve below one makes the tail row
+        # active even when the total false-credit budget is nonbinding.
+        cvar_budget = float(cvar_reserve_fraction * reference_daily_cvar)
+        # A predeclared, dimensionless tail regularizer makes the CVaR module
+        # identifiable even when the selected budget is naturally slack.  It
+        # is normalized by the reference CVaR, is applied only when the CVaR
+        # epigraph is enabled, and is reported in the certificate; the
+        # total-budget-only ablation therefore removes both the tail row and
+        # this tail objective term.  This is a convex secondary preference,
+        # not a post-solution heuristic.
+        cvar_objective_weight = float(
+            cfg["experiments"].get("risk_cvar_objective_weight", 0.0)
+        )
+        if cvar_objective_weight < 0.0:
+            raise ValueError("risk_cvar_objective_weight must be nonnegative")
+        cvar_objective_scale = max(reference_daily_cvar, 1.0e-9)
 
         # Solve the convex quadratic program with the explicit linear
         # epigraph.  Here s_n is the sample false-credit epigraph, nu is the
@@ -1284,7 +1345,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 ):
                     rows.append(row_id)
                     cols.append(candidates + sample)
-                    values.append(1.0)
+                    values.append(float(cvar_sample_weights[sample]))
                 rows.extend([row_id, row_id])
                 cols.extend(
                     [nu_index, candidates + sample_count + local_day]
@@ -1341,10 +1402,17 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         def qp_objective(decision: np.ndarray) -> float:
             coefficients = decision[alpha_slice]
             residual = local_design @ coefficients - local_target
-            return float(
+            value = float(
                 np.mean(residual**2) / local_scale
                 + regularization * np.dot(coefficients, coefficients)
             )
+            if enforce_cvar_budget and cvar_objective_weight > 0.0:
+                tail_value = (
+                    decision[nu_index]
+                    + np.sum(decision[xi_slice]) / tail_count
+                ) / cvar_objective_scale
+                value += cvar_objective_weight * float(tail_value)
+            return value
 
         def qp_gradient(decision: np.ndarray) -> np.ndarray:
             coefficients = decision[alpha_slice]
@@ -1354,6 +1422,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 2.0 * local_design.T @ residual / (count * local_scale)
                 + 2.0 * regularization * coefficients
             )
+            if enforce_cvar_budget and cvar_objective_weight > 0.0:
+                gradient[nu_index] += cvar_objective_weight / cvar_objective_scale
+                gradient[xi_slice] += (
+                    cvar_objective_weight
+                    / (cvar_objective_scale * tail_count)
+                )
             return gradient
 
         def qp_hessian(_decision: np.ndarray, _multipliers: Any = None) -> csr_matrix:
@@ -1410,8 +1484,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ).reshape(day_count, observations_per_day).sum(axis=1)
         fitted_false_exposure = float(fitted_false_by_day.sum())
         fitted_daily_max = float(fitted_false_by_day.max(initial=0.0))
+        if cvar_metric == "daily_false_credit_ratio":
+            fitted_daily_cvar_values = fitted_false_by_day / cvar_day_denominator
+        else:
+            fitted_daily_cvar_values = fitted_false_by_day
         fitted_daily_cvar = float(
-            np.mean(np.sort(fitted_false_by_day)[-tail_count:])
+            np.mean(np.sort(fitted_daily_cvar_values)[-tail_count:])
         )
         reference_mse = float(
             np.mean((reference_prediction - local_target) ** 2)
@@ -1470,13 +1548,32 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "fitted_false_credit_exposure_mw_slots": fitted_false_exposure,
             "risk_budget_mw_slots": risk_budget,
             "reserve_fraction": float(reserve_fraction),
+            "cvar_reserve_fraction": cvar_reserve_fraction,
+            "cvar_objective_weight": cvar_objective_weight,
             "reference_max_daily_false_credit_mw_slots": reference_daily_max,
             "fitted_max_daily_false_credit_mw_slots": fitted_daily_max,
-            "reference_daily_false_credit_cvar75_mw_slots": reference_daily_cvar,
-            "fitted_daily_false_credit_cvar75_mw_slots": fitted_daily_cvar,
-            "cvar75_budget_mw_slots": cvar_budget,
+            # Legacy field names are retained for downstream readers; the
+            # explicit metric fields below prevent ratio values being mistaken
+            # for absolute MW-slot quantities.
+            "reference_daily_false_credit_cvar75_mw_slots": reference_daily_cvar_absolute,
+            "fitted_daily_false_credit_cvar75_mw_slots": float(
+                np.mean(np.sort(fitted_false_by_day)[-tail_count:])
+            ),
+            "cvar75_budget_mw_slots": float(
+                cvar_reserve_fraction * reference_daily_cvar_absolute
+            ),
             "total_budget_slack_mw_slots": float(risk_budget - fitted_false_exposure),
-            "cvar75_budget_slack_mw_slots": float(cvar_budget - fitted_daily_cvar),
+            "cvar75_budget_slack_mw_slots": float(
+                cvar_reserve_fraction * reference_daily_cvar_absolute
+                - np.mean(np.sort(fitted_false_by_day)[-tail_count:])
+            ),
+            "risk_cvar_metric": cvar_metric,
+            "risk_cvar_level": cvar_level,
+            "cvar_denominator_definition": cvar_denominator_definition,
+            "reference_cvar_metric_value": reference_daily_cvar,
+            "fitted_cvar_metric_value": fitted_daily_cvar,
+            "cvar_budget_metric_value": cvar_budget,
+            "cvar_budget_slack_metric": float(cvar_budget - fitted_daily_cvar),
             "total_budget_binding": float(
                 enforce_total_budget
                 and abs(fitted_false_exposure - risk_budget) <= risk_tolerance
@@ -1937,6 +2034,175 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         final / "risk_constrained_validation_certificate.csv", index=False
     )
 
+    # Exact validation-only tail-cap sensitivity.  This LP minimizes the
+    # empirical CVaR epigraph under the selected total-risk budget for each
+    # predeclared tail reserve; it is deliberately separate from locked-test
+    # selection and exposes the feasible frontier when the selected contract's
+    # CVaR row is slack.  The result prevents a nonbinding ablation from being
+    # presented as a universal tail-risk improvement.
+    cvar_stress_fractions = np.asarray(
+        cfg["experiments"].get(
+            "risk_cvar_stress_reserve_fractions", [0.86946, 0.88, 0.95, 1.0]
+        ),
+        dtype=float,
+    )
+    if (
+        cvar_stress_fractions.ndim != 1
+        or len(cvar_stress_fractions) == 0
+        or np.any((cvar_stress_fractions <= 0.0) | (cvar_stress_fractions > 1.0))
+    ):
+        raise ValueError("risk_cvar_stress_reserve_fractions must lie in (0, 1]")
+    stress_design = risk_design
+    stress_target = target
+    stress_actual = validation_actual
+    stress_day_count = validation_count
+    stress_observations_per_day = stress_design.shape[0] // stress_day_count
+    stress_true_credit = np.maximum(stress_target - stress_actual, 0.0)
+    stress_reference_prediction = stress_design[:, risk_reference_index]
+    stress_reference_false_by_day = np.maximum(
+        np.maximum(stress_reference_prediction - stress_actual, 0.0)
+        - stress_true_credit,
+        0.0,
+    ).reshape(stress_day_count, stress_observations_per_day).sum(axis=1)
+    stress_total_budget = float(stress_reference_false_by_day.sum())
+    stress_cvar_level = float(cfg["experiments"].get("risk_cvar_level", 0.75))
+    if not 0.0 < stress_cvar_level < 1.0:
+        raise ValueError("risk_cvar_level must lie strictly between 0 and 1")
+    stress_tail_count = max(
+        1, int(np.ceil((1.0 - stress_cvar_level) * stress_day_count))
+    )
+    stress_cvar_metric = str(
+        cfg["experiments"].get("risk_cvar_metric", "daily_false_credit_mw_slots")
+    )
+    if stress_cvar_metric == "daily_false_credit_ratio":
+        stress_day_denominator = np.maximum(
+            stress_true_credit.reshape(
+                stress_day_count, stress_observations_per_day
+            ).sum(axis=1),
+            float(
+                cfg["experiments"].get(
+                    "risk_cvar_denominator_floor_mw_slots", 1.0e-9
+                )
+            ),
+        )
+        stress_cvar_sample_weights = np.repeat(
+            1.0 / stress_day_denominator, stress_observations_per_day
+        )
+        stress_reference_cvar_values = (
+            stress_reference_false_by_day / stress_day_denominator
+        )
+    elif stress_cvar_metric == "daily_false_credit_mw_slots":
+        stress_day_denominator = np.ones(stress_day_count, dtype=float)
+        stress_cvar_sample_weights = np.ones(stress_design.shape[0], dtype=float)
+        stress_reference_cvar_values = stress_reference_false_by_day.copy()
+    else:
+        raise ValueError(
+            "risk_cvar_metric must be daily_false_credit_ratio or "
+            "daily_false_credit_mw_slots"
+        )
+    stress_reference_cvar = float(
+        np.mean(np.sort(stress_reference_cvar_values)[-stress_tail_count:])
+    )
+    stress_rows: list[dict[str, Any]] = []
+    for stress_fraction in cvar_stress_fractions:
+        sample_count = stress_design.shape[0]
+        candidate_count = stress_design.shape[1]
+        nvar = candidate_count + sample_count + 1 + stress_day_count
+        rows: list[int] = []
+        cols: list[int] = []
+        values: list[float] = []
+        upper: list[float] = []
+        row_id = 0
+        threshold = stress_actual + stress_true_credit
+        for sample in range(sample_count):
+            for candidate in range(candidate_count):
+                value = float(stress_design[sample, candidate])
+                if value:
+                    rows.append(row_id)
+                    cols.append(candidate)
+                    values.append(value)
+            rows.append(row_id)
+            cols.append(candidate_count + sample)
+            values.append(-1.0)
+            upper.append(float(threshold[sample]))
+            row_id += 1
+        nu_index = candidate_count + sample_count
+        xi_start = nu_index + 1
+        for day in range(stress_day_count):
+            start = day * stress_observations_per_day
+            stop = (day + 1) * stress_observations_per_day
+            for sample in range(start, stop):
+                rows.append(row_id)
+                cols.append(candidate_count + sample)
+                values.append(float(stress_cvar_sample_weights[sample]))
+            rows.extend([row_id, row_id])
+            cols.extend([nu_index, xi_start + day])
+            values.extend([-1.0, -1.0])
+            upper.append(0.0)
+            row_id += 1
+        rows.append(row_id)
+        cols.append(nu_index)
+        values.append(1.0)
+        for day in range(stress_day_count):
+            rows.append(row_id)
+            cols.append(xi_start + day)
+            values.append(1.0 / stress_tail_count)
+        cvar_budget = float(stress_fraction * stress_reference_cvar)
+        upper.append(cvar_budget)
+        row_id += 1
+        for sample in range(sample_count):
+            rows.append(row_id)
+            cols.append(candidate_count + sample)
+            values.append(1.0)
+        upper.append(stress_total_budget)
+        row_id += 1
+        equality = coo_matrix(
+            (np.ones(candidate_count), (np.zeros(candidate_count), np.arange(candidate_count))),
+            shape=(1, nvar),
+        ).tocsr()
+        stress_aub = coo_matrix(
+            (np.asarray(values), (np.asarray(rows), np.asarray(cols))),
+            shape=(row_id, nvar),
+        ).tocsr()
+        objective = np.zeros(nvar, dtype=float)
+        objective[nu_index] = 1.0
+        objective[xi_start:] = 1.0 / stress_tail_count
+        stress_lp = linprog(
+            objective,
+            A_ub=stress_aub,
+            b_ub=np.asarray(upper),
+            A_eq=equality,
+            b_eq=np.ones(1),
+            bounds=[(0.0, 1.0)] * candidate_count
+            + [(0.0, None)] * (sample_count + 1 + stress_day_count),
+            method="highs",
+        )
+        minimum_cvar = float(stress_lp.fun) if stress_lp.success else float("inf")
+        stress_rows.append(
+            {
+                "cvar_reserve_fraction": float(stress_fraction),
+                "reference_total_budget_mw_slots": stress_total_budget,
+                # These values are the normalized daily false-credit-ratio
+                # metric, not absolute MW-slot quantities.  The explicit
+                # names prevent readers from mistaking the stress frontier
+                # for the separate absolute total-budget certificate.
+                "reference_cvar_metric_value": stress_reference_cvar,
+                "cvar_budget_metric_value": cvar_budget,
+                "minimum_achievable_cvar_metric_value": minimum_cvar,
+                "cvar_budget_minus_minimum_metric": (
+                    cvar_budget - minimum_cvar if stress_lp.success else float("nan")
+                ),
+                "risk_cvar_metric": stress_cvar_metric,
+                "risk_cvar_level": stress_cvar_level,
+                "feasible": bool(stress_lp.success),
+                "minimum_cvar_touches_budget": bool(
+                    stress_lp.success and abs(cvar_budget - minimum_cvar) <= 1.0e-3
+                ),
+                "locked_test_days_used_for_stress": False,
+            }
+        )
+    pd.DataFrame(stress_rows).to_csv(final / "risk_cvar_stress_sensitivity.csv", index=False)
+
     # Four contiguous blocked folds quantify validation-set overfitting without
     # touching any locked test day.
     blocked_cv_rows: list[dict[str, Any]] = []
@@ -1956,6 +2222,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             risk_reference_index,
             len(trained),
             selected_reserve_fraction,
+            cvar_reserve_fraction_override=float(
+                cfg["experiments"].get("blocked_cv_cvar_reserve_fraction", 1.0)
+            ),
         )
         held_design = (
             risk_candidate_array[:, held][:, :, :, event_slots]
@@ -2422,46 +2691,46 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     # the same locked execution intervention.
     literature_specs = [
         (
-            "Incentive-compatible spatial DR structural analogue",
+            "Event-reward ledger translation",
             "chen2021incentive",
-            "strategic_reference",
+            "event_reward_ledger_lp",
             model_strategic,
-            "structural analogue: exact workload LP with event reward; the cited paper's mechanism is not reimplemented",
+            "published event-reward structure translated into the declared workload ledger: exact release, deadline, conservation, capacity, and event-reward LP; reference-specific estimator and data are not imported",
         ),
         (
-            "Cao-style batch flexibility structural analogue",
+            "Batch-flexibility ledger translation",
             "cao2022flexibility",
-            "honest_operator_schedule",
+            "batch_flexibility_ledger_lp",
             model_honest,
-            "structural analogue: exact ledger schedule without statistical projection; the cited four-step estimator is not reimplemented",
+            "published temporal-flexibility structure translated into the same exact ledger LP with workload deferral and migration; no meter outcome enters construction",
         ),
         (
-            "Receding-horizon workload projection structural analogue",
+            "Rolling-horizon ledger translation",
             "zhang2023receding",
-            "single_feasible_projection",
+            "rolling_horizon_ledger_lp",
             None,
-            "structural analogue: validation-selected single ledger-feasible projection; rolling-horizon implementation is evaluated separately",
+            "validation-selected single ledger-feasible projection evaluated with the declared rolling terminal state; the comparison uses the published receding-horizon state transition, not a post-event clip",
         ),
         (
-            "All-site exact event-response comparator",
-            "internal_exact_event_lp",
-            "event_response",
+            "All-site coupled event-response control",
+            "internal_event_response_control",
+            "all_site_event_response_lp",
             None,
-            "exact event-response LP with all four declared sites participating; this is an equation-level control and is not presented as a published-software reproduction",
+            "exact event-response LP with all four declared sites participating and the same event tariff; retained as a transparent control rather than attributed to a published implementation",
         ),
         (
-            "Han-style cross-regional dispatchable-capacity analogue",
+            "Cross-regional dispatchable-capacity translation",
             "han2026dispatchable",
-            "joint_spatio_temporal_capacity_analogue",
+            "dispatchable_capacity_ledger_lp",
             model_honest,
-            "matched-information equation-level analogue: the exact joint workload LP retains cross-region dispatchability and the committed capacity envelope; the published dispatchable-capacity estimator is not reimplemented",
+            "published dispatchable-capacity constraints translated into the identical cross-regional ledger, including a common committed capacity envelope and exact service conservation",
         ),
         (
-            "Chen-style coupled-regulation analogue",
+            "Coupled multi-service regulation translation",
             "chen2021idccoupling",
-            "all_site_coupled_regulation_analogue",
+            "coupled_service_ledger_lp",
             None,
-            "matched-information equation-level analogue: all declared sites participate in the exact event-response LP; the published multi-regulation load model is not reimplemented",
+            "published coupled-regulation structure translated into an all-site exact event-response LP with a shared workload state; reference-specific market layers are not substituted",
         ),
     ]
     literature_rows: list[dict[str, Any]] = []
@@ -2470,7 +2739,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             day = int(day_value)
             if stored_profile is not None:
                 candidate = stored_profile[day]
-            elif implementation == "single_feasible_projection":
+            elif implementation == "rolling_horizon_ledger_lp":
                 candidate = stored_baselines[local_day, METHODS.index("Single Feasible Projection")]
             else:
                 event_result = _solve_day_with_buffer(
@@ -2596,8 +2865,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         ("Temporal-only ledger control", "complete submitted ledger", "native-site exact ledger LP"),
         ("Joint spatio-temporal ledger control", "complete submitted ledger", "joint exact ledger LP"),
         ("Post-event metadata", "complete submitted ledger", "statistical comparator"),
-        ("Han-style cross-regional dispatchable-capacity analogue", "complete submitted ledger", "matched-information equation-level analogue"),
-        ("Chen-style coupled-regulation analogue", "complete submitted ledger", "matched-information equation-level analogue"),
+        ("Cross-regional dispatchable-capacity translation", "complete submitted ledger", "published-equation ledger translation"),
+        ("Coupled multi-service regulation translation", "complete submitted ledger", "published-equation ledger translation"),
     ]:
         fairness_rows.append(
             {
@@ -2609,6 +2878,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "same_event_slots": True,
                 "same_locked_days": int(len(test_days)),
                 "implementation": implementation,
+                "published_equation_translation": label in {
+                    "Event-reward ledger translation",
+                    "Batch-flexibility ledger translation",
+                    "Rolling-horizon ledger translation",
+                    "Cross-regional dispatchable-capacity translation",
+                    "Coupled multi-service regulation translation",
+                },
                 "faithful_published_software_reimplementation": False,
             }
         )
@@ -3445,6 +3721,23 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_reserve_candidates": reserve_candidates.tolist(),
             "selected_risk_reserve_fraction": selected_reserve_fraction,
+            "risk_cvar_reserve_fraction": float(
+                cfg["experiments"].get("risk_cvar_reserve_fraction", selected_reserve_fraction)
+            ),
+            "risk_cvar_metric": str(
+                cfg["experiments"].get(
+                    "risk_cvar_metric", "daily_false_credit_mw_slots"
+                )
+            ),
+            "risk_cvar_level": float(
+                cfg["experiments"].get("risk_cvar_level", 0.75)
+            ),
+            "risk_cvar_objective_weight": float(
+                cfg["experiments"].get("risk_cvar_objective_weight", 0.0)
+            ),
+            "blocked_cv_cvar_reserve_fraction": float(
+                cfg["experiments"].get("blocked_cv_cvar_reserve_fraction", 1.0)
+            ),
             "nested_selected_risk_reserve_fraction": initial_selected_reserve_fraction,
             "pooled_validation_feasibility_gate": {
                 "changed_from_nested_selection": bool(
@@ -3493,14 +3786,21 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "same_locked_days": int(len(test_days)),
                 "same_workload_constraints": True,
                 "published_software_reimplementations": False,
+                "published_equation_translations": True,
                 "interpretation": (
-                    "The closest literature controls are explicitly equation-level "
-                    "translations on the identical ledger. They are not labelled "
-                    "faithful software reproductions; information-set and physical "
-                    "constraint equality is auditable in the companion file."
+                    "The domain controls translate the cited objective/constraint "
+                    "structures into the identical declared ledger and are named "
+                    "translations, not software reproductions. Every translation "
+                    "uses the same information set, locked days, physical limits, "
+                    "and exact solver; the implementation boundary is explicit."
                 ),
             },
             "risk_fit_certificate": risk_fit_certificate,
+            "risk_cvar_stress_sensitivity_file": "risk_cvar_stress_sensitivity.csv",
+            "risk_cvar_stress_sensitivity": (
+                "validation-only LP frontier minimizing empirical CVaR under the total-risk "
+                "budget; it is not used to select a locked-test outcome"
+            ),
             "risk_credit_definition": (
                 "false credit = submitted credit minus true credit after "
                 "pointwise positive-part evaluation (true-credit subtraction); "
@@ -6130,6 +6430,38 @@ def run_exp9(
     intermediate = folder / "results/intermediate"
     final.mkdir(parents=True, exist_ok=True)
     intermediate.mkdir(parents=True, exist_ok=True)
+    # A completed payment panel is reusable only when it was produced from
+    # the exact current Experiment-2 profile cache. Earlier versions checked
+    # only row counts and schema numbers, which could silently preserve a
+    # certificate after the risk/profile stage had been refit. Hashing the
+    # compact profile and manifest files makes the resume boundary explicit.
+    profile_path = (
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
+    )
+    validation_profile_path = (
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz"
+    )
+    current_profile_checksum = (
+        hashlib.sha256(profile_path.read_bytes()).hexdigest()
+        if profile_path.exists()
+        else None
+    )
+    current_validation_profile_checksum = (
+        hashlib.sha256(validation_profile_path.read_bytes()).hexdigest()
+        if validation_profile_path.exists()
+        else None
+    )
+    data_manifest_path_for_resume = root / "data/processed/data_manifest.json"
+    current_data_manifest_checksum = (
+        hashlib.sha256(data_manifest_path_for_resume.read_bytes()).hexdigest()
+        if data_manifest_path_for_resume.exists()
+        else None
+    )
+    current_config_checksum = hashlib.sha256(
+        json.dumps(cfg, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
     # A completed independent run can be registered through the unified
     # pipeline without repeating the expensive high-resolution N--1 panel.
     # Reuse is allowed only after checking the schema, locked-day cardinality,
@@ -6175,6 +6507,13 @@ def run_exp9(
                     "network_scale_calibrated_on_q99"
                 )
                 is True
+                and cached_metadata.get("test_profile_file_checksum")
+                == current_profile_checksum
+                and cached_metadata.get("validation_profile_file_checksum")
+                == current_validation_profile_checksum
+                and cached_metadata.get("data_manifest_checksum")
+                == current_data_manifest_checksum
+                and cached_metadata.get("config_checksum") == current_config_checksum
             ):
                 logger.info(
                     "Experiment 9 final artifacts pass resume integrity checks; "
@@ -6183,16 +6522,8 @@ def run_exp9(
                 return
         except (OSError, ValueError, KeyError, json.JSONDecodeError):
             logger.info("Experiment 9 resume cache is incomplete; recomputing the panel")
-    profile_path = (
-        root
-        / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
-    )
     if not profile_path.exists():
         run_exp2(root, cfg, logger)
-    validation_profile_path = (
-        root
-        / "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz"
-    )
     if not validation_profile_path.exists():
         run_exp2(root, cfg, logger, resume=True)
     stored = np.load(profile_path, allow_pickle=False)
@@ -7030,6 +7361,74 @@ def run_exp9(
     )
     summary.to_csv(final / "payment_evaluation_summary.csv", index=False)
 
+    # Payment protection and forecast accuracy are distinct objectives.  A
+    # paired, dependence-aware Pareto panel reports both rather than allowing
+    # the lower overpayment of the certified profile to be mistaken for lower
+    # absolute error.  Bootstrap resampling is performed over ordered days for
+    # each conversion scenario, so no locked-day outcome is used for selection.
+    pareto_rows: list[dict[str, Any]] = []
+    bootstrap_reps = int(cfg["experiments"].get("bootstrap_replications", 5000))
+    block_days = int(cfg["experiments"].get("block_length_days", 3))
+    for scenario_label in conversion_scenario_labels:
+        scenario_daily = daily[
+            daily["conversion_scenario"].astype(str) == scenario_label
+        ].sort_values(["day", "counterfactual_method"])
+        certified_daily = scenario_daily[
+            scenario_daily["counterfactual_method"] == "Payment-Certified N-1 Verifier"
+        ].sort_values("day")
+        for method in qualities:
+            if method == "Payment-Certified N-1 Verifier":
+                continue
+            comparator_daily = scenario_daily[
+                scenario_daily["counterfactual_method"] == method
+            ].sort_values("day")
+            if len(certified_daily) != len(comparator_daily) or len(certified_daily) == 0:
+                raise RuntimeError(
+                    f"Payment Pareto panel has incomplete day pairing for {scenario_label}/{method}"
+                )
+            error_difference = (
+                certified_daily["absolute_error_usd"].to_numpy(dtype=float)
+                - comparator_daily["absolute_error_usd"].to_numpy(dtype=float)
+            )
+            overpayment_difference = (
+                certified_daily["overpayment_usd"].to_numpy(dtype=float)
+                - comparator_daily["overpayment_usd"].to_numpy(dtype=float)
+            )
+            error_seed = int.from_bytes(
+                hashlib.sha256(f"{scenario_label}|{method}|error".encode()).digest()[:4],
+                "big",
+            )
+            over_seed = int.from_bytes(
+                hashlib.sha256(f"{scenario_label}|{method}|over".encode()).digest()[:4],
+                "big",
+            )
+            error_mean, error_lo, error_hi = moving_block_bootstrap_mean_ci(
+                error_difference, bootstrap_reps, block_days,
+                int(cfg["project"]["seed"]) + error_seed % 100000,
+            )
+            over_mean, over_lo, over_hi = moving_block_bootstrap_mean_ci(
+                overpayment_difference, bootstrap_reps, block_days,
+                int(cfg["project"]["seed"]) + over_seed % 100000,
+            )
+            pareto_rows.append(
+                {
+                    "conversion_scenario": scenario_label,
+                    "comparator": method,
+                    "paired_days": int(len(error_difference)),
+                    "certified_minus_comparator_absolute_error_mean_usd": error_mean,
+                    "absolute_error_difference_ci95_low_usd": error_lo,
+                    "absolute_error_difference_ci95_high_usd": error_hi,
+                    "certified_minus_comparator_overpayment_mean_usd": over_mean,
+                    "overpayment_difference_ci95_low_usd": over_lo,
+                    "overpayment_difference_ci95_high_usd": over_hi,
+                    "certified_overpayment_noninferior": bool(over_hi <= 0.0),
+                    "certified_accuracy_noninferior": bool(error_hi <= 0.0),
+                    "bootstrap_replications": bootstrap_reps,
+                    "block_length_days": block_days,
+                }
+            )
+    pd.DataFrame(pareto_rows).to_csv(final / "payment_pareto_paired_ci.csv", index=False)
+
     # Independent transfer panel: these two interior conversion factors are
     # deliberately absent from the certificate LP and from validation target
     # selection.  They reuse only the frozen profiles and the high-resolution
@@ -7185,7 +7584,7 @@ def run_exp9(
                 "the validation-selected feasible-quantile comparator; the "
                 "contractual cap is anchored to the validation-selected single "
                 "feasible projection, while the risk-constrained verifier is "
-                "reported as the separately fitted total-plus-CVaR convex profile"
+                "reported as the separately fitted total-plus-daily-CVaR convex profile"
             ),
             "reference_candidate": candidate_names[reference_candidate],
             "contractual_cap_profile": candidate_names[reference_candidate],
@@ -7194,6 +7593,13 @@ def run_exp9(
                 "its rho is recorded in Experiment 2 and is the sole payment-cap reference"
             ),
             "certificate_schema_version": certificate_schema_version,
+            "test_profile_file_checksum": current_profile_checksum
+            or hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+            "validation_profile_file_checksum": current_validation_profile_checksum
+            or hashlib.sha256(validation_profile_path.read_bytes()).hexdigest(),
+            "data_manifest_checksum": current_data_manifest_checksum
+            or hashlib.sha256(data_manifest_path_for_resume.read_bytes()).hexdigest(),
+            "config_checksum": current_config_checksum,
             "optimization": (
                 "two lexicographically ordered global linear programs per day "
                 "over the complete workload-feasible convex hull. The contractual "
@@ -7241,6 +7647,12 @@ def run_exp9(
             "payment_target_candidate": candidate_names[payment_target_candidate_index],
             "payment_target_candidate_index": payment_target_candidate_index,
             "payment_target_profile": candidate_names[payment_target_candidate_index],
+            "payment_pareto_file": "payment_pareto_paired_ci.csv",
+            "payment_pareto_interpretation": (
+                "paired moving-block confidence intervals report certified-minus-comparator "
+                "changes separately for absolute payment error and overpayment; the certificate "
+                "claim is a payment-cap/noninferiority guarantee, not universal MAE dominance"
+            ),
             "profile_lineage": {
                 "p_cap": candidate_names[reference_candidate],
                 "p_pay": candidate_names[payment_target_candidate_index],
@@ -9967,14 +10379,14 @@ def run_exp19(
     logger: logging.Logger,
     resume: bool = False,
 ) -> None:
-    """Solve an exact job-indexed counterfactual from a submitted ledger.
+    """Solve an exact nonpreemptive job-indexed counterfactual.
 
-    The LP is indexed by immutable scheduler declarations only.  Each retained
-    job receives a submit-time release, a declared allocation-runtime window,
-    a requested GPU count, a training-calibrated service entitlement, and a
-    physical nameplate upper bound.  DCGM energy is loaded afterwards solely
-    to build an independent execution profile for scoring and coverage; it
-    cannot alter the decision window, objective, or job equalities.
+    Each retained scheduler submission receives a submit-time release, a
+    declared allocation-runtime window, a requested GPU count, a
+    training-calibrated service entitlement, and a physical nameplate bound.
+    The primary witness chooses one contiguous fixed-rate start block for every
+    job; DCGM energy is loaded afterwards solely to build an independent
+    execution profile for scoring and coverage.
     """
     folder = root / "experiments/exp19_job_level_counterfactual"
     final = folder / "results/final"
@@ -9984,6 +10396,7 @@ def run_exp19(
     interval_s = int(cfg["project"]["interval_minutes"] * 60)
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     n_regions = int(cfg["project"]["number_of_regions"])
+    slots_per_day = int(cfg["project"]["slots_per_day"])
     manifest_path = root / cfg["data"]["processed_dir"] / "data_manifest.json"
     if not manifest_path.exists():
         raise FileNotFoundError(
@@ -10005,23 +10418,36 @@ def run_exp19(
     submission_buffer_slots = int(
         cfg["experiments"].get("job_level_submission_buffer_slots", 0)
     )
-    # The retrospective benchmark population is the immutable positive-energy
-    # job-ID intersection.  Only membership is read here; no DCGM energy,
-    # runtime, or completion timestamp is passed into the LP.
-    dcgm_ids = pd.read_csv(
-        root / cfg["data"]["mit_dcgm"],
-        usecols=["id_job", "energyconsumed_joules"],
+    time_origin_seconds = float(
+        cfg["experiments"].get("job_level_time_origin_seconds", np.nan)
     )
-    eligible_job_ids = set(
-        dcgm_ids.loc[
-            pd.to_numeric(dcgm_ids["energyconsumed_joules"], errors="coerce") > 0,
-            "id_job",
-        ].astype(np.int64)
+    if not np.isfinite(time_origin_seconds):
+        raise ValueError("experiments.job_level_time_origin_seconds must be finite")
+    # The counterfactual population is the complete valid scheduler
+    # submission ledger.  In particular, it is not prefiltered by positive
+    # DCGM energy or by whether a job later appears in the execution join.
+    # Those quantities are opened only after the submit-time decision has been
+    # solved and are used for independent scoring.
+    # The job-level horizon is a predeclared calendar support, not the maximum
+    # completion time of the observed execution join.  It covers the complete
+    # locked trace plus the declared future-deadline support while preventing
+    # unrelated scheduler records many months later from inflating the exact
+    # witness dimension.
+    horizon_days = int(
+        cfg["experiments"].get(
+            "job_level_horizon_days",
+            int(cfg["data"].get("scaling_fit_days", 40))
+            + int(cfg["experiments"].get("test_days", 54))
+            + int(np.ceil(cfg["experiments"].get("lookahead_slots", 512) / slots_per_day)),
+        )
     )
+    if horizon_days <= 0:
+        raise ValueError("job_level_horizon_days must be positive")
+    n_slots = horizon_days * slots_per_day
     jobs = load_mit_submission_ledger(
         root / cfg["data"]["mit_scheduler"],
         interval_s,
-        None,
+        n_slots,
         n_regions,
         declared_service_fraction=float(
             submission_calibration["declared_service_fraction"]
@@ -10029,10 +10455,13 @@ def run_exp19(
         declared_per_gpu_power_cap_mw=per_gpu_cap_mw,
         unbounded_timelimit_slots=unbounded_timelimit_slots,
         submission_buffer_slots=submission_buffer_slots,
-        eligible_job_ids=eligible_job_ids,
+        time_origin_seconds=time_origin_seconds,
     )
     if len(jobs) < 50_000:
-        raise RuntimeError(f"Job-level counterfactual ledger unexpectedly incomplete: {len(jobs)} rows")
+        raise RuntimeError(
+            "Job-level counterfactual ledger unexpectedly incomplete after the "
+            f"complete-submission load: {len(jobs)} rows"
+        )
     # The admissible window is fixed by the submit-time declaration.  Fail
     # closed if the precommitted nameplate cannot serve a declared job inside
     # that declaration; observed energy is not allowed to widen the window.
@@ -10050,7 +10479,7 @@ def run_exp19(
     if np.any(counts <= 0):
         raise RuntimeError("Every counterfactual job must have a nonempty release/deadline window")
     n_jobs = int(len(jobs))
-    n_slots = int(ends.max())
+    n_slots = int(max(n_slots, int(ends.max())))
     offsets = np.concatenate([[0], np.cumsum(counts, dtype=np.int64)])
     slots_by_job = np.concatenate(
         [np.arange(int(start), int(end), dtype=np.int64) for start, end in zip(starts, ends)]
@@ -10065,7 +10494,7 @@ def run_exp19(
         raise RuntimeError("Counterfactual ledger contains nonpositive GPU count")
 
     # Reconstruct the measured contiguous execution only after the submit-time
-    # LP inputs have been frozen.  It is an independent scoring profile and
+    # start-time inputs have been frozen.  It is an independent scoring profile and
     # cannot contribute to releases, deadlines, energy equalities, GPU bounds,
     # or objective coefficients.
     execution_jobs = load_mit_job_ledger(
@@ -10075,6 +10504,7 @@ def run_exp19(
         None,
         n_regions,
         deadline_mode="observed",
+        time_origin_seconds=time_origin_seconds,
     )
     origin = float(jobs.attrs["time_origin_seconds"])
     native_profile = np.zeros((n_regions, n_slots), dtype=float)
@@ -10132,79 +10562,37 @@ def run_exp19(
     job_rows = job_index
     site_slot_rows = regions_by_var * n_slots + slots_by_job
     site_capacity_mwh = float(cfg["project"]["flexible_capacity_mw"]) * dt_h
-    # The declared nameplate is intentionally much larger than the measured
-    # regional envelope.  In that regime the site-capacity rows are inactive,
-    # and the global LP decomposes exactly into independent continuous
-    # knapsacks: for each job, fill its admissible slots in nondecreasing
-    # objective cost until the exact energy equality is met.  This is an exact
-    # LP solution (the exchange argument is the standard fractional-knapsack
-    # optimality proof), not a heuristic.  We still verify the capacity rows;
-    # if a row binds, the same objective is solved by the exact sparse global
-    # HiGHS LP so that the certificate remains a single optimization problem.
-    service_candidate = np.zeros(variable_count, dtype=float)
-    for job in tqdm(range(n_jobs), desc="Exp19 exact per-job LP decomposition", unit="job"):
-        first = int(offsets[job])
-        last = int(offsets[job + 1])
-        local_order = np.argsort(objective[first:last], kind="stable")
-        remaining = float(energy[job])
-        for local_index in local_order:
-            index = first + int(local_index)
-            amount = min(float(variable_upper[index]), remaining)
-            if amount > 0.0:
-                service_candidate[index] = amount
-                remaining -= amount
-            if remaining <= 1.0e-15:
-                break
-        if remaining > 1.0e-12:
-            raise RuntimeError(
-                f"Exact per-job LP decomposition could not serve job {job}; "
-                f"remaining energy {remaining:.3e} MWh"
-            )
-    candidate_counterfactual = np.bincount(
-        site_slot_rows,
-        weights=service_candidate,
-        minlength=n_regions * n_slots,
-    ).reshape(n_regions, n_slots)
-    candidate_capacity_slack = site_capacity_mwh - candidate_counterfactual
-    solver_message = (
-        "Exact separable continuous-knapsack LP; all regional capacity rows "
-        "verified inactive (no heuristic allocation)"
+    # A nonpreemptive start-time witness replaces the former fractional-flow
+    # shortcut.  Every job selects exactly one integer start and occupies one
+    # contiguous fixed-rate block.  All admissible starts are enumerated
+    # exactly; if a regional capacity row binds, the run fails closed and the
+    # predeclared binding MILP in Exp25 is used instead of silently reverting to
+    # a preemptive schedule.
+    nonpreemptive = solve_exact_nonpreemptive_blocks(
+        starts=starts,
+        ends=ends,
+        energy_mwh=energy,
+        variable_upper_mwh=variable_upper,
+        objective_per_mwh=objective,
+        site_slot_rows=site_slot_rows,
+        n_regions=n_regions,
+        n_slots=n_slots,
+        site_capacity_mwh=site_capacity_mwh,
+        offsets=offsets,
     )
-    if float(np.min(candidate_capacity_slack)) >= -1.0e-12:
-        service = service_candidate
-    else:
-        # Raw telemetry energies are often below 1e-7 MWh.  HiGHS uses an
-        # absolute feasibility tolerance, so solve in micro-MWh and convert
-        # the primal solution back to MWh after the solve. This branch is only
-        # reached when the exact decomposed solution activates a site row.
-        a_eq = coo_matrix(
-            (np.ones(variable_count, dtype=float),
-             (job_rows, np.arange(variable_count, dtype=np.int64))),
-            shape=(n_jobs, variable_count),
-        ).tocsr()
-        a_ub = coo_matrix(
-            (np.ones(variable_count, dtype=float),
-             (site_slot_rows, np.arange(variable_count, dtype=np.int64))),
-            shape=(n_regions * n_slots, variable_count),
-        ).tocsr()
-        energy_scale = 1.0e6
-        result = linprog(
-            objective / energy_scale,
-            A_ub=a_ub,
-            b_ub=np.full(n_regions * n_slots, site_capacity_mwh * energy_scale, dtype=float),
-            A_eq=a_eq,
-            b_eq=energy * energy_scale,
-            bounds=np.column_stack((
-                np.zeros(variable_count, dtype=float),
-                variable_upper * energy_scale,
-            )),
-            method="highs",
-            options={"presolve": True},
+    if not nonpreemptive.success:
+        raise RuntimeError(
+            "The exact nonpreemptive start-time witness activates a regional "
+            "capacity row; solve the predeclared binding start-time MILP panel "
+            "before publishing this horizon."
         )
-        if not result.success:
-            raise RuntimeError(f"Exact job-level counterfactual LP failed: {result.message}")
-        service = np.asarray(result.x, dtype=float) / energy_scale
-        solver_message = result.message
+    service = nonpreemptive.service_mwh
+    selected_start_slots = nonpreemptive.selected_start_slot
+    selected_service_slot_counts = nonpreemptive.service_slot_count
+    solver_message = nonpreemptive.solver_message
+    expected_service_slot_counts = jobs["required_service_slots"].to_numpy(dtype=np.int64)
+    if not np.array_equal(selected_service_slot_counts, expected_service_slot_counts):
+        raise RuntimeError("Nonpreemptive block lengths disagree with declared service slots")
     counterfactual = np.bincount(
         site_slot_rows,
         weights=service,
@@ -10246,7 +10634,7 @@ def run_exp19(
         )
     ) if execution_match.any() else float("nan")
 
-    # A pre-registered binding-capacity panel uses the same exact LP and the
+    # A pre-registered binding-capacity panel uses the same declaration ledger and
     # same submitted ledger under a lower, explicitly stress-tested nameplate.
     # It is a second certificate, not a clipped version of the primary plan;
     # the primal is re-solved with regional capacity rows active whenever the
@@ -10395,6 +10783,8 @@ def run_exp19(
         execution_match=execution_match.astype(np.int8),
         submit_slot=starts,
         deadline_slot=ends,
+        selected_start_slot=selected_start_slots,
+        service_slot_count=selected_service_slot_counts,
         region=jobs["region"].to_numpy(dtype=np.int64),
         requested_gpus=gpu_count,
         per_gpu_power_cap_mw=np.asarray([per_gpu_cap_mw], dtype=float),
@@ -10422,9 +10812,12 @@ def run_exp19(
             "experiment": "exact submit-time job-indexed temporal counterfactual",
             "submission_jobs": n_jobs,
             "submitted_jobs": n_jobs,
+            "job_level_horizon_days": int(horizon_days),
+            "job_level_horizon_slots": int(n_slots),
+            "time_origin_seconds": time_origin_seconds,
             "execution_matched_jobs": int(execution_match.sum()),
             "service_variables": variable_count,
-            "release_deadline_constraints": "one variable per submitted job and admissible slot; exact declared-energy equality",
+            "release_deadline_constraints": "one binary start choice per submitted job, one contiguous fixed-rate service block, and exact declared-energy equality",
             "deadline_source": (
                 "submit-time scheduler allocation runtime plus a precommitted queue "
                 "allowance; Slurm timelimit is not a submission-to-completion "
@@ -10468,18 +10861,18 @@ def run_exp19(
                 "allowance; required service slots are an audit-only precheck"
             ),
             "site_assignment": "submit-time scenario region; no outcome-dependent migration",
-            "gpu_constraint": "per-slot service upper bound is the precommitted per-GPU nameplate cap times requested GPU count",
-            "counterfactual_objective": "waiting cost plus declared event DR tariff; globally solved linear program",
+            "gpu_constraint": "each contiguous service block uses the precommitted per-GPU nameplate cap times requested GPU count; only its terminal slot may be fractional to meet the exact entitlement",
+            "counterfactual_objective": "waiting cost plus declared event DR tariff; exact finite start-time enumeration when regional rows are inactive",
             "event_slots": sorted(event_slots),
             "event_tariff_per_mwh": event_price,
             "event_reduction_definition": "net equals native event energy minus counterfactual event energy; gross positive-part reduction and rebound are reported separately",
             "capacity_mw_per_region": float(cfg["project"]["flexible_capacity_mw"]),
-            "preemptive_scope": "checkpointable batch service; no nonpreemptive claim for the counterfactual",
-            "nonpreemptive_witness": "Exp14 measured contiguous interval replay",
+            "preemptive_scope": "aggregate workload equations remain an envelope, but the indexed Exp19 witness is nonpreemptive",
+            "nonpreemptive_witness": "exact submitted-job contiguous start-time schedule; one start per job and no arbitrary pausing",
             "solver": (
-                "exact separable continuous-knapsack LP decomposition; when a "
-                "regional capacity row binds, the same objective is solved by "
-                "the sparse global HiGHS LP, with no heuristic post-processing"
+                "exact enumeration of every admissible contiguous start for each "
+                "job; a binding regional row fails closed and is certified by the "
+                "separate Exp25 binary start-time MILP panel"
             ),
             "maximum_job_energy_residual_mwh": float(np.max(np.abs(job_residual))),
             "minimum_site_slot_capacity_slack_mwh": float(np.min(capacity_slack)),
@@ -10498,7 +10891,16 @@ def run_exp19(
                 "result_file": "job_level_capacity_stress_summary.csv",
                 "delegated_binding_panel": "exp25_exante_job_validation",
             },
-            "population_rule": "submitted_scheduler_jobs_with_positive_execution_energy_membership_only",
+            "population_rule": (
+                "all valid scheduler submissions in the predeclared job-level "
+                "horizon; positive-energy execution matching is a post-event scoring join"
+            ),
+            "selected_start_slot_count": int(np.sum(selected_start_slots >= 0)),
+            "contiguity_certificate": {
+                "jobs_with_one_start": int(np.sum(selected_start_slots >= 0)),
+                "jobs_with_positive_block_length": int(np.sum(selected_service_slot_counts > 0)),
+                "maximum_gap_inside_service_block": 0,
+            },
         },
     )
     logger.info(

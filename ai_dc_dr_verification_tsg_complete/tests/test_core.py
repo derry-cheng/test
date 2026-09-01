@@ -251,7 +251,7 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
         (folder / "experiment_metadata.json").read_text(encoding="utf-8")
     )
     assert metadata["observed_time_end_used_as_deadline"] is False
-    assert metadata["deadline_mode"] == "declared_timelimit"
+    assert metadata["deadline_mode"] == "submit_time_declaration"
     assert int(metadata["declared_window_slots_min"]) >= 1
     assert int(metadata["declared_window_slots_max"]) >= int(metadata["declared_window_slots_min"])
     assert int(metadata["declared_window_slots_max"]) == 680
@@ -271,21 +271,30 @@ def test_job_counterfactual_uses_submit_time_declarations_and_signed_reduction()
     assert np.isclose(native - counterfactual, net, atol=1e-12)
     assert gross >= net - 1e-12
     assert rebound >= -1e-12
-    assert int(float(values["service_variables"])) == 12_296_675
+    assert int(float(values["service_variables"])) == 13_198_247
+    assert metadata["population_rule"].startswith("all valid scheduler submissions")
+    assert metadata["nonpreemptive_witness"].startswith("exact submitted-job contiguous")
+    assert metadata["contiguity_certificate"]["maximum_gap_inside_service_block"] == 0
     assert float(values["maximum_job_energy_residual_mwh"]) < 1e-15
     scale = pd.read_csv(
         ROOT
         / "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv"
     )
     scale_values = dict(zip(scale["metric"], scale["value"]))
-    assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 2146.2043512110617)
+    assert np.isclose(float(scale_values["capacity_safe_scale_factor"]), 2176.1834426742535)
     assert np.isclose(
         float(scale_values["capacity_proportional_network_scale_factor"]),
-        2146.2043512110617,
+        2176.1834426742535,
     )
-    assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.4796888050033212)
+    assert np.isclose(float(scale_values["fixed_nameplate_certified_scale_factor"]), 1.5042419623337813)
     assert float(scale_values["certified_peak_mw"]) <= 118.0 + 1e-9
     assert float(scale_values["capacity_proportional_minimum_capacity_slack_mwh"]) >= -1e-9
+    sensitivity = pd.read_csv(
+        ROOT
+        / "experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv"
+    )
+    assert len(sensitivity) == len(CFG["experiments"]["scale_sensitivity_relative_to_fixed"])
+    assert sensitivity["fixed_gpu_nameplate_respected"].astype(bool).sum() >= 2
 
 
 def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> None:
@@ -325,6 +334,8 @@ def test_coupled_network_replay_rechecks_indexed_primal_before_settlement() -> N
         float(CFG["experiments"]["n1_load_multiplier"]),
     )
     assert metadata["network_load_equation"].startswith("L_t = L_base * 0.9")
+    assert int(values["submitted_jobs"]) == 75326
+    assert int(values["service_variables"]) == 13198247
     assert metadata["post_solution_profile_reoptimization"] is False
 
 
@@ -460,6 +471,29 @@ def test_payment_target_is_frozen_on_validation_and_two_sided_band_is_complete()
     assert len(risk) == CFG["experiments"]["test_days"]
     assert np.all(risk["aggregate_total_contract_satisfied"] == 1)
     assert np.all(risk["aggregate_cvar75_contract_satisfied"] == 1)
+    cvar = pd.read_csv(
+        ROOT
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_cvar_stress_sensitivity.csv"
+    )
+    assert len(cvar) == len(CFG["experiments"]["risk_cvar_stress_reserve_fractions"])
+    boundary = cvar[
+        np.isclose(
+            cvar["cvar_reserve_fraction"],
+            float(CFG["experiments"]["risk_cvar_reserve_fraction"]),
+        )
+    ]
+    assert len(boundary) == 1
+    assert bool(boundary.iloc[0]["minimum_cvar_touches_budget"])
+    cert = pd.read_csv(
+        ROOT
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_constrained_validation_certificate.csv"
+    ).iloc[0]
+    assert cert["risk_cvar_metric"] == "daily_false_credit_ratio"
+    assert np.isclose(float(cert["risk_cvar_level"]), float(CFG["experiments"]["risk_cvar_level"]))
+    assert float(cert["cvar_budget_slack_metric"]) <= 1e-3
+    assert bool(cert["cvar75_budget_binding"])
 
 
 def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
@@ -503,6 +537,8 @@ def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:
     assert len(physical) == 1
     assert np.isfinite(physical[["test_mae_watts", "test_rmse_watts", "test_r2"]].to_numpy()).all()
     assert 0.0 < float(physical.loc[0, "test_r2"]) <= 1.0
+    assert int(physical.loc[0, "train_observations"]) == 44391
+    assert int(physical.loc[0, "test_observations"]) == 50791
 
 
 def test_data_flow_distinguishes_full_join_from_common_tensor_window() -> None:
@@ -679,7 +715,7 @@ def test_raw_and_processed_data_are_complete() -> None:
     )
     assert manifest["power_calibration"][
         "heldout_jobs_with_positive_prediction"
-    ] == 21919
+    ] == 40768
     assert np.all(np.diff(factors) > 0)
     assert factors[0] < 1.0 < factors[-1]
 

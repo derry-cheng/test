@@ -16,7 +16,9 @@ The repository should also be treated as
 a trace-driven benchmark, not as evidence from a co-located utility event. The
 network placement and workload-to-power scaling are declared scenario
 parameters, and the manuscript states this identification boundary explicitly.
-Experiment 21 separates the fixed-nameplate deployable scale from its
+Experiment 19 now enumerates 13,198,247 admissible contiguous starts over all
+75,326 scheduler submissions; 71,128 execution matches are opened only for
+post-event scoring. Experiment 21 separates the fixed-nameplate deployable scale from its
 capacity-proportional stress profile; Experiment 22 replays the exact indexed
 job witness through N--1 settlement on the predeclared public PYPOWER RTS-24
 case after a zero-residual job-to-network aggregation check. Experiment 23

@@ -24,6 +24,10 @@ data:
   batch_peak_target_mw: 65.0
   percentile_for_scaling: 0.99
   scaling_fit_days: 40
+  # The submit-time calibration cutoff is chronological and independent of the
+  # locked event/test days. A job contributes labels only after both its
+  # submission and scheduler completion are observable inside this history.
+  submission_calibration_training_days: 40
 
 workload:
   classes: [realtime_inference, elastic_inference, batch_gpu]
@@ -62,7 +66,30 @@ experiments:
   projection_weights: [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
   # Chosen only through contiguous validation folds. Each candidate imposes a
   # separate false-credit cap on every validation day.
-  risk_reserve_fractions: [0.60, 0.75, 0.90, 1.00]
+  # The reserve grid is deliberately below one so the daily-tail constraint is
+  # a genuine out-of-sample contract rather than a slack copy of the reference.
+  risk_reserve_fractions: [0.90, 0.95, 1.00]
+  # A separate tail reserve prevents the CVaR row from being numerically
+  # redundant when the total budget is selected at its feasible endpoint.
+  # The validation-only tail-frontier audit identifies the declared boundary
+  # below as the smallest pooled-feasible reserve (the CVaR row is active at
+  # this boundary). Larger reserves remain in the sensitivity panel.
+  # CVaR is measured on the daily false-credit ratio (absolute false credit
+  # divided by that day's true credited energy), making the tail constraint
+  # nonredundant with the total MWh budget.  A 96.94103% reserve is
+  # pooled-feasible and sits on the empirical frontier;
+  # the neighbouring boundary is retained in the validation sensitivity panel.
+  risk_cvar_metric: daily_false_credit_ratio
+  risk_cvar_level: 0.75
+  risk_cvar_reserve_fraction: 0.9694103
+  # Convex tail preference used only by fits with the CVaR epigraph enabled;
+  # the total-budget-only ablation removes this term as well as the CVaR row.
+  risk_cvar_objective_weight: 0.05
+  # Blocked-CV folds are diagnostic only; use the full reference tail budget
+  # so a small training fold is not declared infeasible by the production
+  # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.
+  blocked_cv_cvar_reserve_fraction: 1.00
+  risk_cvar_stress_reserve_fractions: [0.9694103, 0.975, 0.990, 1.00]
   bootstrap_replications: 5000
   # Three-day blocks yield 18 independent sign-randomization units on the
   # 54-day locked test set; 6/9/18-day alternatives remain sensitivity checks.
@@ -122,7 +149,10 @@ experiments:
   coupled_network_case: "PYPOWER case24_ieee_rts"
   coupled_network_buses_one_based: [3, 8, 15, 21]
   spatial_scale_parallel_workers: 9
-  payment_certificate_parallel_workers: 6
+  # Certificate solves are independent across locked days.  Twelve workers
+  # shortens the high-resolution N-1 panel while remaining below the
+  # project-wide 20-worker ceiling.
+  payment_certificate_parallel_workers: 12
   # The contractual certificate generator uses an exact four-segment
   # piecewise-linear value model.  The locked evaluation is independently
   # replayed at n1_evaluation_generator_segments=40.
@@ -197,9 +227,19 @@ experiments:
   # observed completion time enters the LP window.
   job_level_unbounded_timelimit_slots: 128
   job_level_submission_buffer_slots: 96
+  # Fixed before any telemetry join: 132 days cover the 121-day trace and the
+  # declared future-deadline support while excluding unrelated later jobs.
+  job_level_horizon_days: 132
+  # The MIT release contains an early scheduler epoch and the measured
+  # SuperCloud epoch. This source-published epoch anchor is fixed before any
+  # positive-energy matching; it is not inferred from locked outcomes.
+  job_level_time_origin_seconds: 21193772.0
   # A precommitted one-kW/GPU nameplate keeps every finite submit-time window
   # feasible without extending a declared deadline.
   job_level_declared_per_gpu_power_cap_mw: 0.001
+  # Fixed-nameplate neighborhood used only by the scale audit; factors above
+  # one are homogeneous diagnostics and are not deployment claims.
+  scale_sensitivity_relative_to_fixed: [0.50, 0.75, 1.00, 1.25]
   # Exact binding-capacity stress replay for the indexed job model.  This is
   # solved as a second LP with the same declarations, not by clipping the
   # primary witness or selecting a capacity from locked outcomes.
@@ -208,9 +248,12 @@ experiments:
   # in that cohort. Exp19's full-horizon certificate keeps the committed
   # 118-MW capacity unchanged.
   job_level_stress_capacity_mw: 0.0
-  job_level_stress_panel_capacity_mw: 0.001
-  job_level_stress_panel_day_index: 20
+  job_level_stress_panel_capacity_mw: 0.0006647866667
+  # A late, fully declared calendar slice supplies a compact binding MILP
+  # while retaining the complete job population in its window intersection.
+  job_level_stress_panel_day_index: 127
   job_level_stress_panel_minimum_event_service_mwh: 0.004
+  job_level_stress_milp_time_limit_s: 120
   # Independent controlled-event replay: a separately parameterized exact LP
   # uses this tariff and no statistical target or verifier candidate as an
   # input.  Its predeclared service floor makes the event policy structurally

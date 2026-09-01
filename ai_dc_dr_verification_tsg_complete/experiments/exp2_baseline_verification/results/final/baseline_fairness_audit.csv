@@ -1,9 +1,9 @@
-baseline,information_set,same_arrivals,same_deadlines,same_site_capacity,same_event_slots,same_locked_days,implementation,faithful_published_software_reimplementation
-Single Feasible Projection,complete submitted ledger,True,True,True,True,54,exact ledger LP,False
-Risk-Constrained Convex Verifier,complete submitted ledger,True,True,True,True,54,validation-only convex fit + exact envelope,False
-Feasible Quantile Projection,complete submitted ledger,True,True,True,True,54,matched-information quantile + exact ledger LP,False
-Temporal-only ledger control,complete submitted ledger,True,True,True,True,54,native-site exact ledger LP,False
-Joint spatio-temporal ledger control,complete submitted ledger,True,True,True,True,54,joint exact ledger LP,False
-Post-event metadata,complete submitted ledger,True,True,True,True,54,statistical comparator,False
-Han-style cross-regional dispatchable-capacity analogue,complete submitted ledger,True,True,True,True,54,matched-information equation-level analogue,False
-Chen-style coupled-regulation analogue,complete submitted ledger,True,True,True,True,54,matched-information equation-level analogue,False
+baseline,information_set,same_arrivals,same_deadlines,same_site_capacity,same_event_slots,same_locked_days,implementation,published_equation_translation,faithful_published_software_reimplementation
+Single Feasible Projection,complete submitted ledger,True,True,True,True,54,exact ledger LP,False,False
+Risk-Constrained Convex Verifier,complete submitted ledger,True,True,True,True,54,validation-only convex fit + exact envelope,False,False
+Feasible Quantile Projection,complete submitted ledger,True,True,True,True,54,matched-information quantile + exact ledger LP,False,False
+Temporal-only ledger control,complete submitted ledger,True,True,True,True,54,native-site exact ledger LP,False,False
+Joint spatio-temporal ledger control,complete submitted ledger,True,True,True,True,54,joint exact ledger LP,False,False
+Post-event metadata,complete submitted ledger,True,True,True,True,54,statistical comparator,False,False
+Cross-regional dispatchable-capacity translation,complete submitted ledger,True,True,True,True,54,published-equation ledger translation,True,False
+Coupled multi-service regulation translation,complete submitted ledger,True,True,True,True,54,published-equation ledger translation,True,False

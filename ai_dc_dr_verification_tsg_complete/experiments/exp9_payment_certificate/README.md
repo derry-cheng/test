@@ -5,8 +5,9 @@ program selects a convex combination of six independently solved first-stage
 workload-feasible projections and retains the validation-selected feasible
 quantile projection only as an external transfer comparator. The contractual
 reference is the validation-selected single feasible projection, whereas the
-risk-constrained verifier is a separate validation-fitted total-plus-CVaR
-profile and is never silently substituted for the payment cap. A lexicographic
+risk-constrained verifier is a separate validation-fitted
+total-plus-daily-CVaR profile and is never silently substituted for the payment
+cap. A lexicographic
 pair of linear programs first minimizes target deviation and then maximizes the
 worst fractional grid-cost margin without degrading that optimum. The resulting
 daily N-1 baseline cost is constrained to be no larger than the selected single

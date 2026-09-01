@@ -1,21 +1,21 @@
 # Experiment 19: job-indexed executable counterfactual
 
-This stage solves a global sparse linear program with one service variable for
-every positive-energy scheduler job and every admissible release/deadline slot.
-The job energy equality, native-region assignment, per-site nameplate capacity,
-GPU-count-derived interval bound, and deterministic event tariff are all
-enforced in the optimization model. Finite scheduler timelimits are retained
-exactly; only the declared unlimited sentinel receives the precommitted
-128-slot window. The measured-energy/nameplate calculation is an audit-only
-feasibility precheck, and an infeasible declaration stops the run rather than
-enlarging its deadline. The output is therefore an executable
-preemptive batch-service counterfactual rather than a replay of an already
-observed aggregate profile.
+This stage loads every valid scheduler submission in the predeclared 132-day
+horizon, not only jobs that later receive positive DCGM energy. Each job has a
+submit-time release, an allocation-runtime window plus the fixed 96-slot queue
+allowance, a requested GPU count, and a training-calibrated energy entitlement.
+The executable witness is an exact contiguous fixed-rate start-time model:
+every job selects one admissible integer start, uses its GPU nameplate rate, and
+uses a fractional terminal slot only for the exact entitlement. The regional
+capacity rows, declared-energy equalities, and deterministic event tariff are
+checked at every slot. A binding row is handled by the exact binary model in
+Experiment 25; this stage never falls back to a preemptive flow or extends a
+window using observed completion.
 
-The experiment does not claim arbitrary nonpreemptive execution. The measured
-contiguous runtime/GPU witness remains in Experiment 14; together the two
-stages separate (i) task-level evidence for the observed ledger from (ii) an
-indexed, globally optimized counterfactual for checkpointable batch work.
+The 71,128 scheduler/DCGM matches are opened only after the 75,326-job
+counterfactual is fixed, for independent native replay and coverage. The
+measured contiguous runtime/GPU witness remains in Experiment 14 and is not
+used to constrain the counterfactual starts.
 
 Run from the repository root with:
 

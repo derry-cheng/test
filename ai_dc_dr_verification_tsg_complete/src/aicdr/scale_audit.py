@@ -55,7 +55,9 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
     fixed_scale = min(capacity_scale, fixed_nameplate_scale)
     # ``capacity_profile`` is a network-capacity stress scenario whose GPU
     # nameplate is scaled proportionally. ``deployable_profile`` respects the
-    # fixed 0.001 MW/GPU declaration and is the contractual certificate.
+    # fixed 0.001 MW/GPU declaration and is the contractual certificate.  The
+    # capacity-proportional row is never treated as evidence of external
+    # utility scale; it is a homogeneous transform of the same ledger witness.
     capacity_native, capacity_cf = native_raw * capacity_scale, counterfactual_raw * capacity_scale
     native_s, cf_s = native_raw * fixed_scale, counterfactual_raw * fixed_scale
     cap_mwh = capacity_mw * dt_h
@@ -103,6 +105,49 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
                 "capacity_slack_mwh": float(capacity_slack[r, s]),
             })
     pd.DataFrame(capacity_profile).to_csv(out / "capacity_proportional_profile.csv", index=False)
+    # A small, predeclared sensitivity around the fixed-nameplate anchor makes
+    # the scale claim falsifiable without inventing geographic observations.
+    # Every row scales the same service witness and all resource caps together;
+    # rows above one are diagnostic homogeneous transforms, not deployable
+    # claims under the fixed 0.001-MW/GPU commitment.
+    sensitivity_relative = np.asarray(
+        cfg["experiments"].get("scale_sensitivity_relative_to_fixed", [0.50, 0.75, 1.00, 1.25]),
+        dtype=float,
+    )
+    if (
+        sensitivity_relative.ndim != 1
+        or len(sensitivity_relative) < 3
+        or np.any(~np.isfinite(sensitivity_relative))
+        or np.any(sensitivity_relative <= 0.0)
+    ):
+        raise ValueError("scale_sensitivity_relative_to_fixed must be positive and finite")
+    sensitivity_rows: list[dict[str, Any]] = []
+    for relative in sensitivity_relative:
+        factor = float(fixed_scale * relative)
+        scaled_native = native_raw * factor
+        scaled_cf = counterfactual_raw * factor
+        scaled_slack = capacity_mw * dt_h * relative - scaled_cf
+        sensitivity_rows.append(
+            {
+                "anchor": "fixed_nameplate_certified_scale",
+                "relative_to_anchor": float(relative),
+                "homogeneous_scale_factor": factor,
+                "peak_mw": float(max(scaled_native.max(), scaled_cf.max()) / dt_h),
+                "minimum_scaled_capacity_slack_mwh": float(scaled_slack.min()),
+                "event_native_mwh": float(scaled_native[:, event_idx].sum()),
+                "event_counterfactual_mwh": float(scaled_cf[:, event_idx].sum()),
+                "event_gross_reduction_mwh": float(
+                    np.clip(scaled_native[:, event_idx] - scaled_cf[:, event_idx], 0.0, None).sum()
+                ),
+                "fixed_gpu_nameplate_respected": bool(relative <= 1.0 + 1.0e-12),
+                "interpretation": (
+                    "deployable anchor neighborhood"
+                    if relative <= 1.0 + 1.0e-12
+                    else "homogeneous diagnostic stress"
+                ),
+            }
+        )
+    pd.DataFrame(sensitivity_rows).to_csv(out / "scale_sensitivity.csv", index=False)
     (out / "experiment_metadata.json").write_text(json.dumps({
         "experiment": "exact homogeneous scale-consistency certificate",
         "source": str(source.relative_to(root)),
@@ -115,6 +160,10 @@ def run_exp21_scale_consistency(root: Path, cfg: dict[str, Any], logger: logging
         "fixed_nameplate_certified_scale": fixed_scale,
         "certified_scale": fixed_scale,
         "capacity_proportional_profile_is_stress_scenario": True,
+        "capacity_proportional_profile_is_not_external_validity": True,
+        "cross_network_claim_is_conditional_on_declared_trace_to_bus_scenario": True,
+        "scale_sensitivity_file": "scale_sensitivity.csv",
+        "scale_sensitivity_relative_to_fixed_nameplate": sensitivity_relative.tolist(),
         "homogeneous_scale_replay_scales_all_resource_caps": True,
         "deployable_profile_respects_fixed_gpu_nameplate": True,
         "scale_semantics": (

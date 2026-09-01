@@ -42,13 +42,17 @@ generated into `data/processed/data_manifest.json` by the data stage.
 The accompanying `data/processed/data_flow_audit.csv` provides a row-level
 source-to-join-to-split accounting table, including the disjoint calibration
 training and held-out partitions and the final valid-slot count.
-The calibration split is deterministic by immutable job ID. On the 21,919
-held-out jobs with positive predicted energy, the measured-to-predicted energy
-ratio has 1st, 10th, 50th, 90th, and 99th percentiles 0.584475, 0.734154,
-0.995724, 1.278023, and 2.693089. Experiment 9 embeds all five values in the
-same payment-certificate program; they form a declared finite empirical
-uncertainty set, not a tuned continuous distribution or a replacement for the
-measured scoring trace.
+The calibration split is chronological: scheduler/DCGM observations whose
+submit and execution times fall in the first 40 complete days train the
+conversion model, and later observations are held out. The held-out
+measured-to-predicted energy ratio has 1st, 10th, 50th, 90th, and 99th
+percentiles 0.536697, 0.669059, 0.924071, 1.409561, and 4.755718. Experiment 9
+embeds all five values in the same payment-certificate program; they form a
+declared finite empirical uncertainty set, not a tuned continuous distribution
+or a replacement for the measured scoring trace. A matched positive DCGM
+measurement supplies the calibration label, whereas chronological submit/end
+timestamps alone determine its train/hold-out membership; no such label filter
+defines the full Exp19 submission population.
 
 Experiment 19 uses a separate job-indexed counterfactual. Slurm `timelimit` is
 an allocation run-time declaration, not a submission-to-completion deadline.
@@ -58,10 +62,12 @@ precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
 MW/GPU nameplate provides the per-slot service bound. The observed scheduler
 completion interval is retained only for the independent native replay and
 never defines the counterfactual deadline or power cap. The resulting witness
-contains 12,296,675 job--slot variables and is solved by an exact separable
-continuous-knapsack decomposition whenever the declared regional capacity rows
-are inactive; if a row binds, the same objective is solved by the sparse global
-LP.
+contains 13,198,247 admissible job--slot starts and is solved as an exact
+contiguous fixed-rate start-time witness: one binary start is selected for
+each submitted job and the terminal slot is fractional only to meet the exact
+declared entitlement. Experiment 25 solves the same start-time model with a
+binding regional capacity row; no preemptive flow or post-event completion time
+is substituted for the executable witness.
 
 Experiment 23 adds a structurally distinct controlled event: after the same
 slot-60 submission gate, an independently parameterized exact LP applies a
@@ -86,9 +92,14 @@ to-join positive-energy conservation, and stores the source-file hashes. The
 raw execution peaks are at most 0.008637 MW per region; after the train-fitted
 batch scaling used for the benchmark, the regional peaks are 43.808, 62.537,
 103.197, and 132.571 MW. The flexible nameplate of 118 MW is committed before
-the validation/test split; Experiment 16 reconciles this predeclared value
-against the scaled benchmark envelope and verifies that it covers every
-observed region-slot. Locked outcomes do not select the nameplate.
+the validation/test split. Experiment 16 reports the raw execution envelope and
+the scaled benchmark excess explicitly; its capacity-safe conversion factor is
+the separate planning diagnostic used when a physical 118-MW bound is required.
+The payment certificate applies conversion uncertainty only to the flexible
+component after a fixed/flexible decomposition, so its raw $q_{99}$ endpoint
+is activation-eligible in the declared payment network model even when the
+independent capacity diagnostic clips that factor. Locked outcomes do not
+select the nameplate.
 
 The locked-day selector requires both the declared 40-day historical
 information set and the complete 512-slot future deadline window. The final 16

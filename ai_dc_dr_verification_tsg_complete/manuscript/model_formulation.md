@@ -10,7 +10,7 @@ The related-work boundary is explicit. Recent power-system studies on non-wire
 alternatives and clean-energy flexibility \cite{cao2024nonwire,riepin2025clean}
 and a data-center flexibility review \cite{takci2025flexibility}, together with
 load-aggregator coordination and production-trace flexibility studies
-\cite{dcaopt2024,caprara2026}, motivate the structural analogue panel. None of
+\cite{dcaopt2024,caprara2026}, motivate the published-equation translation panel. None of
 these sources supplies the gate-causal ledger, submitted/frozen contract
 separation, or closed-meter settlement rule used here. Those elements are
 defined and proved below rather than presented as consequences of the cited
@@ -28,20 +28,22 @@ than empirical claims about either source operator. All regional permutations
 are evaluated in the spatial panel; no identifier hash is interpreted as
 physical geography.
 
-For provenance, each retained job is represented by the canonical tuple
+For provenance, each scheduler submission is represented by the canonical
+submit-time tuple
 
 \[
-r_j=(\mathrm{id}_j,t_j^{\rm submit},t_j^{\rm start},t_j^{\rm end},
-E_j,n_j^{\rm telemetry},q_j,\kappa_j,\sigma_j),
+r_j^{\rm sub}=(\mathrm{id}_j,t_j^{\rm submit},\mathrm{timelimit}_j,
+q_j,\kappa_j,\sigma_j),
 \]
 
 and the sorted serialization of all tuples is committed with SHA-256 according
-to the Secure Hash Standard \cite{nist2015fips1804}. The commitment provides
-tamper evidence for the exact scheduler/DCGM rows used by the flow LP; it is
-not treated as evidence that a participant could not have submitted a
-fictitious job before the commitment was created. Experiment 16 checks the
-commitment, one-to-one join, temporal order, positive-energy conservation, and
-the measured regional execution capacity envelope.
+to the Secure Hash Standard \cite{nist2015fips1804}. This submit-time
+commitment provides tamper evidence for the scheduler ledger; execution
+start/end times and DCGM energy have a separate post-event digest. It is not
+treated as evidence that a participant could not have submitted a fictitious
+job before the commitment was created. Experiment 16 checks both digests, the
+one-to-one join, temporal order, positive-energy conservation, and the measured
+regional execution capacity envelope.
 
 Let \(t\in\mathcal T=\{0,\ldots,T-1\}\) index 15-minute intervals,
 \(s\in\mathcal S\) workload origins, \(d\in\mathcal D\) data-center
@@ -190,8 +192,18 @@ introduces no user-selected penalty tradeoff.
 The aggregate service variables are not an independent network input. Partition
 the committed job ledger by source, class, and native destination as
 \(\mathcal J_{skd}\). For job \(j\), let \(u_{j\tau}\) be its service energy in
-an admissible interval \(r_j\leq\tau<d_j\). The job-indexed witness and its
-regional reconstruction are
+an admissible interval \(r_j\leq\tau<d_j\). The executable witness first
+defines \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\),
+\(K_j=\lceil\widehat E_j/c_j\rceil\), and
+\(q_j=\widehat E_j-(K_j-1)c_j\). A binary \(z_{j\theta}\) selects exactly one
+\(\theta\in\{r_j,\ldots,d_j-K_j\}\), and
+\[
+u_{j\tau}=\sum_{\theta}z_{j\theta}
+\left[c_j{\bf1}\{\theta\leq\tau<\theta+K_j\}
+-(c_j-q_j){\bf1}\{\tau=\theta+K_j-1\}\right].
+\]
+Thus each submitted job has one contiguous fixed-rate block and an exact
+terminal-slot remainder. The regional reconstruction is
 
 \[
 x^{\rm job}_{skd\tau}
@@ -205,7 +217,7 @@ The exact flow used for the workload certificate is therefore
 \(x_{skd\tau}=x^{\rm job}_{skd\tau}\), with the same release, deadline,
 capacity, and terminal constraints. Experiment 19 stores the complete
 job--slot service vector; Experiment 22 reconstructs \(p^{\rm job}\) from that
-vector and checks its maximum residual against the saved aggregate profile
+vector (13,198,247 admissible starts over 75,326 submissions) and checks its maximum residual against the saved aggregate profile
 before any dispatch is solved. The network value is consequently attached to
 the committed indexed witness, not to a second aggregate optimization. The
 network replay uses the arithmetic mean of every declared event slot solely as
@@ -354,11 +366,26 @@ u_n\geq0,
 F_j(\alpha)=\sum_{n\in\mathcal V_j}u_n,
 \]
 
+For the daily-tail constraint, the validation mechanism supplies a fixed
+credited-energy denominator
 \[
-\operatorname{CVaR}_{0.75}\!\left(F_j(\alpha)\right)
-\leq
-\beta\operatorname{CVaR}_{0.75}\!\left(B_j^{\mathrm{ref}}\right).
+E_j=\max\left\{\sum_{n\in\mathcal V_j}r_n^{(\mathrm{sim})},\epsilon_E\right\},
+\qquad
+\widetilde F_j(\alpha)=F_j(\alpha)/E_j,
+\qquad
+\widetilde B_j^{\mathrm{ref}}=B_j^{\mathrm{ref}}/E_j,
 \]
+where \(\epsilon_E\) is a predeclared numerical floor. The denominators are
+computed before the locked split and are not estimated from test outcomes.
+
+\[
+\operatorname{CVaR}_{0.75}\!\left(\widetilde F_j(\alpha)\right)
+\leq
+\beta\operatorname{CVaR}_{0.75}\!\left(\widetilde B_j^{\mathrm{ref}}\right).
+\]
+
+Thus total exposure is bounded in absolute MW-slot units, whereas CVaR is the
+daily false-credit ratio; the two constraints are dimensionally distinct.
 
 The empirical conditional-value-at-risk representation and its convexity follow
 \cite{rockafellar2000cvar}; positive-part epigraphs follow

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import logging
 import re
 from pathlib import Path
@@ -48,6 +49,7 @@ EXPECTED_FILES = {
         "experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_cvar_stress_sensitivity.csv",
         "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
         "experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
         "experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
@@ -132,6 +134,7 @@ EXPECTED_FILES = {
         "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
         "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
         "experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
+        "experiments/exp9_payment_certificate/results/final/payment_pareto_paired_ci.csv",
         "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
         "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
     ],
@@ -235,6 +238,7 @@ EXPECTED_FILES = {
         "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
         "experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
         "experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
+        "experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv",
         "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
     ],
     "experiment_22": [
@@ -524,6 +528,32 @@ def run_audit(
         ),
         checks,
     )
+    _check(
+        manifest.get("submission_calibration", {}).get("joined_positive_jobs", 0)
+        >= 71_000
+        and manifest.get("submission_calibration", {}).get("training_jobs", 0)
+        == 31_284
+        and manifest.get("submission_calibration", {}).get("test_jobs", 0)
+        == 39_857
+        and "chronological" in str(
+            manifest.get("submission_calibration", {}).get("training_rule", "")
+        ).lower()
+        and "label requirement" in str(
+            manifest.get("submission_calibration", {}).get("calibration_label_rule", "")
+        ).lower()
+        and bool(
+            manifest.get("submission_calibration", {}).get(
+                "membership_rule_excludes_outcome_filtered_job_ids", False
+            )
+        ),
+        "chronological_submit_time_calibration_boundary",
+        (
+            "submit-time entitlement calibration is chronological and kept separate "
+            "from the complete scheduler population; execution matching is not an "
+            "Exp19 eligibility filter"
+        ),
+        checks,
+    )
     conversion_quantiles = manifest["power_calibration"][
         "heldout_job_energy_measured_to_predicted_quantiles"
     ]
@@ -541,13 +571,13 @@ def run_audit(
         manifest["power_calibration"][
             "heldout_jobs_with_positive_prediction"
         ]
-        == 21919
+        == 40768
         and bool(np.all(np.diff(declared_conversion_factors) > 0))
         and float(declared_conversion_factors[0]) < 1.0
         and float(declared_conversion_factors[-1]) > 1.0,
         "heldout_power_conversion_scenarios_complete",
         (
-            "21,919 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors="
+            "40,768 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors="
             + ", ".join(
                 f"{value:.6f}" for value in declared_conversion_factors
             )
@@ -1102,18 +1132,52 @@ def run_audit(
         ),
         checks,
     )
+    scale_sensitivity = pd.read_csv(
+        root
+        / "experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv"
+    )
+    declared_scale_sensitivity = np.asarray(
+        cfg["experiments"].get("scale_sensitivity_relative_to_fixed", []),
+        dtype=float,
+    )
+    _check(
+        len(scale_sensitivity) == len(declared_scale_sensitivity)
+        and set(np.round(scale_sensitivity["relative_to_anchor"].astype(float), 8))
+        == set(np.round(declared_scale_sensitivity, 8))
+        and np.isfinite(
+            scale_sensitivity[
+                [
+                    "homogeneous_scale_factor",
+                    "peak_mw",
+                    "minimum_scaled_capacity_slack_mwh",
+                    "event_native_mwh",
+                    "event_counterfactual_mwh",
+                ]
+            ].to_numpy(dtype=float)
+        ).all()
+        and bool(
+            (~scale_sensitivity["fixed_gpu_nameplate_respected"].astype(bool)).any()
+        ),
+        "declared_homogeneous_scale_sensitivity_panel",
+        (
+            f"{len(scale_sensitivity)} predeclared homogeneous transforms replay the "
+            "same witness and resource caps; the panel records where the fixed-GPU "
+            "nameplate stops being respected"
+        ),
+        checks,
+    )
     literature = pd.read_csv(
         root
         / "experiments/exp2_baseline_verification/results/final/"
         "closest_literature_baselines.csv"
     )
     expected_literature = {
-        "Incentive-compatible spatial DR structural analogue",
-        "Cao-style batch flexibility structural analogue",
-        "Receding-horizon workload projection structural analogue",
-        "All-site exact event-response comparator",
-        "Han-style cross-regional dispatchable-capacity analogue",
-        "Chen-style coupled-regulation analogue",
+        "Event-reward ledger translation",
+        "Batch-flexibility ledger translation",
+        "Rolling-horizon ledger translation",
+        "All-site coupled event-response control",
+        "Cross-regional dispatchable-capacity translation",
+        "Coupled multi-service regulation translation",
     }
     literature_cells = literature.groupby("baseline")["day"].nunique()
     _check(
@@ -1124,8 +1188,9 @@ def run_audit(
         "closest_literature_baseline_panel",
         (
             f"{len(literature)}/{expected_test * len(expected_literature)} "
-            "same-ledger structural-analogue outcomes; proxy labels and cited "
-            "mechanisms are explicit rather than presented as reimplementations"
+            "same-ledger published-equation translations; each implementation "
+            "is identified as a transparent translation rather than a software "
+            "reimplementation"
         ),
         checks,
     )
@@ -1440,6 +1505,46 @@ def run_audit(
         ),
         checks,
     )
+    cvar_stress = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_cvar_stress_sensitivity.csv"
+    )
+    _check(
+        len(cvar_stress) == len(
+            cfg["experiments"].get("risk_cvar_stress_reserve_fractions", [])
+        )
+        and set(
+            np.round(cvar_stress["cvar_reserve_fraction"].astype(float), 5)
+        )
+        == set(
+            np.round(
+                np.asarray(
+                    cfg["experiments"].get(
+                        "risk_cvar_stress_reserve_fractions", []
+                    ),
+                    dtype=float,
+                ),
+                5,
+            )
+        )
+        and bool(cvar_stress["feasible"].astype(bool).all())
+        and bool(cvar_stress["minimum_cvar_touches_budget"].astype(bool).any())
+        and bool(
+            cvar_stress.loc[
+                cvar_stress["minimum_cvar_touches_budget"].astype(bool),
+                "cvar_reserve_fraction",
+            ].between(0.0, 1.0).all()
+        ),
+        "active_cvar_frontier_certificate",
+        (
+            "the validation-only CVaR frontier is feasible at every predeclared "
+            "reserve grid contains a boundary that touches the minimum "
+            "achievable CVaR under the total-risk budget; the pooled contract "
+            f"uses the separately recorded {float(cfg['experiments']['risk_cvar_reserve_fraction']):.2f} tail reserve"
+        ),
+        checks,
+    )
     matched_effects = pd.read_csv(
         root
         / "experiments/exp2_baseline_verification/results/final/"
@@ -1644,6 +1749,15 @@ def run_audit(
             and np.isfinite(float(risk_certificate["kkt_stationarity_residual"]))
             and float(risk_certificate["kkt_stationarity_residual"]) <= 1e-5
             and float(risk_certificate["primal_constraint_residual"]) <= 1e-6
+            and risk_certificate["risk_cvar_metric"] == "daily_false_credit_ratio"
+            and np.isclose(
+                float(risk_certificate["risk_cvar_level"]),
+                float(cfg["experiments"].get("risk_cvar_level", 0.75)),
+                rtol=0.0,
+                atol=1e-12,
+            )
+            and float(risk_certificate["cvar_budget_slack_metric"]) <= 1e-3
+            and bool(risk_certificate["cvar75_budget_binding"] == 1)
             and risk_certificate["fitted_validation_mse_mw2"]
             <= risk_certificate["reference_validation_mse_mw2"] + 1e-8
             and risk_certificate["fitted_false_credit_exposure_mw_slots"]
@@ -2340,6 +2454,36 @@ def run_audit(
         "certified_counterfactual_profiles.npz",
         allow_pickle=False,
     )
+    # A row-count-complete payment panel is not sufficient evidence when an
+    # upstream profile or calibration has changed.  Recompute the four
+    # lineage digests here so the audit cannot bless a stale evaluator that
+    # merely happens to have the expected shape.
+    resume_lineage_paths = {
+        "test_profile_file_checksum": root
+        / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
+        "validation_profile_file_checksum": root
+        / "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+        "data_manifest_checksum": root / "data/processed/data_manifest.json",
+    }
+    expected_payment_lineage = {
+        key: sha256(path) if path.exists() else None
+        for key, path in resume_lineage_paths.items()
+    }
+    expected_payment_lineage["config_checksum"] = hashlib.sha256(
+        json.dumps(cfg, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    stored_payment_lineage = {
+        key: payment_metadata.get(key)
+        for key in expected_payment_lineage
+    }
+    evaluator_checksums = set(
+        payment_evaluation_intervals.get("certified_checksum", pd.Series(dtype=str))
+        .astype(str)
+        .unique()
+    )
+    certified_profile_checksum = hashlib.sha256(
+        np.ascontiguousarray(certificate_store["profiles"], dtype=np.float64).tobytes()
+    ).hexdigest()
     payment_weight_columns = [
         column
         for column in payment_certificates.columns
@@ -2436,6 +2580,22 @@ def run_audit(
         checks,
     )
     _check(
+        all(
+            expected_payment_lineage[key] is not None
+            and stored_payment_lineage[key] == expected_payment_lineage[key]
+            for key in expected_payment_lineage
+        )
+        and evaluator_checksums == {certified_profile_checksum},
+        "payment_panel_lineage_matches_current_profiles_and_manifest",
+        (
+            "the payment evaluator records the current Experiment-2 test and "
+            "validation profile digests, data-manifest digest, configuration "
+            "digest, and certified-profile byte digest; stale row-count-complete "
+            "panels are rejected"
+        ),
+        checks,
+    )
+    _check(
         set(payment_non_tautology["role"].astype(str))
         == {"contractual payment cap", "payment target", "role separation"}
         and len(payment_non_tautology) == 3
@@ -2479,6 +2639,37 @@ def run_audit(
             "held-out conversion factors with "
             "the independent 40-segment N-1 evaluator; accuracy is reported "
             "as model-transfer evidence and is not part of Proposition 4"
+        ),
+        checks,
+    )
+    payment_pareto = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_pareto_paired_ci.csv"
+    )
+    _check(
+        len(payment_pareto) == 5 * 3
+        and set(payment_pareto["conversion_scenario"].astype(str))
+        == {"q01", "q10", "q50", "q90", "q99"}
+        and payment_pareto["comparator"].nunique() == 3
+        and bool((payment_pareto["paired_days"].astype(int) == expected_test).all())
+        and np.isfinite(
+            payment_pareto[
+                [
+                    "certified_minus_comparator_absolute_error_mean_usd",
+                    "absolute_error_difference_ci95_low_usd",
+                    "absolute_error_difference_ci95_high_usd",
+                    "certified_minus_comparator_overpayment_mean_usd",
+                    "overpayment_difference_ci95_low_usd",
+                    "overpayment_difference_ci95_high_usd",
+                ]
+            ].to_numpy(dtype=float)
+        ).all(),
+        "paired_payment_accuracy_and_overpayment_pareto",
+        (
+            f"{len(payment_pareto)} comparator-scenario rows use paired moving-block "
+            "intervals for both absolute error and overpayment; the payment-cap "
+            "guarantee is kept separate from any universal MAE claim"
         ),
         checks,
     )
@@ -3056,7 +3247,7 @@ def run_audit(
     )
     rebound = float(counterfactual_values.get("event_rebound_mwh", np.nan))
     _check(
-        int(float(counterfactual_values.get("submitted_jobs", -1))) == 71_144
+        int(float(counterfactual_values.get("submitted_jobs", -1))) == 75_326
         and int(float(counterfactual_values.get("execution_matched_jobs", -1))) == 71_128
         and float(counterfactual_values.get("maximum_job_energy_residual_mwh", np.inf)) <= 1e-8
         and float(counterfactual_values.get("declared_energy_conservation_residual_mwh", np.inf)) <= 1e-8
@@ -3064,9 +3255,9 @@ def run_audit(
         and float(counterfactual_values.get("event_net_reduction_mwh", -1.0)) >= 0.0,
         "exact_job_indexed_counterfactual_certificate",
         (
-            "all submitted jobs enter an exact submit-time release/deadline LP; "
-            "execution matching is reported separately, declared-energy and job "
-            "residuals are zero, and the counterfactual remains explicitly preemptive"
+            "all valid scheduler submissions enter an exact submit-time "
+            "contiguous start-time model; execution matching is reported "
+            "separately and declared-energy/job residuals are zero"
         ),
         checks,
     )
@@ -3087,7 +3278,10 @@ def run_audit(
         )
         and counterfactual_metadata.get("observed_energy_used_in_decision") is False
         and len(str(counterfactual_metadata.get("submission_ledger_digest", ""))) == 64
-        and counterfactual_metadata.get("population_rule") == "submitted_scheduler_jobs_with_positive_execution_energy_membership_only"
+        and counterfactual_metadata.get("population_rule") == "all valid scheduler submissions in the predeclared job-level horizon; positive-energy execution matching is a post-event scoring join"
+        and counterfactual_metadata.get("observed_time_end_used_as_deadline") is False
+        and counterfactual_metadata.get("nonpreemptive_witness", "").startswith("exact submitted-job contiguous")
+        and counterfactual_metadata.get("contiguity_certificate", {}).get("maximum_gap_inside_service_block") == 0
         and np.isfinite([native_event, counterfactual_event, net_reduction, gross_reduction, rebound]).all()
         and abs((native_event - counterfactual_event) - net_reduction) <= 1e-10
         and gross_reduction + 1e-10 >= net_reduction
@@ -3119,8 +3313,8 @@ def run_audit(
     )
     _check(
         len(physical_calibration) == 1
-        and int(physical_calibration.loc[0, "train_observations"]) == 66_769
-        and int(physical_calibration.loc[0, "test_observations"]) == 28_413
+        and int(physical_calibration.loc[0, "train_observations"]) == 44_391
+        and int(physical_calibration.loc[0, "test_observations"]) == 50_791
         and np.isfinite(
             physical_calibration[
                 ["test_mae_watts", "test_rmse_watts", "test_r2", "heldout_aggregate_energy_ratio"]
@@ -3131,8 +3325,8 @@ def run_audit(
         and bool(physical_calibration.loc[0, "spatial_mapping_is_declared_scenario"]),
         "physical_calibration_is_separate_from_utility_scale",
         (
-            "66,769/28,413 held-out GPU-power observations are reconciled with "
-            "finite MAE/RMSE/R2 while raw measurement and declared spatial mapping "
+            "44,391/50,791 chronological train/test GPU-power observations are "
+            "reconciled with finite MAE/RMSE/R2 while raw measurement and declared spatial mapping "
             "remain explicitly separated from utility-scale claims"
         ),
         checks,
@@ -3163,9 +3357,9 @@ def run_audit(
         ).read_text(encoding="utf-8")
     )
     _check(
-        int(coupled_values.get("submitted_jobs", -1)) == 71_144
+        int(coupled_values.get("submitted_jobs", -1)) == 75_326
         and int(coupled_values.get("execution_matched_jobs", -1)) == 71_128
-        and int(coupled_values.get("service_variables", -1)) == 12_296_675
+        and int(coupled_values.get("service_variables", -1)) == 13_198_247
         and float(coupled_values.get("maximum_job_to_aggregate_residual_mwh", np.inf))
         <= 1e-12
         and bool(coupled_values.get("all_network_solves_successful", 0.0))
@@ -3329,12 +3523,12 @@ def run_audit(
         ).read_text(encoding="utf-8")
     )
     _check(
-        int(exante_values.get("submitted_jobs", -1)) == 71_144
+        int(exante_values.get("submitted_jobs", -1)) == 75_326
         and int(exante_values.get("execution_matched_jobs", -1)) == 71_128
         and float(exante_values.get("physical_nameplate_energy_coverage", -1.0)) == 1.0
         and float(exante_values.get("maximum_declared_window_infeasible_jobs", 1.0)) == 0.0
-        and int(stress_values.get("cohort_jobs", -1)) == 689
-        and float(stress_values.get("capacity_mw_per_region", 0.0)) == 0.001
+        and int(stress_values.get("cohort_jobs", -1)) == 79
+        and abs(float(stress_values.get("capacity_mw_per_region", 0.0)) - 0.0006647866667) <= 1e-12
         and float(stress_values.get("event_service_delivered_mwh", 0.0)) >= float(stress_values.get("event_service_floor_mwh", 1.0)) - 1e-10
         and float(stress_values.get("minimum_event_capacity_slack_mwh", -np.inf)) >= -1e-8
         and float(stress_values.get("maximum_job_energy_residual_mwh", np.inf)) <= 1e-8
@@ -3345,7 +3539,7 @@ def run_audit(
         "ex_ante_submission_job_validation_and_binding_capacity_panel",
         (
             "the declaration-only job validation covers the complete submitted "
-            "population, while a compact 689-job stress cohort binds regional "
+            "population, while a compact 79-job stress cohort binds regional "
             "capacity and satisfies its service floor with numerical residuals below 1e-8"
         ),
         checks,

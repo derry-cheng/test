@@ -106,7 +106,7 @@
   "test_outcomes_used_for_scaling": false,
   "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
   "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
-  "solver_fallback_calls": 85,
+  "solver_fallback_calls": 20,
   "isolated_solver_calls": 19,
   "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",
   "ac_limits_enforced": true,

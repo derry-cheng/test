@@ -77,8 +77,8 @@
   },
   "power_calibration": {
     "observations": 95182,
-    "train_observations": 66769,
-    "test_observations": 28413,
+    "train_observations": 44391,
+    "test_observations": 50791,
     "features": [
       "smutilization_pct_avg",
       "memoryutilization_pct_avg",
@@ -86,15 +86,19 @@
       "log_runtime"
     ],
     "coefficients": [
-      0.6756831432161915,
-      1.9826788602733714,
-      0.7946453968362469,
-      -2.4418981767741554
+      0.5702768916219333,
+      2.405865513808421,
+      1.0279497383034137,
+      -3.4674011210557047
     ],
-    "intercept_watts": 34.717953257976426,
-    "test_mae_watts": 11.223035454787677,
-    "test_rmse_watts": 15.818090216532777,
-    "test_r2": 0.8993552059213122,
+    "intercept_watts": 38.005219397675695,
+    "test_mae_watts": 13.023402021609703,
+    "test_rmse_watts": 19.13740569626384,
+    "test_r2": 0.8330765371943397,
+    "training_rule": "chronological scheduler information set: time_submit and time_end < 40 days after the earliest matched submission",
+    "calibration_origin_submit_seconds": 21193772.0,
+    "calibration_cutoff_seconds": 24649772.0,
+    "calibration_cutoff_days": 40,
     "measured_power_quantiles_watts": {
       "0.01": 24.198324,
       "0.1": 25.51212,
@@ -103,49 +107,54 @@
       "0.99": 209.17238
     },
     "heldout_residual_quantiles_watts": {
-      "0.01": -41.50719053614372,
-      "0.1": -16.455220931934665,
-      "0.5": -0.9160262432649411,
-      "0.9": 19.076343011496387,
-      "0.99": 35.748656532556275
+      "0.01": -63.950292229593934,
+      "0.1": -23.011559607200063,
+      "0.5": -3.4911149969082373,
+      "0.9": 15.561569565862115,
+      "0.99": 39.7626613134574
     },
-    "heldout_jobs_with_positive_prediction": 21919,
+    "heldout_jobs_with_positive_prediction": 40768,
     "heldout_job_energy_measured_to_predicted_quantiles": {
-      "0.01": 0.5844748596130233,
-      "0.1": 0.734154196797104,
-      "0.5": 0.9957235602389071,
-      "0.9": 1.2780232437772188,
-      "0.99": 2.6930887095833507
+      "0.01": 0.5366973300611017,
+      "0.1": 0.6690593552942903,
+      "0.5": 0.9240713988969669,
+      "0.9": 1.4095608876115522,
+      "0.99": 4.755718434549532
     },
-    "heldout_aggregate_measured_to_predicted_energy_ratio": 1.064379669196887
+    "heldout_aggregate_measured_to_predicted_energy_ratio": 1.065490531017384
   },
   "submission_calibration": {
-    "joined_positive_jobs": 71144,
-    "training_jobs": 49916,
-    "test_jobs": 21228,
-    "training_rule": "id_job mod 10 < 7; immutable job IDs are assigned before any locked-day selection",
+    "joined_positive_jobs": 71141,
+    "training_jobs": 31284,
+    "test_jobs": 39857,
+    "training_rule": "chronological historical information set: time_submit and time_end < 40 days after the earliest joined submission",
+    "calibration_origin_submit_seconds": 21193772.0,
+    "calibration_cutoff_seconds": 24649772.0,
+    "calibration_cutoff_days": 40,
     "declared_per_gpu_power_cap_mw": 0.001,
     "interval_seconds": 900,
     "unbounded_timelimit_slots": 128,
     "fraction_quantiles": {
       "0.01": 2.1701388888888887e-07,
-      "0.1": 4.027777777777778e-06,
-      "0.5": 0.0011572222222222222,
-      "0.9": 0.04038708333333334,
-      "0.99": 0.2198844444444442
+      "0.1": 5.7238037480974145e-06,
+      "0.5": 0.0011383333333333334,
+      "0.9": 0.01107004166666669,
+      "0.99": 0.16613738055555555
     },
-    "declared_service_fraction": 0.0011572222222222222,
+    "declared_service_fraction": 0.0011383333333333334,
     "physical_upper_service_fraction": 1.0,
     "training_fraction_above_physical_upper": 0,
     "all_joined_fraction_quantiles": {
       "0.01": 2.1701388888888887e-07,
-      "0.1": 4.102490011415526e-06,
+      "0.1": 4.101027397260274e-06,
       "0.5": 0.0011577777777777778,
-      "0.9": 0.04255898148148166,
-      "0.99": 0.21913945555555434
+      "0.9": 0.04257166666666666,
+      "0.99": 0.21914422222222316
     },
     "central_estimate_is_not_observed_energy": true,
-    "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints"
+    "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
+    "calibration_label_rule": "matched positive DCGM energy is a label requirement for the training-only calibration sample; it never filters Exp19 submissions",
+    "membership_rule_excludes_outcome_filtered_job_ids": true
   },
   "processing": {
     "interval_seconds": 900,
@@ -327,7 +336,7 @@
     "counterfactual_reference": "trace-anchored no-event execution reference; the demand-response intervention is generated separately by the declared event scheduling optimization",
     "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
     "maximum_initial_batch_backlog_mwh": 115.70546058698775,
-    "submission_energy_fraction": 0.0011572222222222222,
-    "submission_energy_fraction_source": "training-only scheduler/DCGM join; immutable job IDs with id_job mod 10 < 7"
+    "submission_energy_fraction": 0.0011383333333333334,
+    "submission_energy_fraction_source": "chronological scheduler/DCGM calibration using only jobs submitted and completed inside the declared historical information set"
   }
 }

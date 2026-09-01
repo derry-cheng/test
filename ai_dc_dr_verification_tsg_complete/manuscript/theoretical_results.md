@@ -121,18 +121,24 @@ The validation risk contract uses \(z=\mathrm{sim}\), while the observed
 meter is an independent locked replay. No maximum over the two sources is
 taken: doing so would mix an offline oracle with the deployable risk
 definition. For a pre-declared reserve
-\(\beta\in(0,1]\), the risk-constrained program imposes
+\(\beta\in(0,1]\), define the fixed validation-mechanism denominator
+\(E_j=\max\{\sum_{n\in\mathcal V_j}r_n^{(\mathrm{sim})},\epsilon_E\}\),
+\(\widetilde F_j=F_j/E_j\), and
+\(\widetilde B_j=F_j^{(\mathrm{sim})}(\ell^\star)/E_j\). The risk-constrained
+program imposes
 
 \[
 \sum_j F_j^{(\mathrm{sim})}(\alpha)
 \leq\beta\sum_jF_j^{(\mathrm{sim})}(\ell^\star),
 \qquad
-\operatorname{CVaR}_{0.75}\!\left(F_j^{(\mathrm{sim})}(\alpha)\right)
-\leq\beta\operatorname{CVaR}_{0.75}\!\left(F_j^{(\mathrm{sim})}(\ell^\star)\right).
+\operatorname{CVaR}_{0.75}\!\left(\widetilde F_j^{(\mathrm{sim})}(\alpha)\right)
+\leq\beta\operatorname{CVaR}_{0.75}\!\left(\widetilde B_j\right).
 \]
 
-The first inequality controls total risk and the second controls the mean of the
-worst daily tail. The empirical CVaR epigraph is convex
+The first inequality controls total risk in absolute MW-slot units and the
+second controls the mean of the worst daily false-credit ratio. The denominator
+is frozen before the locked split, so the two inequalities have distinct units.
+The empirical CVaR epigraph is convex
 \cite{rockafellar2000cvar}. Because \(\beta<1\) can exclude the single
 projection, feasibility and error noninferiority are explicit acceptance
 certificates: an infeasible reserve is discarded, and the final refit must
@@ -287,8 +293,6 @@ coalition. It evaluates \((m+1)^G\) characteristic-function states and remains
 exact. Experiment 7 checks efficiency for \(G=4\) and up to \(m=5\), i.e.,
 20 participants.
 
-## Standard representation: non-islanding line outages with LODFs
-
 ## Proposition 6: provenance-bound workload certificate
 
 For every joined job \(j\), let the canonical tuple be
@@ -435,7 +439,8 @@ indexed witness up to \(\varepsilon\) in the declared units. At zero residual,
 an independently optimized aggregate trajectory cannot receive a network
 value. The result follows by finite summation over the disjoint ledger
 partition; no optimization or rounding is involved in the mapping. Experiment
-22 reconstructs the profile from all 12,296,675 stored job--slot variables,
+22 reconstructs the profile from all 13,198,247 admissible contiguous job--slot
+starts over 75,326 scheduler submissions,
 checks the job, aggregation, bus-mapping, GPU-bound, and site-capacity rows,
 and records zero residual before either SCED solve. The coupled replay is
 pinned to the public IEEE RTS-24 case and uses a deterministic arithmetic-mean

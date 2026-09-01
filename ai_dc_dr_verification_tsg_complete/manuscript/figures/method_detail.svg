@@ -21,7 +21,8 @@
   <text x="55" y="268" class="body">region / class / site</text>
   <path d="M55 300h190" stroke="#7dd3fc" stroke-width="2"/>
   <text x="55" y="333" class="eq">xⱼₜ = 0 if t ∉ [rⱼ,dⱼ]</text>
-  <text x="55" y="360" class="body">immutable positive-energy join</text>
+  <text x="55" y="348" class="body">calibration-labelled join</text>
+  <text x="55" y="372" class="body">(not Exp19 eligibility)</text>
 
   <rect x="320" y="105" width="280" height="285" fill="#dcfce7" class="box"/>
   <circle cx="355" cy="137" r="17" fill="#16a34a"/><text x="355" y="143" text-anchor="middle" class="num">2</text>
@@ -40,7 +41,7 @@
   <text x="675" y="232" class="body">HiGHS global optimum</text>
   <text x="675" y="264" class="body">validation selects risk reserve</text>
   <text x="675" y="296" class="body">convex hull keeps feasibility</text>
-  <text x="675" y="338" class="body">exact job-flow witness (Exp. 14)</text>
+  <text x="675" y="338" class="body">exact job-flow witness (Exp. 19)</text>
   <text x="675" y="366" class="body">measured trace replay (Exp. 13)</text>
 
   <rect x="1000" y="105" width="370" height="285" fill="#ede9fe" class="box"/>

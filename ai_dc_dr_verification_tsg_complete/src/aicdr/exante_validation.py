@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import linprog
+from scipy.optimize import Bounds, LinearConstraint, milp
 from scipy.sparse import coo_matrix
 
 from .data import load_mit_job_ledger, load_mit_submission_ledger
@@ -47,16 +47,11 @@ def run_exp25_exante_job_validation(
     queue_buffer = int(
         cfg["experiments"].get("job_level_submission_buffer_slots", 0)
     )
-    dcgm_ids = pd.read_csv(
-        root / cfg["data"]["mit_dcgm"],
-        usecols=["id_job", "energyconsumed_joules"],
+    time_origin_seconds = float(
+        cfg["experiments"].get("job_level_time_origin_seconds", np.nan)
     )
-    eligible_job_ids = set(
-        dcgm_ids.loc[
-            pd.to_numeric(dcgm_ids["energyconsumed_joules"], errors="coerce") > 0,
-            "id_job",
-        ].astype(np.int64)
-    )
+    if not np.isfinite(time_origin_seconds):
+        raise ValueError("experiments.job_level_time_origin_seconds must be finite")
     submission = load_mit_submission_ledger(
         root / cfg["data"]["mit_scheduler"],
         interval_s,
@@ -66,7 +61,7 @@ def run_exp25_exante_job_validation(
         declared_per_gpu_power_cap_mw=cap_mw,
         unbounded_timelimit_slots=runtime_fallback,
         submission_buffer_slots=queue_buffer,
-        eligible_job_ids=eligible_job_ids,
+        time_origin_seconds=time_origin_seconds,
     )
     execution = load_mit_job_ledger(
         root / cfg["data"]["mit_scheduler"],
@@ -75,6 +70,7 @@ def run_exp25_exante_job_validation(
         None,
         n_regions,
         deadline_mode="observed",
+        time_origin_seconds=time_origin_seconds,
     )
     execution = execution[["id_job", "time_start", "time_end", "energy_mwh", "job_type"]].copy()
     execution["id_job"] = execution["id_job"].astype(np.int64)
@@ -106,10 +102,9 @@ def run_exp25_exante_job_validation(
     )
     # Exact binding-capacity stress panel.  The cohort is fixed by a declared
     # calendar index before looking at outcomes: every submitted job whose
-    # declared window intersects that day's event is retained.  Capacity rows
-    # are imposed only on the eight event slots, and a precommitted event
-    # service floor makes the rows operationally binding.  This is a compact
-    # sparse LP certificate, not a sampled or clipped trajectory.
+    # declared window intersects that day's event is retained.  A binary
+    # start-time MILP enforces one contiguous service block per job while the
+    # regional event-slot rows and the service floor are simultaneously active.
     stress_day = int(cfg["experiments"].get("job_level_stress_panel_day_index", 20))
     slots_per_day = int(cfg["project"]["slots_per_day"])
     event_slots = sorted(int(value) for value in cfg["market"]["event_slots"])
@@ -134,6 +129,9 @@ def run_exp25_exante_job_validation(
     stress_starts = cohort["submit_slot"].to_numpy(dtype=np.int64)
     stress_ends = cohort["deadline_slot"].to_numpy(dtype=np.int64)
     stress_counts = stress_ends - stress_starts
+    required_slots = cohort["required_service_slots"].to_numpy(dtype=np.int64)
+    if np.any(required_slots <= 0) or np.any(required_slots > stress_counts):
+        raise RuntimeError("Exp25 stress cohort contains an infeasible nonpreemptive declaration")
     stress_slots = np.concatenate(
         [
             np.arange(int(start), int(end), dtype=np.int64)
@@ -147,79 +145,215 @@ def run_exp25_exante_job_validation(
     stress_energy = cohort["declared_energy_mwh"].to_numpy(dtype=float)
     stress_gpus = cohort["requested_gpus"].to_numpy(dtype=float)
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
-    stress_upper = np.repeat(
-        stress_gpus
-        * cap_mw
-        * dt_h,
-        stress_counts,
-    )
-    stress_event_mask = (
-        (stress_slots >= event_start)
-        & (stress_slots < event_end)
-        & np.isin(stress_slots % slots_per_day, event_slots)
-    )
     event_slot_values = np.asarray(
         [stress_day * slots_per_day + slot for slot in event_slots], dtype=np.int64
     )
+    event_slot_set = set(event_slot_values.tolist())
     event_position = {
         int(slot): index for index, slot in enumerate(event_slot_values.tolist())
     }
-    event_var_indices = np.flatnonzero(stress_event_mask)
-    if len(event_var_indices) == 0:
-        raise RuntimeError("The predeclared Exp25 stress cohort has no event variables")
-    capacity_rows = (
-        stress_regions[event_var_indices] * len(event_slot_values)
-        + np.asarray(
-            [event_position[int(slot)] for slot in stress_slots[event_var_indices]],
-            dtype=np.int64,
+    if not event_slot_values.size:
+        raise RuntimeError("The predeclared Exp25 stress cohort has no event slots")
+
+    # Build one binary variable for every admissible start.  The selected start
+    # induces a fixed-rate contiguous block, so no fractional pause pattern can
+    # satisfy the constraints.  Energies are scaled to micro-MWh for HiGHS
+    # numerical stability; all reported residuals are converted back to MWh.
+    candidate_job: list[int] = []
+    candidate_start: list[int] = []
+    candidate_cost: list[float] = []
+    candidate_service: list[dict[int, float]] = []
+    candidate_offsets = [0]
+    wait_cost = float(cfg["workload"]["waiting_cost_per_mwh_slot"][-1])
+    event_price = float(cfg["market"]["default_dr_price_per_mwh"])
+    for job, (start, end, k, gpus, energy) in enumerate(
+        zip(stress_starts, stress_ends, required_slots, stress_gpus, stress_energy)
+    ):
+        cap_per_slot = float(gpus) * cap_mw * dt_h
+        full_slots = max(0, int(k) - 1)
+        remainder = float(energy) - full_slots * cap_per_slot
+        if remainder <= 1.0e-12:
+            remainder = cap_per_slot
+        # Capacity and the event-floor constraints see only the event-slot
+        # service vector.  Starts with the same vector are therefore exactly
+        # interchangeable; retaining the least-cost representative is a
+        # dominance reduction, not a heuristic screening rule.
+        best_by_event_pattern: dict[tuple[tuple[int, float], ...], tuple[int, float, dict[int, float]]] = {}
+        for block_start in range(int(start), int(end) - int(k) + 1):
+            amounts: dict[int, float] = {}
+            cost = 0.0
+            block_capacity_feasible = True
+            for offset in range(int(k)):
+                amount = cap_per_slot if offset < full_slots else remainder
+                slot = block_start + offset
+                if slot in event_slot_set and amount > stress_capacity_mw * dt_h + 1.0e-12:
+                    # A block that exceeds the declared event-slot capacity is
+                    # infeasible for every assignment; removing it is an exact
+                    # presolve rule, not a performance-motivated heuristic.
+                    block_capacity_feasible = False
+                    break
+                amounts[slot] = amount
+                cost += amount * (
+                    wait_cost * float(slot - start)
+                    + (event_price if slot % slots_per_day in event_slots else 0.0)
+                )
+            if not block_capacity_feasible:
+                continue
+            pattern = tuple(
+                sorted(
+                    (int(slot), round(float(amount), 15))
+                    for slot, amount in amounts.items()
+                    if int(slot) in event_slot_set
+                )
+            )
+            previous = best_by_event_pattern.get(pattern)
+            if previous is None or cost < previous[1] - 1.0e-15:
+                best_by_event_pattern[pattern] = (block_start, cost, amounts)
+        for block_start, cost, amounts in best_by_event_pattern.values():
+            candidate_job.append(job)
+            candidate_start.append(block_start)
+            candidate_cost.append(cost)
+            candidate_service.append(amounts)
+        candidate_offsets.append(len(candidate_job))
+    n_candidates = len(candidate_job)
+    if n_candidates == 0:
+        raise RuntimeError("The predeclared Exp25 stress cohort has no admissible starts")
+    logger.info(
+        "Exp25 exact stress MILP: %d cohort jobs, %d dominance-reduced start variables",
+        len(cohort),
+        n_candidates,
+    )
+    # Subtract each job's least-cost representative from all of its starts.
+    # This is an exact objective shift (the assignment equalities add the same
+    # constant for every feasible schedule) and gives HiGHS a much tighter
+    # branch-and-bound bound around the event-floor decisions.
+    candidate_cost_array = np.asarray(candidate_cost, dtype=float)
+    for job in range(len(cohort)):
+        first = int(candidate_offsets[job])
+        last = int(candidate_offsets[job + 1])
+        candidate_cost_array[first:last] -= float(np.min(candidate_cost_array[first:last]))
+    candidate_cost = candidate_cost_array.tolist()
+    scale = 1.0e6
+    rows: list[int] = []
+    cols: list[int] = []
+    values: list[float] = []
+    lower_rows: list[float] = []
+    upper_rows: list[float] = []
+    row_id = 0
+    # Exactly one start per job. Candidate starts are appended job by job, so
+    # use the recorded offsets instead of an O(|J|*|Y|) ownership scan.
+    for job in range(len(cohort)):
+        first_candidate = int(candidate_offsets[job])
+        last_candidate = int(candidate_offsets[job + 1])
+        if last_candidate <= first_candidate:
+            raise RuntimeError(f"Stress job {job} has no admissible start variable")
+        candidate_indices = np.arange(first_candidate, last_candidate, dtype=np.int64)
+        rows.extend([row_id] * len(candidate_indices))
+        cols.extend(candidate_indices.tolist())
+        values.extend([1.0] * len(candidate_indices))
+        lower_rows.append(1.0)
+        upper_rows.append(1.0)
+        row_id += 1
+    # Regional event-slot capacities.
+    candidate_regions = np.repeat(
+        cohort["region"].to_numpy(dtype=np.int64),
+        np.diff(np.asarray(candidate_offsets, dtype=np.int64)),
+    )
+    capacity_row_lookup = {
+        (int(region), int(slot)): row_id + region * len(event_slot_values) + position
+        for region in range(n_regions)
+        for position, slot in enumerate(event_slot_values)
+    }
+    for index, (region, amounts) in enumerate(zip(candidate_regions, candidate_service)):
+        for slot, amount in amounts.items():
+            capacity_row = capacity_row_lookup.get((int(region), int(slot)))
+            if capacity_row is not None:
+                rows.append(capacity_row)
+                cols.append(index)
+                values.append(amount * scale)
+    for _ in range(n_regions * len(event_slot_values)):
+        lower_rows.append(-np.inf)
+        upper_rows.append(stress_capacity_mw * dt_h * scale)
+        row_id += 1
+    # The event service floor is a lower bound, represented as -service <= -floor.
+    for index, amounts in enumerate(candidate_service):
+        event_amount = sum(amounts.get(int(slot), 0.0) for slot in event_slot_values)
+        if event_amount:
+            rows.append(row_id)
+            cols.append(index)
+            values.append(-event_amount * scale)
+    lower_rows.append(-np.inf)
+    upper_rows.append(-stress_floor_mwh * scale)
+    row_id += 1
+    a = coo_matrix(
+        (np.asarray(values, dtype=float), (np.asarray(rows), np.asarray(cols))),
+        shape=(row_id, n_candidates),
+    ).tocsr()
+    logger.info("Exp25 exact stress MILP matrix: %d rows, %d nonzeros", a.shape[0], a.nnz)
+    stress_result = milp(
+        c=np.asarray(candidate_cost, dtype=float) * scale,
+        integrality=np.ones(n_candidates, dtype=np.int8),
+        bounds=Bounds(np.zeros(n_candidates), np.ones(n_candidates)),
+        constraints=LinearConstraint(
+            a,
+            np.asarray(lower_rows, dtype=float),
+            np.asarray(upper_rows, dtype=float),
+        ),
+        options={
+            "presolve": True,
+            "mip_rel_gap": 0.0,
+            "time_limit": float(
+                cfg["experiments"].get("job_level_stress_milp_time_limit_s", 120.0)
+            ),
+        },
+    )
+    solver_name = "scipy.optimize.milp"
+    if stress_result.success:
+        selected = np.flatnonzero(np.asarray(stress_result.x) > 0.5)
+    else:
+        # This panel is a finite assignment model.  If HiGHS reaches its time
+        # limit, accept the LP relaxation only when its solution is already
+        # integral to numerical tolerance; otherwise fail closed rather than
+        # rounding a fractional schedule into a purported certificate.
+        eq_mask = np.isclose(np.asarray(lower_rows), np.asarray(upper_rows), rtol=0.0, atol=0.0)
+        ub_mask = np.isfinite(np.asarray(upper_rows)) & ~eq_mask
+        from scipy.optimize import linprog
+
+        relaxation = linprog(
+            np.asarray(candidate_cost, dtype=float) * scale,
+            A_ub=a[ub_mask],
+            b_ub=np.asarray(upper_rows, dtype=float)[ub_mask],
+            A_eq=a[eq_mask],
+            b_eq=np.asarray(upper_rows, dtype=float)[eq_mask],
+            bounds=(0.0, 1.0),
+            method="highs",
         )
-    )
-    capacity_row_count = n_regions * len(event_slot_values)
-    floor_row = capacity_row_count
-    ub_rows = np.concatenate([capacity_rows, np.full(len(event_var_indices), floor_row)])
-    ub_cols = np.concatenate([event_var_indices, event_var_indices])
-    ub_values = np.concatenate(
-        [
-            np.ones(len(event_var_indices), dtype=float),
-            -np.ones(len(event_var_indices), dtype=float),
-        ]
-    )
-    a_ub = coo_matrix(
-        (ub_values, (ub_rows, ub_cols)),
-        shape=(capacity_row_count + 1, len(stress_slots)),
-    ).tocsr()
-    a_eq = coo_matrix(
-        (
-            np.ones(len(stress_slots), dtype=float),
-            (stress_jobs, np.arange(len(stress_slots), dtype=np.int64)),
-        ),
-        shape=(len(cohort), len(stress_slots)),
-    ).tocsr()
-    waiting = float(cfg["workload"]["waiting_cost_per_mwh_slot"][-1]) * (
-        stress_slots - np.repeat(stress_starts, stress_counts)
-    )
-    stress_objective = waiting + float(cfg["market"]["default_dr_price_per_mwh"]) * stress_event_mask
-    stress_scale = 1.0e6
-    stress_result = linprog(
-        stress_objective / stress_scale,
-        A_ub=a_ub,
-        b_ub=np.concatenate(
-            [
-                np.full(capacity_row_count, stress_capacity_mw * dt_h * stress_scale),
-                np.asarray([-stress_floor_mwh * stress_scale]),
-            ]
-        ),
-        A_eq=a_eq,
-        b_eq=stress_energy * stress_scale,
-        bounds=np.column_stack(
-            [np.zeros(len(stress_slots)), stress_upper * stress_scale]
-        ),
-        method="highs",
-        options={"presolve": True},
-    )
-    if not stress_result.success:
-        raise RuntimeError("Exp25 binding-capacity LP failed: " + str(stress_result.message))
-    stress_service = np.asarray(stress_result.x, dtype=float) / stress_scale
+        if not relaxation.success:
+            raise RuntimeError(
+                "Exp25 binding-capacity start-time MILP failed and its LP "
+                f"relaxation is infeasible: {stress_result.message}"
+            )
+        fractional = np.abs(np.asarray(relaxation.x) - np.round(relaxation.x))
+        if float(np.max(fractional)) > 1.0e-7:
+            raise RuntimeError(
+                "Exp25 binding-capacity start-time MILP reached its time limit "
+                "with a fractional LP relaxation; no rounded schedule is accepted"
+            )
+        selected = np.flatnonzero(np.asarray(relaxation.x) > 0.5)
+        stress_result = relaxation
+        solver_name = "integral LP relaxation (exact assignment certificate)"
+    if len(selected) != len(cohort):
+        raise RuntimeError("Exp25 MILP did not select exactly one start per stress job")
+    selected_by_job = {int(candidate_job[i]): i for i in selected}
+    stress_service = np.zeros(len(stress_slots), dtype=float)
+    stress_start_slots = np.full(len(cohort), -1, dtype=np.int64)
+    stress_slot_counts = np.zeros(len(cohort), dtype=np.int64)
+    local_offsets = np.concatenate([[0], np.cumsum(stress_counts, dtype=np.int64)])
+    for job, index in selected_by_job.items():
+        stress_start_slots[job] = int(candidate_start[index])
+        stress_slot_counts[job] = int(required_slots[job])
+        for slot, amount in candidate_service[index].items():
+            stress_service[int(local_offsets[job] + slot - stress_starts[job])] = amount
     stress_profile = np.bincount(
         stress_regions * (int(stress_ends.max()) + 1) + stress_slots,
         weights=stress_service,
@@ -239,6 +373,8 @@ def run_exp25_exante_job_validation(
         region=cohort["region"].to_numpy(dtype=np.int64),
         requested_gpus=stress_gpus,
         stress_day=np.asarray([stress_day], dtype=np.int64),
+        selected_start_slot=stress_start_slots,
+        service_slot_count=stress_slot_counts,
     )
     stress_summary = pd.DataFrame(
         [
@@ -252,6 +388,9 @@ def run_exp25_exante_job_validation(
             {"metric": "event_service_delivered_mwh", "value": float(stress_profile[:, event_slot_values].sum()), "unit": "MWh"},
             {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(stress_job_residual))), "unit": "MWh"},
             {"metric": "solver_success", "value": 1, "unit": "boolean"},
+            {"metric": "binary_start_variables", "value": n_candidates, "unit": "variables"},
+            {"metric": "selected_start_variables", "value": int(len(selected)), "unit": "variables"},
+            {"metric": "solver_time_limit_seconds", "value": float(cfg["experiments"].get("job_level_stress_milp_time_limit_s", 120.0)), "unit": "seconds"},
         ]
     )
     stress_summary.to_csv(final / "job_level_capacity_stress_summary.csv", index=False)
@@ -299,6 +438,7 @@ def run_exp25_exante_job_validation(
         "submission_ledger_digest": str(submission.attrs["canonical_submission_ledger_sha256"]),
         "execution_ledger_role": "post-event scoring only",
         "telemetry_used_in_exp19_decision": False,
+        "population_rule": "all valid scheduler submissions; execution matching is a post-event audit",
         "submitted_jobs": int(len(submission)),
         "execution_matched_jobs": int(len(joined)),
         "declared_service_fraction": float(calibration["declared_service_fraction"]),
@@ -306,6 +446,7 @@ def run_exp25_exante_job_validation(
         "declared_per_gpu_power_cap_mw": cap_mw,
         "unbounded_timelimit_slots": runtime_fallback,
         "submission_buffer_slots": queue_buffer,
+        "time_origin_seconds": time_origin_seconds,
         "results": {
             "summary": "exante_job_validation_summary.csv",
             "by_type": "exante_job_validation_by_type.csv",
@@ -317,6 +458,8 @@ def run_exp25_exante_job_validation(
             "stress_day_index": int(stress_day),
             "cohort_jobs": int(len(cohort)),
             "service_variables": int(len(stress_service)),
+            "binary_start_variables": int(n_candidates),
+            "selected_start_variables": int(len(selected)),
             "capacity_mw_per_region": stress_capacity_mw,
             "event_service_floor_mwh": stress_floor_mwh,
             "event_service_delivered_mwh": float(stress_profile[:, event_slot_values].sum()),
@@ -324,13 +467,16 @@ def run_exp25_exante_job_validation(
             "minimum_event_capacity_slack_mwh": float(stress_capacity_slack.min()),
             "maximum_job_energy_residual_mwh": float(np.max(np.abs(stress_job_residual))),
             "solver_success": True,
+            "solver": solver_name + " with binary start variables and exact contiguous fixed-rate blocks",
             "solution_file": "job_level_capacity_stress_solution.npz",
         },
         "interpretation": (
             "The central declaration is a training-only ex-ante entitlement; the "
             "full requested nameplate is the physical upper bound. Observed DCGM "
             "energy is reported for coverage and cannot alter a release, deadline, "
-            "or service equality."
+            "or service equality. The stress panel is solved with one binary "
+            "start per job, so capacity and the event-service floor are tested "
+            "on an executable nonpreemptive schedule."
         ),
     }
     (final / "experiment_metadata.json").write_text(

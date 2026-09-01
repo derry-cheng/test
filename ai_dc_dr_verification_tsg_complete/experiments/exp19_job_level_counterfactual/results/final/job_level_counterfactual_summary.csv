@@ -1,21 +1,21 @@
 metric,value,unit
-submitted_jobs,71144,jobs
+submitted_jobs,75326,jobs
 execution_matched_jobs,71128,jobs
-service_variables,12296675,variables
-solver_status,Exact separable continuous-knapsack LP; all regional capacity rows verified inactive (no heuristic allocation),text
-event_energy_native_mwh,0.19442596894717518,MWh
+service_variables,13198247,variables
+solver_status,exact enumeration of all admissible contiguous fixed-rate starts; regional capacity rows verified inactive,text
+event_energy_native_mwh,0.1944259689471752,MWh
 event_energy_counterfactual_mwh,0.0,MWh
-event_reduction_mwh,0.19442596894717518,MWh
-event_gross_reduction_mwh,0.19442596894717518,MWh
-event_net_reduction_mwh,0.19442596894717518,MWh
+event_reduction_mwh,0.1944259689471752,MWh
+event_gross_reduction_mwh,0.1944259689471752,MWh
+event_net_reduction_mwh,0.1944259689471752,MWh
 event_rebound_mwh,0.0,MWh
 declared_energy_conservation_residual_mwh,8.881784197001252e-16,MWh
-observed_execution_energy_mwh,2.6573461425000002,MWh
-declared_service_energy_mwh,2.104724532777778,MWh
-execution_match_fraction,0.9997751040143933,fraction
+observed_execution_energy_mwh,2.6573461425,MWh
+declared_service_energy_mwh,2.2449242416666664,MWh
+execution_match_fraction,0.9442689111329421,fraction
 observed_within_physical_nameplate_fraction,1.0,fraction
-median_observed_to_declared_energy_ratio,1.00048007681229,ratio
+median_observed_to_declared_energy_ratio,1.017081503172279,ratio
 maximum_job_energy_residual_mwh,0.0,MWh
-minimum_site_slot_capacity_slack_mwh,29.48625480375,MWh
+minimum_site_slot_capacity_slack_mwh,29.4864441575,MWh
 maximum_gpu_count,64.0,GPUs
 per_gpu_power_cap_mw,0.001,MW/GPU

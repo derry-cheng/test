@@ -40,6 +40,20 @@ def main() -> None:
         assert "time_start" not in ledger.columns
         assert ledger.attrs["digest_fields_exclude_execution_telemetry"] is True
         assert np.all(ledger["declared_energy_mwh"] > 0)
+        try:
+            load_mit_submission_ledger(
+                scheduler,
+                interval_s=900,
+                n_slots=8,
+                n_regions=2,
+                declared_service_fraction=0.5,
+                declared_per_gpu_power_cap_mw=0.001,
+                eligible_job_ids={1},
+            )
+        except ValueError as exc:
+            assert "forbidden" in str(exc)
+        else:
+            raise AssertionError("outcome-derived eligibility filter was accepted")
 
     cert = validate_job_network_coupling(
         service_mwh=np.array([0.001, 0.001]),

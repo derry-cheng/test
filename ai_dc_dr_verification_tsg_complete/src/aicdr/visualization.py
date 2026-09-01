@@ -188,10 +188,10 @@ def plot_exp9(
         "Payment-Certified N-1 Verifier",
     ]
     labels = {
-        "Feasible Quantile Projection": "Feasible\nquantile",
-        "Single Feasible Projection": "Single\nprojection",
-        "Risk-Constrained Convex Verifier": "Risk-constrained\nverifier",
-        "Payment-Certified N-1 Verifier": "Payment-certified\nverifier",
+        "Feasible Quantile Projection": "Feasible Q",
+        "Single Feasible Projection": "Single",
+        "Risk-Constrained Convex Verifier": "Risk-safe",
+        "Payment-Certified N-1 Verifier": "Payment-certified",
     }
     shown = daily.copy()
     shown["method_label"] = shown["counterfactual_method"].map(labels)
@@ -208,6 +208,9 @@ def plot_exp9(
     axes[0].set_title("(a) Independent payment accuracy")
     axes[0].set_xlabel("")
     axes[0].set_ylabel("Daily absolute error ($)")
+    axes[0].tick_params(axis="x", rotation=25, labelsize=8.5)
+    for label in axes[0].get_xticklabels():
+        label.set_ha("right")
     sns.boxplot(
         data=shown,
         x="method_label",
@@ -220,6 +223,9 @@ def plot_exp9(
     axes[1].set_title("(b) Overpayment against realized value")
     axes[1].set_xlabel("")
     axes[1].set_ylabel("Daily overpayment ($)")
+    axes[1].tick_params(axis="x", rotation=25, labelsize=8.5)
+    for label in axes[1].get_xticklabels():
+        label.set_ha("right")
     sns.scatterplot(
         data=scenario_certificates,
         x="reference_n1_baseline_cost_usd",
@@ -1232,35 +1238,41 @@ def plot_exp2(
         "Metadata Gradient Boosting": "Online Meta-GB",
         "Ex-post Metadata Gradient Boosting": "Ex-post Meta-GB",
         "Ex-post Quantile Gradient Boosting": "Ex-post QGB",
-        "Synthetic Control": "Synthetic\nControl",
-        "Feasible Quantile Projection": "Feasible\nQuantile",
-        "Tail-Risk Feasible Counterfactual": "Tail-Risk\nCounterfactual",
-        "Single Feasible Projection": "Single Projection",
-        "Risk-Constrained Convex Verifier": "Risk-Safe\nVerifier",
+        "Synthetic Control": "Synthetic Control",
+        "Feasible Quantile Projection": "Feasible Q",
+        "Tail-Risk Feasible Counterfactual": "Tail-risk",
+        "Single Feasible Projection": "Single",
+        "Risk-Constrained Convex Verifier": "Risk-safe",
     }
     displayed_metrics = metrics.assign(
         display_method=metrics["method"].map(method_labels)
     )
     display_order = [method_labels[method] for method in order]
-    fig, axes = plt.subplots(1, 3, figsize=(13.2, 3.65), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(14.4, 4.15), constrained_layout=True)
     sns.boxplot(data=displayed_metrics, x="display_method", y="nrmse", order=display_order, color=COLORS["sky"], showfliers=False, ax=axes[0])
     sns.stripplot(data=displayed_metrics, x="display_method", y="nrmse", order=display_order, color=COLORS["black"], alpha=0.45, size=2.5, ax=axes[0])
     axes[0].set_title("(a) Counterfactual baseline error")
     axes[0].set_xlabel("")
     axes[0].set_ylabel("Normalized RMSE")
-    axes[0].tick_params(axis="x", rotation=24)
+    axes[0].tick_params(axis="x", rotation=35, labelsize=8)
+    for label in axes[0].get_xticklabels():
+        label.set_ha("right")
     sns.boxplot(data=displayed_metrics, x="display_method", y="false_response_ratio", order=display_order, color=COLORS["orange"], showfliers=False, ax=axes[1])
     sns.stripplot(data=displayed_metrics, x="display_method", y="false_response_ratio", order=display_order, color=COLORS["black"], alpha=0.45, size=2.5, ax=axes[1])
     axes[1].set_title("(b) False response exposure")
     axes[1].set_xlabel("")
     axes[1].set_ylabel("False response ratio")
-    axes[1].tick_params(axis="x", rotation=24)
+    axes[1].tick_params(axis="x", rotation=35, labelsize=8)
+    for label in axes[1].get_xticklabels():
+        label.set_ha("right")
     sns.boxplot(data=displayed_metrics, x="display_method", y="bias_mw", order=display_order, color=COLORS["green"], showfliers=False, ax=axes[2])
     axes[2].axhline(0, color="black", lw=0.8)
     axes[2].set_title("(c) Event-window bias")
     axes[2].set_xlabel("")
     axes[2].set_ylabel("Bias (MW)")
-    axes[2].tick_params(axis="x", rotation=24)
+    axes[2].tick_params(axis="x", rotation=35, labelsize=8)
+    for label in axes[2].get_xticklabels():
+        label.set_ha("right")
     save_figure(fig, folder, "fig3_baseline_verification_performance")
 
     fig, axes_grid = plt.subplots(2, 2, figsize=(10.6, 7.0), constrained_layout=True)

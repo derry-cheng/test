@@ -2,7 +2,7 @@ stage,input_records,retained_records,split_or_join_rule,downstream_role
 BurstGPT request ingestion,5188507,5188507,all rows in both no-failure releases,inference arrivals and observed service
 MIT immutable scheduler-DCGM join,287069,71128,last scheduler record per immutable job ID with positive measured energy,full-horizon job-level witness in Experiments 14 and 16
 MIT common trace horizon filter,71128,68664,aligned execution start before the common 121-day tensor horizon,batch arrivals and independent execution for Experiments 1--13
-DCGM power calibration,95182,66769,deterministic immutable-job training split,power-conversion model fitting
-DCGM held-out calibration,95182,28413,disjoint immutable-job test split,conversion scenarios and calibration scoring
-Submit-time energy-envelope calibration,71144,49916,immutable scheduler/DCGM job join with id_job mod 10 < 7; telemetry is used only to fit the frozen envelope,ex-ante declared service quantity and physical upper bound for Exp19
+DCGM power calibration,95182,44391,deterministic immutable-job training split,power-conversion model fitting
+DCGM held-out calibration,95182,50791,disjoint immutable-job test split,conversion scenarios and calibration scoring
+Submit-time energy-envelope calibration,71141,31284,chronological scheduler/DCGM job join inside the declared historical information set; telemetry is used only to fit the frozen envelope,ex-ante declared service quantity and physical upper bound for Exp19
 15-minute joint trace,11616,11616,at least 95% observed intervals per day,validation and locked evaluation

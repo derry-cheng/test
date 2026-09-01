@@ -28,8 +28,10 @@ Every long experiment writes an intermediate checkpoint and can be resumed;
 standalone stages write under `artifacts/stage_runs/` and do not overwrite the
 canonical all-stage manifest. The deterministic regression suite is run with
 `PYTHONPATH=src:vendor python tests/run_tests.py`.
+The entry points clamp BLAS/HiGHS numerical backends to one thread per worker;
+configured worker pools are checked against the 20-core ceiling.
 
-The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any measured job requires more service slots than its submit-time declared window. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized controlled-event replay with a nonzero predeclared service floor, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
+The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized controlled-event replay with a nonzero predeclared service floor, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
 PYTHONPATH=src .venv/bin/python experiments/exp20_trace_meter_replay/run.py
@@ -39,7 +41,8 @@ For manuscript compilation, run LaTeX from `manuscript/` so the experiment figur
 
 ## Data and audit scope
 
-The immutable scheduler--DCGM join contains 71,128 positive-energy jobs. The
+The complete scheduler population contains 75,326 submissions and the
+post-event scheduler--DCGM join contains 71,128 positive-energy jobs. The
 common 121-day tensor window retains 68,664 jobs for the locked statistical
 panels; the remaining jobs are retained by the complete ledger stages. Source
 row counts, hashes, joins, temporal coverage, calibration, scaling, and all
@@ -50,6 +53,13 @@ public network benchmark rather than private telemetry. Public traces do not exp
 four-region placement and trace-to-power conversion are declared benchmark
 scenarios; all 24 region-to-bus permutations plus two predeclared concentration
 controls are evaluated in Experiment 11.
+
+Calibration labels require a matched positive DCGM energy measurement, but that
+label join is confined to the training-only conversion fit. Within the matched
+labels, the first 40 complete days train the conversion model and all later
+observations are held out by submit/end timestamps; no positive-energy filter,
+immutable-ID modulo rule, or locked-day outcome selects the Exp19 submission
+population.
 
 The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside

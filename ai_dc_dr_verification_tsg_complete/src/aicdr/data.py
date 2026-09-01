@@ -193,7 +193,13 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
     batch_arrivals, batch_observed, batch_stats = _aggregate_mit_jobs(
         scheduler_path, dcgm_path, n_slots, interval_s, n_regions, logger
     )
-    calibration = _fit_dcgm_power_calibration(dcgm_path, int(cfg["project"]["seed"]), logger)
+    calibration = _fit_dcgm_power_calibration(
+        dcgm_path,
+        int(cfg["project"]["seed"]),
+        logger,
+        scheduler_path=scheduler_path,
+        training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
+    )
     submission_calibration = _fit_submission_energy_calibration(
         scheduler_path=scheduler_path,
         dcgm_path=dcgm_path,
@@ -204,6 +210,7 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         unbounded_timelimit_slots=int(
             cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
         ),
+        training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
         logger=logger,
     )
 
@@ -320,7 +327,8 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 submission_calibration["declared_service_fraction"]
             ),
             "submission_energy_fraction_source": (
-                "training-only scheduler/DCGM join; immutable job IDs with id_job mod 10 < 7"
+                "chronological scheduler/DCGM calibration using only jobs submitted "
+                "and completed inside the declared historical information set"
             ),
         },
     }
@@ -367,8 +375,8 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "input_records": int(submission_calibration["joined_positive_jobs"]),
                 "retained_records": int(submission_calibration["training_jobs"]),
                 "split_or_join_rule": (
-                    "immutable scheduler/DCGM job join with id_job mod 10 < 7; "
-                    "telemetry is used only to fit the frozen envelope"
+                "chronological scheduler/DCGM job join inside the declared historical "
+                "information set; telemetry is used only to fit the frozen envelope"
                 ),
                 "downstream_role": (
                     "ex-ante declared service quantity and physical upper bound for Exp19"
@@ -616,7 +624,26 @@ def _aggregate_mit_jobs(
     return arrivals, observed, stats
 
 
-def _fit_dcgm_power_calibration(path: Path, seed: int, logger: logging.Logger) -> dict[str, Any]:
+def _fit_dcgm_power_calibration(
+    path: Path,
+    seed: int,
+    logger: logging.Logger,
+    *,
+    scheduler_path: Path | None = None,
+    training_days: int = 40,
+) -> dict[str, Any]:
+    """Fit the GPU-power model on a chronological, observable information set.
+
+    The previous implementation used ``id_job mod 10`` as a pseudo-random
+    split.  That split is reproducible, but it is not an ex-ante information
+    boundary: jobs from the future can enter the training fit.  When the
+    scheduler release is available, this routine joins only the scheduler
+    timestamps needed to define a historical cutoff and fits on jobs submitted
+    and completed before that cutoff.  The DCGM fields remain labels, never
+    membership selectors for the submitted ledger.
+    """
+    if int(training_days) <= 0:
+        raise ValueError("training_days must be positive")
     columns = [
         "id_job",
         "powerusage_watts_avg",
@@ -627,10 +654,42 @@ def _fit_dcgm_power_calibration(path: Path, seed: int, logger: logging.Logger) -
     ]
     df = pd.read_csv(path, usecols=columns).replace([np.inf, -np.inf], np.nan).dropna()
     df = df[(df["powerusage_watts_avg"] > 0) & (df["totalexecutiontime_sec"] > 0)].copy()
+    if scheduler_path is not None:
+        scheduler = pd.read_csv(
+            scheduler_path,
+            usecols=["id_job", "time_submit", "time_end"],
+        ).replace([np.inf, -np.inf], np.nan)
+        scheduler["id_job"] = pd.to_numeric(scheduler["id_job"], errors="coerce")
+        scheduler["time_submit"] = pd.to_numeric(scheduler["time_submit"], errors="coerce")
+        scheduler["time_end"] = pd.to_numeric(scheduler["time_end"], errors="coerce")
+        scheduler = scheduler.dropna(subset=["id_job", "time_submit", "time_end"])
+        scheduler = scheduler[scheduler["time_end"] >= scheduler["time_submit"]].copy()
+        scheduler = scheduler.sort_values(
+            ["id_job", "time_end"], kind="mergesort"
+        ).drop_duplicates("id_job", keep="last")
+        df = df.merge(scheduler, on="id_job", how="inner", validate="many_to_one")
+        if df.empty:
+            raise RuntimeError("No DCGM rows match scheduler timestamps for chronological calibration")
+        origin = float(df["time_submit"].min())
+        cutoff = origin + float(training_days) * 86400.0
+        mask = (df["time_submit"] >= origin) & (df["time_submit"] < cutoff) & (df["time_end"] <= cutoff)
+        training_rule = (
+            "chronological scheduler information set: time_submit and time_end "
+            f"< {int(training_days)} days after the earliest matched submission"
+        )
+    else:
+        # This fallback is intentionally chronological in file order and is
+        # retained only for unit-level callers that do not have the scheduler
+        # release.  Production preprocessing always supplies scheduler_path.
+        ordered = np.arange(len(df), dtype=np.int64)
+        cutoff_rows = max(1, int(np.ceil(len(df) * min(1.0, training_days / 100.0))))
+        mask = ordered < cutoff_rows
+        origin = float("nan")
+        cutoff = float("nan")
+        training_rule = "chronological DCGM row prefix fallback (scheduler unavailable)"
     df["log_gpu_memory"] = np.log1p(df["maxgpumemoryused_bytes"].clip(lower=0))
     df["log_runtime"] = np.log1p(df["totalexecutiontime_sec"].clip(lower=0))
     features = ["smutilization_pct_avg", "memoryutilization_pct_avg", "log_gpu_memory", "log_runtime"]
-    mask = (df["id_job"].astype(np.int64) % 10) < 7
     model = Ridge(alpha=10.0)
     model.fit(df.loc[mask, features], df.loc[mask, "powerusage_watts_avg"])
     pred = model.predict(df.loc[~mask, features])
@@ -669,6 +728,10 @@ def _fit_dcgm_power_calibration(path: Path, seed: int, logger: logging.Logger) -
         "test_mae_watts": float(mean_absolute_error(truth, pred)),
         "test_rmse_watts": float(mean_squared_error(truth, pred) ** 0.5),
         "test_r2": float(r2_score(truth, pred)),
+        "training_rule": training_rule,
+        "calibration_origin_submit_seconds": origin,
+        "calibration_cutoff_seconds": cutoff,
+        "calibration_cutoff_days": int(training_days),
         "measured_power_quantiles_watts": {
             str(q): float(np.quantile(df["powerusage_watts_avg"], q)) for q in [0.01, 0.1, 0.5, 0.9, 0.99]
         },
@@ -700,6 +763,7 @@ def _fit_submission_energy_calibration(
     interval_s: int,
     declared_per_gpu_power_cap_mw: float,
     unbounded_timelimit_slots: int,
+    training_days: int,
     logger: logging.Logger,
 ) -> dict[str, Any]:
     """Fit the ex-ante service fraction on the immutable training partition.
@@ -712,14 +776,32 @@ def _fit_submission_energy_calibration(
     the submission digest and never enters the Exp19 feasibility constraints.
     The physical upper bound remains the full requested nameplate, so the
     conversion audit can report coverage instead of silently widening a
-    deadline when an observed job exceeds its central estimate.
+    deadline when an observed job exceeds its central estimate.  Calibration
+    is chronological: a job is in the information set only when its submit
+    and scheduler completion timestamps both precede the precommitted cutoff.
+    A positive DCGM energy value is required only to supply a calibration label;
+    it is not used to define the Exp19 submission population or any locked-day
+    eligibility set.  Within the matched calibration labels, membership in the
+    training split is determined solely by the chronological submit/end-time
+    cutoff; no immutable-ID modulo rule or locked-day outcome is used.
     """
     if float(declared_per_gpu_power_cap_mw) <= 0.0:
         raise ValueError("declared_per_gpu_power_cap_mw must be positive")
-    scheduler_columns = ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
+    if int(training_days) <= 0:
+        raise ValueError("training_days must be positive")
+    scheduler_columns = [
+        "id_job",
+        "time_submit",
+        "time_end",
+        "timelimit",
+        "gres_req",
+        "job_type",
+        "state",
+    ]
     scheduler = pd.read_csv(scheduler_path, usecols=scheduler_columns)
     scheduler["id_job"] = pd.to_numeric(scheduler["id_job"], errors="coerce")
     scheduler["time_submit"] = pd.to_numeric(scheduler["time_submit"], errors="coerce")
+    scheduler["time_end"] = pd.to_numeric(scheduler["time_end"], errors="coerce")
     scheduler["timelimit"] = pd.to_numeric(scheduler["timelimit"], errors="coerce")
     scheduler["requested_gpus"] = scheduler["gres_req"].map(_parse_requested_gpu_count)
     scheduler = scheduler.sort_values(
@@ -730,6 +812,7 @@ def _fit_submission_energy_calibration(
     scheduler = scheduler[
         scheduler["id_job"].notna()
         & scheduler["time_submit"].notna()
+        & scheduler["time_end"].notna()
         & scheduler["timelimit"].notna()
         & scheduler["requested_gpus"].notna()
         & (scheduler["requested_gpus"] > 0)
@@ -751,7 +834,10 @@ def _fit_submission_energy_calibration(
         measured_energy_joules=("energyconsumed_joules", "sum")
     )
     joined = scheduler.merge(measured, on="id_job", how="inner", validate="one_to_one")
-    joined = joined[joined["measured_energy_joules"] > 0].copy()
+    joined = joined[
+        (joined["measured_energy_joules"] > 0)
+        & (joined["time_end"] >= joined["time_submit"])
+    ].copy()
     if joined.empty:
         raise RuntimeError("No positive-energy jobs are available for submit-time calibration")
     dt_h = float(interval_s) / 3600.0
@@ -766,7 +852,13 @@ def _fit_submission_energy_calibration(
     joined["measured_to_nameplate_fraction"] = (
         joined["measured_energy_mwh"] / joined["nameplate_energy_mwh"]
     )
-    training = joined[(joined["id_job"].astype(np.int64) % 10) < 7].copy()
+    calibration_origin = float(joined["time_submit"].min())
+    calibration_cutoff = calibration_origin + float(training_days) * 86400.0
+    training = joined[
+        (joined["time_submit"] >= calibration_origin)
+        & (joined["time_submit"] < calibration_cutoff)
+        & (joined["time_end"] <= calibration_cutoff)
+    ].copy()
     training = training[np.isfinite(training["measured_to_nameplate_fraction"])].copy()
     training = training[training["measured_to_nameplate_fraction"] > 0]
     if training.empty:
@@ -777,7 +869,13 @@ def _fit_submission_energy_calibration(
         "joined_positive_jobs": int(len(joined)),
         "training_jobs": int(len(training)),
         "test_jobs": int(len(joined) - len(training)),
-        "training_rule": "id_job mod 10 < 7; immutable job IDs are assigned before any locked-day selection",
+        "training_rule": (
+            "chronological historical information set: time_submit and time_end "
+            f"< {int(training_days)} days after the earliest joined submission"
+        ),
+        "calibration_origin_submit_seconds": calibration_origin,
+        "calibration_cutoff_seconds": calibration_cutoff,
+        "calibration_cutoff_days": int(training_days),
         "declared_per_gpu_power_cap_mw": float(declared_per_gpu_power_cap_mw),
         "interval_seconds": int(interval_s),
         "unbounded_timelimit_slots": int(unbounded_timelimit_slots),
@@ -791,6 +889,11 @@ def _fit_submission_energy_calibration(
         },
         "central_estimate_is_not_observed_energy": True,
         "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
+        "calibration_label_rule": (
+            "matched positive DCGM energy is a label requirement for the "
+            "training-only calibration sample; it never filters Exp19 submissions"
+        ),
+        "membership_rule_excludes_outcome_filtered_job_ids": True,
     }
     logger.info(
         "Submit-time energy calibration: %d/%d training jobs, central utilization %.6g",
@@ -816,6 +919,7 @@ def load_mit_job_ledger(
     unbounded_timelimit_slots: int = 128,
     submission_buffer_slots: int = 0,
     declared_per_gpu_power_cap_mw: float = 1.0e-3,
+    time_origin_seconds: float | None = None,
 ) -> pd.DataFrame:
     """Return the complete measured-job ledger used by exact replay checks.
 
@@ -872,7 +976,12 @@ def load_mit_job_ledger(
     ].copy()
     if jobs.empty:
         raise RuntimeError("MIT scheduler/DCGM join returned no positive-energy jobs")
-    origin = float(jobs["time_start"].min())
+    if time_origin_seconds is None:
+        origin = float(jobs["time_start"].min())
+    else:
+        origin = float(time_origin_seconds)
+        if not np.isfinite(origin):
+            raise ValueError("time_origin_seconds must be finite when supplied")
     if deadline_mode not in {"observed", "declared_timelimit"}:
         raise ValueError(
             "deadline_mode must be 'observed' or 'declared_timelimit'"
@@ -1002,6 +1111,7 @@ def load_mit_submission_ledger(
     unbounded_timelimit_slots: int = 128,
     submission_buffer_slots: int = 0,
     eligible_job_ids: set[int] | None = None,
+    time_origin_seconds: float | None = None,
 ) -> pd.DataFrame:
     """Return a submit-time-only job ledger for ex-ante scheduling.
 
@@ -1011,8 +1121,11 @@ def load_mit_submission_ledger(
     energy entitlement is the training-fitted utilization fraction times the
     requested GPU nameplate and declared runtime.  ``energy_upper_mwh`` is the
     physical nameplate bound and is kept separately for post-event coverage.
-    An optional ``eligible_job_ids`` set fixes only the retrospective benchmark
-    population; it is never converted into an energy or deadline value.
+    ``eligible_job_ids`` is retained as a compatibility argument but is
+    deliberately rejected.  An outcome-derived job-ID set is a post-event
+    population filter and would make the apparent submit-time contract
+    non-deployable.  Retrospective scoring must join the complete submitted
+    ledger after the decision has been frozen.
     """
     if int(interval_s) <= 0:
         raise ValueError("interval_s must be positive")
@@ -1033,10 +1146,13 @@ def load_mit_submission_ledger(
         kind="mergesort",
         na_position="first",
     ).drop_duplicates("id_job", keep="last")
-    before_filter = len(scheduler)
     if eligible_job_ids is not None:
-        eligible = {int(value) for value in eligible_job_ids}
-        scheduler = scheduler[scheduler["id_job"].isin(eligible)].copy()
+        raise ValueError(
+            "eligible_job_ids is forbidden for submit-time ledgers; use the "
+            "complete scheduler population and join execution telemetry only "
+            "after the decision is frozen"
+        )
+    before_filter = len(scheduler)
     scheduler = scheduler[
         scheduler["id_job"].notna()
         & scheduler["time_submit"].notna()
@@ -1052,7 +1168,12 @@ def load_mit_submission_ledger(
     )
     scheduler["declared_runtime_slots"] = runtime_slots
     scheduler["unlimited_timelimit"] = unlimited
-    origin = float(scheduler["time_submit"].min())
+    if time_origin_seconds is None:
+        origin = float(scheduler["time_submit"].min())
+    else:
+        origin = float(time_origin_seconds)
+        if not np.isfinite(origin):
+            raise ValueError("time_origin_seconds must be finite when supplied")
     scheduler["submit_slot_raw"] = np.floor(
         (scheduler["time_submit"].to_numpy(dtype=float) - origin) / float(interval_s)
     ).astype(np.int64)
@@ -1091,6 +1212,8 @@ def load_mit_submission_ledger(
         scheduler["deadline_slot_raw"].to_numpy(dtype=np.int64), 1, horizon
     )
     scheduler["within_horizon"] = (
+        (scheduler["submit_slot_raw"].to_numpy(dtype=np.int64) >= 0)
+        &
         (scheduler["submit_slot_raw"].to_numpy(dtype=np.int64) < horizon)
         & (scheduler["deadline_slot"].to_numpy(dtype=np.int64) > scheduler["submit_slot"].to_numpy(dtype=np.int64))
         & (scheduler["declared_energy_mwh"].to_numpy(dtype=float) > 0.0)
@@ -1135,10 +1258,8 @@ def load_mit_submission_ledger(
     scheduler.attrs["retained_submission_jobs"] = int(len(scheduler))
     scheduler.attrs["dropped_invalid_submission_rows"] = int(before_filter - len(scheduler))
     scheduler.attrs["population_rule"] = (
-        "positive-energy DCGM job IDs define the retrospective benchmark population; "
-        "all LP fields remain submit-time declarations"
-        if eligible_job_ids is not None
-        else "all scheduler rows with valid GPU requests and timelimits"
+        "all scheduler rows with valid submit-time GPU requests and allocation "
+        "runtimes; execution telemetry is joined only after the decision"
     )
     scheduler.attrs["deadline_mode"] = "submit_time_declaration"
     scheduler.attrs["declared_service_fraction"] = float(declared_service_fraction)

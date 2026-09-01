@@ -1,7 +1,7 @@
 baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,net_system_response_mwh
-All-site exact event-response comparator,internal_exact_event_lp,event_response,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
-Cao-style batch flexibility structural analogue,cao2022flexibility,honest_operator_schedule,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
-Chen-style coupled-regulation analogue,chen2021idccoupling,all_site_coupled_regulation_analogue,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
-Han-style cross-regional dispatchable-capacity analogue,han2026dispatchable,joint_spatio_temporal_capacity_analogue,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
-Incentive-compatible spatial DR structural analogue,chen2021incentive,strategic_reference,54,3.067921248926727,114.7758144245452,0.13700975234122167,85.95843230019311
-Receding-horizon workload projection structural analogue,zhang2023receding,single_feasible_projection,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
+All-site coupled event-response control,internal_event_response_control,all_site_event_response_lp,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
+Batch-flexibility ledger translation,cao2022flexibility,batch_flexibility_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
+Coupled multi-service regulation translation,chen2021idccoupling,coupled_service_ledger_lp,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
+Cross-regional dispatchable-capacity translation,han2026dispatchable,dispatchable_capacity_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
+Event-reward ledger translation,chen2021incentive,event_reward_ledger_lp,54,3.067921248926727,114.7758144245452,0.13700975234122167,85.95843230019311
+Rolling-horizon ledger translation,zhang2023receding,rolling_horizon_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295

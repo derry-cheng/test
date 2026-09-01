@@ -14,10 +14,11 @@ the selected single projection, the risk-constrained verifier, and the
 trace-anchored mechanism-isolation reference.
 
 The completed factorial contains 16,848 outcomes. Averaged over all 26
-declared assignments and 54 locked days, the risk-constrained verifier and
-the selected single projection have mean absolute payment errors of
-$105.250, $211.555, and $315.490/day at 3%, 6%, and 9% peak penetration;
-the feasible-quantile projection gives $81.613, $164.249, and $244.481/day.
+declared assignments and 54 locked days, the selected single-projection
+errors are $105.250, $211.555, and $315.490/day at 3%, 6%, and 9% peak
+penetration. The corresponding risk-constrained errors are $101.465,
+$203.981, and $304.125/day, while the feasible-quantile comparator gives
+$81.613, $164.249, and $244.481/day.
 The two concentration controls are retained in these aggregates rather than
 treated as post-hoc exclusions. The maximum native-rating line loading is
 1.000 p.u.; the maximum data-center LMP spread is $16.94/MWh in the complete

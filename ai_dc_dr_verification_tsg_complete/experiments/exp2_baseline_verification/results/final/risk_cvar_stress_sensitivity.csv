@@ -1,0 +1,5 @@
+cvar_reserve_fraction,reference_total_budget_mw_slots,reference_cvar_metric_value,cvar_budget_metric_value,minimum_achievable_cvar_metric_value,cvar_budget_minus_minimum_metric,risk_cvar_metric,risk_cvar_level,feasible,minimum_cvar_touches_budget,locked_test_days_used_for_stress
+0.9694103,206.57147586403386,0.2380782739627279,0.23079553098569022,0.2307955122450048,1.8740685420182146e-08,daily_false_credit_ratio,0.75,True,True,False
+0.975,206.57147586403386,0.2380782739627279,0.2321263171136597,0.2307955122450048,0.001330804868654889,daily_false_credit_ratio,0.75,True,False,False
+0.99,206.57147586403386,0.2380782739627279,0.23569749122310063,0.2307955122450048,0.004901978978095828,daily_false_credit_ratio,0.75,True,False,False
+1.0,206.57147586403386,0.2380782739627279,0.2380782739627279,0.2307955122450048,0.007282761717723102,daily_false_credit_ratio,0.75,True,False,False

@@ -48,6 +48,138 @@ class ScheduleResult:
     projection_l1_mw: float = np.nan
 
 
+@dataclass(frozen=True)
+class NonpreemptiveScheduleResult:
+    """Exact start-time witness for a fixed-rate job-indexed schedule.
+
+    Each job selects one integer start in its declared release/deadline
+    window.  It then occupies one contiguous block at its requested-GPU
+    nameplate; the final slot may be fractional only to satisfy the exact
+    energy entitlement.  The helper is used when regional capacity rows are
+    inactive.  If a row binds, callers must solve the corresponding binary
+    start-time MILP instead of falling back to a preemptive flow.
+    """
+
+    success: bool
+    service_mwh: np.ndarray
+    selected_start_slot: np.ndarray
+    service_slot_count: np.ndarray
+    objective_value: float
+    minimum_capacity_slack_mwh: float
+    solver_message: str
+
+
+def solve_exact_nonpreemptive_blocks(
+    *,
+    starts: np.ndarray,
+    ends: np.ndarray,
+    energy_mwh: np.ndarray,
+    variable_upper_mwh: np.ndarray,
+    objective_per_mwh: np.ndarray,
+    site_slot_rows: np.ndarray,
+    n_regions: int,
+    n_slots: int,
+    site_capacity_mwh: float,
+    offsets: np.ndarray | None = None,
+) -> NonpreemptiveScheduleResult:
+    """Solve the separable fixed-rate nonpreemptive start-time problem.
+
+    The objective is separable by job while capacity rows are inactive.  For
+    each possible start, the cost of the unique fixed-rate contiguous block
+    is evaluated exactly and the minimum is selected.  This is a finite
+    enumeration of all admissible starts, not a greedy or sampled schedule.
+    The returned vector uses the caller's full job--slot indexing so downstream
+    coupling can audit both zero support and exact job-energy equalities.
+    """
+    starts = np.asarray(starts, dtype=np.int64).reshape(-1)
+    ends = np.asarray(ends, dtype=np.int64).reshape(-1)
+    energy = np.asarray(energy_mwh, dtype=float).reshape(-1)
+    upper = np.asarray(variable_upper_mwh, dtype=float).reshape(-1)
+    objective = np.asarray(objective_per_mwh, dtype=float).reshape(-1)
+    rows = np.asarray(site_slot_rows, dtype=np.int64).reshape(-1)
+    if not (len(starts) == len(ends) == len(energy)):
+        raise ValueError("starts, ends, and energy_mwh must have equal length")
+    if len(upper) != len(objective) or len(rows) != len(objective):
+        raise ValueError("job-slot arrays must share one variable length")
+    if int(n_regions) <= 0 or int(n_slots) <= 0:
+        raise ValueError("n_regions and n_slots must be positive")
+    if float(site_capacity_mwh) <= 0.0:
+        raise ValueError("site_capacity_mwh must be positive")
+    if offsets is None:
+        counts = ends - starts
+        if np.any(counts <= 0):
+            raise ValueError("every job must have a nonempty declared window")
+        offsets = np.concatenate([[0], np.cumsum(counts, dtype=np.int64)])
+    offsets = np.asarray(offsets, dtype=np.int64).reshape(-1)
+    if len(offsets) != len(starts) + 1 or int(offsets[-1]) != len(objective):
+        raise ValueError("offsets do not match the job-slot arrays")
+    if np.any(~np.isfinite(energy)) or np.any(energy <= 0.0):
+        raise ValueError("job energy entitlements must be finite and positive")
+    if np.any(~np.isfinite(upper)) or np.any(upper <= 0.0):
+        raise ValueError("job-slot nameplate bounds must be finite and positive")
+    if np.any(~np.isfinite(objective)):
+        raise ValueError("objective coefficients must be finite")
+
+    service = np.zeros(len(objective), dtype=float)
+    selected_start = np.full(len(starts), -1, dtype=np.int64)
+    slot_count = np.zeros(len(starts), dtype=np.int64)
+    objective_value = 0.0
+    for job in range(len(starts)):
+        first = int(offsets[job])
+        last = int(offsets[job + 1])
+        local_upper = upper[first:last]
+        local_objective = objective[first:last]
+        nominal_cap = float(local_upper[0])
+        if not np.allclose(local_upper, nominal_cap, rtol=0.0, atol=1.0e-15):
+            raise ValueError("fixed-rate nonpreemptive witness requires a constant job nameplate")
+        required = max(1, int(np.ceil(energy[job] / nominal_cap - 1.0e-12)))
+        if required > last - first:
+            raise ValueError(
+                f"job {job} requires {required} contiguous slots but its declared "
+                f"window has only {last - first} slots"
+            )
+        full_slots = max(0, required - 1)
+        remainder = float(energy[job] - full_slots * nominal_cap)
+        if remainder <= 1.0e-12:
+            remainder = nominal_cap
+        candidate_count = (last - first) - required + 1
+        costs = np.empty(candidate_count, dtype=float)
+        for local_start in range(candidate_count):
+            block = local_objective[local_start : local_start + required]
+            costs[local_start] = nominal_cap * float(block[:full_slots].sum())
+            costs[local_start] += remainder * float(block[full_slots])
+        choice = int(np.argmin(costs))
+        block_first = first + choice
+        block_last = block_first + required
+        if full_slots:
+            service[block_first : block_first + full_slots] = nominal_cap
+        service[block_first + full_slots] = remainder
+        selected_start[job] = int(starts[job] + choice)
+        slot_count[job] = required
+        objective_value += float(costs[choice])
+
+    aggregate = np.bincount(
+        rows,
+        weights=service,
+        minlength=int(n_regions) * int(n_slots),
+    )
+    slack = float(site_capacity_mwh) - aggregate
+    return NonpreemptiveScheduleResult(
+        success=bool(np.min(slack) >= -1.0e-10),
+        service_mwh=service,
+        selected_start_slot=selected_start,
+        service_slot_count=slot_count,
+        objective_value=float(objective_value),
+        minimum_capacity_slack_mwh=float(np.min(slack)),
+        solver_message=(
+            "exact enumeration of all admissible contiguous fixed-rate starts; "
+            "regional capacity rows verified inactive"
+            if np.min(slack) >= -1.0e-10
+            else "exact start-time enumeration found a binding regional capacity row"
+        ),
+    )
+
+
 @dataclass
 class PaymentCertifiedResult:
     """Lexicographically optimal counterfactual with robust grid-value caps."""
@@ -756,6 +888,12 @@ def solve_payment_certified_n1_projection(
     vertex_costs = np.zeros(
         (scenario_count, len(slots), candidate_count), dtype=float
     )
+    # Exact byte-key memoization is useful here because adjacent projection
+    # penalties can produce identical event trajectories (and a selected
+    # convex endpoint can equal one of the vertices).  The key contains the
+    # complete IEEE-754 load vector; no rounding or approximate clustering is
+    # used, so this only removes mathematically identical SCED evaluations.
+    exact_dispatch_cache: dict[bytes, SCEDResult] = {}
     for scenario, scale_factor in enumerate(scale_factors):
         for local_slot, slot in enumerate(slots):
             for candidate in range(candidate_count):
@@ -763,12 +901,16 @@ def solve_payment_certified_n1_projection(
                 load[buses] += (
                     float(scale_factor) * candidates[candidate, :, slot]
                 )
-                solved = solve_n1_sced(
-                    system,
-                    load,
-                    int(segments),
-                    security_factors=security_factors,
-                )
+                load_key = np.ascontiguousarray(load, dtype=np.float64).tobytes()
+                solved = exact_dispatch_cache.get(load_key)
+                if solved is None:
+                    solved = solve_n1_sced(
+                        system,
+                        load,
+                        int(segments),
+                        security_factors=security_factors,
+                    )
+                    exact_dispatch_cache[load_key] = solved
                 if not solved.success:
                     raise RuntimeError(
                         "Vertex-cost Jensen certificate evaluator failed: "
@@ -891,12 +1033,16 @@ def solve_payment_certified_n1_projection(
         for slot in slots:
             load = native.copy()
             load[buses] += float(scale_factor) * profile[:, slot]
-            solved = solve_n1_sced(
-                system,
-                load,
-                int(segments),
-                security_factors=security_factors,
-            )
+            load_key = np.ascontiguousarray(load, dtype=np.float64).tobytes()
+            solved = exact_dispatch_cache.get(load_key)
+            if solved is None:
+                solved = solve_n1_sced(
+                    system,
+                    load,
+                    int(segments),
+                    security_factors=security_factors,
+                )
+                exact_dispatch_cache[load_key] = solved
             certified_costs[scenario] += float(solved.objective) * float(dt_h)
     nominal_scenario = int(np.argmin(np.abs(scale_factors - 1.0)))
     cost_violations = certified_costs - reference_costs

@@ -1,15 +1,17 @@
 {
   "experiment": "independent submit-time declaration validation",
-  "submission_ledger_digest": "a8819b9a777f4e8042c37e937d4a18f0a1259084ad08950412b0078ed6f8b357",
+  "submission_ledger_digest": "078534ee2e3df7a79c9b7fde3e51850cf93d21e3a3afc4c6b56924bdce0f83d0",
   "execution_ledger_role": "post-event scoring only",
   "telemetry_used_in_exp19_decision": false,
-  "submitted_jobs": 71144,
+  "population_rule": "all valid scheduler submissions; execution matching is a post-event audit",
+  "submitted_jobs": 75326,
   "execution_matched_jobs": 71128,
-  "declared_service_fraction": 0.0011572222222222222,
+  "declared_service_fraction": 0.0011383333333333334,
   "physical_upper_service_fraction": 1.0,
   "declared_per_gpu_power_cap_mw": 0.001,
   "unbounded_timelimit_slots": 128,
   "submission_buffer_slots": 96,
+  "time_origin_seconds": 21193772.0,
   "results": {
     "summary": "exante_job_validation_summary.csv",
     "by_type": "exante_job_validation_by_type.csv",
@@ -18,17 +20,20 @@
     "capacity_stress_event_slots": "job_level_capacity_stress_event_slots.csv"
   },
   "capacity_stress_panel": {
-    "stress_day_index": 20,
-    "cohort_jobs": 689,
-    "service_variables": 161194,
-    "capacity_mw_per_region": 0.001,
+    "stress_day_index": 127,
+    "cohort_jobs": 79,
+    "service_variables": 53720,
+    "binary_start_variables": 663,
+    "selected_start_variables": 79,
+    "capacity_mw_per_region": 0.0006647866667,
     "event_service_floor_mwh": 0.004,
-    "event_service_delivered_mwh": 0.0040000000000000105,
-    "active_event_capacity_slot_fraction": 0.4375,
-    "minimum_event_capacity_slack_mwh": -5.421010862427522e-20,
-    "maximum_job_energy_residual_mwh": 2.710505431213761e-20,
+    "event_service_delivered_mwh": 0.004154916666666666,
+    "active_event_capacity_slot_fraction": 0.78125,
+    "minimum_event_capacity_slack_mwh": 8.33334052804946e-15,
+    "maximum_job_energy_residual_mwh": 0.0,
     "solver_success": true,
+    "solver": "scipy.optimize.milp with binary start variables and exact contiguous fixed-rate blocks",
     "solution_file": "job_level_capacity_stress_solution.npz"
   },
-  "interpretation": "The central declaration is a training-only ex-ante entitlement; the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality."
+  "interpretation": "The central declaration is a training-only ex-ante entitlement; the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality. The stress panel is solved with one binary start per job, so capacity and the event-service floor are tested on an executable nonpreemptive schedule."
 }
