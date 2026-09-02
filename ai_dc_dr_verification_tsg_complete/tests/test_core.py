@@ -494,6 +494,23 @@ def test_payment_target_is_frozen_on_validation_and_two_sided_band_is_complete()
     assert np.isclose(float(cert["risk_cvar_level"]), float(CFG["experiments"]["risk_cvar_level"]))
     assert float(cert["cvar_budget_slack_metric"]) <= 1e-3
     assert bool(cert["cvar75_budget_binding"])
+    assert float(cert["total_objective_weight"]) > 0.0
+    ablation_weights = pd.read_csv(
+        ROOT
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_module_ablation_weights.csv"
+    )
+    weight_columns = [
+        column for column in ablation_weights.columns if column.startswith("weight_")
+    ]
+    joint = ablation_weights.loc[
+        ablation_weights["ablation"] == "total+CVaR ensemble", weight_columns
+    ].to_numpy(dtype=float)
+    cvar_only = ablation_weights.loc[
+        ablation_weights["ablation"] == "CVaR-only ensemble", weight_columns
+    ].to_numpy(dtype=float)
+    assert joint.shape == cvar_only.shape == (1, len(weight_columns))
+    assert np.max(np.abs(joint - cvar_only)) > 1e-6
 
 
 def test_ledger_provenance_and_capacity_reconciliation_are_complete() -> None:

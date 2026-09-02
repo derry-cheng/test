@@ -1294,14 +1294,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         # is normalized by the reference CVaR, is applied only when the CVaR
         # epigraph is enabled, and is reported in the certificate; the
         # total-budget-only ablation therefore removes both the tail row and
-        # this tail objective term.  This is a convex secondary preference,
+        # this tail objective term.  This is a convex additive preference,
         # not a post-solution heuristic.
         cvar_objective_weight = float(
             cfg["experiments"].get("risk_cvar_objective_weight", 0.0)
         )
         if cvar_objective_weight < 0.0:
             raise ValueError("risk_cvar_objective_weight must be nonnegative")
+        total_objective_weight = float(
+            cfg["experiments"].get("risk_total_objective_weight", 0.0)
+        )
+        if total_objective_weight < 0.0:
+            raise ValueError("risk_total_objective_weight must be nonnegative")
         cvar_objective_scale = max(reference_daily_cvar, 1.0e-9)
+        total_objective_scale = max(reference_false_exposure, 1.0e-9)
 
         # Solve the convex quadratic program with the explicit linear
         # epigraph.  Here s_n is the sample false-credit epigraph, nu is the
@@ -1412,6 +1418,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     + np.sum(decision[xi_slice]) / tail_count
                 ) / cvar_objective_scale
                 value += cvar_objective_weight * float(tail_value)
+            if enforce_total_budget and total_objective_weight > 0.0:
+                value += total_objective_weight * float(
+                    np.sum(decision[candidates : candidates + sample_count])
+                    / total_objective_scale
+                )
             return value
 
         def qp_gradient(decision: np.ndarray) -> np.ndarray:
@@ -1427,6 +1438,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 gradient[xi_slice] += (
                     cvar_objective_weight
                     / (cvar_objective_scale * tail_count)
+                )
+            if enforce_total_budget and total_objective_weight > 0.0:
+                gradient[candidates : candidates + sample_count] += (
+                    total_objective_weight / total_objective_scale
                 )
             return gradient
 
@@ -1550,6 +1565,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "reserve_fraction": float(reserve_fraction),
             "cvar_reserve_fraction": cvar_reserve_fraction,
             "cvar_objective_weight": cvar_objective_weight,
+            "total_objective_weight": total_objective_weight,
             "reference_max_daily_false_credit_mw_slots": reference_daily_max,
             "fitted_max_daily_false_credit_mw_slots": fitted_daily_max,
             # Legacy field names are retained for downstream readers; the
@@ -1574,6 +1590,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "fitted_cvar_metric_value": fitted_daily_cvar,
             "cvar_budget_metric_value": cvar_budget,
             "cvar_budget_slack_metric": float(cvar_budget - fitted_daily_cvar),
+            "total_objective_scale_mw_slots": total_objective_scale,
+            "cvar_objective_scale": cvar_objective_scale,
             "total_budget_binding": float(
                 enforce_total_budget
                 and abs(fitted_false_exposure - risk_budget) <= risk_tolerance
@@ -3734,6 +3752,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_cvar_objective_weight": float(
                 cfg["experiments"].get("risk_cvar_objective_weight", 0.0)
+            ),
+            "risk_total_objective_weight": float(
+                cfg["experiments"].get("risk_total_objective_weight", 0.0)
             ),
             "blocked_cv_cvar_reserve_fraction": float(
                 cfg["experiments"].get("blocked_cv_cvar_reserve_fraction", 1.0)
@@ -7796,12 +7817,18 @@ def run_exp10(
     # primal-dual iteration has not yet converged.
     ac_feasibility_tolerance = 1e-6
     ac_max_iterations = 300
-    options = ppoption(
-        VERBOSE=0,
-        OUT_ALL=0,
-        OPF_VIOLATION=ac_feasibility_tolerance,
-        PDIPM_MAX_IT=ac_max_iterations,
-    )
+    def make_ac_options(opf_alg: int = 0) -> dict[str, Any]:
+        # Construct a fresh option dictionary for every independent solve.
+        # PYPOWER mutates some nested option state while initializing the
+        # interior-point method; sharing one object across hundreds of OPFs
+        # can make a later, otherwise identical case sensitive to history.
+        return ppoption(
+            VERBOSE=0,
+            OUT_ALL=0,
+            OPF_VIOLATION=ac_feasibility_tolerance,
+            PDIPM_MAX_IT=ac_max_iterations,
+            OPF_ALG=opf_alg,
+        )
     checkpoint = intermediate / "ac_opf_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[tuple[str, int]] = set()
@@ -7881,14 +7908,42 @@ def run_exp10(
         dc_scale = peak_dc_mw / max(peak_trace_mw, 1e-12)
 
         def solve_profile(profile: np.ndarray, slot: int) -> dict[str, float]:
-            case = case_function()
-            dc_power = profile[:, slot] * dc_scale
-            case["bus"][:, PD] = native_p
-            case["bus"][:, QD] = native_q
-            case["bus"][dc_buses, PD] += dc_power
-            case["bus"][dc_buses, QD] += dc_power * reactive_ratio
-            result = runopf(case, options)
-            if not bool(result["success"]):
+            # PYPOWER's interior-point implementation can occasionally
+            # return a numerical non-convergence flag for an otherwise
+            # feasible case after a long sequence of independent solves.
+            # Retry the *same* deterministic AC-OPF model from a fresh case
+            # object before treating the result as infeasible.  No load,
+            # limit, objective, or recourse variable is changed by the
+            # retry; the final success flag is still required below.
+            result = None
+            # The primary PIPS implementation is deterministic for the
+            # declared case.  The step-controlled PIPS variant is an exact
+            # numerical fallback for a rare ``Numerically failed`` status;
+            # both solve the same AC-OPF equations and preserve every limit.
+            for opf_alg in (0, 565):
+                for retry_index in range(3):
+                    case = case_function()
+                    dc_power = profile[:, slot] * dc_scale
+                    case["bus"][:, PD] = native_p
+                    case["bus"][:, QD] = native_q
+                    case["bus"][dc_buses, PD] += dc_power
+                    case["bus"][dc_buses, QD] += dc_power * reactive_ratio
+                    candidate = runopf(case, make_ac_options(opf_alg))
+                    result = candidate
+                    if bool(candidate["success"]):
+                        break
+                if result is not None and bool(result["success"]):
+                    break
+            if result is None or not bool(result["success"]):
+                logger.warning(
+                    "AC-OPF retries exhausted for %s slot %d; PYPOWER raw status=%s",
+                    network_name,
+                    slot,
+                    result.get("raw", {}).get("output", {}).get("message", "unknown")
+                    if result is not None
+                    else "unknown",
+                )
+            if result is None or not bool(result["success"]):
                 raise RuntimeError(
                     f"AC OPF failed for {network_name}, slot {slot}"
                 )
@@ -8155,13 +8210,20 @@ def run_exp10(
         contingency_native_q = contingency_item["native_q"]
         contingency_dc_scale = float(contingency_item["dc_scale"])
         dc_power = profiles[local_day, :, slot] * contingency_dc_scale
-        case = contingency_item["case_function"]()
-        case["bus"][:, PD] = contingency_native_p
-        case["bus"][:, QD] = contingency_native_q
-        case["bus"][contingency_buses, PD] += dc_power
-        case["bus"][contingency_buses, QD] += dc_power * reactive_ratio
-        case["branch"][int(outage), BR_STATUS] = 0
-        result = runopf(case, options)
+        result = None
+        for opf_alg in (0, 565):
+            for _ in range(3):
+                case = contingency_item["case_function"]()
+                case["bus"][:, PD] = contingency_native_p
+                case["bus"][:, QD] = contingency_native_q
+                case["bus"][contingency_buses, PD] += dc_power
+                case["bus"][contingency_buses, QD] += dc_power * reactive_ratio
+                case["branch"][int(outage), BR_STATUS] = 0
+                result = runopf(case, make_ac_options(opf_alg))
+                if bool(result["success"]):
+                    break
+            if result is not None and bool(result["success"]):
+                break
         if not bool(result["success"]):
             raise RuntimeError(
                 "AC post-contingency OPF failed for "
@@ -8450,7 +8512,19 @@ def run_exp10(
                 base_case["bus"][preventive_buses, QD] += (
                     dc_power * reactive_ratio
                 )
-                base_result = runopf(base_case, options)
+                base_result = runopf(base_case, make_ac_options())
+                if not bool(base_result["success"]):
+                    # Same preventive AC-OPF model, alternate numerical
+                    # implementation only; no recourse or limit is changed.
+                    base_case = preventive_case_function()
+                    base_case["gen"] = base_case["gen"].astype(float)
+                    base_case["bus"][:, PD] = preventive_native_p
+                    base_case["bus"][:, QD] = preventive_native_q
+                    base_case["bus"][preventive_buses, PD] += dc_power
+                    base_case["bus"][preventive_buses, QD] += (
+                        dc_power * reactive_ratio
+                    )
+                    base_result = runopf(base_case, make_ac_options(565))
                 if not bool(base_result["success"]):
                     raise RuntimeError(
                         "Preventive base AC OPF failed for "
@@ -8486,7 +8560,24 @@ def run_exp10(
                     case["gen"][nonreference_generators, PMAX] = (
                         shared_pg[nonreference_generators]
                     )
-                    result = runopf(case, options)
+                    result = runopf(case, make_ac_options())
+                    if not bool(result["success"]):
+                        case = preventive_case_function()
+                        case["gen"] = case["gen"].astype(float)
+                        case["bus"][:, PD] = preventive_native_p
+                        case["bus"][:, QD] = preventive_native_q
+                        case["bus"][preventive_buses, PD] += dc_power
+                        case["bus"][preventive_buses, QD] += (
+                            dc_power * reactive_ratio
+                        )
+                        case["branch"][outage, BR_STATUS] = 0
+                        case["gen"][nonreference_generators, PMIN] = (
+                            shared_pg[nonreference_generators]
+                        )
+                        case["gen"][nonreference_generators, PMAX] = (
+                            shared_pg[nonreference_generators]
+                        )
+                        result = runopf(case, make_ac_options(565))
                     if not bool(result["success"]):
                         raise RuntimeError(
                             "Shared-active-plan preventive AC OPF failed for "

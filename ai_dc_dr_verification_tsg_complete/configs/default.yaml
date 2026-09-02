@@ -84,7 +84,12 @@ experiments:
   risk_cvar_reserve_fraction: 0.9694103
   # Convex tail preference used only by fits with the CVaR epigraph enabled;
   # the total-budget-only ablation removes this term as well as the CVaR row.
-  risk_cvar_objective_weight: 0.05
+  risk_cvar_objective_weight: 0.50
+  # Symmetric normalized total-exposure preference used only when the total
+  # epigraph is enabled. It keeps the joint two-axis fit identifiable even
+  # when the selected hard total budget is slack; single-axis ablations remove
+  # the corresponding preference together with that axis.
+  risk_total_objective_weight: 0.50
   # Blocked-CV folds are diagnostic only; use the full reference tail budget
   # so a small training fold is not declared infeasible by the production
   # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.

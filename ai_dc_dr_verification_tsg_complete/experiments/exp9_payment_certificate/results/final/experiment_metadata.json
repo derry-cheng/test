@@ -25,10 +25,10 @@
   "contractual_cap_profile": "Projection rho=0.03",
   "contractual_cap_selection": "single feasible projection selected by worst contiguous-fold validation nRMSE; its rho is recorded in Experiment 2 and is the sole payment-cap reference",
   "certificate_schema_version": 10,
-  "test_profile_file_checksum": "0469e33c0fd6b806b92c57eb496a7b901f60db1dfdbe018b80a24cf6cc0c7818",
+  "test_profile_file_checksum": "7bf18b89e07e3ad542335838e7fc4e58fab9a6ad1b05e28e3bfdb9bf700ba05f",
   "validation_profile_file_checksum": "3c3ac48f99f24022764a4df9528822b3383c1fc06edd186445f8db49272112ef",
   "data_manifest_checksum": "e75e48cd469c8e8bdf713560ee64d6cbefee8ffdea65f45c873a9380e2cb0e9d",
-  "config_checksum": "9b4c9c2f6632db0880578addc2b6a451d86969fa06b6f8f8e08b630f569a1ac9",
+  "config_checksum": "0ecffd5a94c88616197fe10345665c86827f95bf083af8829a285b7e48dde920",
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
   "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {

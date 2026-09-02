@@ -32,3 +32,13 @@ Experiment 12 now names its complete-cycle metric as a settlement-value
 residual and records the no-event reference definition explicitly, preventing
 the zero residual on a shared minimum-cost face from being misread as forecast
 accuracy.
+
+The follow-up risk refit also removes a latent identifiability failure: the
+joint total-plus-daily-CVaR program now includes predeclared, equally weighted
+normalized total-exposure and daily-CVaR preferences in its convex objective.
+The locked fit has 201.019 MW-slot total false-credit exposure against a
+206.571 budget and a 0.230796 daily-CVaR ratio at a (1.8\times10^{-8})
+metric slack. Its simplex differs from the CVaR-only ablation by
+\(2.95\times10^{-2}\) in (L_\infty\), and the audit rejects a collapsed
+profile. The 54-day downstream payment, AC, spatial, information-boundary,
+and trace-replay panels were regenerated from the new profile lineage.

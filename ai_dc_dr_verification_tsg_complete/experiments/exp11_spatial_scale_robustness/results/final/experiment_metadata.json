@@ -40,7 +40,7 @@
   "settlement_generator_segments": 10,
   "independent_evaluation_generator_segments": 80,
   "enumeration": "all 4! one-to-one mappings plus deterministic co-location and two-bus concentration controls crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
-  "profile_checksum": "0469e33c0fd6b806b92c57eb496a7b901f60db1dfdbe018b80a24cf6cc0c7818",
+  "profile_checksum": "7bf18b89e07e3ad542335838e7fc4e58fab9a6ad1b05e28e3bfdb9bf700ba05f",
   "expected_rows": 16848,
   "parallel_workers": 9
 }

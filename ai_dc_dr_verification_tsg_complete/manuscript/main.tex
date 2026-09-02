@@ -34,14 +34,15 @@ an event or distinguish local reduction from spatial rebound. This paper
 develops an auditable submit--execute--settle verifier that carries a declared
 workload state into signed nodal settlement. A sparse cumulative program and an
 exact job-indexed start-time model enforce release, allocation runtime, energy,
-graphics-processing-unit (GPU) nameplate, contiguity, and regional-capacity
+graphics processing unit (GPU) nameplate, contiguity, and regional-capacity
 constraints. A validation-fitted simplex uses total and daily
 conditional-value-at-risk (CVaR) budgets; a submission-masked gate and a
-fixed/flexible power-conversion certificate keep execution telemetry out of
-contract formation. On the locked 54-day
-mechanism-isolation panel, the total-plus-daily-CVaR profile attains nRMSE
-0.323, false credit 1.791 MWh/day, and \(F_1=0.452\); the total-only fit
-reaches 0.314, 1.809 MWh/day, and 0.470, making the accuracy--credit
+fixed/flexible power-conversion certificate keep locked event-execution
+telemetry out of contract formation. On the locked 54-day
+mechanism-isolation panel, the total-plus-daily-CVaR profile attains
+normalized root-mean-square error (nRMSE) 0.324, false credit 1.787 MWh/day,
+and F1 score \(F_1=0.451\); the total-only fit
+reaches 0.318, 1.795 MWh/day, and 0.464, making the accuracy--credit
 trade-off explicit rather than hiding it in an aggregate score. The complete
 scheduler population has 75,326
 submissions and 71,128 post-event execution matches; its indexed witness
@@ -62,8 +63,9 @@ demand response, security-constrained dispatch, nodal settlement.
 The growth of large-model training and inference is converting data centers
 from nearly static industrial loads into large, software-defined grid
 resources. Interactive inference is latency constrained, elastic inference can
-be delayed briefly, and batch graphics-processing-unit (GPU) work can be deferred for hours or migrated
-between regions. These capabilities enable demand response (DR), but they also
+be delayed briefly, and batch GPU work can be deferred for hours or migrated
+between regions. These capabilities enable
+demand response (DR), but they also
 invalidate the usual interpretation of a meter decrease. A reduction at one
 facility can be followed by delayed consumption or simultaneous rebound at
 another node. Paying the positive local decrease can therefore reward a
@@ -215,12 +217,12 @@ declared service entitlement, \(s_j\) its submit-time scenario region, and
 \(u_{j\tau}\) is the amount of energy assigned to job \(j\) in interval
 \(\tau\). To make the witness executable, service is a single contiguous
 fixed-rate block. Define \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\dt\),
-\(K_j=\lceil\widehat E_j/c_j\rceil\), and
-\(q_j=\widehat E_j-(K_j-1)c_j\). For each admissible start
+\(K_j=\lceil\widehat E_j/c_j\rceil\), and the terminal-slot remainder
+\(e_j^{\rm rem}=\widehat E_j-(K_j-1)c_j\). For each admissible start
 \(\theta\in\Theta_j=\{r_j,\ldots,d_j-K_j\}\), a binary \(z_{j\theta}\)
 selects one block. With
 \(u^{j\theta}_{\tau}=c_j\mathbf1\{\theta\leq\tau<\theta+K_j\}
--(c_j-q_j)\mathbf1\{\tau=\theta+K_j-1\}\), the exact start-time MILP is
+-(c_j-e_j^{\rm rem})\mathbf1\{\tau=\theta+K_j-1\}\), the exact start-time MILP is
 \begin{equation}
 \begin{aligned}
  &\sum_{\theta\in\Theta_j}z_{j\theta}=1,\qquad z_{j\theta}\in\{0,1\},\\
@@ -433,14 +435,17 @@ generator-segment cost in (\ref{eq:sced}), and $V(p)$ denotes the network
 dispatch value. Thus (\ref{eq:projection}) changes the objective, not the
 physical feasible set.
 Six globally solved schedules $p^{(\ell)}$ share identical arrivals and
-constraints. Their validation-only convex combination
-$\bar p=\sum_\ell\alpha_\ell p^{(\ell)}$, $\alpha\geq0$,
+constraints. A seventh matched-information feasible-quantile projection is
+retained as an external transfer comparator and is included in the
+validation-only hull. Their convex combination
+$\bar p=\sum_{\ell=1}^{7}\alpha_\ell p^{(\ell)}$, $\alpha\geq0$,
 $\mathbf1^\top\alpha=1$, remains feasible because the common scheduling set is
 convex.
 
-The coefficients minimize validation squared error subject to both total and
-daily-tail mechanism-isolation false-credit budgets, where conditional value
-at risk (CVaR) measures the latter \cite{rockafellar2000cvar}. Let
+The convex fit minimizes validation squared error plus the additive normalized
+exposure terms below, subject to total and daily-tail mechanism-isolation
+false-credit budgets; conditional value at risk (CVaR) measures the latter
+\cite{rockafellar2000cvar}. Let
 $\ell^\star$ be the single candidate with minimum worst contiguous-fold nRMSE
 and define $B_j^{\rm cap}=F_j^{(\mathrm{sim})}(\ell^\star)$, where
 $F_j^{(\mathrm{sim})}$ is obtained from the explicit submitted-minus-true
@@ -474,8 +479,13 @@ constraint remains in absolute MW-slot units. This epigraph is never substituted
 $p^{\rm con}$ in (\ref{eq:meter_cap}). The explicit epigraph in
 (\ref{eq:riskepigraph}) is the implementation used in all reported fits.
 Together with the simplex equality, box bounds on $\alpha$, and the total
-budget in (\ref{eq:totalrisk}), these are linear constraints and the squared
-error objective is a convex quadratic program. HiGHS first supplies a feasible
+budget in (\ref{eq:totalrisk}), these are linear constraints. Fits that retain
+an axis also include its predeclared normalized exposure term in the additive
+objective: total false-credit exposure and daily CVaR are normalized
+by their reference values and assigned equal weight. This convex preference
+keeps the two-axis fit identifiable when a hard row is slack; the corresponding
+single-axis ablations remove the omitted preference along with its constraint.
+The resulting objective is a convex quadratic program. HiGHS first supplies a feasible
 epigraph point; the full epigraph is then solved with a sparse primal--dual
 trust-region method. The returned stationarity residual, every linear
 epigraph residual, the simplex equality, and all bound residuals are recomputed
@@ -732,7 +742,9 @@ schedule remains an independent transfer comparator.
  contractual cap profile is denoted $p^{\rm cap}=p^{(\ell^\star)}$, where
  $\ell^\star$ is selected by contiguous validation nRMSE; the independent
  payment-target profile $p^{\rm pay}$ is selected separately by validation
- payment error and is used only as the target of the certificate. For a
+ payment error and is used only as the target of the certificate. Let
+ $p^{\rm cert}=p^\alpha$ denote the profile returned by the lexicographic
+ solution of (\ref{eq:paymentcert}). For a
  realized counterfactual value, define
  $\Delta V_\xi(p)=V_{N-1}(p,\xi)-V_{N-1}(p^{1,\xi})$ and the continuous
  segment $p_\theta=(1-\theta)p^{\rm cap}+\theta p^{\rm cert}$,
@@ -871,10 +883,11 @@ projection, and \RiskSafe. \PaymentSafe{} is evaluated separately in
 Experiments~9 and 15 because its hull and N--1 objective differ. Feature
 equality is audited while execution truth is withheld. Deferral windows are
 0, 4, and 512 slots; each declared region has a 118-MW flexible nameplate and
-a 6-MW fixed facility component. Six
-projection penalties and four risk reserves are validation-only, selected by
-nested contiguous folds before the locked split; four committed-response
-weights are fitted on earlier validation days. The gate commits 5 MWh, and
+a 6-MW fixed facility component. Six projection penalties and four risk
+reserves are validation-only, selected by nested contiguous folds before the
+locked split; normalized total-exposure and daily-CVaR preferences are fixed
+before the split, and four committed-response weights are fitted on earlier
+validation days. The gate commits 5 MWh, and
 payment is scored by an independent 40-segment evaluator. Moving three-day
 bootstrap replicates and all $2^{18}$ block-sign assignments use Holm correction
 \cite{kunsch1989bootstrap,holm1979multiple}. Sparse-system size grows from
@@ -919,17 +932,16 @@ giving a false-credit ratio of 0.802. The profitable region follows the derived
 marginal boundary and does not use a fitted classifier; the complete grid and
 its phase diagram are retained in the experiment output.
 
-Experiment 2 evaluates twelve methods on the locked 54-day panel
-(Table~\ref{tab:base}).
-The joint total-plus-daily-CVaR fit gives nRMSE/$F_1$/false credit
-0.323/0.452/1.791 MWh/day; total-only gives 0.314/0.470/1.809 and CVaR-only
-gives 0.323/0.452/1.791. The tail row binds (ratio slack
-$1.8\times10^{-8}$), whereas the total row retains 4.77 MW-slot slack. This
-removes 0.018 MWh/day of false credit at a small accuracy cost relative to
-total-only. Single projection gives 0.339/0.418/1.823, and removing both risk
-constraints gives 0.297/0.522/3.241. On validation, joint/CVaR-only and
-total-only give 0.426/0.432/3.153 and 0.414/0.459/3.227, respectively; the
-payment-contract cap is stored separately from this accuracy--credit trade-off.
+Experiment~2 evaluates twelve methods on the locked 54-day panel
+(Table~\ref{tab:base}). Joint total-plus-daily-CVaR gives
+nRMSE/$F_1$/false credit 0.324/0.451/1.787 MWh/day; total-only and CVaR-only
+give 0.318/0.464/1.795 and 0.323/0.452/1.791. The CVaR row binds (ratio slack
+$1.8\times10^{-8}$), the total row retains 5.55 MW-slot slack, and the joint
+simplex differs from CVaR-only by $L_\infty=2.95\times10^{-2}$. Single
+projection gives 0.339/0.418/1.823, whereas the unconstrained fit gives
+0.297/0.521/3.241. Validation joint/CVaR-only/total-only values are
+0.427/0.430/3.141, 0.426/0.432/3.153, and 0.418/0.449/3.177; the payment
+contract cap is separate from this accuracy--credit trade-off.
 
 \begin{table}[t]
 \centering
@@ -951,15 +963,15 @@ Ex-post Quantile Gradient Boosting & 0.932 & 23.144 & 6.085 & 0.533\\
 Synthetic Control & 2.598 & 104.998 & 7.877 & 0.202\\
 Feasible Quantile Projection & 0.301 & 2.811 & 10.772 & 0.519\\
 Single Feasible Projection & 0.339 & 1.823 & 13.537 & 0.418\\
-Tail-Risk Feasible Counterfactual & 0.296 & 2.521 & 10.864 & 0.518\\
-\textbf{Risk-Constrained Convex Verifier} & \textbf{0.323} & \textbf{1.791} & \textbf{12.928} & \textbf{0.452}\\
+Tail-Risk Feasible Counterfactual & 0.323 & 1.791 & 12.928 & 0.452\\
+\textbf{Risk-Constrained Convex Verifier} & \textbf{0.324} & \textbf{1.787} & \textbf{12.948} & \textbf{0.451}\\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
 The independent trace-meter replay is a complementary deployment check:
-event-window MAE is 2.673/2.810/2.988 MW for feasible quantile/\TailRisk/\RiskSafe
+event-window MAE is 2.673/2.873/2.878 MW for feasible quantile/\TailRisk/\RiskSafe
 on the same 54 locked days (three-day block intervals in Experiment~20). It
 measures closed-DCGM alignment and remains separate from the
 mechanism-isolation response panel.
@@ -1034,64 +1046,57 @@ non-islanding outages: trace/workload MAE is
 \$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955 for
 base exact/N--1 linear/N--1 exact, with 1.000 p.u. maximum loading.
 
-The complete replay scope is summarized in Table~\ref{tab:security}.
+Table~\ref{tab:security} summarizes the complete replay scope.
 
 Experiment~9 tests (\ref{eq:paymentdominance}) on 54 global programs with a
-validation-frozen seven-profile hull. Contiguous-fold nRMSE selects the cap,
-whereas validation N--1 MAE independently selects the payment target. The
-held-out factors are $q_{01}=0.537$, $q_{10}=0.669$, $q_{50}=0.924$,
-$q_{90}=1.410$, and $q_{99}=4.756$; every certificate violation is below
-$9\times10^{-9}$ USD. For PaymentSafe, single, feasible-quantile, and RiskSafe,
-q50 MAE/overpayment is
-\$41.793/34.978/36.587/35.173 and \$1.747/4.587/4.130/4.517 USD/day, whereas
-q99 is \$217.497/182.676/191.267/183.912 and \$9.450/24.695/22.242/24.369.
-The paired Pareto file reports moving-block 95\% intervals for error and
-overpayment against every comparator, keeping the cap certificate distinct
-from any universal MAE claim.
+validation-frozen seven-profile hull; contiguous-fold nRMSE selects the cap and
+validation N--1 MAE selects the payment target. Held-out factors are
+$q_{01}=0.537$, $q_{10}=0.669$, $q_{50}=0.924$, $q_{90}=1.410$, and
+$q_{99}=4.756$; every certificate violation is below $9\times10^{-9}$ USD.
+For PaymentSafe/single/feasible-quantile/RiskSafe, q50 MAE/overpayment is
+\$41.793/34.978/36.587/35.173 and \$1.747/4.587/4.130/4.517; q99:
+{\scriptsize \$217.497/182.676/191.267/183.912; \$9.450/24.695/22.242/24.369}. The
+paired Pareto file reports moving-block 95\% intervals against every
+comparator, keeping the cap certificate distinct from a universal MAE claim.
 Experiment~15 retains $q_{01}=0.5367$ and $q_{99}=4.7557$; the fixed/flexible
-conversion (\ref{eq:fixedflexconversion}) activates both raw endpoints in
-the q99-calibrated payment-network model without clipping, while 0.8901 is a
-separate planning diagnostic. Unseen
-0.80/1.20 MAE is \$9.303/\$13.958 (payment) and \$9.841/\$14.764
-(feasible quantile), with neither factor certified; all stress panels use the
-same declared resource semantics.
+conversion (\ref{eq:fixedflexconversion}) activates both raw endpoints in the
+q99-calibrated model without clipping, while 0.8901 is a planning diagnostic.
+Unseen 0.80/1.20 MAE is \$9.303/\$13.958 (payment) and \$9.841/\$14.764
+(feasible quantile), with neither factor certified; stress panels share the
+declared resource semantics.
 
-Experiment 10 replaces the linear network with AC OPF
+Experiment~10 replaces the linear network with AC OPF
 \cite{zimmerman2011matpower}: all 864 connected-base and 5,400 corrective
-IEEE-9/14 cells are feasible, while its IEEE-9 shared-plan panel has zero
+IEEE-9/14 cells are feasible, and the IEEE-9 shared-plan panel has zero
 active-plan deviation over 3,888 cells (0.880/0.907/0.935 p.u. at 3/6/9\%).
-Experiment 18 extends this test to four networks and 9,648 admissible outages
-over six snapshots, with zero voltage violation and maximum loading 1.000 p.u.
-Experiment 11 averages 26 regional assignments over three
-penetrations, four counterfactuals, and 54 days; RiskSafe/single/feasible-
-quantile MAE is \$105.250/\$211.555/\$315.490 and \$81.613/\$164.249/\$244.481
-per day. Experiment 16 audits 44,391/50,791 chronological training/test
-GPU-power observations (MAE 13.023 W, RMSE 19.137 W, $R^2=0.8331$);
-Experiment 12 reports
-event-window MAE \$26.937/\$15.969/\$5.325/\$5.325 and complete-cycle
-residual \$0.621/\$0.607/\$0/\$0 for feasible-quantile, payment-certified,
-RiskSafe, and single projection. The latter zero residuals are LP-precision
-accounting certificates, while event-window error remains the predictive test;
-all 54 contracts activate. All reported security cells are complete declared
-sets, not selected contingency subsets.
+Experiment~18 extends this to four networks and 9,648 admissible outages over
+six snapshots, with zero voltage violation and maximum loading 1.000 p.u.
+Experiment~11 averages 26 assignments over three penetrations, four
+counterfactuals, and 54 days; 3/6/9\% MAE is
+\$101.624/\$204.300/\$304.603 for RiskSafe, \$105.250/\$211.555/\$315.490 for
+single, and \$81.613/\$164.249/\$244.481 for feasible quantile per day.
+Experiment~16 audits 44,391/50,791 chronological training/test GPU-power
+observations (MAE 13.023 W, RMSE 19.137 W, $R^2=0.8331$); Experiment~12 reports
+event-window MAE \$26.937/\$15.969/\$5.325/\$5.325 and complete-cycle residual
+\$0.621/\$0.607/\$0/\$0 for feasible-quantile, payment-certified, RiskSafe, and
+single projection. The zero residuals are LP-precision accounting certificates;
+event-window error is predictive, all 54 contracts activate, and security sets
+are complete declared sets.
 
 \subsection{Independent trace and deployment-boundary audits}
 
 Immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
 100\% coverage and a 71,128-job residual below $10^{-17}$ MWh; no utility
-event label is available, and trace-meter MAE is 2.988 MW (2.673 for feasible
+event label is available. Trace-meter MAE is 2.988 MW (2.673 for feasible
 quantile). Experiment 23 uses a submission-masked ledger, predeclared tariff,
-and independent LP with no target, envelope, hull, or verifier output. Over 54
+and an independent LP with no target, envelope, hull, or verifier output. Over 54
 locked days, gate/independent responses score nRMSE 2.606/1.712, false credit
 145.506/30.036 MWh/day, and $F_1=0.358/0.054$ (Table~\ref{tab:decision});
 their nonzero trajectory differences certify information separation. Validation
 selects \$10/MWh, weight 1.0, and a 20-MWh/day budget; $\eta=0.60$ is planning-only.
-Experiment 18 adds 9,648 fixed-active-plan AC-OPF outcomes at load multiplier
-0.90 with zero voltage violation and maximum loading 1.000000 p.u.
-
 \begin{table}[t]
 \centering
-\caption{Information-boundary and locked response certificates (54-day means). The independent policies use a submission-masked ledger, distinct tariffs, and no verifier output; the rows therefore test contract/response separation rather than a field treatment effect.}
+\caption{Information-boundary response certificates (54-day means). The two independent policies use a submission-masked ledger; the complete-ledger row is mechanism isolation.}
 \label{tab:decision}
 \footnotesize
 \resizebox{\columnwidth}{!}{%
@@ -1145,7 +1150,7 @@ all feasible at 1.000000 p.u. (Table~\ref{tab:jobcounterfactual}).
 
 \begin{table}[t]
 \centering
-\caption{Exact indexed job-level counterfactual and binding-capacity certificates.}
+\caption{Exact indexed job-level and binding-capacity certificates.}
 \label{tab:jobcounterfactual}
 \scriptsize
 \begin{tabular}{@{}p{0.58\columnwidth}p{0.32\columnwidth}@{}}
@@ -1168,13 +1173,13 @@ Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 
 This paper couples a provenance-bound workload verifier to signed nodal
 settlement. The validation-fitted total-plus-daily-CVaR profile reaches
-nRMSE/false credit/$F_1=0.323/1.791/0.452$ MWh/day, while the slot-60 replay
+nRMSE/false credit/$F_1=0.324/1.787/0.451$ MWh/day, while the slot-60 replay
 uses only committed declarations (Table~\ref{tab:decision}). The indexed
 witness contains 13,198,247 admissible contiguous starts over 75,326
 submissions, gives 0.194 MWh net reduction with zero rebound, and passes the
 typed RTS-24 N--1 coupling certificate. A 79-job cohort binds 0.0006648 MW
-while meeting the 0.004-MWh floor; fixed demand remains outside conversion, so
-raw \(q_{99}\) is auditable and the capacity-proportional scale is explicitly a
+while meeting the 0.004-MWh floor; fixed demand stays outside conversion, so
+raw \(q_{99}\) remains auditable and the capacity-proportional scale is a
 stress transform. Deployment requires signed co-located telemetry and topology
 access; causal utility validation remains external.
 

@@ -1741,6 +1741,22 @@ def run_audit(
         root
         / "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv"
     ).iloc[0]
+    risk_ablation_weights = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_module_ablation_weights.csv"
+    )
+    weight_columns = [
+        column
+        for column in risk_ablation_weights.columns
+        if column.startswith("weight_")
+    ]
+    cvar_weights = risk_ablation_weights.loc[
+        risk_ablation_weights["ablation"] == "CVaR-only ensemble", weight_columns
+    ]
+    joint_weights = risk_ablation_weights.loc[
+        risk_ablation_weights["ablation"] == "total+CVaR ensemble", weight_columns
+    ]
     _check(
         bool(
             risk_certificate["optimizer_success"] == 1
@@ -1765,11 +1781,25 @@ def run_audit(
                 "risk_budget_mw_slots"
             ]
             + 1e-7
+            and float(risk_certificate.get("total_objective_weight", 0.0)) > 0.0
+            and len(cvar_weights) == 1
+            and len(joint_weights) == 1
+            and bool(
+                np.max(
+                    np.abs(
+                        joint_weights.to_numpy(dtype=float)[0]
+                        - cvar_weights.to_numpy(dtype=float)[0]
+                    )
+                )
+                > 1.0e-6
+            )
         ),
         "risk_constrained_validation_dominance",
         (
             "convex verifier has no larger validation MSE and satisfies both "
-            "total and daily-tail CVaR false-credit budgets"
+            "total and daily-tail CVaR false-credit budgets; its normalized "
+            "total-exposure preference makes the joint fit distinct from the "
+            "CVaR-only ablation"
         ),
         checks,
     )

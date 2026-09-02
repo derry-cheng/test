@@ -194,13 +194,13 @@ the committed job ledger by source, class, and native destination as
 \(\mathcal J_{skd}\). For job \(j\), let \(u_{j\tau}\) be its service energy in
 an admissible interval \(r_j\leq\tau<d_j\). The executable witness first
 defines \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\),
-\(K_j=\lceil\widehat E_j/c_j\rceil\), and
-\(q_j=\widehat E_j-(K_j-1)c_j\). A binary \(z_{j\theta}\) selects exactly one
+\(K_j=\lceil\widehat E_j/c_j\rceil\), and the terminal-slot remainder
+\(e_j^{\rm rem}=\widehat E_j-(K_j-1)c_j\). A binary \(z_{j\theta}\) selects exactly one
 \(\theta\in\{r_j,\ldots,d_j-K_j\}\), and
 \[
 u_{j\tau}=\sum_{\theta}z_{j\theta}
 \left[c_j{\bf1}\{\theta\leq\tau<\theta+K_j\}
--(c_j-q_j){\bf1}\{\tau=\theta+K_j-1\}\right].
+-(c_j-e_j^{\rm rem}){\bf1}\{\tau=\theta+K_j-1\}\right].
 \]
 Thus each submitted job has one contiguous fixed-rate block and an exact
 terminal-slot remainder. The regional reconstruction is
@@ -311,19 +311,23 @@ Thus \(z_{dt}=|p_{dt}(x)-\tilde p_{dt}|\) at optimum. Absolute-value
 epigraphs and convex feasible sets are standard convex-optimization constructions
 \cite{boyd2004convex}; their use to regularize a workload counterfactual is the
 method proposed here. Six globally optimal schedules share the same arrivals and
-linear feasible set. Validation selects
+linear feasible set. Validation selects the single feasible reference by its
+worst contiguous-fold error,
 
 \[
-\min_{\alpha}\sum_{(d,t)\in\mathcal V}
-\left(\sum_{\ell=1}^{6}\alpha_\ell
-p_{dt}^{(\ell)}-p_{dt}^{\mathrm{obs}}\right)^2,
-\quad
-\alpha_\ell\geq0,\quad\sum_\ell\alpha_\ell=1.
+\ell^\star=\arg\min_{\ell\in\{1,\ldots,6\}}
+\max_{b\in\mathcal B}\operatorname{nRMSE}_{b,\ell}.
 \]
 
+The risk fit below uses a separate coefficient vector over the six schedules
+and the matched-information feasible-quantile projection; the selected single
+reference is used only to define its risk budgets and contractual cap.
+
 Let \(\ell^\star\) denote the single feasible candidate that minimizes the
-worst contiguous-fold validation nRMSE. For validation sample \(n\), define the
-maximum non-false-credit baseline
+worst contiguous-fold validation nRMSE. The six metadata projections and the
+matched-information feasible-quantile projection form a seven-profile
+validation hull; the latter remains an external transfer comparator. For
+validation sample \(n\), define the maximum non-false-credit baseline
 
 \[
 c_n=\max\{p_n^{\mathrm{obs}},p_n^{1,\mathrm{sim}}\}
@@ -341,11 +345,24 @@ For a reserve fraction \(\beta\in(0,1]\), the proposed
 risk-constrained ensemble solves
 
 \[
-\min_{\alpha,u}\;
-\sum_n\left(\sum_{\ell=1}^{6}\alpha_\ell p_n^{(\ell)}
+\begin{aligned}
+\min_{\alpha,u,\nu,\zeta}\quad&
+\frac{1}{|\mathcal V|}\sum_n
+\left(\sum_{\ell=1}^{7}\alpha_\ell p_n^{(\ell)}
 -p_n^{\mathrm{obs}}\right)^2
-+\epsilon\lVert\alpha\rVert_2^2
++\epsilon\lVert\alpha\rVert_2^2\\
+&+\omega_T\frac{\sum_n u_n}{\sum_j B_j^{\mathrm{ref}}}
++\omega_C\frac{\nu+\frac{1}{(1-\gamma)J}\sum_j\zeta_j}
+{\operatorname{CVaR}_{\gamma}(\widetilde B^{\mathrm{ref}})} .
+\end{aligned}
 \]
+
+Here \(\gamma=0.75\), and the normalized exposure preferences use the
+predeclared equal weights \(\omega_T=\omega_C=0.50\) whenever the corresponding
+axis is retained. The total-budget-only and CVaR-only ablations remove the
+omitted axis's preference together with its constraint. These dimensionless
+weights are fixed before the train/validation/test split and are not tuned on
+locked outcomes.
 
 subject to
 
@@ -379,6 +396,11 @@ where \(\epsilon_E\) is a predeclared numerical floor. The denominators are
 computed before the locked split and are not estimated from test outcomes.
 
 \[
+\widetilde F_j(\alpha)-\nu-\zeta_j\leq0,\qquad
+\nu\geq0,\quad \zeta_j\geq0.
+\]
+
+\[
 \operatorname{CVaR}_{0.75}\!\left(\widetilde F_j(\alpha)\right)
 \leq
 \beta\operatorname{CVaR}_{0.75}\!\left(\widetilde B_j^{\mathrm{ref}}\right).
@@ -389,12 +411,13 @@ daily false-credit ratio; the two constraints are dimensionally distinct.
 
 The empirical conditional-value-at-risk representation and its convexity follow
 \cite{rockafellar2000cvar}; positive-part epigraphs follow
-\cite{boyd2004convex}. Four pre-declared reserve fractions are evaluated only in
-contiguous validation folds. A reserve is admissible only if every held-out fold
-has no greater total false-credit exposure than the selected single projection;
-the admissible reserve with the smallest worst-fold normalized error is refitted
-on all validation days. An infeasible reserve is recorded and cannot be
-selected. Convex-set closure
+\cite{boyd2004convex}. Three pre-declared total-reserve fractions and a separate
+four-point tail-reserve sensitivity are evaluated without locked-test outcomes.
+An admissible total reserve must satisfy the declared total and daily-tail
+constraints on each contiguous training fold; the admissible reserve with the
+smallest worst-fold normalized error is then refitted on all validation days,
+with any pooled feasibility adjustment restricted to the predeclared grid.
+An infeasible reserve is recorded and cannot be selected. Convex-set closure
 \cite{boyd2004convex} proves that
 \(\bar x=\sum_\ell\alpha_\ell x^{(\ell)}\) preserves every workload constraint.
 The final numerical certificate separately verifies total exposure, daily-tail
@@ -419,9 +442,9 @@ gives samplewise and daily
 
 Thus the final schedule is both workload feasible and deterministically
 noninferior in false-credit MWh to the independent single projection, relative
-to that selected workload-feasible reference. The
-six-point penalty grid and reserve grid are pre-declared experimental design
-choices, not externally sourced physical laws.
+to that selected workload-feasible reference. The six-point penalty grid, the
+matched quantile comparator, and the reserve grids are pre-declared
+experimental design choices, not externally sourced physical laws.
 
 ## E. DC and complete N--1 security-constrained economic dispatch
 
