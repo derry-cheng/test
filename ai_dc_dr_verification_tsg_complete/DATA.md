@@ -61,8 +61,8 @@ a precommitted 96-slot queue allowance; the unlimited sentinel is mapped to a
 precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
 MW/GPU nameplate provides the per-slot service bound. The observed scheduler
 completion interval is retained only for the independent native replay and
-never defines the counterfactual deadline or power cap. The resulting witness
-contains 13,198,247 admissible job--slot starts and is solved as an exact
+never defines the counterfactual deadline or power cap. The indexed model
+enumerates 13,198,247 admissible job--slot starts and is solved as an exact
 contiguous fixed-rate start-time witness: one binary start is selected for
 each submitted job and the terminal slot is fractional only to meet the exact
 declared entitlement. Experiment 25 solves the same start-time model with a

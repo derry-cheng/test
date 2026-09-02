@@ -1,8 +1,9 @@
 # Revision log — C1–C5 closure
 
 The current branch closes the five critical review issues with executable
-checks. The indexed witness is reconstructed from all 13,198,247 admissible
-job–slot starts over the complete 75,326-record scheduler population;
+checks. The indexed model enumerates 13,198,247 admissible job–slot starts over
+the complete 75,326-record scheduler population; the selected witness activates
+one start per submitted job and is reconstructed before network valuation;
 job-energy, regional aggregation, region-to-bus mapping,
 GPU-nameplate, and site-capacity residuals are checked before network dispatch.
 The deployment panel now includes an independently generated controlled-event

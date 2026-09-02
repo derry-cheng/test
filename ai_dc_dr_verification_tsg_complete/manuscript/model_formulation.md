@@ -215,9 +215,10 @@ p^{\rm job}_{d\tau}
 
 The exact flow used for the workload certificate is therefore
 \(x_{skd\tau}=x^{\rm job}_{skd\tau}\), with the same release, deadline,
-capacity, and terminal constraints. Experiment 19 stores the complete
-job--slot service vector; Experiment 22 reconstructs \(p^{\rm job}\) from that
-vector (13,198,247 admissible starts over 75,326 submissions) and checks its maximum residual against the saved aggregate profile
+capacity, and terminal constraints. Experiment 19 stores the selected
+job--slot service vector from a model that enumerates 13,198,247 admissible
+starts over 75,326 submissions; Experiment 22 reconstructs \(p^{\rm job}\) from
+that selected vector and checks its maximum residual against the saved aggregate profile
 before any dispatch is solved. The network value is consequently attached to
 the committed indexed witness, not to a second aggregate optimization. The
 network replay uses the arithmetic mean of every declared event slot solely as

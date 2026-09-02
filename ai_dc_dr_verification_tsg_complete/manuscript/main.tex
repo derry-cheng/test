@@ -45,8 +45,9 @@ and F1 score \(F_1=0.451\); the total-only fit
 reaches 0.318, 1.795 MWh/day, and 0.464, making the accuracy--credit
 trade-off explicit rather than hiding it in an aggregate score. The complete
 scheduler population has 75,326
-submissions and 71,128 post-event execution matches; its indexed witness
-contains 13,198,247 job--slot starts with an energy residual below
+submissions and 71,128 post-event execution matches; the indexed model
+enumerates 13,198,247 admissible job--slot starts, while its selected witness
+activates one start per submission with an energy residual below
 \(10^{-15}\) MWh. A binding 79-job declaration panel remains feasible under a
 0.0006648-MW regional cap, and the coupled witness is replayed over all 37
 finite RTS-24 contingencies. Fixed facility demand is separate and the raw
@@ -1132,8 +1133,9 @@ Corrective/all-outage AC & 864+5,400; 31,968 solves; all feasible\\
 
 Experiment 19 assigns one exact contiguous start block to each of the 75,326
 valid submissions. The declaration window, 0.001-MW/GPU bound, regional
-entitlement, and 118-MW capacity yield 13,198,247 admissible starts with typed
-residuals; native/counterfactual event energy is 0.194/0 MWh, with zero
+entitlement, and 118-MW capacity define 13,198,247 admissible start choices;
+the selected witness has typed residuals, native/counterfactual event energy
+of 0.194/0 MWh, with zero
 job-energy residual and 29.486 MWh minimum site slack
 (Table~\ref{tab:jobcounterfactual}). Experiment~22 replays this witness over
 1,056 event slots and all finite RTS-24 outages, obtaining
@@ -1174,9 +1176,10 @@ Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 This paper couples a provenance-bound workload verifier to signed nodal
 settlement. The validation-fitted total-plus-daily-CVaR profile reaches
 nRMSE/false credit/$F_1=0.324/1.787/0.451$ MWh/day, while the slot-60 replay
-uses only committed declarations (Table~\ref{tab:decision}). The indexed
-witness contains 13,198,247 admissible contiguous starts over 75,326
-submissions, gives 0.194 MWh net reduction with zero rebound, and passes the
+uses only committed declarations (Table~\ref{tab:decision}). The indexed model
+enumerates 13,198,247 admissible contiguous starts over 75,326 submissions;
+the selected witness activates one contiguous start per submission, gives
+0.194 MWh net reduction with zero rebound, and passes the
 typed RTS-24 N--1 coupling certificate. A 79-job cohort binds 0.0006648 MW
 while meeting the 0.004-MWh floor; fixed demand stays outside conversion, so
 raw \(q_{99}\) remains auditable and the capacity-proportional scale is a
