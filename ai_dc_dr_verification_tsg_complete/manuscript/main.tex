@@ -325,8 +325,14 @@ Q^{\rm pay}=\dt\sum_{d,t\in\mathcal E}
 Equation (\ref{eq:meter_cap}) uses only the submitted baseline, frozen contract,
 and closed meter. The trace-anchored $p^0$ is an offline over/underpayment
 diagnostic and never enters fitting, gate decisions, workload optimization, or
-transfer formation. The study reports gross, payable, oracle over/underpayment,
-nRMSE, bias, precision, recall, and $F_1$.
+transfer formation. On locked event slots,
+\(\mathrm{nRMSE}=\sqrt{N_E^{-1}\sum_n(\widehat p^0_n-p^0_n)^2}/
+\max\{N_E^{-1}\sum_n p^0_n,\epsilon\}\), while bias is the signed mean baseline
+error. With \(M=\sum_n\min\{\widehat r_n,r_n\}\), precision \(P\), recall \(R\),
+and \(F_1\) are \(M/\max\{\sum_n\widehat r_n,\epsilon\}\),
+\(M/\max\{\sum_n r_n,\epsilon\}\), and
+\(2PR/\max\{P+R,\epsilon\}\), where \(N_E\) is the number of region--slot
+samples. All sums use the same MW/MWh conversion \(\dt\).
 
 \subsection{Strategic reference scheduling}
 
@@ -385,29 +391,21 @@ positive-only truncation is applied.
 
 \subsection{Model-based framework and matched-information pre-estimation}
 
-The state, power, and network equations in Section~\ref{sec:model} are the
-first stage of the methodology: they define the feasible workload state before
-any statistical target or payment is formed. Fig.~\ref{fig:framework} shows the
-complete chain. Meter history and the
-submitted-job ledger enter a statistical pre-estimator and the workload
-feasible set in parallel. The pre-estimator never receives execution energy
-used as scoring truth. For each event day, it uses only the information
-available under one of two declared protocols: lagged meter/calendar features
-for online baselines, or the complete submitted ledger for equally informed
-post-event comparisons. Ridge regression and gradient boosting are used as
-standard matched-information comparators \cite{hoerl1970ridge,friedman2001gradient};
-extremely randomized trees and synthetic control provide two additional
-nonlinear and donor-pool comparators \cite{geurts2006extratrees,abadie2010synthetic}.
-Two stronger comparators are also solved: median-loss gradient boosting with
-the complete submitted ledger and a nonnegative synthetic control whose
-weights globally minimize pre-event absolute error over 28 donor days.
-To separate the effect of projection from that of pre-estimation, the
-complete-ledger quantile output is also passed through the same exact
-workload-feasible projection, with its penalty chosen by contiguous
-validation folds.
-The same scheduler declaration view is supplied to the post-event learner, the
-selected single projection, and the proposed convex verifier; execution energy
-and completion timestamps are withheld until the locked scoring pass.
+The state, power, and network equations in Section~\ref{sec:model} define the
+feasible workload state before any statistical target or payment is formed;
+Fig.~\ref{fig:framework} shows the chain. Meter history and the submitted-job
+ledger enter the pre-estimator and feasible set in parallel, while execution
+energy remains scoring-only. Each event day follows either a lagged
+meter/calendar protocol for online baselines or a complete-ledger protocol for
+equally informed post-event comparisons. Ridge and gradient boosting are
+standard comparators \cite{hoerl1970ridge,friedman2001gradient}; extremely
+randomized trees and synthetic control provide additional baselines
+\cite{geurts2006extratrees,abadie2010synthetic}. Median-loss boosting and
+nonnegative donor weighting are also solved. The
+complete-ledger quantile output receives the same exact feasible projection,
+with its penalty selected by contiguous folds. All post-event comparators share
+the scheduler declaration view, and execution energy/completion timestamps
+remain withheld until locked scoring.
 
 \begin{figure*}[t]
 \centering
@@ -455,7 +453,25 @@ $E_j=\max\{\sum_{n\in j}r_n^{(\mathrm{sim})},\epsilon_E\}$ be the
 validation credited-energy denominator and write
 $\widetilde F_j=F_j/E_j$ and $\widetilde B_j^{\rm cap}=B_j^{\rm cap}/E_j$.
 The fixed denominators precede the locked split; the observed-meter source is
-audited separately. For reserve $\beta\in(0,1]$,
+audited separately. For reserve $\beta\in(0,1]$, the exact validation program is
+\begin{equation}
+\begin{aligned}
+\min_{\alpha,f,\nu,u}\quad
+&\frac{\left\|\bar p-\widetilde p\right\|_2^2}{N s_p^2}
+ +\lambda\|\alpha\|_2^2
+ +\omega_T\frac{\sum_j F_j}{S_T}\\[-2pt]
+&\hspace{1.5em}+\omega_C\frac{\nu+m^{-1}\sum_j u_j}{S_C},
+\end{aligned}
+\label{eq:riskobjective}
+\end{equation}
+where $F_j=\sum_{n\in j}f_n$, $m=\lceil(1-\gamma)J\rceil$, and
+\(s_p^2=\max\{N^{-1}\|\widetilde p\|_2^2,\epsilon\}\).
+The exposure scales are \(S_T=\max\{\sum_jB_j^{\rm cap},\epsilon\}\) and
+\(S_C=\max\{{\rm CVaR}_{\gamma}(\widetilde B_j^{\rm cap}),\epsilon\}\).
+The corresponding $\omega_T$ or $\omega_C$ term is omitted in a single-axis
+ablation; the locked joint fit fixes
+$\omega_T=\omega_C=0.50$, $\gamma=0.75$, and $\lambda=10^{-8}$ before the
+held-out split. The risk-budget constraints are
 \begin{align}
  \sum_jF_j^{(\mathrm{sim})}(\alpha)&\leq\beta\sum_jB_j^{\rm cap},\label{eq:totalrisk}\\
  {\rm CVaR}_{0.75}\!\left(\widetilde F_j^{(\mathrm{sim})}(\alpha)\right)
@@ -473,19 +489,16 @@ $f_n\geq0$, a CVaR threshold $\nu\geq0$, and tail slacks $u_j\geq0$:
   \label{eq:riskepigraph}
  \end{align}
 Here $r^{(\mathrm{sim})}_n=[p^0_n-p^{(\mathrm{sim})}_n]_+$ is the true
-mechanism-isolation credit. The equivalent threshold identity is checked in
-the implementation, but the two credit terms remain explicit in the model.
-The normalized daily ratio is the reported CVaR metric, while the total
-constraint remains in absolute MW-slot units. This epigraph is never substituted for the frozen contract profile
-$p^{\rm con}$ in (\ref{eq:meter_cap}). The explicit epigraph in
-(\ref{eq:riskepigraph}) is the implementation used in all reported fits.
-Together with the simplex equality, box bounds on $\alpha$, and the total
-budget in (\ref{eq:totalrisk}), these are linear constraints. Fits that retain
-an axis also include its predeclared normalized exposure term in the additive
-objective: total false-credit exposure and daily CVaR are normalized
-by their reference values and assigned equal weight. This convex preference
-keeps the two-axis fit identifiable when a hard row is slack; the corresponding
-single-axis ablations remove the omitted preference along with its constraint.
+mechanism-isolation credit; the implementation checks the equivalent threshold
+identity while retaining both credit terms. The daily ratio is the reported
+CVaR metric, whereas the total row is in absolute MW-slot units. This explicit
+epigraph is used in every fit but never substitutes for the frozen contract
+profile $p^{\rm con}$ in (\ref{eq:meter_cap}). Together with the simplex
+equality, box bounds on $\alpha$, and the total budget in
+(\ref{eq:totalrisk}), these are linear constraints. Each retained axis also
+contributes its predeclared normalized exposure term with equal weight; this
+convex preference keeps the two-axis fit identifiable when a hard row is slack,
+whereas a single-axis ablation removes the omitted term and constraint.
 The resulting objective is a convex quadratic program. HiGHS first supplies a feasible
 epigraph point; the full epigraph is then solved with a sparse primal--dual
 trust-region method. The returned stationarity residual, every linear
@@ -839,58 +852,51 @@ these residuals before N--1 valuation and preserves $\sum_i\phi_i=v(N)$.
 
 \subsection{Data, preprocessing, and information boundary}
 
-The complete data inventory is as follows. BurstGPT supplies
-5,188,507 successful requests and token service \cite{wang2024burstgpt}; MIT
-Supercloud supplies scheduler submissions and independent Data Center GPU
-Manager (DCGM) energy. The full scheduler population contains 75,326 valid
-submissions and 71,128 positive-energy execution matches, of which 68,664
-start in the common
-121-day tensor used by Experiments 1--13 \cite{samsi2021supercloud}. Submission
-time defines arrivals and measured intervals define scoring truth. A held-out
-power calibration is chronological: 44,391 jobs in the first 40 complete days
-are used for fitting and 50,791 later jobs are held out, yielding held-out
-$R^2=0.8331$, MAE 13.02 W, and RMSE 19.14 W. Workload scaling is also fitted
-only on the first 40 complete training days. The held-out per-job energy ratios
-define $\Xi_5$ in (\ref{eq:paymentcert}) without synthetic replacement. Experiment~14 extends
-the replay to the last completion and retains all 71,128 matches, whereas
-Experiment~19 uses every valid scheduler declaration and a training-only entitlement;
-the execution join is opened only for post-event scoring. Its runtime window
-plus the precommitted 96-slot queue allowance is a contract-window definition,
-not a submit-to-completion interpretation of the Slurm allocation runtime.
-Calibration membership is fixed by chronology and never by an outcome-filtered
-job identifier.
+BurstGPT supplies 5,188,507 successful requests and token service
+\cite{wang2024burstgpt}; MIT Supercloud supplies scheduler submissions and
+independent Data Center GPU Manager (DCGM) energy. The full population contains
+75,326 valid submissions and 71,128 positive-energy execution matches, of which
+68,664 start in the common 121-day tensor used by Experiments 1--13
+\cite{samsi2021supercloud}. Submission time defines arrivals and measured
+intervals define scoring truth. Chronological calibration uses the first 40
+complete days for both power conversion and workload scaling; later jobs define
+the held-out ratios $\Xi_5$ in (\ref{eq:paymentcert}) without synthetic
+replacement. Experiment~14 retains all 71,128 matches, whereas Experiment~19
+uses every valid declaration with a training-only entitlement; execution joins
+open only for post-event scoring. The runtime window plus a precommitted
+96-slot queue allowance defines the contract window, not a
+submit-to-completion interpretation of Slurm runtime, and membership is never
+outcome-filtered.
 
 Because the traces lack utility bus locations, four-region coupling is a
 trace-driven benchmark: a predeclared feature-stratified round robin assigns
 class, GPU count, runtime, and submission time. Experiment~11 exhausts all 24
 permutations, three penetrations, and two concentration controls. Experiment~18
 uses fixed generator-bus electrical-role strata at native-load multiplier 0.90,
-so its cross-network result is conditional on the declared trace-to-bus
-scenario. Held-out energy ratios span 0.5367--4.7557. Equation
+so its cross-network result is conditional on that declared scenario. Held-out
+ratios span 0.5367--4.7557. Equation
 (\ref{eq:fixedflexconversion}) carries the fixed 6-MW/site component separately
-and calibrates the payment network scale on $q_{99}$; both raw endpoints remain
-activation-eligible in that declared payment model. The separate flexible-only
-0.8901 capacity-safe factor is retained as a planning diagnostic, not an
-endpoint clip. PGLib and
+and calibrates payment-network scale on $q_{99}$; both raw endpoints remain
+activation-eligible. The separate flexible-only 0.8901 capacity-safe factor is
+planning-only, not an endpoint clip. PGLib and
 MATPOWER/PYPOWER provide topology, ratings, and costs
 \cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower}; RTS-24 follows
 the published case \cite{grigg1999rts}.
 
 \subsection{Baselines, parameters, and inference}
 
-Experiment~2 compares eight meter/statistical baselines with the complete-ledger
-quantile, feasible projection, synthetic control, \TailRisk, the selected single
-projection, and \RiskSafe. \PaymentSafe{} is evaluated separately in
+Experiment~2 compares eight meter/statistical baselines with complete-ledger
+quantile/feasible projections, synthetic control, \TailRisk, the selected
+single projection, and \RiskSafe. \PaymentSafe{} is evaluated separately in
 Experiments~9 and 15 because its hull and N--1 objective differ. Feature
 equality is audited while execution truth is withheld. Deferral windows are
-0, 4, and 512 slots; each declared region has a 118-MW flexible nameplate and
-a 6-MW fixed facility component. Six projection penalties and four risk
-reserves are validation-only, selected by nested contiguous folds before the
-locked split; normalized total-exposure and daily-CVaR preferences are fixed
-before the split, and four committed-response weights are fitted on earlier
-validation days. The gate commits 5 MWh, and
-payment is scored by an independent 40-segment evaluator. Moving three-day
-bootstrap replicates and all $2^{18}$ block-sign assignments use Holm correction
+0, 4, and 512 slots; each region has a 118-MW flexible nameplate and a 6-MW
+fixed component. Six projection penalties and four risk reserves are selected
+by nested contiguous folds before the locked split; normalized total/CVaR
+preferences are fixed before that split, and four committed-response weights
+are fitted on earlier validation days. The gate commits 5 MWh and payment uses
+an independent 40-segment evaluator. Moving three-day bootstrap replicates and
+all $2^{18}$ block-sign assignments use Holm correction
 \cite{kunsch1989bootstrap,holm1979multiple}. Sparse-system size grows from
 5,760 variables/13,424 nonzeros at 96 slots to 36,480/85,488 at 608 slots
 (0.039--0.212 s).
@@ -898,17 +904,12 @@ bootstrap replicates and all $2^{18}$ block-sign assignments use Holm correction
 The model-out check uses polar alternating-current optimal power flow (AC OPF)
 with active/reactive balance, voltage/reactive-generation bounds, and
 apparent-power ratings \cite{zimmerman2011matpower}. After the intact solve,
-every credible outage imposes, for each non-reference generator $i$,
-\begin{equation}
- P_{Gi}^{(k)}=P_{Gi}^{(0)},\qquad i\notin\mathcal G_{\rm ref},\ k\in\mathcal C.
- \label{eq:acplan}
-\end{equation}
-The reference generator balances active losses, while $Q_G^{(k)}$ and voltages
-remain recourse. Apparent-power and voltage limits are checked after each
-fixed-plan solve, so (\ref{eq:acplan}) tests one shared active plan rather than
-reoptimizing active schedules. Non-reference bounds are fixed at the intact
-output $\pm10^{-8}$ MW with a $10^{-6}$-MW residual margin; the largest
-recorded deviation is $2.52\times10^{-8}$ MW.
+each credible outage fixes every non-reference active output at its intact
+value, \(P_{Gi}^{(k)}=P_{Gi}^{(0)}\), while the reference active balance,
+reactive outputs, and voltages remain recourse. Apparent-power, voltage, and
+fixed-plan deviations are checked after every solve; non-reference bounds are
+the intact output \(\pm10^{-8}\) MW with a \(10^{-6}\)-MW margin, and the
+largest deviation is \(2.52\times10^{-8}\) MW.
 
 Experiments~1--2 test incentives and workload verification; 3--9 test signed
 settlement, transfer, risk, and N--1 value; 10--12 test AC/spatial transfer and
@@ -1086,15 +1087,16 @@ are complete declared sets.
 
 \subsection{Independent trace and deployment-boundary audits}
 
-Immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
-100\% coverage and a 71,128-job residual below $10^{-17}$ MWh; no utility
-event label is available. Trace-meter MAE is 2.988 MW (2.673 for feasible
-quantile). Experiment 23 uses a submission-masked ledger, predeclared tariff,
-and an independent LP with no target, envelope, hull, or verifier output. Over 54
-locked days, gate/independent responses score nRMSE 2.606/1.712, false credit
-145.506/30.036 MWh/day, and $F_1=0.358/0.054$ (Table~\ref{tab:decision});
-their nonzero trajectory differences certify information separation. Validation
-selects \$10/MWh, weight 1.0, and a 20-MWh/day budget; $\eta=0.60$ is planning-only.
+The immutable MIT scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
+100\% coverage and a 71,128-job residual below $10^{-17}$ MWh; no utility event
+label is available. Experiment~20 gives trace-meter MAE 2.988 MW (2.673 for
+feasible quantile). Experiment~23 independently solves a submission-masked LP
+with a predeclared tariff and no target, envelope, hull, or verifier output.
+Across 54 locked days, gate/independent responses score nRMSE 2.606/1.712,
+false credit 145.506/30.036 MWh/day, and $F_1=0.358/0.054$
+(Table~\ref{tab:decision}); their nonzero trajectories certify information
+separation. Validation selects \$10/MWh, weight 1.0, and a 20-MWh/day budget;
+$\eta=0.60$ is planning-only.
 \begin{table}[t]
 \centering
 \caption{Information-boundary response certificates (54-day means). The two independent policies use a submission-masked ledger; the complete-ledger row is mechanism isolation.}
@@ -1124,31 +1126,29 @@ Panel & Cells and certificate\\
 \midrule
 Preventive DC N--1 (RTS-24) & 54$\times$8$\times$37; 1.0000 p.u.\\
 Shared-plan AC (IEEE-9) & 3,888; 0.880/0.907/0.935 p.u.\\
-Corrective/all-outage AC & 864+5,400; 31,968 solves; all feasible\\
+Corrective AC (IEEE-9/14) & 864 base + 5,400 outage solves; all feasible\\
+All-outage AC (four networks) & 31,968 outage solves; all feasible\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Indexed workload counterfactual}
 
-Experiment 19 assigns one exact contiguous start block to each of the 75,326
-valid submissions. The declaration window, 0.001-MW/GPU bound, regional
-entitlement, and 118-MW capacity define 13,198,247 admissible start choices;
-the selected witness has typed residuals, native/counterfactual event energy
-of 0.194/0 MWh, with zero
-job-energy residual and 29.486 MWh minimum site slack
+Experiment~19 assigns one exact contiguous start block to each of the 75,326
+valid submissions. Its declaration windows, 0.001-MW/GPU bound, regional
+entitlement, and 118-MW capacity define 13,198,247 admissible choices; the
+selected witness has zero job-energy residual, 0.194/0 MWh native/counterfactual
+event energy, and 29.486 MWh minimum site slack
 (Table~\ref{tab:jobcounterfactual}). Experiment~22 replays this witness over
 1,056 event slots and all finite RTS-24 outages, obtaining
 \$0.004228/\$0.006359/\$9.199820 raw/fixed-nameplate/capacity-proportional
-secure value per interval. Experiment~21 reports 2176.183\(\times\)
-capacity-proportional stress and 1.504\(\times\) fixed-nameplate scale.
-
-Experiment~25 independently validates the declaration boundary: 71,128 of
-75,326 submissions match execution, no declared window is infeasible, and its
-79-job cohort binds 0.0006648 MW per region while meeting the 0.004-MWh floor
-with 78.125\% of event-capacity slots active. Experiment~24 freezes two
-profiles and replays all 37 finite RTS-24 outages (864 cells; 31,968 solves),
-all feasible at 1.000000 p.u. (Table~\ref{tab:jobcounterfactual}).
+secure value per interval; Experiment~21 reports 2176.183\(\times\) and
+1.504\(\times\) for the two scale diagnostics. Experiment~25 independently
+validates the declaration boundary (71,128/75,326 execution matches; no
+infeasible window) and its 79-job cohort binds 0.0006648 MW while meeting the
+0.004-MWh floor. Experiment~24 freezes two profiles and replays all 37
+finite RTS-24 outages (864 cells; 31,968 solves), all feasible at 1.000000 p.u.
+(Table~\ref{tab:jobcounterfactual}).
 
 \begin{table}[t]
 \centering
