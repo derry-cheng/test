@@ -26,7 +26,7 @@ profit change is
 Let \(c'_j\) be the right derivative of the optimal physical operating cost with
 respect to an event-window minimum-service constraint on reference day \(j\).
 Historical-day baselines and their manipulation risk are documented in
-\cite{caiso2017baseline,wang2022baseline}; the following closed-form
+\cite{wang2022baseline}; the following closed-form
 specialization is derived here. A strictly profitable local manipulation exists
 exactly when
 
@@ -204,7 +204,7 @@ whereas the proposed bilateral rule uses the exact signed avoided cost
 \]
 
 The DC optimal-flow and nodal-dual model follows
-\cite{zimmerman2011matpower,babaeinejadsarookolaee2021pglib}, while the
+\cite{zimmerman2011matpower}, while the
 value-function argument uses standard convex duality \cite{boyd2004convex}.
 
 Thus \(\Delta V>0\) earns a credit and \(\Delta V<0\) creates a debit. Within
@@ -307,7 +307,7 @@ the number of raw telemetry records, \(q_j\) is the requested GPU field,
 \(\kappa_j\) is the workload type, and \(\sigma_j\) is the scheduler state.
 The ledger commitment is the SHA-256 digest of the deterministically sorted
 CSV serialization of all \(r_j\), following the Secure Hash Standard
-\cite{nist2015fips1804}.
+Secure Hash Standard.
 
 If the scheduler--telemetry join is one-to-one after the declared last-record
 rule, every retained job has
@@ -400,9 +400,11 @@ V_{N-1}(p_t^{\rm native}+M\xi p^{\rm ref}_t)
 
 For any realized event load \(p^{1,\xi}\), subtracting
 \(\sum_t\Delta t V_{N-1}(p^{1,\xi}_t)\) from the same-\(\xi\) inequality
-proves that daily payment under \(p^\alpha\) cannot exceed the selected-single
-reference payment in any declared scenario. The reference unit vector simultaneously
-proves nonemptiness, and workload feasibility follows from convex closure.
+gives a samplewise relative N--1 baseline-cost cap against the selected-single
+reference in every declared scenario. It does not establish an absolute
+no-overpayment, revenue-adequacy, or incentive-compatibility guarantee. The
+reference unit vector proves nonemptiness, and workload feasibility follows
+from convex closure.
 Two linear programs implement the lexicographic objective: minimum trajectory
 error is solved first, then its optimal value is retained while the common
 fractional cost margin \(\eta\) is maximized.

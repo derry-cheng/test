@@ -6,6 +6,9 @@ capacity_mw_per_region,0.0006647866667,MW
 minimum_event_capacity_slack_mwh,8.33334052804946e-15,MWh
 active_event_capacity_slot_fraction,0.78125,fraction
 event_service_floor_mwh,0.004,MWh
+absolute_event_service_floor_mwh,0.004,MWh
+cohort_declared_entitlement_mwh,0.014126716666666667,MWh
+event_service_floor_fraction_of_cohort_entitlement,0.2831514282040059,fraction
 event_service_delivered_mwh,0.004154916666666666,MWh
 maximum_job_energy_residual_mwh,0.0,MWh
 solver_success,1.0,boolean

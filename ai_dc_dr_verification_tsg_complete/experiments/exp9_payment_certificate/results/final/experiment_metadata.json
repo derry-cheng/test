@@ -28,7 +28,7 @@
   "test_profile_file_checksum": "7bf18b89e07e3ad542335838e7fc4e58fab9a6ad1b05e28e3bfdb9bf700ba05f",
   "validation_profile_file_checksum": "3c3ac48f99f24022764a4df9528822b3383c1fc06edd186445f8db49272112ef",
   "data_manifest_checksum": "e75e48cd469c8e8bdf713560ee64d6cbefee8ffdea65f45c873a9380e2cb0e9d",
-  "config_checksum": "0ecffd5a94c88616197fe10345665c86827f95bf083af8829a285b7e48dde920",
+  "config_checksum": "f902d9d3eede936351aa69810bf6e252938f73105aa42d5e237359e6c45b40b0",
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
   "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {
@@ -50,6 +50,11 @@
     "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))"
   },
   "reference_payment_cap": "Projection rho=0.03",
+  "payment_guarantee_scope": "relative N-1 baseline-cost cap: every certified conversion scenario has certified baseline cost no larger than the validation-frozen reference cap",
+  "absolute_overpayment_guarantee": false,
+  "revenue_adequacy_guarantee": false,
+  "incentive_compatibility_guarantee": false,
+  "realized_payment_audit": "payment_evaluation_intervals.csv reports independent realized-meter error and overpayment; these diagnostics are not part of cap selection",
   "external_transfer_comparator": "Feasible Quantile Projection",
   "payment_target_selection": "validation-only independent N-1 payment MAE over q10/q50/q90 held-out conversion scenarios and event slots; q01 and q99 are reserved as locked robustness constraints",
   "selection_role_separation": "The contractual cap and payment target are frozen by different validation criteria: the cap uses worst contiguous-fold nRMSE from Experiment 2, whereas the target uses independent high-resolution N-1 payment MAE. Neither criterion reads locked-test outcomes.",

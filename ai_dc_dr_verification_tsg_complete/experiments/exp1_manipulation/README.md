@@ -8,4 +8,4 @@ independently from ten honest-program right-hand-side dual marginals. Economic
 profit subtracts the sum of all ten physical reference-day cost increments; equality
 points are reported as indifference rather than strict profit. The baseline model
 and solver citations are `wang2022baseline`, `caiso2017baseline`, and
-`huangfu2018highs` in `manuscript/references.bib`.
+`huangfu2018highs` in `paper/references.bib`.

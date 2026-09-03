@@ -404,7 +404,8 @@ def _validate_declared_raw_sources(
     preprocessing pass must use the exact sources recorded by the previous
     manifest. This check is intentionally fail-closed because silently
     rebuilding the processed arrays from a partial CSV would invalidate every
-    downstream experiment while leaving the old manuscript numbers in place.
+    downstream experiment while keeping the locked release artifacts
+    internally consistent.
     """
     if not manifest_path.exists():
         return
@@ -880,6 +881,7 @@ def _fit_submission_energy_calibration(
         "interval_seconds": int(interval_s),
         "unbounded_timelimit_slots": int(unbounded_timelimit_slots),
         "fraction_quantiles": quantiles,
+        "declared_service_fraction_lower": float(quantiles["0.1"]),
         "declared_service_fraction": float(quantiles["0.5"]),
         "physical_upper_service_fraction": 1.0,
         "training_fraction_above_physical_upper": int(np.sum(fractions > 1.0 + 1e-12)),
@@ -888,6 +890,11 @@ def _fit_submission_energy_calibration(
             for q in [0.01, 0.10, 0.50, 0.90, 0.99]
         },
         "central_estimate_is_not_observed_energy": True,
+        "entitlement_interval_semantics": (
+            "the central q50 fraction is the committed ex-ante entitlement; "
+            "q10 is a predeclared empirical lower envelope and the full "
+            "requested nameplate is the physical upper bound"
+        ),
         "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
         "calibration_label_rule": (
             "matched positive DCGM energy is a label requirement for the "
@@ -1108,6 +1115,7 @@ def load_mit_submission_ledger(
     n_regions: int,
     declared_service_fraction: float,
     declared_per_gpu_power_cap_mw: float,
+    declared_service_fraction_lower: float | None = None,
     unbounded_timelimit_slots: int = 128,
     submission_buffer_slots: int = 0,
     eligible_job_ids: set[int] | None = None,
@@ -1119,8 +1127,11 @@ def load_mit_submission_ledger(
     field is available when a job is submitted: immutable job ID, submit time,
     requested GPUs, job class, and Slurm allocation runtime.  The central
     energy entitlement is the training-fitted utilization fraction times the
-    requested GPU nameplate and declared runtime.  ``energy_upper_mwh`` is the
-    physical nameplate bound and is kept separately for post-event coverage.
+    requested GPU nameplate and declared runtime.  The optional q10-derived
+    lower fraction creates an explicit ex-ante interval: the central field is
+    the committed q50 entitlement, the lower field is an empirical lower
+    envelope, and the upper field is the physical nameplate bound. These
+    fields are fixed before any execution join.
     ``eligible_job_ids`` is retained as a compatibility argument but is
     deliberately rejected.  An outcome-derived job-ID set is a post-event
     population filter and would make the apparent submit-time contract
@@ -1133,6 +1144,15 @@ def load_mit_submission_ledger(
         raise ValueError("submission_buffer_slots must be nonnegative")
     if float(declared_service_fraction) <= 0.0 or float(declared_service_fraction) > 1.0:
         raise ValueError("declared_service_fraction must lie in (0, 1]")
+    lower_fraction = (
+        float(declared_service_fraction)
+        if declared_service_fraction_lower is None
+        else float(declared_service_fraction_lower)
+    )
+    if not 0.0 < lower_fraction <= float(declared_service_fraction):
+        raise ValueError(
+            "declared_service_fraction_lower must lie in (0, declared_service_fraction]"
+        )
     if float(declared_per_gpu_power_cap_mw) <= 0.0:
         raise ValueError("declared_per_gpu_power_cap_mw must be positive")
     scheduler_columns = ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
@@ -1191,7 +1211,7 @@ def load_mit_submission_ledger(
     runtime = scheduler["declared_runtime_slots"].to_numpy(dtype=float)
     nameplate = requested_gpu * float(declared_per_gpu_power_cap_mw) * runtime * dt_h
     scheduler["declared_energy_mwh"] = nameplate * float(declared_service_fraction)
-    scheduler["declared_energy_lower_mwh"] = nameplate * float(declared_service_fraction)
+    scheduler["declared_energy_lower_mwh"] = nameplate * lower_fraction
     scheduler["declared_energy_upper_mwh"] = nameplate
     scheduler["required_service_slots"] = np.maximum(
         1,
@@ -1263,6 +1283,7 @@ def load_mit_submission_ledger(
     )
     scheduler.attrs["deadline_mode"] = "submit_time_declaration"
     scheduler.attrs["declared_service_fraction"] = float(declared_service_fraction)
+    scheduler.attrs["declared_service_fraction_lower"] = float(lower_fraction)
     scheduler.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
     scheduler.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
     scheduler.attrs["submission_buffer_slots"] = int(submission_buffer_slots)

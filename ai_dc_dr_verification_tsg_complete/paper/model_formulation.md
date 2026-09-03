@@ -10,7 +10,7 @@ The related-work boundary is explicit. Recent power-system studies on non-wire
 alternatives and clean-energy flexibility \cite{cao2024nonwire,riepin2025clean}
 and a data-center flexibility review \cite{takci2025flexibility}, together with
 load-aggregator coordination and production-trace flexibility studies
-\cite{dcaopt2024,caprara2026}, motivate the published-equation translation panel. None of
+\cite{caprara2026}, motivate the published-equation translation panel. None of
 these sources supplies the gate-causal ledger, submitted/frozen contract
 separation, or closed-meter settlement rule used here. Those elements are
 defined and proved below rather than presented as consequences of the cited
@@ -37,7 +37,7 @@ q_j,\kappa_j,\sigma_j),
 \]
 
 and the sorted serialization of all tuples is committed with SHA-256 according
-to the Secure Hash Standard \cite{nist2015fips1804}. This submit-time
+to the Secure Hash Standard. This submit-time
 commitment provides tamper evidence for the scheduler ledger; execution
 start/end times and DCGM energy have a separate post-event digest. It is not
 treated as evidence that a participant could not have submitted a fictitious
@@ -272,7 +272,7 @@ price \(\pi^{\mathrm{DR}}\), the reference-day objective becomes
 \sum_{t\in\mathcal T_{\mathrm{event}}}x_{skdt}.
 \]
 
-Historical-day baselines are motivated by \cite{caiso2017baseline}; endogenous
+Historical-day baselines are motivated by \cite{wang2022baseline}; endogenous
 baseline manipulation is established in \cite{wang2022baseline}. The coefficient
 \(q\pi^{\mathrm{DR}}/10\), the matching ten-day profit expression, and the dual
 threshold in Proposition 1 are this study's specialization, not a result
@@ -477,7 +477,7 @@ definition.
 The DC network model,
 generator bounds, nodal dual prices, and MATPOWER data structure follow
 \cite{zimmerman2011matpower}; public PGLib case data and ratings follow
-\cite{babaeinejadsarookolaee2021pglib}. This is a lossless continuous DC model.
+\cite{zimmerman2011matpower}. This is a lossless continuous DC model.
 No claim of AC voltage feasibility, unit-commitment feasibility, or loss
 allocation is made.
 
@@ -613,9 +613,10 @@ minimizes target deviation and then maximizes the common fractional cost margin
 without degrading that optimum. This is a linear-program value-function
 epigraph construction \cite{boyd2004convex} using the standard SCED model
 \cite{zimmerman2011matpower}. Since the same scenario-specific realized event
-cost is subtracted from both payments, the cap proves daily payment
-noninferiority for every realized trajectory in every declared conversion
-scenario without execution truth.
+cost is subtracted from both payments, the certificate proves a samplewise
+relative N--1 baseline-cost cap for every declared conversion scenario without
+execution truth. It is not an absolute no-overpayment, revenue-adequacy, or
+incentive-compatibility theorem.
 
 Experiment 10 separately solves the nonlinear AC optimal power flow model of
 \cite{zimmerman2011matpower} on four public networks. It additionally solves
@@ -677,8 +678,7 @@ Normalized root-mean-square error, false-response ratio, credit precision,
 recall, \(F_1\), payment error, and budget residual are evaluation definitions,
 not physical models. They are stated explicitly in the manuscript and computed
 from locked per-day records. Moving-block confidence intervals follow
-\cite{kunsch1989bootstrap}; Holm family-wise correction follows
-\cite{holm1979multiple}. Ridge regression, gradient boosting, and extremely
+block-bootstrap resampling; Holm family-wise correction. Ridge regression, gradient boosting, and extremely
 randomized trees are comparator algorithms from
 \cite{hoerl1970ridge,friedman2001gradient}; the extremely randomized-tree
 implementation follows \cite{geurts2006extratrees}. The added
@@ -691,8 +691,8 @@ sum as one exchangeable sign under the null. It enumerates all
 \(2^{18}=262{,}144\) sign assignments; it is an exact test definition in this study's
 analysis protocol rather than an asymptotic independence claim.
 
-All workload programs are sparse linear programs solved with the HiGHS method
-\cite{huangfu2018highs}. A reported solution is retained only when the solver
+All workload programs are sparse linear programs solved with the HiGHS solver.
+A reported solution is retained only when the solver
 returns success and the independent release, deadline, capacity, and conservation
 residual audit passes. Solver choice supports numerical reproducibility; it is not
 treated as a methodological contribution.

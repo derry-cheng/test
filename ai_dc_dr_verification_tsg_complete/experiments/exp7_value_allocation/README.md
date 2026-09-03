@@ -5,9 +5,9 @@ for every event interval and locked test day. It compares nodal-linear,
 standalone, leave-one-out, and exact Shapley allocations. The exact allocation
 uses no permutation sampling and is audited for grand-coalition budget balance.
 The allocation formula and efficiency property follow Shapley (1953), cited as
-`shapley1953value` in `manuscript/references.bib`. The signed SCED
+`shapley1953value` in `paper/references.bib`. The signed SCED
 characteristic function is defined and proved for this study in
-`manuscript/theoretical_results.md`; it is not attributed to the original
+`paper/theoretical_results.md`; it is not attributed to the original
 Shapley result.
 
 The scalability panel additionally decomposes each of the four sites into

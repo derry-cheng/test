@@ -1,15 +1,14 @@
 # Executable code boundary
 
-The maintained implementation is under `src/aicdr/`. `run_all.py` is the
-single orchestration entry point, while each `experiments/exp*/run.py` is a
-standalone stage wrapper. Tests live under `tests/`; no generated result or
-raw-data file belongs in this directory.
+The canonical implementation is the `src/aicdr/` package. It contains data
+loading, sparse workload optimization, network valuation, experiment runners,
+typed coupling checks, and the release audit. The `tests/` directory contains
+deterministic regression tests; `configs/` contains the frozen protocol. This
+directory intentionally contains documentation only, so generated solver
+outputs remain isolated under `experiments/` and release reports remain under
+`reports/`.
 
-The job-indexed stage uses an exact contiguous fixed-rate start-time witness:
-one binary start is selected per submitted job, with an exact terminal-slot
-remainder. Typed energy, contiguity, GPU-capacity, site-capacity, and
-region-to-bus residual checks precede settlement. The binding-capacity stress
-panel uses the same sparse binary start-time MILP; the coupled network
-certificate is solved by the global sparse HiGHS LP with no heuristic
-post-processing. Worker counts are configured explicitly and validated to
-remain at or below 20.
+The end-to-end evidence-chain check is implemented in
+`src/aicdr/end_to_end_certificate.py` and is exposed as pipeline stage
+`exp26`. It consumes locked upstream artifacts, recomputes residuals, and
+does not refit or select parameters.

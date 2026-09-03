@@ -1022,99 +1022,134 @@
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/main.tex",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/main.pdf",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/IEEEtran.cls",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/references.bib",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/formula_source_matrix.md",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/model_formulation.md",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/paper_outline_zh.md",
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/README.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/theoretical_results.md",
+      "name": "paper_sources:paper/main.tex",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/framework_architecture.drawio",
+      "name": "paper_sources:paper/main.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/framework_architecture.svg",
+      "name": "paper_sources:paper/IEEEtran.cls",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/method_detail.drawio",
+      "name": "paper_sources:paper/references.bib",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/method_detail.svg",
+      "name": "paper_sources:paper/formula_source_matrix.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig0_framework.pdf",
+      "name": "paper_sources:paper/model_formulation.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig0_framework.png",
+      "name": "paper_sources:paper/paper_outline_zh.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig_method_detail.pdf",
+      "name": "paper_sources:paper/theoretical_results.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig_method_detail.png",
+      "name": "paper_sources:paper/figures/framework_architecture.drawio",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.png",
+      "name": "paper_sources:paper/figures/framework_architecture.svg",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf",
+      "name": "paper_sources:paper/figures/method_detail.drawio",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/method_detail.svg",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig0_framework.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig0_framework.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig_method_detail.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig_method_detail.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig17_cross_layer_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "paper_sources:paper/figures/fig17_cross_layer_robustness.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "27/27 stages recorded; canonical request=all; audit status=completed"
+      "detail": "28/28 stages recorded; canonical request=all; audit status=running"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
@@ -1124,7 +1159,42 @@
     {
       "name": "model_formula_citation_traceability",
       "passed": true,
-      "detail": "33/33 required source keys in bibliography, formula-source matrix, and complete formulation"
+      "detail": "26/26 required source keys in bibliography, formula-source matrix, and complete formulation"
+    },
+    {
+      "name": "no_drafting_or_stale_claim_residue",
+      "passed": true,
+      "detail": "none found"
+    },
+    {
+      "name": "all_float_labels_are_referenced",
+      "passed": true,
+      "detail": "all labels have an in-text reference"
+    },
+    {
+      "name": "table_count_within_tsg_limit",
+      "passed": true,
+      "detail": "5 tables; the locked paper limit is five"
+    },
+    {
+      "name": "figure_count_is_explicit",
+      "passed": true,
+      "detail": "2 figures in the manuscript source"
+    },
+    {
+      "name": "introduction_has_no_subsections",
+      "passed": true,
+      "detail": "Introduction is a single section"
+    },
+    {
+      "name": "conclusion_has_no_subsections",
+      "passed": true,
+      "detail": "Conclusion is a single section"
+    },
+    {
+      "name": "critical_claim_scope_and_lineage_phrases_present",
+      "passed": true,
+      "detail": "all C1--C5 scope anchors present"
     },
     {
       "name": "official_ieee_journal_template",
@@ -1134,32 +1204,32 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "42 in-text citation groups checked"
+      "detail": "38 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
       "passed": true,
-      "detail": "37 verified bibliography entries; 37 unique in-text citations; uncited=[]; missing=[]"
+      "detail": "30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
       "passed": true,
-      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
       "passed": true,
-      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
       "passed": true,
-      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
       "passed": true,
-      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+      "detail": "raw source deferred to verified archive; locked processed artifact retained"
     },
     {
       "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
@@ -1675,6 +1745,11 @@
       "name": "full_finite_n1_frozen_profile_panel",
       "passed": true,
       "detail": "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment"
+    },
+    {
+      "name": "end_to_end_lineage_certificate",
+      "passed": true,
+      "detail": "Exp26 recomputes the indexed witness-to-network residuals, retains separate risk/payment roles, and closes the relative-cap and all-outage chain"
     },
     {
       "name": "no_stale_atomic_temporary_artifacts",
@@ -2242,13 +2317,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 22112,
-      "sha256": "690398abf55d5e6fda94d2d23c80ef01a22edaf8650914eb18aedea431b69c14"
+      "bytes": 22351,
+      "sha256": "3640d7806d98b67e0503147e0c4f11c9f8467b3c6f6dd57d40877abedb0ea22c"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
-      "bytes": 202,
-      "sha256": "f44dc80c4844369e3353e53a4959b2c7e2db7ba33bda5c0b95cf4f4570c3c98f"
+      "bytes": 204,
+      "sha256": "9489c57ea8e2dd1255c2ad449bf09e9ed6cf42df3a80e27cea6d9c856e970711"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
@@ -2272,23 +2347,23 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
-      "bytes": 184467,
-      "sha256": "affc95c53133c9c416a15277c0d798013f9ff3815fef6c538cebe32b0ef1462d"
+      "bytes": 186014,
+      "sha256": "aaa1d86a482333f29e81b487d5d8e7f5f34eedf72715cb36b2efb193bd545403"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
-      "bytes": 1049,
-      "sha256": "fc0864b32f17df86812e9e6da1e264b84730b40fe8993eadec3506fe3438fb14"
+      "bytes": 1052,
+      "sha256": "a464ef4966944e8f62710c7b1d426ec0cda266c541a9713a51f6f71544b42074"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
-      "bytes": 46169,
-      "sha256": "8d7e3e49a7f6c00000d32ad33e745b1854c537b91b086fea926b629bcbdb40a3"
+      "bytes": 46436,
+      "sha256": "7c58eeb0af3055113485679eea8c6a4c637501de4a6957f045695780226dad52"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
-      "bytes": 4951,
-      "sha256": "2c067fb7bf31fcb48e92aa1e49aac477b9945fe02e220bfcf5f8ecdafb150b9b"
+      "bytes": 5358,
+      "sha256": "d8a50e23122d74ce6df5085112a122f83d68f355345109dd897dc4f896576176"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
@@ -2392,18 +2467,18 @@
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
-      "bytes": 1435,
-      "sha256": "3df08c6f6c5ce78dfb4492fc8079ce9dc95111bd60940bef93f0ff18c5510d40"
+      "bytes": 1517,
+      "sha256": "fa704855b44c873ac6211d8c448edfe87c37bdc13d71a56f3c2720678f28acc3"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_scale_replay.csv",
-      "bytes": 1181,
-      "sha256": "df57ef8d4eec69e6ff217c5d50689f38162031438e787e5b5497b4848ce21188"
+      "bytes": 1242,
+      "sha256": "cd757796f2b4beda3028ef02245dae88a9a7ca1dcc50141524510acddc54bc26"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
-      "bytes": 865,
-      "sha256": "ab950b0c48e0f8559f46dc031a504f83ed59342422d49dd977a7bfbadd9c5187"
+      "bytes": 933,
+      "sha256": "fd02d4b319ab6cda7cebecade7657abb00ee455ab0c21a52b5a2be2b33bf3418"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
@@ -2418,7 +2493,7 @@
     {
       "path": "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
       "bytes": 2122,
-      "sha256": "c054f40ae4f997a1deda1f38538a340d1a4b96961638f9746c041888c0d31e70"
+      "sha256": "b3e54ba92c271b3f2f1c62f873cb3a94de6249e8e8433e539e4ad2f2e237ddab"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
@@ -2427,13 +2502,13 @@
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
-      "bytes": 49550,
-      "sha256": "0e57bc8f27f96a78c224a2f5d1ef50e3d97ef0eaefb05944aa53d519e35bb012"
+      "bytes": 49578,
+      "sha256": "505e858db4290fe927a01b3e7290094d86b28944750a517d6114e548f54e060a"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
-      "bytes": 487,
-      "sha256": "55a5e04d472044c56407416353281741de07f060db6f63fc6ce7fd0092d8e7dd"
+      "bytes": 483,
+      "sha256": "c01bc6112a8577e4171a1b6e10a5da30932fc9c92448829cdee5684e6c7f4778"
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
@@ -2462,8 +2537,8 @@
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
-      "bytes": 2101,
-      "sha256": "282d43d396d4da1dc3fdd604879a72e3d86e44a62f3f9e00e69b3d3e6c35b43e"
+      "bytes": 2558,
+      "sha256": "e34b8bcc5e3549787c8c02f2e6209f80dce4bc7ee86d5105c2a9e1f65d3786b9"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_event_slots.csv",
@@ -2477,8 +2552,38 @@
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_summary.csv",
-      "bytes": 529,
-      "sha256": "5d69ed83a3b2e5b109f6431dc947de0a897894f3f5dc5b341984f1553f0d925a"
+      "bytes": 708,
+      "sha256": "9156d188a6c4f13feb4dd53335aa19751cabf19a1260060d0aceaa0cf3bd1bae"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "bytes": 3470,
+      "sha256": "12e621caccd8c602333278048a0fa87fb75d305b53c8c941702fb4de07c252a1"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "bytes": 564,
+      "sha256": "38675b3802f8cac27ffd9b64347c55ccd7476002d9d7ee08eb7d21b3c62f7ef2"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "bytes": 3470,
+      "sha256": "12e621caccd8c602333278048a0fa87fb75d305b53c8c941702fb4de07c252a1"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "bytes": 367,
+      "sha256": "e97598fdf6976c591e1031871b2ffe517228b60e2a18d39204f8e67fb9f10dbf"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "bytes": 1317,
+      "sha256": "90827529cec7f78121d3e989c726a8d76addb2185f96421d87ac8473c6457b03"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "bytes": 401,
+      "sha256": "80c81271e513822ea0820339dd4d3c28efbdaccd8de8fe77e56eb6fc0fee955a"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
@@ -2832,8 +2937,8 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
-      "bytes": 5249,
-      "sha256": "197854ae065ebf902c1951e595f605ad404655cefd1bda76d383e08bc4db220f"
+      "bytes": 5726,
+      "sha256": "ccd0afa4a40c9b39a614a397a7330356abc7fe7405aacd8cd69facad929cf445"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
@@ -2972,13 +3077,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
-      "bytes": 17029,
-      "sha256": "d2f9bf8bc29a494dbf6244e73d7ed5271f2e0ffe5daa3b8e2cb2cf3dad71cee2"
+      "bytes": 17045,
+      "sha256": "eb7e1b388b2a30a786c1758ed6fa20e01168eb947386e141594ad82643899476"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
-      "bytes": 300525,
-      "sha256": "26fa707c45b084b0c11bc0ed42db8cf3243e6092574bf9ccd882e6d7a90f1bbe"
+      "bytes": 300673,
+      "sha256": "2c21ef03eb6cb27461de043e3f09261681e66af6122a7ee89cc9f8cbf4bf2084"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
@@ -3022,8 +3127,8 @@
     },
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf",
-      "bytes": 13236,
-      "sha256": "4219bd471ede973a92b8b36fb7c61694e70475a299fc3b44fcc2ec919d96defe"
+      "bytes": 13237,
+      "sha256": "58b7d17efca19f6a8496c64353e1b2c34a10e14773f4546e6c9a3a71e97e057e"
     },
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
@@ -3183,7 +3288,7 @@
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
       "bytes": 23120,
-      "sha256": "7a60306c222b1d165a093860a7656449507e2b7f387b4dcc93889aa2b86b71f4"
+      "sha256": "13914ff332b4e2988d2e220c690b163af13aa5c0fbbc050366ca3b1a9ac6563c"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",

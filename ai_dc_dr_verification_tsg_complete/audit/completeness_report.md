@@ -208,34 +208,48 @@ Overall status: **PASS**.
 - [x] experiment_25:experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_event_slots.csv: exists and non-empty
 - [x] experiment_25:experiments/exp25_exante_job_validation/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_25:experiments/exp25_exante_job_validation/README.md: exists and non-empty
-- [x] manuscript_sources:manuscript/main.tex: exists and non-empty
-- [x] manuscript_sources:manuscript/main.pdf: exists and non-empty
-- [x] manuscript_sources:manuscript/IEEEtran.cls: exists and non-empty
-- [x] manuscript_sources:manuscript/references.bib: exists and non-empty
-- [x] manuscript_sources:manuscript/formula_source_matrix.md: exists and non-empty
-- [x] manuscript_sources:manuscript/model_formulation.md: exists and non-empty
-- [x] manuscript_sources:manuscript/paper_outline_zh.md: exists and non-empty
-- [x] manuscript_sources:manuscript/theoretical_results.md: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/framework_architecture.drawio: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/framework_architecture.svg: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/method_detail.drawio: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/method_detail.svg: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig0_framework.pdf: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig0_framework.png: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig_method_detail.pdf: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig_method_detail.png: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.png: exists and non-empty
-- [x] manuscript_sources:manuscript/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
-- [x] canonical_unified_manifest_preserved: 27/27 stages recorded; canonical request=all; audit status=completed
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json: exists and non-empty
+- [x] experiment_26:experiments/exp26_end_to_end_certificate/README.md: exists and non-empty
+- [x] paper_sources:paper/main.tex: exists and non-empty
+- [x] paper_sources:paper/main.pdf: exists and non-empty
+- [x] paper_sources:paper/IEEEtran.cls: exists and non-empty
+- [x] paper_sources:paper/references.bib: exists and non-empty
+- [x] paper_sources:paper/formula_source_matrix.md: exists and non-empty
+- [x] paper_sources:paper/model_formulation.md: exists and non-empty
+- [x] paper_sources:paper/paper_outline_zh.md: exists and non-empty
+- [x] paper_sources:paper/theoretical_results.md: exists and non-empty
+- [x] paper_sources:paper/figures/framework_architecture.drawio: exists and non-empty
+- [x] paper_sources:paper/figures/framework_architecture.svg: exists and non-empty
+- [x] paper_sources:paper/figures/method_detail.drawio: exists and non-empty
+- [x] paper_sources:paper/figures/method_detail.svg: exists and non-empty
+- [x] paper_sources:paper/figures/fig0_framework.pdf: exists and non-empty
+- [x] paper_sources:paper/figures/fig0_framework.png: exists and non-empty
+- [x] paper_sources:paper/figures/fig_method_detail.pdf: exists and non-empty
+- [x] paper_sources:paper/figures/fig_method_detail.png: exists and non-empty
+- [x] paper_sources:paper/figures/fig17_cross_layer_robustness.png: exists and non-empty
+- [x] paper_sources:paper/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
+- [x] canonical_unified_manifest_preserved: 28/28 stages recorded; canonical request=all; audit status=running
 - [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1253; fig27_all_outage_security.png=2309x1253; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
-- [x] model_formula_citation_traceability: 33/33 required source keys in bibliography, formula-source matrix, and complete formulation
+- [x] model_formula_citation_traceability: 26/26 required source keys in bibliography, formula-source matrix, and complete formulation
+- [x] no_drafting_or_stale_claim_residue: none found
+- [x] all_float_labels_are_referenced: all labels have an in-text reference
+- [x] table_count_within_tsg_limit: 5 tables; the locked paper limit is five
+- [x] figure_count_is_explicit: 2 figures in the manuscript source
+- [x] introduction_has_no_subsections: Introduction is a single section
+- [x] conclusion_has_no_subsections: Conclusion is a single section
+- [x] critical_claim_scope_and_lineage_phrases_present: all C1--C5 scope anchors present
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
-- [x] maximum_two_sources_per_citation_group: 42 in-text citation groups checked
-- [x] complete_manuscript_bibliography: 37 verified bibliography entries; 37 unique in-text citations; uncited=[]; missing=[]
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
+- [x] maximum_two_sources_per_citation_group: 38 in-text citation groups checked
+- [x] complete_manuscript_bibliography: 30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68664
@@ -339,6 +353,7 @@ Overall status: **PASS**.
 - [x] independent_controlled_event_replay: 54 locked days are replayed under a predeclared tariff intervention; the independently parameterized meter policy differs from the gate policy, is scored without verifier outputs, and makes no field-causal claim
 - [x] ex_ante_submission_job_validation_and_binding_capacity_panel: the declaration-only job validation covers the complete submitted population, while a compact 79-job stress cohort binds regional capacity and satisfies its service floor with numerical residuals below 1e-8
 - [x] full_finite_n1_frozen_profile_panel: 864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment
+- [x] end_to_end_lineage_certificate: Exp26 recomputes the indexed witness-to-network residuals, retains separate risk/payment roles, and closes the relative-cap and all-outage chain
 - [x] no_stale_atomic_temporary_artifacts: no hidden atomic-writer temporary files remain
 
 ## Locked test-set baseline results

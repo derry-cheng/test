@@ -39,7 +39,7 @@
   },
   "gate_policy": {
     "objective": "same exact LP with the selected gate tariff and committed service constraint",
-    "response_price_per_mwh": 150.0,
+    "response_price_per_mwh": 100.0,
     "baseline_price_per_mwh": 120.0,
     "committed_event_service_mwh": 5.0,
     "post_gate_arrivals_used": false

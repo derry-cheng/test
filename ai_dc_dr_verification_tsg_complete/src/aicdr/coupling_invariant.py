@@ -48,6 +48,7 @@ def validate_job_network_coupling(
     aggregate_mwh: np.ndarray,
     dt_h: float,
     requested_gpus: np.ndarray | None = None,
+    measured_gpus: np.ndarray | None = None,
     per_gpu_power_cap_mw: float | None = None,
     site_capacity_mw: float | np.ndarray | None = None,
     network_profile_mw: np.ndarray | None = None,
@@ -62,6 +63,20 @@ def validate_job_network_coupling(
     are reported in the certificate and leave the caller to decide whether to
     fail closed.
     """
+
+    # ``measured_gpus`` was used by an early diagnostic API.  Keep it as an
+    # explicit compatibility alias, but never combine it with the submit-time
+    # resource declaration: the indexed certificate is bounded by the
+    # requested GPU count.  Reject contradictory aliases instead of silently
+    # choosing one.
+    if requested_gpus is not None and measured_gpus is not None:
+        if not np.array_equal(
+            np.asarray(requested_gpus).reshape(-1),
+            np.asarray(measured_gpus).reshape(-1),
+        ):
+            raise ValueError("requested_gpus and measured_gpus disagree")
+    if requested_gpus is None and measured_gpus is not None:
+        requested_gpus = measured_gpus
 
     service = np.asarray(service_mwh, dtype=float).reshape(-1)
     energy = np.asarray(job_energy_mwh, dtype=float).reshape(-1)

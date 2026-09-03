@@ -1,8 +1,8 @@
-# Paper index
+# TSG manuscript boundary
 
-The submitted paper is maintained in `manuscript/`, which contains the source,
-editable diagrams, and canonical 10-page PDF. The mirrored release PDF is
-`output/pdf/security_aware_ai_data_center_tsg_manuscript.pdf`. This directory
-is a landing index so code, experiments, reports, results, and paper assets
-remain separate; generated figures and tables stay with their owning
-experiment. Build the release from `manuscript/main.tex`.
+`main.tex` is the canonical IEEE Transactions on Smart Grid manuscript source;
+`main.pdf` is its compiled release and `figures/` contains the draw.io/SVG
+figures used by the paper. Supporting derivations and the revision matrix are
+kept as Markdown records in this directory. Experimental code and generated
+tables remain under `src/` and `experiments/`, respectively, so the manuscript
+does not contain duplicated solver outputs.

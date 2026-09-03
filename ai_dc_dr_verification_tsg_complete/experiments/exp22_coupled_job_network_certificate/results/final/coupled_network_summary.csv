@@ -1,6 +1,8 @@
 metric,value,unit
 submitted_jobs,75326.0,jobs
 execution_matched_jobs,71128.0,jobs
+positive_energy_jobs,71128.0,jobs
+indexed_witness_jobs,75326.0,jobs
 service_variables,13198247.0,variables
 event_slots_replayed,1056.0,slots
 maximum_job_to_aggregate_residual_mwh,0.0,MWh

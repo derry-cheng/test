@@ -59,6 +59,12 @@ def run_exp25_exante_job_validation(
         n_regions,
         declared_service_fraction=float(calibration["declared_service_fraction"]),
         declared_per_gpu_power_cap_mw=cap_mw,
+        declared_service_fraction_lower=float(
+            calibration.get(
+                "declared_service_fraction_lower",
+                calibration["declared_service_fraction"],
+            )
+        ),
         unbounded_timelimit_slots=runtime_fallback,
         submission_buffer_slots=queue_buffer,
         time_origin_seconds=time_origin_seconds,
@@ -90,6 +96,12 @@ def run_exp25_exante_job_validation(
     joined["upper_coverage"] = (
         joined["energy_mwh"] <= joined["declared_energy_upper_mwh"] + 1e-12
     )
+    joined["lower_coverage"] = (
+        joined["energy_mwh"] + 1e-12 >= joined["declared_energy_lower_mwh"]
+    )
+    joined["declared_interval_coverage"] = (
+        joined["lower_coverage"] & joined["upper_coverage"]
+    )
     origin = float(submission.attrs["time_origin_seconds"])
     joined["observed_start_slot_from_submission_origin"] = np.floor(
         (joined["time_start"] - origin) / float(interval_s)
@@ -119,12 +131,17 @@ def run_exp25_exante_job_validation(
     stress_capacity_mw = float(
         cfg["experiments"].get("job_level_stress_panel_capacity_mw", 0.001)
     )
-    stress_floor_mwh = float(
+    stress_floor_absolute_mwh = float(
         cfg["experiments"].get(
             "job_level_stress_panel_minimum_event_service_mwh", 0.004
         )
     )
-    if stress_capacity_mw <= 0.0 or stress_floor_mwh <= 0.0:
+    stress_floor_fraction = float(
+        cfg["experiments"].get(
+            "job_level_stress_panel_minimum_event_service_fraction", 0.0
+        )
+    )
+    if stress_capacity_mw <= 0.0 or stress_floor_absolute_mwh <= 0.0:
         raise ValueError("Exp25 stress capacity and event floor must be positive")
     stress_starts = cohort["submit_slot"].to_numpy(dtype=np.int64)
     stress_ends = cohort["deadline_slot"].to_numpy(dtype=np.int64)
@@ -143,6 +160,13 @@ def run_exp25_exante_job_validation(
         cohort["region"].to_numpy(dtype=np.int64), stress_counts
     )
     stress_energy = cohort["declared_energy_mwh"].to_numpy(dtype=float)
+    cohort_entitlement_mwh = float(stress_energy.sum())
+    if stress_floor_fraction < 0.0 or stress_floor_fraction > 1.0:
+        raise ValueError("job_level_stress_panel_minimum_event_service_fraction must lie in [0, 1]")
+    stress_floor_mwh = max(
+        stress_floor_absolute_mwh,
+        stress_floor_fraction * cohort_entitlement_mwh,
+    )
     stress_gpus = cohort["requested_gpus"].to_numpy(dtype=float)
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     event_slot_values = np.asarray(
@@ -385,6 +409,8 @@ def run_exp25_exante_job_validation(
             {"metric": "minimum_event_capacity_slack_mwh", "value": float(stress_capacity_slack.min()), "unit": "MWh"},
             {"metric": "active_event_capacity_slot_fraction", "value": float(np.mean(stress_capacity_slack <= 1e-10)), "unit": "fraction"},
             {"metric": "event_service_floor_mwh", "value": stress_floor_mwh, "unit": "MWh"},
+            {"metric": "cohort_declared_entitlement_mwh", "value": cohort_entitlement_mwh, "unit": "MWh"},
+            {"metric": "event_service_floor_fraction_of_cohort_entitlement", "value": stress_floor_mwh / max(cohort_entitlement_mwh, 1e-12), "unit": "fraction"},
             {"metric": "event_service_delivered_mwh", "value": float(stress_profile[:, event_slot_values].sum()), "unit": "MWh"},
             {"metric": "maximum_job_energy_residual_mwh", "value": float(np.max(np.abs(stress_job_residual))), "unit": "MWh"},
             {"metric": "solver_success", "value": 1, "unit": "boolean"},
@@ -414,6 +440,8 @@ def run_exp25_exante_job_validation(
         {"metric": "observed_to_declared_energy_q10", "value": float(joined["central_ratio"].quantile(0.10)), "unit": "ratio"},
         {"metric": "observed_to_declared_energy_q90", "value": float(joined["central_ratio"].quantile(0.90)), "unit": "ratio"},
         {"metric": "physical_nameplate_energy_coverage", "value": float(joined["upper_coverage"].mean()), "unit": "fraction"},
+        {"metric": "declared_lower_envelope_coverage", "value": float(joined["lower_coverage"].mean()), "unit": "fraction"},
+        {"metric": "declared_energy_interval_coverage", "value": float(joined["declared_interval_coverage"].mean()), "unit": "fraction"},
         {"metric": "observed_completion_inside_declared_window", "value": float(joined["declared_deadline_coverage"].mean()), "unit": "fraction"},
         {"metric": "maximum_declared_window_infeasible_jobs", "value": int(submission.attrs["declared_window_infeasible_jobs"]), "unit": "jobs"},
         {"metric": "stress_cohort_jobs", "value": int(len(cohort)), "unit": "jobs"},
@@ -427,6 +455,8 @@ def run_exp25_exante_job_validation(
             median_observed_to_declared_energy=("central_ratio", "median"),
             q90_observed_to_declared_energy=("central_ratio", lambda x: x.quantile(0.9)),
             physical_nameplate_coverage=("upper_coverage", "mean"),
+            declared_lower_envelope_coverage=("lower_coverage", "mean"),
+            declared_energy_interval_coverage=("declared_interval_coverage", "mean"),
             declared_window_coverage=("declared_deadline_coverage", "mean"),
         )
         .reset_index()
@@ -442,6 +472,14 @@ def run_exp25_exante_job_validation(
         "submitted_jobs": int(len(submission)),
         "execution_matched_jobs": int(len(joined)),
         "declared_service_fraction": float(calibration["declared_service_fraction"]),
+        "declared_service_fraction_lower": float(
+            calibration.get(
+                "declared_service_fraction_lower",
+                calibration.get("fraction_quantiles", {}).get(
+                    "0.1", calibration["declared_service_fraction"]
+                ),
+            )
+        ),
         "physical_upper_service_fraction": float(calibration["physical_upper_service_fraction"]),
         "declared_per_gpu_power_cap_mw": cap_mw,
         "unbounded_timelimit_slots": runtime_fallback,
@@ -462,6 +500,9 @@ def run_exp25_exante_job_validation(
             "selected_start_variables": int(len(selected)),
             "capacity_mw_per_region": stress_capacity_mw,
             "event_service_floor_mwh": stress_floor_mwh,
+            "absolute_event_service_floor_mwh": stress_floor_absolute_mwh,
+            "cohort_declared_entitlement_mwh": cohort_entitlement_mwh,
+            "event_service_floor_fraction_of_cohort_entitlement": stress_floor_mwh / max(cohort_entitlement_mwh, 1e-12),
             "event_service_delivered_mwh": float(stress_profile[:, event_slot_values].sum()),
             "active_event_capacity_slot_fraction": float(np.mean(stress_capacity_slack <= 1e-10)),
             "minimum_event_capacity_slack_mwh": float(stress_capacity_slack.min()),
@@ -471,12 +512,13 @@ def run_exp25_exante_job_validation(
             "solution_file": "job_level_capacity_stress_solution.npz",
         },
         "interpretation": (
-            "The central declaration is a training-only ex-ante entitlement; the "
-            "full requested nameplate is the physical upper bound. Observed DCGM "
-            "energy is reported for coverage and cannot alter a release, deadline, "
-            "or service equality. The stress panel is solved with one binary "
-            "start per job, so capacity and the event-service floor are tested "
-            "on an executable nonpreemptive schedule."
+            "The central q50 declaration is a training-only ex-ante entitlement; "
+            "the q10 declaration is a predeclared empirical lower envelope and "
+            "the full requested nameplate is the physical upper bound. Observed "
+            "DCGM energy is reported for interval coverage and cannot alter a "
+            "release, deadline, or service equality. The stress panel is solved "
+            "with one binary start per job, so capacity and the event-service "
+            "floor are tested on an executable nonpreemptive schedule."
         ),
     }
     (final / "experiment_metadata.json").write_text(

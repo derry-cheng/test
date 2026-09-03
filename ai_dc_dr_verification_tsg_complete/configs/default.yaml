@@ -258,6 +258,9 @@ experiments:
   # while retaining the complete job population in its window intersection.
   job_level_stress_panel_day_index: 127
   job_level_stress_panel_minimum_event_service_mwh: 0.004
+  # The absolute floor is accompanied by a normalized lower bound so the
+  # binding panel remains interpretable if the declared cohort changes.
+  job_level_stress_panel_minimum_event_service_fraction: 0.25
   job_level_stress_milp_time_limit_s: 120
   # Independent controlled-event replay: a separately parameterized exact LP
   # uses this tariff and no statistical target or verifier candidate as an

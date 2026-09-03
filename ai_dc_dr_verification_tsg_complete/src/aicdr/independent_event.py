@@ -160,7 +160,26 @@ def run_exp23_independent_event_replay(
     event_slots = list(map(int, cfg["market"]["event_slots"]))
     gate = int(cfg["experiments"].get("decision_time_event_gate_slot", min(event_slots)))
     response_price = float(cfg["experiments"].get("independent_event_response_price_per_mwh", 150.0))
-    gate_price = float(cfg["experiments"].get("decision_time_response_dr_prices", [10.0])[-1])
+    # Reuse the validation-frozen gate tariff from Exp17.  Falling back to the
+    # last configured candidate would silently turn this independent replay
+    # into a different deployment policy whenever the candidate grid changes.
+    gate_price = float(
+        cfg["experiments"].get("decision_time_selected_response_dr_price_per_mwh", np.nan)
+    )
+    gate_metadata_path = (
+        root
+        / "experiments/exp17_decision_time_information/results/final/experiment_metadata.json"
+    )
+    if gate_metadata_path.exists():
+        gate_metadata = json.loads(gate_metadata_path.read_text(encoding="utf-8"))
+        gate_price = float(
+            gate_metadata.get("causal_response_calibration", {}).get(
+                "selected_dr_price_per_mwh", gate_price
+            )
+        )
+    if not np.isfinite(gate_price):
+        candidates = cfg["experiments"].get("decision_time_response_dr_prices", [10.0])
+        gate_price = float(candidates[-1])
     baseline_price = float(cfg["experiments"].get("independent_event_baseline_price_per_mwh", 120.0))
     independent_participants = [
         int(value)

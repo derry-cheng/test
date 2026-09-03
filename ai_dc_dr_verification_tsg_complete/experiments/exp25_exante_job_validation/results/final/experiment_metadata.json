@@ -7,6 +7,7 @@
   "submitted_jobs": 75326,
   "execution_matched_jobs": 71128,
   "declared_service_fraction": 0.0011383333333333334,
+  "declared_service_fraction_lower": 5.7238037480974145e-06,
   "physical_upper_service_fraction": 1.0,
   "declared_per_gpu_power_cap_mw": 0.001,
   "unbounded_timelimit_slots": 128,
@@ -27,6 +28,9 @@
     "selected_start_variables": 79,
     "capacity_mw_per_region": 0.0006647866667,
     "event_service_floor_mwh": 0.004,
+    "absolute_event_service_floor_mwh": 0.004,
+    "cohort_declared_entitlement_mwh": 0.014126716666666667,
+    "event_service_floor_fraction_of_cohort_entitlement": 0.2831514282040059,
     "event_service_delivered_mwh": 0.004154916666666666,
     "active_event_capacity_slot_fraction": 0.78125,
     "minimum_event_capacity_slack_mwh": 8.33334052804946e-15,
@@ -35,5 +39,5 @@
     "solver": "scipy.optimize.milp with binary start variables and exact contiguous fixed-rate blocks",
     "solution_file": "job_level_capacity_stress_solution.npz"
   },
-  "interpretation": "The central declaration is a training-only ex-ante entitlement; the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality. The stress panel is solved with one binary start per job, so capacity and the event-service floor are tested on an executable nonpreemptive schedule."
+  "interpretation": "The central q50 declaration is a training-only ex-ante entitlement; the q10 declaration is an empirical lower coverage envelope and the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality. The stress floor is the larger of the 0.004-MWh absolute floor and 0.25 of the cohort entitlement; for this locked cohort the absolute floor binds. The panel is solved with one binary start per job, so capacity and the event-service floor are tested on an executable nonpreemptive schedule."
 }

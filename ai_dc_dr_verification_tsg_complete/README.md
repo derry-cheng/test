@@ -4,7 +4,7 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `manuscript/` contains the LaTeX source and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs; `code/` documents the executable implementation boundary. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
+`src/aicdr/` contains the canonical data, optimization, experiment, audit, and plotting implementation. `code/` documents that implementation boundary; `experiments/` contains one directory per protocol with its runner, figures, checkpoints, and final results. `paper/` contains the LaTeX manuscript and editable figures, `reports/` contains review and release records, and `results/` indexes final experiment outputs. `configs/default.yaml` is the single frozen configuration entry point. The large BurstGPT and MIT SuperCloud releases remain outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
 ## Reproduction
 
@@ -37,7 +37,7 @@ The full data pipeline requires the raw files named in `configs/default.yaml`. J
 PYTHONPATH=src .venv/bin/python experiments/exp20_trace_meter_replay/run.py
 ```
 
-For manuscript compilation, run LaTeX from `manuscript/` so the experiment figures resolve relative to the source file. The generated PDF is checked for page count, unresolved references, and figure readability before release.
+For manuscript compilation, run LaTeX from `paper/` so the experiment figures resolve relative to the source file. The generated PDF is checked for page count, unresolved references, and figure readability before release.
 
 ## Data and audit scope
 
@@ -61,9 +61,9 @@ observations are held out by submit/end timestamps; no positive-energy filter,
 immutable-ID modulo rule, or locked-day outcome selects the Exp19 submission
 population.
 
-The compiled paper is `manuscript/main.pdf`. Supporting formulation, source
+The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--25 each own a README, final results,
+the LaTeX source. Experiments 1--26 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
@@ -74,7 +74,9 @@ deterministic event-window-mean N--1 replay on the explicitly pinned public
 IEEE RTS-24 case. Experiment 24 then freezes the profiles and covers all finite
 non-islanding outages without screening or post-solution reoptimization. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
-panels.
+panels. Experiment 26 is a cached end-to-end lineage certificate: it recomputes
+the indexed witness-to-network residuals, hashes the risk and payment artifacts,
+and records their distinct ledger roles before the complete outage replay.
 
 ## Reproducibility boundaries
 

@@ -7653,6 +7653,18 @@ def run_exp9(
                 "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))",
             },
             "reference_payment_cap": candidate_names[reference_candidate],
+            "payment_guarantee_scope": (
+                "relative N-1 baseline-cost cap: every certified conversion scenario "
+                "has certified baseline cost no larger than the validation-frozen "
+                "reference cap"
+            ),
+            "absolute_overpayment_guarantee": False,
+            "revenue_adequacy_guarantee": False,
+            "incentive_compatibility_guarantee": False,
+            "realized_payment_audit": (
+                "payment_evaluation_intervals.csv reports independent realized-meter "
+                "error and overpayment; these diagnostics are not part of cap selection"
+            ),
             "external_transfer_comparator": "Feasible Quantile Projection",
             "payment_target_selection": (
                 "validation-only independent N-1 payment MAE over q10/q50/q90 "
@@ -9430,7 +9442,7 @@ def run_exp11(
             "preventive_ac_n1_results.csv"
         ),
         results,
-        root / "manuscript/figures",
+        root / "paper/figures",
         cfg,
     )
     write_json(
@@ -10544,6 +10556,12 @@ def run_exp19(
             submission_calibration["declared_service_fraction"]
         ),
         declared_per_gpu_power_cap_mw=per_gpu_cap_mw,
+        declared_service_fraction_lower=float(
+            submission_calibration.get(
+                "declared_service_fraction_lower",
+                submission_calibration["declared_service_fraction"],
+            )
+        ),
         unbounded_timelimit_slots=unbounded_timelimit_slots,
         submission_buffer_slots=submission_buffer_slots,
         time_origin_seconds=time_origin_seconds,
@@ -12597,6 +12615,14 @@ def run_exp17(
         "simulated_response_source": (
             "the committed-ledger DR LP is retained as an operating replay and "
             "is never substituted for the measured scoring meter"
+        ),
+        "deployment_primary_panel": "Committed-ledger rolling-service verifier",
+        "deployment_primary_metrics_file": "decision_time_summary.csv",
+        "mechanism_isolation_comparator": "Complete-ledger risk-constrained verifier",
+        "headline_metric_role": (
+            "Experiment 17 deployment metrics are gate-causal; complete-ledger "
+            "rows are retained only as an information-value comparator and are "
+            "not a deployable policy"
         ),
         "meter_cap_scoring_note": (
             "The deployed settlement uses the submitted causal committed-ledger "

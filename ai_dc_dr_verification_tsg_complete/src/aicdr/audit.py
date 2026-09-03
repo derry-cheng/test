@@ -12,6 +12,7 @@ import pandas as pd
 from PIL import Image
 
 from .data import load_workload
+from .manuscript_consistency import run_manuscript_consistency
 from .optimization import parse_pglib_case, solve_sced, solve_workload_schedule
 from .utils import sha256, write_json
 
@@ -273,25 +274,34 @@ EXPECTED_FILES = {
         "experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
         "experiments/exp25_exante_job_validation/README.md",
     ],
-    "manuscript_sources": [
-        "manuscript/main.tex",
-        "manuscript/main.pdf",
-        "manuscript/IEEEtran.cls",
-        "manuscript/references.bib",
-        "manuscript/formula_source_matrix.md",
-        "manuscript/model_formulation.md",
-        "manuscript/paper_outline_zh.md",
-        "manuscript/theoretical_results.md",
-        "manuscript/figures/framework_architecture.drawio",
-        "manuscript/figures/framework_architecture.svg",
-        "manuscript/figures/method_detail.drawio",
-        "manuscript/figures/method_detail.svg",
-        "manuscript/figures/fig0_framework.pdf",
-        "manuscript/figures/fig0_framework.png",
-        "manuscript/figures/fig_method_detail.pdf",
-        "manuscript/figures/fig_method_detail.png",
-        "manuscript/figures/fig17_cross_layer_robustness.png",
-        "manuscript/figures/fig17_cross_layer_robustness.pdf",
+    "experiment_26": [
+        "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+        "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+        "experiments/exp26_end_to_end_certificate/README.md",
+    ],
+    "paper_sources": [
+        "paper/main.tex",
+        "paper/main.pdf",
+        "paper/IEEEtran.cls",
+        "paper/references.bib",
+        "paper/formula_source_matrix.md",
+        "paper/model_formulation.md",
+        "paper/paper_outline_zh.md",
+        "paper/theoretical_results.md",
+        "paper/figures/framework_architecture.drawio",
+        "paper/figures/framework_architecture.svg",
+        "paper/figures/method_detail.drawio",
+        "paper/figures/method_detail.svg",
+        "paper/figures/fig0_framework.pdf",
+        "paper/figures/fig0_framework.png",
+        "paper/figures/fig_method_detail.pdf",
+        "paper/figures/fig_method_detail.png",
+        "paper/figures/fig17_cross_layer_robustness.png",
+        "paper/figures/fig17_cross_layer_robustness.pdf",
     ],
 }
 
@@ -343,6 +353,7 @@ def run_audit(
         "exp23",
         "exp24",
         "exp25",
+        "exp26",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -389,17 +400,12 @@ def run_audit(
     )
     required_citation_keys = {
         "wang2022baseline",
-        "caiso2017baseline",
         "liu2013dcdr",
         "adnan2012geographical",
         "zimmerman2011matpower",
-        "babaeinejadsarookolaee2021pglib",
         "boyd2004convex",
         "rockafellar2000cvar",
         "shapley1953value",
-        "kunsch1989bootstrap",
-        "holm1979multiple",
-        "huangfu2018highs",
         "friedman2001gradient",
         "geurts2006extratrees",
         "hoerl1970ridge",
@@ -415,24 +421,22 @@ def run_audit(
         "cao2024nonwire",
         "riepin2025clean",
         "takci2025flexibility",
-        "dcaopt2024",
         "caprara2026",
         "nash1950bargaining",
         "satchidanandan2023twostage",
         "chen2021incentive",
-        "nist2015fips1804",
     }
-    bibliography = (root / "manuscript/references.bib").read_text(
+    bibliography = (root / "paper/references.bib").read_text(
         encoding="utf-8"
     )
     bibliography_keys = set(
         re.findall(r"@\w+\{\s*([^,\s]+)", bibliography)
     )
     source_matrix = (
-        root / "manuscript/formula_source_matrix.md"
+        root / "paper/formula_source_matrix.md"
     ).read_text(encoding="utf-8")
     formulation = (
-        root / "manuscript/model_formulation.md"
+        root / "paper/model_formulation.md"
     ).read_text(encoding="utf-8")
     _check(
         required_citation_keys <= bibliography_keys
@@ -446,9 +450,10 @@ def run_audit(
         ),
         checks,
     )
-    manuscript_text = (root / "manuscript/main.tex").read_text(
+    manuscript_text = (root / "paper/main.tex").read_text(
         encoding="utf-8"
     )
+    checks.extend(run_manuscript_consistency(root, manuscript_text))
     _check(
         re.search(
             r"\\documentclass\[(?:[0-9]+pt,)?journal\]\{IEEEtran\}",
@@ -3560,11 +3565,22 @@ def run_audit(
         and int(stress_values.get("cohort_jobs", -1)) == 79
         and abs(float(stress_values.get("capacity_mw_per_region", 0.0)) - 0.0006647866667) <= 1e-12
         and float(stress_values.get("event_service_delivered_mwh", 0.0)) >= float(stress_values.get("event_service_floor_mwh", 1.0)) - 1e-10
+        and float(stress_values.get("cohort_declared_entitlement_mwh", 0.0)) > 0.0
+        and np.isclose(
+            float(stress_values.get("event_service_floor_fraction_of_cohort_entitlement", np.nan)),
+            float(stress_values.get("event_service_floor_mwh", np.nan))
+            / float(stress_values.get("cohort_declared_entitlement_mwh", np.nan)),
+            rtol=0.0,
+            atol=1e-12,
+        )
         and float(stress_values.get("minimum_event_capacity_slack_mwh", -np.inf)) >= -1e-8
         and float(stress_values.get("maximum_job_energy_residual_mwh", np.inf)) <= 1e-8
         and bool(stress_values.get("solver_success", 0.0))
         and exante_metadata.get("telemetry_used_in_exp19_decision") is False
         and exante_metadata.get("execution_ledger_role") == "post-event scoring only"
+        and 0.0 < float(exante_metadata.get("declared_service_fraction_lower", np.nan))
+        < float(exante_metadata.get("declared_service_fraction", np.nan))
+        and "q10" in str(exante_metadata.get("interpretation", "")).lower()
         and len(str(exante_metadata.get("submission_ledger_digest", ""))) == 64,
         "ex_ante_submission_job_validation_and_binding_capacity_panel",
         (
@@ -3603,6 +3619,45 @@ def run_audit(
         (
             "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding "
             "outages without AC screening or post-solution workload adjustment"
+        ),
+        checks,
+    )
+
+    # Exp26 is the cross-stage closure certificate.  It must recompute the
+    # indexed witness residuals, preserve the risk/payment ledger roles, and
+    # carry the relative-cap scope into the frozen all-outage replay.
+    lineage_path = (
+        root
+        / "experiments/exp26_end_to_end_certificate/results/final/"
+        "end_to_end_lineage.csv"
+    )
+    lineage_profile_path = (
+        root
+        / "experiments/exp26_end_to_end_certificate/results/final/"
+        "profile_role_lineage.csv"
+    )
+    lineage_meta_path = (
+        root
+        / "experiments/exp26_end_to_end_certificate/results/final/"
+        "end_to_end_certificate.json"
+    )
+    lineage = pd.read_csv(lineage_path)
+    lineage_profile = pd.read_csv(lineage_profile_path)
+    lineage_meta = json.loads(lineage_meta_path.read_text(encoding="utf-8"))
+    _check(
+        len(lineage) == 5
+        and bool(lineage["passed"].astype(bool).all())
+        and len(lineage_profile) == 5
+        and lineage_profile["source_sha256"].astype(str).str.fullmatch(r"[0-9a-f]{64}").all()
+        and lineage_meta.get("profile_roles", {}).get("profile_identity_asserted") is False
+        and "relative N-1 baseline-cost cap" in str(lineage_meta.get("payment_certificate_scope", ""))
+        and "indexed witness -> RTS-24 N-1 network valuation" in " ".join(lineage_meta.get("chain", []))
+        and float(lineage_meta.get("payment_cap_maximum_violation_usd", np.inf)) <= 1e-6
+        and bool(lineage_meta.get("all_outage_replay", {}).get("all_solver_cells_successful")),
+        "end_to_end_lineage_certificate",
+        (
+            "Exp26 recomputes the indexed witness-to-network residuals, retains "
+            "separate risk/payment roles, and closes the relative-cap and all-outage chain"
         ),
         checks,
     )
