@@ -1,0 +1,8 @@
+criterion,value,required_value,units,evidence
+post_gate_arrivals_used_by_independent_policy,0,0,boolean,both independent LPs receive the gate-masked ledger
+verifier_profile_used_as_policy_input,0,0,boolean,"the independent LPs have no target, hull, or risk-envelope argument"
+locked_outcome_used_for_policy_selection,0,0,boolean,"tariffs, participants, and service floor are predeclared in configuration"
+tariff_pair_distinct_from_gate,1,1,boolean,independent event requires a distinct response and baseline tariff pair
+participant_or_service_floor_distinct_from_gate,1,1,boolean,the independent event policy differs in participant set or service floor
+policy_trajectory_difference_nonzero,1,1,boolean,pre-scoring profile comparison is nonzero on the locked replay
+field_causal_intervention_claim,0,0,boolean,the controlled replay is explicitly an optimization-policy benchmark

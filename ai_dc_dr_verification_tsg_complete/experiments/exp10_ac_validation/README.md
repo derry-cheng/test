@@ -25,7 +25,7 @@ does not use loading-based screening.
 Run with:
 
 ```bash
-PYTHONPATH=src:vendor python experiments/exp10_ac_validation/run.py
+PYTHONPATH=code/src:vendor python experiments/exp10_ac_validation/run.py
 ```
 
 The run checkpoints the base-case network-day cells, the corrective

@@ -23,6 +23,9 @@ data:
   inference_peak_target_mw: 145.0
   batch_peak_target_mw: 65.0
   percentile_for_scaling: 0.99
+  # Strict chronological power split: the next 16 complete days calibrate
+  # conversion scenarios and later records are locked for generalization only.
+  power_calibration_validation_days: 16
   scaling_fit_days: 40
   # The submit-time calibration cutoff is chronological and independent of the
   # locked event/test days. A job contributes labels only after both its
@@ -48,7 +51,7 @@ market:
   cross_network_evaluation_generator_segments: 40
   # Locked payment and unseen-factor transfer evaluations use a finer 40-piece
   # N--1 value model than the four-piece certificate LP.  The separate
-  # held-out conversion panel reuses this independent evaluator.
+  # calibration-validation conversion panel reuses this independent evaluator.
   n1_evaluation_generator_segments: 40
   # Uniform mechanisms are normalized to the same event-period nodal-price
   # level inside Experiment 3. This field is retained only for the DR tariff.
@@ -69,19 +72,15 @@ experiments:
   # The reserve grid is deliberately below one so the daily-tail constraint is
   # a genuine out-of-sample contract rather than a slack copy of the reference.
   risk_reserve_fractions: [0.90, 0.95, 1.00]
-  # A separate tail reserve prevents the CVaR row from being numerically
-  # redundant when the total budget is selected at its feasible endpoint.
-  # The validation-only tail-frontier audit identifies the declared boundary
-  # below as the smallest pooled-feasible reserve (the CVaR row is active at
-  # this boundary). Larger reserves remain in the sensitivity panel.
+  # The total and daily-tail reserves are selected together on contiguous
+  # folds, and the selected value is reused unchanged in the pooled fit.
   # CVaR is measured on the daily false-credit ratio (absolute false credit
   # divided by that day's true credited energy), making the tail constraint
-  # nonredundant with the total MWh budget.  A 96.94103% reserve is
-  # pooled-feasible and sits on the empirical frontier;
-  # the neighbouring boundary is retained in the validation sensitivity panel.
+  # nonredundant with the total MWh budget. No pooled-only reserve retuning is
+  # allowed after nested selection.
   risk_cvar_metric: daily_false_credit_ratio
   risk_cvar_level: 0.75
-  risk_cvar_reserve_fraction: 0.9694103
+  risk_cvar_reserve_fraction: 1.00
   # Convex tail preference used only by fits with the CVaR epigraph enabled;
   # the total-budget-only ablation removes this term as well as the CVaR row.
   risk_cvar_objective_weight: 0.50
@@ -94,7 +93,7 @@ experiments:
   # so a small training fold is not declared infeasible by the production
   # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.
   blocked_cv_cvar_reserve_fraction: 1.00
-  risk_cvar_stress_reserve_fractions: [0.9694103, 0.975, 0.990, 1.00]
+  risk_cvar_stress_reserve_fractions: [0.90, 0.95, 0.97, 0.99, 1.00]
   bootstrap_replications: 5000
   # Three-day blocks yield 18 independent sign-randomization units on the
   # 54-day locked test set; 6/9/18-day alternatives remain sensitivity checks.
@@ -253,14 +252,11 @@ experiments:
   # in that cohort. Exp19's full-horizon certificate keeps the committed
   # 118-MW capacity unchanged.
   job_level_stress_capacity_mw: 0.0
-  job_level_stress_panel_capacity_mw: 0.0006647866667
+  job_level_stress_panel_capacity_mw: 0.0001603677778
   # A late, fully declared calendar slice supplies a compact binding MILP
   # while retaining the complete job population in its window intersection.
   job_level_stress_panel_day_index: 127
-  job_level_stress_panel_minimum_event_service_mwh: 0.004
-  # The absolute floor is accompanied by a normalized lower bound so the
-  # binding panel remains interpretable if the declared cohort changes.
-  job_level_stress_panel_minimum_event_service_fraction: 0.25
+  job_level_stress_panel_minimum_event_service_mwh: 0.0010800000000
   job_level_stress_milp_time_limit_s: 120
   # Independent controlled-event replay: a separately parameterized exact LP
   # uses this tariff and no statistical target or verifier candidate as an

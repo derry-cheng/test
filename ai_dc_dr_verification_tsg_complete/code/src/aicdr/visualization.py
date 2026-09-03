@@ -257,7 +257,7 @@ def plot_exp9(
     axes[2].text(
         0.04,
         0.96,
-        "All held-out conversion scenarios",
+        "All calibration-validation conversion scenarios",
         transform=axes[2].transAxes,
         va="top",
         fontsize=7,
@@ -441,7 +441,7 @@ def plot_exp15_interval_certificate(
     sns.barplot(data=margin, x="endpoint", y="margin_usd", hue="method", palette="colorblind", ax=axes[1])
     axes[1].axhline(0, color=COLORS["black"], linewidth=0.8)
     axes[1].set_title("(b) Endpoint payment-cap margin")
-    axes[1].set_xlabel("Held-out conversion interval endpoint")
+    axes[1].set_xlabel("Calibration-validation conversion interval endpoint")
     axes[1].set_ylabel("Reference minus certified cost ($)")
     axes[1].legend(fontsize=6.5, title_fontsize=6.5)
     if ncols == 3:
@@ -455,7 +455,7 @@ def plot_exp15_interval_certificate(
             ax=axes[2],
         )
         axes[2].set_title("(c) Workload-hull payment uncertainty")
-        axes[2].set_xlabel("Held-out conversion endpoint")
+        axes[2].set_xlabel("Calibration-validation conversion endpoint")
         axes[2].set_ylabel("Interval width ($/day)")
     save_figure(fig, folder, "fig21_interval_payment_certificate")
 

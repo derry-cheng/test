@@ -21,6 +21,3 @@ The revised closure stages are:
   frozen-profile cell.
 - `exp25_exante_job_validation`: independent submit-time declaration and
   binding-capacity stress certificate for the complete submitted population.
-- `exp26_end_to_end_certificate`: cached end-to-end lineage certificate that
-  rechecks the indexed witness, role-separated risk/payment artifacts, and the
-  frozen outage replay.

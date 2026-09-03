@@ -79,6 +79,8 @@
     "observations": 95182,
     "train_observations": 44391,
     "test_observations": 50791,
+    "validation_observations": 9637,
+    "locked_observations": 41154,
     "features": [
       "smutilization_pct_avg",
       "memoryutilization_pct_avg",
@@ -95,10 +97,13 @@
     "test_mae_watts": 13.023402021609703,
     "test_rmse_watts": 19.13740569626384,
     "test_r2": 0.8330765371943397,
-    "training_rule": "chronological scheduler information set: time_submit and time_end < 40 days after the earliest matched submission",
+    "training_rule": "strict chronological three-way split: train jobs submit and end within the first 40 days; calibration-validation jobs occupy the next 16 days; all remaining matched jobs are locked evaluation records",
     "calibration_origin_submit_seconds": 21193772.0,
     "calibration_cutoff_seconds": 24649772.0,
+    "validation_cutoff_seconds": 26032172.0,
     "calibration_cutoff_days": 40,
+    "validation_window_days": 16,
+    "partition_rule": "train < train cutoff; calibration validation occupies the next fixed chronological window; locked evaluation is strictly later or has a completion crossing the validation cutoff",
     "measured_power_quantiles_watts": {
       "0.01": 24.198324,
       "0.1": 25.51212,
@@ -115,13 +120,75 @@
     },
     "heldout_jobs_with_positive_prediction": 40768,
     "heldout_job_energy_measured_to_predicted_quantiles": {
-      "0.01": 0.5366973300611017,
-      "0.1": 0.6690593552942903,
-      "0.5": 0.9240713988969669,
-      "0.9": 1.4095608876115522,
-      "0.99": 4.755718434549532
+      "0.01": 0.5826705226086141,
+      "0.1": 0.6871175459512688,
+      "0.5": 0.9698487058668352,
+      "0.9": 1.3490609178395556,
+      "0.99": 5.320912625466783
     },
-    "heldout_aggregate_measured_to_predicted_energy_ratio": 1.065490531017384
+    "heldout_aggregate_measured_to_predicted_energy_ratio": 1.065490531017384,
+    "validation_metrics": {
+      "observations": 9637,
+      "mae_watts": 10.802814349335655,
+      "rmse_watts": 14.462716124248539,
+      "r2": 0.8956169366942799,
+      "residual_quantiles_watts": {
+        "0.01": -42.966101194662805,
+        "0.1": -19.374019018292444,
+        "0.5": -1.3524198081346128,
+        "0.9": 15.083607198454986,
+        "0.99": 31.692042147978455
+      },
+      "jobs_with_positive_prediction": 6540,
+      "job_energy_measured_to_predicted_quantiles": {
+        "0.01": 0.5826705226086141,
+        "0.1": 0.6871175459512688,
+        "0.5": 0.9698487058668352,
+        "0.9": 1.3490609178395556,
+        "0.99": 5.320912625466783
+      },
+      "aggregate_measured_to_predicted_energy_ratio": 1.063099456331828
+    },
+    "locked_metrics": {
+      "observations": 41154,
+      "mae_watts": 13.543395300457567,
+      "rmse_watts": 20.075390119127675,
+      "r2": 0.8196163656296094,
+      "residual_quantiles_watts": {
+        "0.01": -71.22736724865717,
+        "0.1": -23.640990192337963,
+        "0.5": -4.032620578384925,
+        "0.9": 15.697520988752515,
+        "0.99": 41.66522454042691
+      },
+      "jobs_with_positive_prediction": 34228,
+      "job_energy_measured_to_predicted_quantiles": {
+        "0.01": 0.4975440578358102,
+        "0.1": 0.6642687087116257,
+        "0.5": 0.917827339015977,
+        "0.9": 1.4269018669282831,
+        "0.99": 4.688897534544586
+      },
+      "aggregate_measured_to_predicted_energy_ratio": 1.06588950949852
+    },
+    "calibration_validation_job_energy_measured_to_predicted_quantiles": {
+      "0.01": 0.5826705226086141,
+      "0.1": 0.6871175459512688,
+      "0.5": 0.9698487058668352,
+      "0.9": 1.3490609178395556,
+      "0.99": 5.320912625466783
+    },
+    "locked_job_energy_measured_to_predicted_quantiles": {
+      "0.01": 0.4975440578358102,
+      "0.1": 0.6642687087116257,
+      "0.5": 0.917827339015977,
+      "0.9": 1.4269018669282831,
+      "0.99": 4.688897534544586
+    },
+    "calibration_validation_jobs_with_positive_prediction": 6540,
+    "locked_jobs_with_positive_prediction": 34228,
+    "calibration_validation_aggregate_measured_to_predicted_energy_ratio": 1.063099456331828,
+    "locked_aggregate_measured_to_predicted_energy_ratio": 1.06588950949852
   },
   "submission_calibration": {
     "joined_positive_jobs": 71141,
@@ -154,7 +221,81 @@
     "central_estimate_is_not_observed_energy": true,
     "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
     "calibration_label_rule": "matched positive DCGM energy is a label requirement for the training-only calibration sample; it never filters Exp19 submissions",
-    "membership_rule_excludes_outcome_filtered_job_ids": true
+    "membership_rule_excludes_outcome_filtered_job_ids": true,
+    "per_job_fraction_model": {
+      "model_type": "three conditional QuantileRegressor models on log utilization fraction",
+      "fit_scope": "chronological submit/end-time calibration jobs only",
+      "features": [
+        "log_requested_gpus",
+        "log_declared_runtime_slots",
+        "unlimited_timelimit",
+        "job_type::LLSUB:BATCH",
+        "job_type::LLSUB:INTERACTIVE",
+        "job_type::OTHER"
+      ],
+      "job_type_categories": [
+        "LLMAPREDUCE:MAP",
+        "LLSUB:BATCH",
+        "LLSUB:INTERACTIVE",
+        "OTHER"
+      ],
+      "reference_job_type": "LLMAPREDUCE:MAP",
+      "quantile_levels": [
+        0.1,
+        0.5,
+        0.9
+      ],
+      "target": "log(measured_energy / requested_GPU_nameplate_energy)",
+      "physical_clip": "[1e-12, 1] applied only to the declared fraction at reconstruction",
+      "quantile_models": {
+        "0.1": {
+          "coefficients": [
+            -1.8151359497413262,
+            -1.5693096989601771,
+            -0.18535774558182228,
+            -2.520678878639112,
+            -1.0458311201777768,
+            -1.7958778851443546
+          ],
+          "intercept": -2.0661617963787533
+        },
+        "0.5": {
+          "coefficients": [
+            0.5406120127487081,
+            -0.626042058567498,
+            -0.6097873944843581,
+            -0.8914280595683102,
+            -0.10769971167098191,
+            -2.5723568977765185
+          ],
+          "intercept": -3.8653408260442244
+        },
+        "0.9": {
+          "coefficients": [
+            0.7088484823840485,
+            -0.7063977096444233,
+            -0.4407076262286816,
+            -0.28943854395207586,
+            -0.0035708383236290886,
+            -0.757728210714097
+          ],
+          "intercept": -2.2886937635040483
+        }
+      },
+      "validation_diagnostics": {
+        "jobs": 31284,
+        "median_observed_to_predicted_q50": 1.0,
+        "q90_observed_to_predicted_q50": 17.578254185490433,
+        "q10_q90_interval_coverage": 0.800025572177471
+      },
+      "locked_diagnostics": {
+        "jobs": 39857,
+        "median_observed_to_predicted_q50": 4.4390306710020475,
+        "q90_observed_to_predicted_q50": 78.64692411927138,
+        "q10_q90_interval_coverage": 0.5913892164488045
+      }
+    },
+    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound"
   },
   "processing": {
     "interval_seconds": 900,

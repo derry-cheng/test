@@ -247,6 +247,7 @@ def run_exp22_coupled_job_network_certificate(
             "native_secure_cost_usd_per_interval": float(native_result.objective * dt_h),
             "counterfactual_secure_cost_usd_per_interval": float(counterfactual_result.objective * dt_h),
             "secure_net_value_usd_per_interval": float((native_result.objective - counterfactual_result.objective) * dt_h),
+            "secure_event_value_usd": float((native_result.objective - counterfactual_result.objective) * dt_h),
             "native_max_base_loading": float(native_result.max_loading),
             "counterfactual_max_base_loading": float(counterfactual_result.max_loading),
             "native_max_postcontingency_loading": float(native_result.max_post_contingency_loading),
@@ -354,6 +355,12 @@ def run_exp22_coupled_job_network_certificate(
                 "secure_net_value_usd_per_interval": float(
                     (scaled_native_result.objective - scaled_counterfactual_result.objective) * dt_h
                 ),
+                # Compatibility alias retained for the original replay table;
+                # it denotes the same signed secure value and is not a second
+                # valuation path.
+                "secure_event_value_usd": float(
+                    (scaled_native_result.objective - scaled_counterfactual_result.objective) * dt_h
+                ),
                 "native_max_base_loading": float(scaled_native_result.max_loading),
                 "counterfactual_max_base_loading": float(scaled_counterfactual_result.max_loading),
                 "native_max_postcontingency_loading": float(scaled_native_result.max_post_contingency_loading),
@@ -374,23 +381,17 @@ def run_exp22_coupled_job_network_certificate(
         )
     rows.extend(scaled_rows)
     frame = pd.DataFrame(rows)
-    # Stable aliases make the unit-bearing name explicit to downstream audit
-    # code while preserving the original column used by the manuscript.
-    frame["secure_event_value_usd"] = frame["secure_net_value_usd_per_interval"]
     frame.to_csv(out / "coupled_network_event_replay.csv", index=False)
     frame[frame["scenario"] != "raw_job_witness"].to_csv(
         out / "coupled_network_scale_replay.csv", index=False
     )
     event_native = float(saved_native[:, selected_slots].sum())
     event_counterfactual = float(reconstructed[:, selected_slots].sum())
-    summary_rows = [
+    summary = pd.DataFrame(
+        [
             {"metric": "submitted_jobs", "value": n_jobs, "unit": "jobs"},
             {"metric": "execution_matched_jobs", "value": int(execution_match.sum()), "unit": "jobs"},
-            # Historical report alias: positive-energy jobs are the joined
-            # execution rows, while the indexed witness covers every submitted
-            # declaration and is reported separately below.
             {"metric": "positive_energy_jobs", "value": int(execution_match.sum()), "unit": "jobs"},
-            {"metric": "indexed_witness_jobs", "value": n_jobs, "unit": "jobs"},
             {"metric": "service_variables", "value": len(service), "unit": "variables"},
             {"metric": "event_slots_replayed", "value": len(selected_slots), "unit": "slots"},
             {"metric": "maximum_job_to_aggregate_residual_mwh", "value": max_aggregation_residual, "unit": "MWh"},
@@ -407,8 +408,6 @@ def run_exp22_coupled_job_network_certificate(
             {"metric": "maximum_counterfactual_postcontingency_loading", "value": float(frame["counterfactual_max_postcontingency_loading"].max()), "unit": "ratio"},
             {"metric": "all_network_solves_successful", "value": int(frame["solver_success"].all()), "unit": "boolean"},
         ]
-    summary = pd.DataFrame(
-        summary_rows
     )
     summary.to_csv(out / "coupled_network_summary.csv", index=False)
     metadata = {

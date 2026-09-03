@@ -1,8 +1,8 @@
 # Interval-Robust Payment Certificate
 
 This experiment independently audits the locked payment profile with the
-40-segment N-1 dispatch model at both held-out energy-conversion interval
-endpoints (q01 and q99) against the validation-selected single feasible
+40-segment N-1 dispatch model at both calibration-validation energy-conversion
+interval endpoints (q01 and q99) against the validation-selected single feasible
 projection. Fixed facility demand is carried separately from flexible workload
 in both endpoint solves, so the raw q99 endpoint is activation-eligible under
 the q99-calibrated benchmark scale; no factor is clipped. The flexible-only

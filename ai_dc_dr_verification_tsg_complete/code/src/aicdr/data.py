@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import QuantileRegressor, Ridge
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from .progress import progress as tqdm
 
@@ -199,6 +199,12 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         logger,
         scheduler_path=scheduler_path,
         training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
+        validation_days=int(
+            cfg["data"].get(
+                "power_calibration_validation_days",
+                cfg.get("experiments", {}).get("validation_days", 16),
+            )
+        ),
     )
     submission_calibration = _fit_submission_energy_calibration(
         scheduler_path=scheduler_path,
@@ -327,8 +333,10 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 submission_calibration["declared_service_fraction"]
             ),
             "submission_energy_fraction_source": (
-                "chronological scheduler/DCGM calibration using only jobs submitted "
-                "and completed inside the declared historical information set"
+                "chronological scheduler/DCGM conditional q10/q50/q90 calibration "
+                "using only jobs submitted and completed inside the declared "
+                "historical information set; q50 is evaluated from submit-time "
+                "features and q10/q90 remain calibration bands"
             ),
         },
     }
@@ -360,15 +368,25 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "stage": "DCGM power calibration",
                 "input_records": int(calibration["observations"]),
                 "retained_records": int(calibration["train_observations"]),
-                "split_or_join_rule": "deterministic immutable-job training split",
+                "split_or_join_rule": (
+                    "strict chronological train / calibration-validation / locked "
+                    "partition; only the first partition is fit"
+                ),
                 "downstream_role": "power-conversion model fitting",
             },
             {
-                "stage": "DCGM held-out calibration",
+                "stage": "DCGM calibration-validation scenarios",
                 "input_records": int(calibration["observations"]),
-                "retained_records": int(calibration["test_observations"]),
-                "split_or_join_rule": "disjoint immutable-job test split",
+                "retained_records": int(calibration["validation_observations"]),
+                "split_or_join_rule": "next chronological window after the training cutoff",
                 "downstream_role": "conversion scenarios and calibration scoring",
+            },
+            {
+                "stage": "DCGM locked calibration audit",
+                "input_records": int(calibration["observations"]),
+                "retained_records": int(calibration["locked_observations"]),
+                "split_or_join_rule": "strictly later locked observations never used for scenario selection",
+                "downstream_role": "final conversion generalization audit",
             },
             {
                 "stage": "Submit-time energy-envelope calibration",
@@ -404,8 +422,7 @@ def _validate_declared_raw_sources(
     preprocessing pass must use the exact sources recorded by the previous
     manifest. This check is intentionally fail-closed because silently
     rebuilding the processed arrays from a partial CSV would invalidate every
-    downstream experiment while keeping the locked release artifacts
-    internally consistent.
+    downstream experiment while leaving an older artifact set in place.
     """
     if not manifest_path.exists():
         return
@@ -632,6 +649,7 @@ def _fit_dcgm_power_calibration(
     *,
     scheduler_path: Path | None = None,
     training_days: int = 40,
+    validation_days: int = 16,
 ) -> dict[str, Any]:
     """Fit the GPU-power model on a chronological, observable information set.
 
@@ -643,8 +661,8 @@ def _fit_dcgm_power_calibration(
     and completed before that cutoff.  The DCGM fields remain labels, never
     membership selectors for the submitted ledger.
     """
-    if int(training_days) <= 0:
-        raise ValueError("training_days must be positive")
+    if int(training_days) <= 0 or int(validation_days) <= 0:
+        raise ValueError("training_days and validation_days must be positive")
     columns = [
         "id_job",
         "powerusage_watts_avg",
@@ -672,88 +690,187 @@ def _fit_dcgm_power_calibration(
         if df.empty:
             raise RuntimeError("No DCGM rows match scheduler timestamps for chronological calibration")
         origin = float(df["time_submit"].min())
-        cutoff = origin + float(training_days) * 86400.0
-        mask = (df["time_submit"] >= origin) & (df["time_submit"] < cutoff) & (df["time_end"] <= cutoff)
+        train_cutoff = origin + float(training_days) * 86400.0
+        validation_cutoff = train_cutoff + float(validation_days) * 86400.0
+        train_mask = (
+            (df["time_submit"] >= origin)
+            & (df["time_submit"] < train_cutoff)
+            & (df["time_end"] <= train_cutoff)
+        )
+        validation_mask = (
+            (df["time_submit"] >= train_cutoff)
+            & (df["time_submit"] < validation_cutoff)
+            & (df["time_end"] <= validation_cutoff)
+        )
+        locked_mask = ~(train_mask | validation_mask)
         training_rule = (
-            "chronological scheduler information set: time_submit and time_end "
-            f"< {int(training_days)} days after the earliest matched submission"
+            "strict chronological three-way split: train jobs submit and end "
+            f"within the first {int(training_days)} days; calibration-validation "
+            f"jobs occupy the next {int(validation_days)} days; all remaining "
+            "matched jobs are locked evaluation records"
         )
     else:
         # This fallback is intentionally chronological in file order and is
         # retained only for unit-level callers that do not have the scheduler
         # release.  Production preprocessing always supplies scheduler_path.
         ordered = np.arange(len(df), dtype=np.int64)
-        cutoff_rows = max(1, int(np.ceil(len(df) * min(1.0, training_days / 100.0))))
-        mask = ordered < cutoff_rows
+        train_rows = max(1, int(np.ceil(len(df) * min(1.0, training_days / 100.0))))
+        validation_rows = max(
+            1,
+            int(np.ceil(len(df) * min(1.0, validation_days / 100.0))),
+        )
+        train_mask = ordered < train_rows
+        validation_mask = (ordered >= train_rows) & (
+            ordered < train_rows + validation_rows
+        )
+        locked_mask = ~(train_mask | validation_mask)
         origin = float("nan")
-        cutoff = float("nan")
-        training_rule = "chronological DCGM row prefix fallback (scheduler unavailable)"
+        train_cutoff = float("nan")
+        validation_cutoff = float("nan")
+        training_rule = (
+            "chronological three-way DCGM row-prefix fallback (scheduler unavailable)"
+        )
     df["log_gpu_memory"] = np.log1p(df["maxgpumemoryused_bytes"].clip(lower=0))
     df["log_runtime"] = np.log1p(df["totalexecutiontime_sec"].clip(lower=0))
     features = ["smutilization_pct_avg", "memoryutilization_pct_avg", "log_gpu_memory", "log_runtime"]
     model = Ridge(alpha=10.0)
-    model.fit(df.loc[mask, features], df.loc[mask, "powerusage_watts_avg"])
-    pred = model.predict(df.loc[~mask, features])
-    truth = df.loc[~mask, "powerusage_watts_avg"].to_numpy()
-    residual = truth - pred
-    heldout = df.loc[
-        ~mask, ["id_job", "totalexecutiontime_sec"]
-    ].copy()
-    heldout["measured_energy_joules"] = (
-        truth * heldout["totalexecutiontime_sec"].to_numpy()
-    )
-    heldout["predicted_energy_joules"] = (
-        np.maximum(0.0, pred)
-        * heldout["totalexecutiontime_sec"].to_numpy()
-    )
-    job_energy = heldout.groupby("id_job", as_index=False).agg(
-        measured_energy_joules=("measured_energy_joules", "sum"),
-        predicted_energy_joules=("predicted_energy_joules", "sum"),
-    )
-    job_energy = job_energy[
-        (job_energy["measured_energy_joules"] > 0)
-        & (job_energy["predicted_energy_joules"] > 0)
-    ].copy()
-    job_energy["measured_to_predicted_ratio"] = (
-        job_energy["measured_energy_joules"]
-        / job_energy["predicted_energy_joules"]
-    )
     conversion_quantiles = [0.01, 0.1, 0.5, 0.9, 0.99]
+    if not bool(train_mask.any()):
+        raise RuntimeError("Chronological power-calibration training split is empty")
+    if not bool(validation_mask.any()) or not bool(locked_mask.any()):
+        raise RuntimeError(
+            "Strict three-way power calibration requires nonempty validation and locked splits"
+        )
+    model.fit(df.loc[train_mask, features], df.loc[train_mask, "powerusage_watts_avg"])
+
+    def summarize_split(split_mask: pd.Series) -> dict[str, Any]:
+        prediction = model.predict(df.loc[split_mask, features])
+        truth_values = df.loc[split_mask, "powerusage_watts_avg"].to_numpy()
+        residual_values = truth_values - prediction
+        split_rows = df.loc[
+            split_mask, ["id_job", "totalexecutiontime_sec"]
+        ].copy()
+        split_rows["measured_energy_joules"] = (
+            truth_values * split_rows["totalexecutiontime_sec"].to_numpy()
+        )
+        split_rows["predicted_energy_joules"] = (
+            np.maximum(0.0, prediction)
+            * split_rows["totalexecutiontime_sec"].to_numpy()
+        )
+        split_job_energy = split_rows.groupby("id_job", as_index=False).agg(
+            measured_energy_joules=("measured_energy_joules", "sum"),
+            predicted_energy_joules=("predicted_energy_joules", "sum"),
+        )
+        split_job_energy = split_job_energy[
+            (split_job_energy["measured_energy_joules"] > 0)
+            & (split_job_energy["predicted_energy_joules"] > 0)
+        ].copy()
+        split_job_energy["measured_to_predicted_ratio"] = (
+            split_job_energy["measured_energy_joules"]
+            / split_job_energy["predicted_energy_joules"]
+        )
+        return {
+            "observations": int(split_mask.sum()),
+            "mae_watts": float(mean_absolute_error(truth_values, prediction)),
+            "rmse_watts": float(mean_squared_error(truth_values, prediction) ** 0.5),
+            "r2": float(r2_score(truth_values, prediction)),
+            "residual_quantiles_watts": {
+                str(q): float(np.quantile(residual_values, q))
+                for q in [0.01, 0.1, 0.5, 0.9, 0.99]
+            },
+            "jobs_with_positive_prediction": int(len(split_job_energy)),
+            "job_energy_measured_to_predicted_quantiles": {
+                str(q): float(
+                    np.quantile(split_job_energy["measured_to_predicted_ratio"], q)
+                )
+                for q in conversion_quantiles
+            },
+            "aggregate_measured_to_predicted_energy_ratio": float(
+                split_job_energy["measured_energy_joules"].sum()
+                / split_job_energy["predicted_energy_joules"].sum()
+            ),
+        }
+
+    validation_summary = summarize_split(validation_mask)
+    locked_summary = summarize_split(locked_mask)
+    nontraining_summary = summarize_split(~train_mask)
     payload = {
         "observations": int(len(df)),
-        "train_observations": int(mask.sum()),
-        "test_observations": int((~mask).sum()),
+        "train_observations": int(train_mask.sum()),
+        # ``test_observations`` remains the complete non-training count for
+        # compatibility with the source-to-flow audit. The explicit
+        # validation/locked fields are the only ratios used to form scenarios
+        # and to report the final locked evaluation, respectively.
+        "test_observations": int((~train_mask).sum()),
+        "validation_observations": int(validation_mask.sum()),
+        "locked_observations": int(locked_mask.sum()),
         "features": features,
         "coefficients": model.coef_.tolist(),
         "intercept_watts": float(model.intercept_),
-        "test_mae_watts": float(mean_absolute_error(truth, pred)),
-        "test_rmse_watts": float(mean_squared_error(truth, pred) ** 0.5),
-        "test_r2": float(r2_score(truth, pred)),
+        "test_mae_watts": nontraining_summary["mae_watts"],
+        "test_rmse_watts": nontraining_summary["rmse_watts"],
+        "test_r2": nontraining_summary["r2"],
         "training_rule": training_rule,
         "calibration_origin_submit_seconds": origin,
-        "calibration_cutoff_seconds": cutoff,
+        "calibration_cutoff_seconds": train_cutoff,
+        "validation_cutoff_seconds": validation_cutoff,
         "calibration_cutoff_days": int(training_days),
+        "validation_window_days": int(validation_days),
+        "partition_rule": (
+            "train < train cutoff; calibration validation occupies the next fixed "
+            "chronological window; locked evaluation is strictly later or has a "
+            "completion crossing the validation cutoff"
+        ),
         "measured_power_quantiles_watts": {
             str(q): float(np.quantile(df["powerusage_watts_avg"], q)) for q in [0.01, 0.1, 0.5, 0.9, 0.99]
         },
-        "heldout_residual_quantiles_watts": {
-            str(q): float(np.quantile(residual, q)) for q in [0.01, 0.1, 0.5, 0.9, 0.99]
-        },
-        "heldout_jobs_with_positive_prediction": int(len(job_energy)),
+        "heldout_residual_quantiles_watts": nontraining_summary[
+            "residual_quantiles_watts"
+        ],
+        "heldout_jobs_with_positive_prediction": nontraining_summary[
+            "jobs_with_positive_prediction"
+        ],
         "heldout_job_energy_measured_to_predicted_quantiles": {
-            str(q): float(
-                np.quantile(
-                    job_energy["measured_to_predicted_ratio"], q
-                )
-            )
-            for q in conversion_quantiles
+            # Legacy key retained as an explicit calibration-validation alias;
+            # no locked rows enter the conversion scenarios.
+            key: float(value)
+            for key, value in validation_summary[
+                "job_energy_measured_to_predicted_quantiles"
+            ].items()
         },
         "heldout_aggregate_measured_to_predicted_energy_ratio": float(
-            job_energy["measured_energy_joules"].sum()
-            / job_energy["predicted_energy_joules"].sum()
+            nontraining_summary["aggregate_measured_to_predicted_energy_ratio"]
         ),
+        "validation_metrics": validation_summary,
+        "locked_metrics": locked_summary,
+        "calibration_validation_job_energy_measured_to_predicted_quantiles": validation_summary[
+            "job_energy_measured_to_predicted_quantiles"
+        ],
+        "locked_job_energy_measured_to_predicted_quantiles": locked_summary[
+            "job_energy_measured_to_predicted_quantiles"
+        ],
+        "calibration_validation_jobs_with_positive_prediction": validation_summary[
+            "jobs_with_positive_prediction"
+        ],
+        "locked_jobs_with_positive_prediction": locked_summary[
+            "jobs_with_positive_prediction"
+        ],
+        "calibration_validation_aggregate_measured_to_predicted_energy_ratio": validation_summary[
+            "aggregate_measured_to_predicted_energy_ratio"
+        ],
+        "locked_aggregate_measured_to_predicted_energy_ratio": locked_summary[
+            "aggregate_measured_to_predicted_energy_ratio"
+        ],
     }
-    logger.info("Held-out DCGM power calibration: R2=%.3f, RMSE=%.2f W", payload["test_r2"], payload["test_rmse_watts"])
+    logger.info(
+        "Three-way DCGM power calibration: train=%d, validation=%d, locked=%d, "
+        "validation R2=%.3f, locked R2=%.3f",
+        payload["train_observations"],
+        payload["validation_observations"],
+        payload["locked_observations"],
+        validation_summary["r2"],
+        locked_summary["r2"],
+    )
     return payload
 
 
@@ -865,7 +982,109 @@ def _fit_submission_energy_calibration(
     if training.empty:
         raise RuntimeError("Submit-time calibration training split is empty")
     fractions = training["measured_to_nameplate_fraction"].to_numpy(dtype=float)
-    quantiles = {str(q): float(np.quantile(fractions, q)) for q in [0.01, 0.10, 0.50, 0.90, 0.99]}
+    quantile_levels = [0.01, 0.10, 0.50, 0.90, 0.99]
+    quantiles = {
+        str(q): float(np.quantile(fractions, q)) for q in quantile_levels
+    }
+
+    # A scalar median entitlement is too coarse for a submit-time contract:
+    # allocation runtime, requested GPU count, and job class are all known at
+    # submission and explain a material part of the observed utilization
+    # spread. Fit conditional empirical quantiles in log-fraction space using
+    # only the chronological calibration partition. Quantile regression keeps
+    # the rule deterministic, convex, and serializable in the manifest; no
+    # execution field is required when the ledger is later reconstructed.
+    model_categories = sorted(
+        training["job_type"].fillna("").astype(str).unique().tolist()
+    )
+    if not model_categories:
+        model_categories = [""]
+    model_features = [
+        "log_requested_gpus",
+        "log_declared_runtime_slots",
+        "unlimited_timelimit",
+    ] + [f"job_type::{value}" for value in model_categories[1:]]
+
+    def feature_frame(frame: pd.DataFrame) -> pd.DataFrame:
+        work = pd.DataFrame(index=frame.index)
+        work["log_requested_gpus"] = np.log1p(
+            pd.to_numeric(frame["requested_gpus"], errors="coerce").fillna(1.0)
+        )
+        work["log_declared_runtime_slots"] = np.log1p(
+            pd.to_numeric(frame["declared_runtime_slots"], errors="coerce").fillna(1.0)
+        )
+        work["unlimited_timelimit"] = pd.to_numeric(
+            frame["unlimited_timelimit"], errors="coerce"
+        ).fillna(0.0)
+        job_type = frame["job_type"].fillna("").astype(str)
+        for category in model_categories[1:]:
+            work[f"job_type::{category}"] = (job_type == category).astype(float)
+        return work[model_features]
+
+    X_train = feature_frame(training)
+    log_fraction = np.log(np.maximum(fractions, 1.0e-12))
+    quantile_models: dict[str, dict[str, Any]] = {}
+    for level in (0.10, 0.50, 0.90):
+        quantile_model = QuantileRegressor(
+            quantile=float(level),
+            alpha=1.0e-8,
+            fit_intercept=True,
+            solver="highs",
+        )
+        quantile_model.fit(X_train, log_fraction)
+        quantile_models[str(level)] = {
+            "coefficients": [float(value) for value in quantile_model.coef_],
+            "intercept": float(quantile_model.intercept_),
+        }
+
+    def predict_quantile(frame: pd.DataFrame, level: float) -> np.ndarray:
+        specification = quantile_models[str(level)]
+        prediction = np.exp(
+            feature_frame(frame).to_numpy(dtype=float)
+            @ np.asarray(specification["coefficients"], dtype=float)
+            + float(specification["intercept"])
+        )
+        return np.clip(prediction, 1.0e-12, 1.0)
+
+    validation = joined[
+        (joined["time_submit"] >= calibration_origin)
+        & (joined["time_submit"] < calibration_cutoff)
+        & (joined["time_end"] <= calibration_cutoff)
+    ].copy()
+    locked = joined.drop(validation.index, errors="ignore")
+    for frame in (validation, locked):
+        if frame.empty:
+            continue
+        frame["predicted_fraction_q10"] = predict_quantile(frame, 0.10)
+        frame["predicted_fraction_q50"] = predict_quantile(frame, 0.50)
+        frame["predicted_fraction_q90"] = predict_quantile(frame, 0.90)
+
+    def model_diagnostics(frame: pd.DataFrame) -> dict[str, Any]:
+        if frame.empty:
+            return {
+                "jobs": 0,
+                "median_observed_to_predicted_q50": float("nan"),
+                "q90_observed_to_predicted_q50": float("nan"),
+                "q10_q90_interval_coverage": float("nan"),
+            }
+        observed_fraction = frame["measured_to_nameplate_fraction"].to_numpy(dtype=float)
+        predicted_median = frame["predicted_fraction_q50"].to_numpy(dtype=float)
+        coverage = (
+            (observed_fraction >= frame["predicted_fraction_q10"].to_numpy(dtype=float))
+            & (observed_fraction <= frame["predicted_fraction_q90"].to_numpy(dtype=float))
+        )
+        return {
+            "jobs": int(len(frame)),
+            "median_observed_to_predicted_q50": float(
+                np.median(observed_fraction / np.maximum(predicted_median, 1.0e-12))
+            ),
+            "q90_observed_to_predicted_q50": float(
+                np.quantile(observed_fraction / np.maximum(predicted_median, 1.0e-12), 0.90)
+            ),
+            "q10_q90_interval_coverage": float(np.mean(coverage)),
+        }
+    validation_model_diagnostics = model_diagnostics(validation)
+    locked_model_diagnostics = model_diagnostics(locked)
     payload = {
         "joined_positive_jobs": int(len(joined)),
         "training_jobs": int(len(training)),
@@ -881,7 +1100,6 @@ def _fit_submission_energy_calibration(
         "interval_seconds": int(interval_s),
         "unbounded_timelimit_slots": int(unbounded_timelimit_slots),
         "fraction_quantiles": quantiles,
-        "declared_service_fraction_lower": float(quantiles["0.1"]),
         "declared_service_fraction": float(quantiles["0.5"]),
         "physical_upper_service_fraction": 1.0,
         "training_fraction_above_physical_upper": int(np.sum(fractions > 1.0 + 1e-12)),
@@ -890,17 +1108,30 @@ def _fit_submission_energy_calibration(
             for q in [0.01, 0.10, 0.50, 0.90, 0.99]
         },
         "central_estimate_is_not_observed_energy": True,
-        "entitlement_interval_semantics": (
-            "the central q50 fraction is the committed ex-ante entitlement; "
-            "q10 is a predeclared empirical lower envelope and the full "
-            "requested nameplate is the physical upper bound"
-        ),
         "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
         "calibration_label_rule": (
             "matched positive DCGM energy is a label requirement for the "
             "training-only calibration sample; it never filters Exp19 submissions"
         ),
         "membership_rule_excludes_outcome_filtered_job_ids": True,
+        "per_job_fraction_model": {
+            "model_type": "three conditional QuantileRegressor models on log utilization fraction",
+            "fit_scope": "chronological submit/end-time calibration jobs only",
+            "features": model_features,
+            "job_type_categories": model_categories,
+            "reference_job_type": model_categories[0],
+            "quantile_levels": [0.10, 0.50, 0.90],
+            "target": "log(measured_energy / requested_GPU_nameplate_energy)",
+            "physical_clip": "[1e-12, 1] applied only to the declared fraction at reconstruction",
+            "quantile_models": quantile_models,
+            "validation_diagnostics": validation_model_diagnostics,
+            "locked_diagnostics": locked_model_diagnostics,
+        },
+        "declared_energy_rule": (
+            "each submission receives its model-predicted q50 utilization fraction; "
+            "q10 and q90 are stored as calibration bands and the full requested "
+            "nameplate remains the physical upper bound"
+        ),
     }
     logger.info(
         "Submit-time energy calibration: %d/%d training jobs, central utilization %.6g",
@@ -909,6 +1140,52 @@ def _fit_submission_energy_calibration(
         payload["declared_service_fraction"],
     )
     return payload
+
+
+def _submission_model_features(
+    frame: pd.DataFrame, categories: list[str]
+) -> pd.DataFrame:
+    """Construct the frozen submit-time feature matrix for the entitlement model."""
+    work = pd.DataFrame(index=frame.index)
+    work["log_requested_gpus"] = np.log1p(
+        pd.to_numeric(frame["requested_gpus"], errors="coerce").fillna(1.0)
+    )
+    work["log_declared_runtime_slots"] = np.log1p(
+        pd.to_numeric(frame["declared_runtime_slots"], errors="coerce").fillna(1.0)
+    )
+    work["unlimited_timelimit"] = pd.to_numeric(
+        frame["unlimited_timelimit"], errors="coerce"
+    ).fillna(0.0)
+    job_type = frame["job_type"].fillna("").astype(str)
+    for category in categories[1:]:
+        work[f"job_type::{category}"] = (job_type == category).astype(float)
+    feature_names = [
+        "log_requested_gpus",
+        "log_declared_runtime_slots",
+        "unlimited_timelimit",
+    ] + [f"job_type::{value}" for value in categories[1:]]
+    return work[feature_names]
+
+
+def _predict_submission_fractions(
+    frame: pd.DataFrame, model_spec: dict[str, Any]
+) -> dict[str, np.ndarray]:
+    """Evaluate serialized conditional quantile models on submit-time fields."""
+    categories = [str(value) for value in model_spec.get("job_type_categories", [""])]
+    if not categories:
+        categories = [""]
+    features = _submission_model_features(frame, categories).to_numpy(dtype=float)
+    predictions: dict[str, np.ndarray] = {}
+    for level in ("0.1", "0.5", "0.9"):
+        specification = model_spec.get("quantile_models", {}).get(level)
+        if specification is None:
+            raise ValueError(f"Missing serialized submit-time quantile model {level}")
+        raw = np.exp(
+            features @ np.asarray(specification["coefficients"], dtype=float)
+            + float(specification["intercept"])
+        )
+        predictions[level] = np.clip(raw, 1.0e-12, 1.0)
+    return predictions
 
 
 def load_workload(path: Path) -> dict[str, np.ndarray]:
@@ -1115,7 +1392,7 @@ def load_mit_submission_ledger(
     n_regions: int,
     declared_service_fraction: float,
     declared_per_gpu_power_cap_mw: float,
-    declared_service_fraction_lower: float | None = None,
+    declared_fraction_model: dict[str, Any] | None = None,
     unbounded_timelimit_slots: int = 128,
     submission_buffer_slots: int = 0,
     eligible_job_ids: set[int] | None = None,
@@ -1127,11 +1404,11 @@ def load_mit_submission_ledger(
     field is available when a job is submitted: immutable job ID, submit time,
     requested GPUs, job class, and Slurm allocation runtime.  The central
     energy entitlement is the training-fitted utilization fraction times the
-    requested GPU nameplate and declared runtime.  The optional q10-derived
-    lower fraction creates an explicit ex-ante interval: the central field is
-    the committed q50 entitlement, the lower field is an empirical lower
-    envelope, and the upper field is the physical nameplate bound. These
-    fields are fixed before any execution join.
+    requested GPU nameplate and declared runtime. When the frozen conditional
+    model is supplied, q10/q50/q90 fractions are evaluated separately from
+    submit-time GPU count, allocation runtime, unlimited flag, and job class.
+    ``energy_upper_mwh`` is the
+    physical nameplate bound and is kept separately for post-event coverage.
     ``eligible_job_ids`` is retained as a compatibility argument but is
     deliberately rejected.  An outcome-derived job-ID set is a post-event
     population filter and would make the apparent submit-time contract
@@ -1144,15 +1421,6 @@ def load_mit_submission_ledger(
         raise ValueError("submission_buffer_slots must be nonnegative")
     if float(declared_service_fraction) <= 0.0 or float(declared_service_fraction) > 1.0:
         raise ValueError("declared_service_fraction must lie in (0, 1]")
-    lower_fraction = (
-        float(declared_service_fraction)
-        if declared_service_fraction_lower is None
-        else float(declared_service_fraction_lower)
-    )
-    if not 0.0 < lower_fraction <= float(declared_service_fraction):
-        raise ValueError(
-            "declared_service_fraction_lower must lie in (0, declared_service_fraction]"
-        )
     if float(declared_per_gpu_power_cap_mw) <= 0.0:
         raise ValueError("declared_per_gpu_power_cap_mw must be positive")
     scheduler_columns = ["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"]
@@ -1210,7 +1478,28 @@ def load_mit_submission_ledger(
     requested_gpu = scheduler["requested_gpus"].to_numpy(dtype=float)
     runtime = scheduler["declared_runtime_slots"].to_numpy(dtype=float)
     nameplate = requested_gpu * float(declared_per_gpu_power_cap_mw) * runtime * dt_h
-    scheduler["declared_energy_mwh"] = nameplate * float(declared_service_fraction)
+    if declared_fraction_model is None:
+        central_fraction = np.full(
+            len(scheduler), float(declared_service_fraction), dtype=float
+        )
+        lower_fraction = central_fraction.copy()
+        upper_fraction = central_fraction.copy()
+        fraction_source = "scalar training q50 utilization fraction"
+    else:
+        fractions = _predict_submission_fractions(
+            scheduler, declared_fraction_model
+        )
+        lower_fraction = fractions["0.1"]
+        central_fraction = fractions["0.5"]
+        upper_fraction = fractions["0.9"]
+        fraction_source = (
+            "frozen submit-time conditional q10/q50/q90 utilization model "
+            "fit on the chronological calibration partition"
+        )
+    scheduler["declared_service_fraction_q10"] = lower_fraction
+    scheduler["declared_service_fraction_q50"] = central_fraction
+    scheduler["declared_service_fraction_q90"] = upper_fraction
+    scheduler["declared_energy_mwh"] = nameplate * central_fraction
     scheduler["declared_energy_lower_mwh"] = nameplate * lower_fraction
     scheduler["declared_energy_upper_mwh"] = nameplate
     scheduler["required_service_slots"] = np.maximum(
@@ -1263,7 +1552,9 @@ def load_mit_submission_ledger(
         "declared_runtime_slots",
         "declared_window_slots",
         "declared_energy_mwh",
+        "declared_energy_lower_mwh",
         "declared_energy_upper_mwh",
+        "declared_service_fraction_q50",
         "submit_slot",
         "deadline_slot",
         "region",
@@ -1283,7 +1574,12 @@ def load_mit_submission_ledger(
     )
     scheduler.attrs["deadline_mode"] = "submit_time_declaration"
     scheduler.attrs["declared_service_fraction"] = float(declared_service_fraction)
-    scheduler.attrs["declared_service_fraction_lower"] = float(lower_fraction)
+    scheduler.attrs["declared_fraction_source"] = fraction_source
+    scheduler.attrs["declared_fraction_model_version"] = (
+        str(declared_fraction_model.get("model_type", "conditional_quantile"))
+        if declared_fraction_model is not None
+        else "scalar"
+    )
     scheduler.attrs["declared_per_gpu_power_cap_mw"] = float(declared_per_gpu_power_cap_mw)
     scheduler.attrs["unbounded_timelimit_slots"] = int(unbounded_timelimit_slots)
     scheduler.attrs["submission_buffer_slots"] = int(submission_buffer_slots)

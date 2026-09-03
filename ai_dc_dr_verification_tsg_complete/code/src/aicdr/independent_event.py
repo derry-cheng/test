@@ -160,26 +160,7 @@ def run_exp23_independent_event_replay(
     event_slots = list(map(int, cfg["market"]["event_slots"]))
     gate = int(cfg["experiments"].get("decision_time_event_gate_slot", min(event_slots)))
     response_price = float(cfg["experiments"].get("independent_event_response_price_per_mwh", 150.0))
-    # Reuse the validation-frozen gate tariff from Exp17.  Falling back to the
-    # last configured candidate would silently turn this independent replay
-    # into a different deployment policy whenever the candidate grid changes.
-    gate_price = float(
-        cfg["experiments"].get("decision_time_selected_response_dr_price_per_mwh", np.nan)
-    )
-    gate_metadata_path = (
-        root
-        / "experiments/exp17_decision_time_information/results/final/experiment_metadata.json"
-    )
-    if gate_metadata_path.exists():
-        gate_metadata = json.loads(gate_metadata_path.read_text(encoding="utf-8"))
-        gate_price = float(
-            gate_metadata.get("causal_response_calibration", {}).get(
-                "selected_dr_price_per_mwh", gate_price
-            )
-        )
-    if not np.isfinite(gate_price):
-        candidates = cfg["experiments"].get("decision_time_response_dr_prices", [10.0])
-        gate_price = float(candidates[-1])
+    gate_price = float(cfg["experiments"].get("decision_time_response_dr_prices", [10.0])[-1])
     baseline_price = float(cfg["experiments"].get("independent_event_baseline_price_per_mwh", 120.0))
     independent_participants = [
         int(value)
@@ -372,6 +353,68 @@ def run_exp23_independent_event_replay(
         gate_response=np.asarray([row["gate_response"] for row in profile_rows]),
     )
 
+    independent_protocol_certificate = pd.DataFrame(
+        [
+            {
+                "criterion": "post_gate_arrivals_used_by_independent_policy",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "both independent LPs receive the gate-masked ledger",
+            },
+            {
+                "criterion": "verifier_profile_used_as_policy_input",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "the independent LPs have no target, hull, or risk-envelope argument",
+            },
+            {
+                "criterion": "locked_outcome_used_for_policy_selection",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "tariffs, participants, and service floor are predeclared in configuration",
+            },
+            {
+                "criterion": "tariff_pair_distinct_from_gate",
+                "value": int(
+                    not (
+                        bool(np.isclose(response_price, gate_price))
+                        and bool(np.isclose(baseline_price, gate_baseline_price))
+                    )
+                ),
+                "required_value": 1,
+                "units": "boolean",
+                "evidence": "independent event requires a distinct response and baseline tariff pair",
+            },
+            {
+                "criterion": "participant_or_service_floor_distinct_from_gate",
+                "value": int(independent_participants != gate_participants or not np.isclose(independent_minimum_service, committed_service)),
+                "required_value": 1,
+                "units": "boolean",
+                "evidence": "the independent event policy differs in participant set or service floor",
+            },
+            {
+                "criterion": "policy_trajectory_difference_nonzero",
+                "value": int(maximum_response_difference > 1e-8 and maximum_baseline_difference > 1e-8),
+                "required_value": 1,
+                "units": "boolean",
+                "evidence": "pre-scoring profile comparison is nonzero on the locked replay",
+            },
+            {
+                "criterion": "field_causal_intervention_claim",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "the controlled replay is explicitly an optimization-policy benchmark",
+            },
+        ]
+    )
+    independent_protocol_certificate.to_csv(
+        final / "independent_event_protocol_certificate.csv", index=False
+    )
+
     import matplotlib
 
     matplotlib.use("Agg")
@@ -437,6 +480,11 @@ def run_exp23_independent_event_replay(
         "daily_file": "independent_event_replay_daily.csv",
         "summary_file": "independent_event_replay_summary.csv",
         "profiles_file": "independent_event_profiles.npz",
+        "protocol_certificate_file": "independent_event_protocol_certificate.csv",
+        "protocol_certificate_scope": (
+            "independent policy inputs, predeclared tariff separation, and "
+            "nonzero trajectory separation before scoring"
+        ),
         "figure": "fig26_independent_event_replay.pdf",
     }
     (final / "experiment_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")

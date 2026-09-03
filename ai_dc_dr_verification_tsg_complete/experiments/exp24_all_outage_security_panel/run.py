@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "code/src"))
 sys.path.insert(0, str(ROOT / "vendor"))
 
 from aicdr.all_outage_security import run_exp24_all_outage_security_panel

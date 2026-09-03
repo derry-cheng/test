@@ -49,13 +49,13 @@
       },
       "finished_utc": "2026-08-30T05:18:00.347642+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "audit": {
-      "started_utc": "2026-09-03T05:43:00.684609+00:00",
+      "started_utc": "2026-08-30T11:15:47.306559+00:00",
       "status": "completed",
-      "finished_utc": "2026-09-03T05:43:01.180353+00:00",
-      "elapsed_seconds": 0.495744
+      "finished_utc": "2026-08-30T11:15:47.978071+00:00",
+      "elapsed_seconds": 0.671512
     },
     "exp10": {
       "started_utc": "2026-08-30T06:46:55.896882+00:00",
@@ -81,7 +81,7 @@
       },
       "finished_utc": "2026-08-30T07:26:27.349414+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp11": {
       "started_utc": "2026-08-30T07:37:08.809686+00:00",
@@ -107,7 +107,7 @@
       },
       "finished_utc": "2026-08-30T07:41:59.518675+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp12": {
       "started_utc": "2026-08-30T11:15:34.315698+00:00",
@@ -133,7 +133,7 @@
       },
       "finished_utc": "2026-08-30T11:15:40.777441+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp13": {
       "status": "completed",
@@ -167,14 +167,14 @@
       },
       "finished_utc": "2026-08-30T06:46:42.855184+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp16": {
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
     "exp17": {
-      "started_utc": "2026-09-03T04:54:13.037819+00:00",
+      "started_utc": "2026-08-30T05:23:09.646924+00:00",
       "stage_requested": "exp17",
       "resume": false,
       "environment": {
@@ -185,17 +185,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "0dee937de4b14c103b7b0ebdd48b86709ef58094"
+        "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
       },
       "stages": {
         "exp17": {
-          "started_utc": "2026-09-03T04:54:13.041442+00:00",
+          "started_utc": "2026-08-30T05:23:09.836134+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T04:56:25.070784+00:00",
-          "elapsed_seconds": 132.029342
+          "finished_utc": "2026-08-30T05:25:19.369098+00:00",
+          "elapsed_seconds": 129.532964
         }
       },
-      "finished_utc": "2026-09-03T04:56:25.071222+00:00",
+      "finished_utc": "2026-08-30T05:25:19.369464+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -223,7 +223,7 @@
       },
       "finished_utc": "2026-08-30T07:59:55.382915+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp19": {
       "started_utc": "2026-08-30T03:20:37.833554+00:00",
@@ -249,7 +249,7 @@
       },
       "finished_utc": "2026-08-30T03:20:51.695548+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp20": {
       "started_utc": "2026-08-30T05:29:09.165011+00:00",
@@ -275,7 +275,7 @@
       },
       "finished_utc": "2026-08-30T05:29:10.153687+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp21": {
       "started_utc": "2026-08-30T04:07:20.880888+00:00",
@@ -301,12 +301,12 @@
       },
       "finished_utc": "2026-08-30T04:07:21.955750+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp22": {
-      "started_utc": "2026-09-03T05:23:54.874996+00:00",
+      "started_utc": "2026-08-30T03:21:01.098437+00:00",
       "stage_requested": "exp22",
-      "resume": false,
+      "resume": true,
       "environment": {
         "python": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
         "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
@@ -315,22 +315,22 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "0dee937de4b14c103b7b0ebdd48b86709ef58094"
+        "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
       },
       "stages": {
         "exp22": {
-          "started_utc": "2026-09-03T05:23:54.878715+00:00",
+          "started_utc": "2026-08-30T03:21:01.101658+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T05:23:59.859260+00:00",
-          "elapsed_seconds": 4.980545
+          "finished_utc": "2026-08-30T03:21:04.375901+00:00",
+          "elapsed_seconds": 3.274243
         }
       },
-      "finished_utc": "2026-09-03T05:23:59.859925+00:00",
+      "finished_utc": "2026-08-30T03:21:04.376198+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
     "exp23": {
-      "started_utc": "2026-09-03T04:42:16.081254+00:00",
+      "started_utc": "2026-08-30T03:04:26.890437+00:00",
       "stage_requested": "exp23",
       "resume": true,
       "environment": {
@@ -341,17 +341,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "0dee937de4b14c103b7b0ebdd48b86709ef58094"
+        "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
       },
       "stages": {
         "exp23": {
-          "started_utc": "2026-09-03T04:42:16.084239+00:00",
+          "started_utc": "2026-08-30T03:04:26.893952+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T04:42:51.138955+00:00",
-          "elapsed_seconds": 35.054716
+          "finished_utc": "2026-08-30T03:05:00.802696+00:00",
+          "elapsed_seconds": 33.908744
         }
       },
-      "finished_utc": "2026-09-03T04:42:51.139364+00:00",
+      "finished_utc": "2026-08-30T03:05:00.803043+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -379,7 +379,7 @@
       },
       "finished_utc": "2026-08-29T10:36:36.995084+00:00",
       "status": "completed",
-      "migration_note": "reused previously completed immutable artifact"
+      "migration_note": "reused independently completed stage artifact"
     },
     "exp25": {
       "status": "completed",
@@ -415,7 +415,7 @@
       "migration_note": "reused previously completed immutable artifact; no C1-C5 input dependency"
     },
     "exp9": {
-      "started_utc": "2026-09-03T04:43:34.878476+00:00",
+      "started_utc": "2026-08-30T06:38:39.078262+00:00",
       "stage_requested": "exp9",
       "resume": true,
       "environment": {
@@ -426,25 +426,19 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "0dee937de4b14c103b7b0ebdd48b86709ef58094"
+        "git_commit": "70501fcec697c6630e390b4efb698041e85c8aad"
       },
       "stages": {
         "exp9": {
-          "started_utc": "2026-09-03T04:43:34.882057+00:00",
+          "started_utc": "2026-08-30T06:38:39.264445+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T04:46:41.008521+00:00",
-          "elapsed_seconds": 186.126464
+          "finished_utc": "2026-08-30T06:43:30.280521+00:00",
+          "elapsed_seconds": 291.016076
         }
       },
-      "finished_utc": "2026-09-03T04:46:41.008927+00:00",
+      "finished_utc": "2026-08-30T06:43:30.280969+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
-    },
-    "exp26": {
-      "started_utc": "2026-09-03T05:20:53.469264+00:00",
-      "status": "completed",
-      "finished_utc": "2026-09-03T05:20:55.542762+00:00",
-      "elapsed_seconds": 2.073498
     }
   },
   "resume_events_utc": [
@@ -461,16 +455,8 @@
     "2026-08-30T08:16:59.728093+00:00",
     "2026-08-30T08:19:42.731586+00:00",
     "2026-08-30T11:08:55.022078+00:00",
-    "2026-08-30T11:15:47.304838+00:00",
-    "2026-09-03T05:20:53.468088+00:00",
-    "2026-09-03T05:22:22.215175+00:00",
-    "2026-09-03T05:24:22.934813+00:00",
-    "2026-09-03T05:27:26.719150+00:00",
-    "2026-09-03T05:38:32.895488+00:00",
-    "2026-09-03T05:41:06.867222+00:00",
-    "2026-09-03T05:41:51.414086+00:00",
-    "2026-09-03T05:43:00.683543+00:00"
+    "2026-08-30T11:15:47.304838+00:00"
   ],
-  "finished_utc": "2026-09-03T05:43:01.181366+00:00",
+  "finished_utc": "2026-08-30T11:15:47.979192+00:00",
   "status": "completed"
 }

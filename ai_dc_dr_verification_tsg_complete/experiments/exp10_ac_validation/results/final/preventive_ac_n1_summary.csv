@@ -1,13 +1,13 @@
 peak_dc_penetration,counterfactual_method,maximum_nonreference_active_plan_deviation_mw,maximum_absolute_reference_loss_recourse_mw,maximum_apparent_line_loading,maximum_voltage_violation_pu,evaluated_outages,locked_days
 0.03,Feasible Quantile Projection,0.0,5.545269350764855,0.8791397144167572,0.0,6,54
-0.03,Payment-Certified N-1 Verifier,0.0,5.594953337052658,0.8789498909650242,0.0,6,54
-0.03,Risk-Constrained Convex Verifier,0.0,5.5452693507688195,0.8797846299500033,0.0,6,54
+0.03,Payment-Certified N-1 Verifier,0.0,5.59495333708891,0.8789498909678235,0.0,6,54
+0.03,Risk-Constrained Convex Verifier,0.0,5.545269337935096,0.8797640854581236,0.0,6,54
 0.03,Single Feasible Projection,0.0,5.545269350764855,0.8798315624691476,0.0,6,54
 0.06,Feasible Quantile Projection,0.0,5.977387616259989,0.9059850539395078,0.0,6,54
-0.06,Payment-Certified N-1 Verifier,0.0,6.015652565713452,0.9055717936283436,0.0,6,54
-0.06,Risk-Constrained Convex Verifier,0.0,5.977387616138913,0.9072785148716016,0.0,6,54
+0.06,Payment-Certified N-1 Verifier,0.0,6.015652565788841,0.905571793633952,0.0,6,54
+0.06,Risk-Constrained Convex Verifier,0.0,5.977387380060009,0.9072373042227938,0.0,6,54
 0.06,Single Feasible Projection,0.0,5.977387616259989,0.9073726590314849,0.0,6,54
 0.09,Feasible Quantile Projection,0.0,6.566710310404019,0.9330637228527225,0.0,6,54
-0.09,Payment-Certified N-1 Verifier,0.0,6.457887048218566,0.9323397081517466,0.0,6,54
-0.09,Risk-Constrained Convex Verifier,0.0,6.566710310208137,0.9350088039399852,0.0,6,54
+0.09,Payment-Certified N-1 Verifier,0.0,6.457887048338549,0.9323397081601945,0.0,6,54
+0.09,Risk-Constrained Convex Verifier,0.0,6.56670992830189,0.9349468142912946,0.0,6,54
 0.09,Single Feasible Projection,0.0,6.566710310404019,0.9351504214303777,0.0,6,54

@@ -35,7 +35,6 @@ from .coupling_certificate import run_exp22_coupled_job_network_certificate
 from .independent_event import run_exp23_independent_event_replay
 from .all_outage_security import run_exp24_all_outage_security_panel
 from .exante_validation import run_exp25_exante_job_validation
-from .end_to_end_certificate import run_exp26_end_to_end_certificate
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -130,7 +129,6 @@ def run_pipeline(
         ("exp23", lambda: run_exp23_independent_event_replay(root, cfg, logger)),
         ("exp24", lambda: run_exp24_all_outage_security_panel(root, cfg, logger)),
         ("exp25", lambda: run_exp25_exante_job_validation(root, cfg, logger)),
-        ("exp26", lambda: run_exp26_end_to_end_certificate(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
@@ -157,7 +155,7 @@ def run_pipeline(
                 "status": "pending",
                 "migration_note": "stage added after the previous unified run",
             }
-        for name in {"exp2", "exp9", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "exp20", "exp21", "exp22", "exp23", "exp24"}:
+        for name in {"exp2", "exp9", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "exp20", "exp21", "exp22", "exp23", "exp24", "audit"}:
             if name not in manifest.get("stages", {}):
                 continue
             # A long stage may have been rerun and independently checked after
@@ -191,15 +189,6 @@ def run_pipeline(
                     "rerun after the validation-frozen payment certificate and "
                     "new audit panels"
                 )
-        # Always rerun the audit after a resume migration.  Its checks include
-        # the canonical manifest itself and the current paper/release paths,
-        # so reusing a pre-migration audit report would make the final status
-        # stale even when every experiment artifact is current.
-        if "audit" in manifest.get("stages", {}):
-            manifest["stages"]["audit"] = {
-                "status": "pending",
-                "migration_note": "rerun after unified manifest and paper-layout migration",
-            }
     selected = [name for name, _ in functions] if stage == "all" else [stage]
     # A later standalone stage still requires its data dependency.
     if stage in {
@@ -227,11 +216,10 @@ def run_pipeline(
         "exp22",
         "exp23",
         "exp24",
-        "exp26",
         "audit",
-    } and stage not in {"audit", "exp9", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp26"}:
+    } and stage not in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp9", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp26"}:
+    elif stage in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound

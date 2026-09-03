@@ -64,20 +64,6 @@ def validate_job_network_coupling(
     fail closed.
     """
 
-    # ``measured_gpus`` was used by an early diagnostic API.  Keep it as an
-    # explicit compatibility alias, but never combine it with the submit-time
-    # resource declaration: the indexed certificate is bounded by the
-    # requested GPU count.  Reject contradictory aliases instead of silently
-    # choosing one.
-    if requested_gpus is not None and measured_gpus is not None:
-        if not np.array_equal(
-            np.asarray(requested_gpus).reshape(-1),
-            np.asarray(measured_gpus).reshape(-1),
-        ):
-            raise ValueError("requested_gpus and measured_gpus disagree")
-    if requested_gpus is None and measured_gpus is not None:
-        requested_gpus = measured_gpus
-
     service = np.asarray(service_mwh, dtype=float).reshape(-1)
     energy = np.asarray(job_energy_mwh, dtype=float).reshape(-1)
     starts = np.asarray(submit_slot, dtype=np.int64).reshape(-1)
@@ -119,6 +105,19 @@ def validate_job_network_coupling(
         minlength=aggregate.size,
     ).reshape(aggregate.shape)
     aggregation_residual = reconstructed - aggregate
+
+    # ``measured_gpus`` was the name used by the first public certificate
+    # schema.  Keep it as a strict alias so old serialized replay scripts do
+    # not silently lose the GPU-nameplate check after the submit-time ledger
+    # was made canonical.
+    if requested_gpus is not None and measured_gpus is not None:
+        if not np.array_equal(
+            np.asarray(requested_gpus, dtype=float).reshape(-1),
+            np.asarray(measured_gpus, dtype=float).reshape(-1),
+        ):
+            raise ValueError("requested_gpus and measured_gpus disagree")
+    if requested_gpus is None and measured_gpus is not None:
+        requested_gpus = measured_gpus
 
     minimum_gpu_slack = 0.0
     maximum_gpu_violation = 0.0

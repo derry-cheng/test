@@ -20,11 +20,11 @@ used to constrain the counterfactual starts.
 Run from the repository root with:
 
 ```bash
-PYTHONPATH=src python experiments/exp19_job_level_counterfactual/run.py
+PYTHONPATH=code/src:vendor python experiments/exp19_job_level_counterfactual/run.py
 ```
 
 The final directory contains the exact solver summary, slot profile, compressed
-service vector, and machine-readable metadata used by the paper. The
+service vector, and machine-readable metadata used by the manuscript. The
 downstream Experiment 21 audit reports both the capacity-proportional
 homogeneous scale and the certified scale with the fixed per-GPU nameplate;
 the latter is the deployment interpretation and neither scale is presented as

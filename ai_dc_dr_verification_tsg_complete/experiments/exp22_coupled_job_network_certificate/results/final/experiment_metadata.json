@@ -16,8 +16,8 @@
   "scale_replay_definition": "The raw indexed witness and two predeclared homogeneous transforms (fixed-nameplate and capacity-proportional) are replayed through the same RTS-24 N-1 evaluator. Each transform scales service, declared job energy, GPU cap, site capacity, and network load together.",
   "scale_factors": {
     "raw_job_witness": 1.0,
-    "fixed_nameplate_homogeneous": 1.5042419623337813,
-    "capacity_proportional_homogeneous": 2176.183442674253
+    "fixed_nameplate_homogeneous": 3.033184773956104,
+    "capacity_proportional_homogeneous": 6838.672329621412
   },
   "raw_witness_is_not_118mw": true,
   "capacity_proportional_network_stress_is_same_job_witness": true,
@@ -43,8 +43,8 @@
   "independent_job_feasibility_recheck": true,
   "maximum_job_energy_recheck_residual_mwh": 0.0,
   "maximum_gpu_bound_violation_mwh": 0.0,
-  "minimum_gpu_bound_slack_mwh": 8.380333333333334e-05,
-  "minimum_site_capacity_slack_mwh": 29.4864441575,
+  "minimum_gpu_bound_slack_mwh": 0.00016757838093261576,
+  "minimum_site_capacity_slack_mwh": 29.495686297196574,
   "network_profile_is_same_job_witness": true,
   "post_solution_profile_reoptimization": false,
   "all_network_solves_successful": true,
@@ -59,9 +59,9 @@
     "max_aggregation_residual_mwh": 0.0,
     "max_network_mapping_residual_mw": 0.0,
     "minimum_service_mwh": 0.0,
-    "minimum_gpu_bound_slack_mwh": 8.380333333333334e-05,
+    "minimum_gpu_bound_slack_mwh": 0.00016757838093261576,
     "maximum_gpu_bound_violation_mwh": 0.0,
-    "minimum_site_capacity_slack_mwh": 29.4864441575,
+    "minimum_site_capacity_slack_mwh": 29.495686297196574,
     "valid": true
   },
   "network_mapping_certificate": {
@@ -75,9 +75,9 @@
     "max_aggregation_residual_mwh": 0.0,
     "max_network_mapping_residual_mw": 0.0,
     "minimum_service_mwh": 0.0,
-    "minimum_gpu_bound_slack_mwh": 8.380333333333334e-05,
+    "minimum_gpu_bound_slack_mwh": 0.00016757838093261576,
     "maximum_gpu_bound_violation_mwh": 0.0,
-    "minimum_site_capacity_slack_mwh": 29.4864441575,
+    "minimum_site_capacity_slack_mwh": 29.495686297196574,
     "valid": true
   }
 }

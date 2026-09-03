@@ -1,8 +1,17 @@
 # TSG manuscript boundary
 
-`main.tex` is the canonical IEEE Transactions on Smart Grid manuscript source;
-`main.pdf` is its compiled release and `figures/` contains the draw.io/SVG
-figures used by the paper. Supporting derivations and the revision matrix are
-kept as Markdown records in this directory. Experimental code and generated
-tables remain under `src/` and `experiments/`, respectively, so the manuscript
-does not contain duplicated solver outputs.
+`main.tex` is the canonical IEEE Transactions on Smart Grid source and
+`main.pdf` is the checked-in ten-page release. Editable draw.io/SVG figures,
+derivation notes, the revision matrix, and the bibliography are kept beside
+the source. Generated experiment tables and solver outputs remain under their
+own `experiments/exp*/results/final/` directories.
+
+Build from the repository root with:
+
+```text
+cd paper
+latexmk -pdf -interaction=nonstopmode main.tex
+```
+
+The audit stage checks the expected source inventory, citation coverage,
+figure dimensions, page count, and numerical certificates before release.

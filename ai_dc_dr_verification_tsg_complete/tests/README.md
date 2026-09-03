@@ -3,7 +3,7 @@
 Run from the project root with:
 
 ```bash
-PYTHONPATH=src python tests/run_tests.py
+PYTHONPATH=code/src:vendor python tests/run_tests.py
 ```
 
 The tests cover the submit-time ledger schema, the exclusion of execution

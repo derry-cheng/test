@@ -23,11 +23,21 @@
   "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 1.1234867921402174,
   "physical_calibration_summary": {
     "file": "physical_calibration_summary.csv",
+    "train_observations": 44391,
+    "calibration_validation_observations": 9637,
+    "locked_observations": 41154,
+    "calibration_validation_mae_watts": 10.802814349335655,
+    "calibration_validation_rmse_watts": 14.462716124248539,
+    "calibration_validation_r2": 0.8956169366942799,
+    "locked_mae_watts": 13.543395300457567,
+    "locked_rmse_watts": 20.075390119127675,
+    "locked_r2": 0.8196163656296094,
     "test_mae_watts": 13.023402021609703,
     "test_rmse_watts": 19.13740569626384,
     "test_r2": 0.8330765371943397,
-    "aggregate_measured_to_predicted_energy_ratio": 1.065490531017384,
-    "interpretation": "The job-level model calibrates GPU energy only. The network profile remains a declared four-region scenario; it is not a co-located utility measurement."
+    "aggregate_measured_to_predicted_energy_ratio": 1.063099456331828,
+    "locked_aggregate_measured_to_predicted_energy_ratio": 1.06588950949852,
+    "interpretation": "The job-level model calibrates GPU energy only. Conversion scenarios use the calibration-validation partition; the locked partition is reported solely as a generalization audit. The network profile remains a declared four-region scenario and is not a co-located utility measurement."
   },
   "power_calibration_sensitivity": {
     "file": "workload_power_calibration_sensitivity.csv",
@@ -38,6 +48,7 @@
       "0.9",
       "0.99"
     ],
+    "calibration_split": "calibration-validation",
     "locked_test_observations_used_for_scaling": false,
     "capacity_sensitivity_scope": "flexible workload batch only; this diagnostic does not gate network activation",
     "capacity_clip_is_batch_only_diagnostic": true,
@@ -48,6 +59,8 @@
     "file": "submission_calibration_summary.csv",
     "training_rule": "chronological historical information set: time_submit and time_end < 40 days after the earliest joined submission",
     "declared_service_fraction": 0.0011383333333333334,
+    "declared_fraction_model_type": "three conditional QuantileRegressor models on log utilization fraction",
+    "conditional_q10_q50_q90_at_submit_time": true,
     "physical_upper_service_fraction": 1.0,
     "telemetry_used_in_exp19_decision": false
   }

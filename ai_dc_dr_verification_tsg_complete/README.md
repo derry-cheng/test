@@ -4,7 +4,7 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`src/aicdr/` contains the canonical data, optimization, experiment, audit, and plotting implementation. `code/` documents that implementation boundary; `experiments/` contains one directory per protocol with its runner, figures, checkpoints, and final results. `paper/` contains the LaTeX manuscript and editable figures, `reports/` contains review and release records, and `results/` indexes final experiment outputs. `configs/default.yaml` is the single frozen configuration entry point. The large BurstGPT and MIT SuperCloud releases remain outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
+`code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
 ## Reproduction
 
@@ -14,7 +14,7 @@ dependencies:
 ```text
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-PYTHONPATH=src:vendor .venv/bin/python run_all.py --config configs/default.yaml --stage audit
+PYTHONPATH=code/src:vendor .venv/bin/python run_all.py --config configs/default.yaml --stage audit
 ```
 
 After restoring the raw files named in `configs/default.yaml`, the complete
@@ -27,14 +27,14 @@ entry point is:
 Every long experiment writes an intermediate checkpoint and can be resumed;
 standalone stages write under `artifacts/stage_runs/` and do not overwrite the
 canonical all-stage manifest. The deterministic regression suite is run with
-`PYTHONPATH=src:vendor python tests/run_tests.py`.
+`PYTHONPATH=code/src:vendor python tests/run_tests.py`.
 The entry points clamp BLAS/HiGHS numerical backends to one thread per worker;
 configured worker pools are checked against the 20-core ceiling.
 
 The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized controlled-event replay with a nonzero predeclared service floor, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
-PYTHONPATH=src .venv/bin/python experiments/exp20_trace_meter_replay/run.py
+PYTHONPATH=code/src:vendor .venv/bin/python experiments/exp20_trace_meter_replay/run.py
 ```
 
 For manuscript compilation, run LaTeX from `paper/` so the experiment figures resolve relative to the source file. The generated PDF is checked for page count, unresolved references, and figure readability before release.
@@ -55,15 +55,15 @@ scenarios; all 24 region-to-bus permutations plus two predeclared concentration
 controls are evaluated in Experiment 11.
 
 Calibration labels require a matched positive DCGM energy measurement, but that
-label join is confined to the training-only conversion fit. Within the matched
-labels, the first 40 complete days train the conversion model and all later
-observations are held out by submit/end timestamps; no positive-energy filter,
-immutable-ID modulo rule, or locked-day outcome selects the Exp19 submission
-population.
+label join is confined to the conversion fit. Within the matched labels, the
+first 40 complete days train the model, the next 16 complete days form the
+frozen calibration-validation window, and the remaining 41,154 records are
+locked for generalization auditing; no positive-energy filter, immutable-ID
+modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--26 each own a README, final results,
+the LaTeX source. Experiments 1--25 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
@@ -74,9 +74,7 @@ deterministic event-window-mean N--1 replay on the explicitly pinned public
 IEEE RTS-24 case. Experiment 24 then freezes the profiles and covers all finite
 non-islanding outages without screening or post-solution reoptimization. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
-panels. Experiment 26 is a cached end-to-end lineage certificate: it recomputes
-the indexed witness-to-network residuals, hashes the risk and payment artifacts,
-and records their distinct ledger roles before the complete outage replay.
+panels.
 
 ## Reproducibility boundaries
 

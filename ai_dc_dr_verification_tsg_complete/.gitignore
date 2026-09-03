@@ -12,6 +12,8 @@ paper/*.bbl
 paper/*.blg
 paper/*.log
 paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
 tmp/
 logs/*.log
 

@@ -37,22 +37,24 @@ are declared scenario factors and all 24 region-to-bus permutations plus two
 predeclared concentration controls are audited.
 
 The exact hashes, row counts, empirical quantiles, inferred scale factors, missing
-trace days, valid evaluation days, and held-out DCGM calibration diagnostics are
+trace days, valid evaluation days, and calibration-validation/locked DCGM diagnostics are
 generated into `data/processed/data_manifest.json` by the data stage.
 The accompanying `data/processed/data_flow_audit.csv` provides a row-level
 source-to-join-to-split accounting table, including the disjoint calibration
-training and held-out partitions and the final valid-slot count.
+training, calibration-validation, and locked partitions and the final valid-slot count.
 The calibration split is chronological: scheduler/DCGM observations whose
 submit and execution times fall in the first 40 complete days train the
-conversion model, and later observations are held out. The held-out
-measured-to-predicted energy ratio has 1st, 10th, 50th, 90th, and 99th
-percentiles 0.536697, 0.669059, 0.924071, 1.409561, and 4.755718. Experiment 9
-embeds all five values in the same payment-certificate program; they form a
-declared finite empirical uncertainty set, not a tuned continuous distribution
-or a replacement for the measured scoring trace. A matched positive DCGM
-measurement supplies the calibration label, whereas chronological submit/end
-timestamps alone determine its train/hold-out membership; no such label filter
-defines the full Exp19 submission population.
+conversion model; the next 16 complete days are calibration-validation; and
+the remaining matched records are locked evaluation observations. The
+calibration-validation measured-to-predicted energy ratio has 1st, 10th, 50th,
+90th, and 99th percentiles 0.582671, 0.687118, 0.969849, 1.349061, and
+5.320913. Experiment 9 embeds these five values in the same payment-certificate
+program; they form a declared finite empirical uncertainty set, not a tuned
+continuous distribution or a replacement for the measured scoring trace. The
+locked partition is a generalization audit and is never used for scaling or
+selection. A matched positive DCGM measurement supplies the calibration label,
+whereas chronological submit/end timestamps determine split membership; no
+such label filter defines the full Exp19 submission population.
 
 Experiment 19 uses a separate job-indexed counterfactual. Slurm `timelimit` is
 an allocation run-time declaration, not a submission-to-completion deadline.

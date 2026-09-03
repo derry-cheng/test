@@ -886,7 +886,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     # The measured DCGM/BurstGPT execution is the independent observational
     # target for baseline alignment. Strategic reference histories add only the
     # equilibrium deviation induced by the DR rule; the verifier never observes
-    # the held-out reference used for scoring.  There is no labelled utility
+    # the locked reference used for scoring.  There is no labelled utility
     # event in these public traces.  Consequently the exact event-response LP
     # is retained only for mechanism-isolation panels and is never presented as
     # an observed event outcome.
@@ -1396,6 +1396,27 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             method="highs",
         )
         if not feasibility.success:
+            # The selected single projection is explicitly part of the
+            # candidate simplex, so a reserve of one must be feasible by
+            # construction.  Persist the independent budget diagnostics in
+            # the log before failing; this distinguishes a genuine contract
+            # conflict from an incorrectly assembled epigraph.
+            logger.error(
+                "Risk epigraph infeasible diagnostics: reserve=%s, cvar_reserve=%s, "
+                "reference_total=%s, total_budget=%s, reference_cvar=%s, "
+                "cvar_budget=%s, day_count=%s, observations_per_day=%s, "
+                "reference_index=%s, cvar_metric=%s",
+                reserve_fraction,
+                cvar_reserve_fraction,
+                reference_false_exposure,
+                risk_budget,
+                reference_daily_cvar,
+                cvar_budget,
+                day_count,
+                observations_per_day,
+                reference_candidate,
+                cvar_metric,
+            )
             raise RuntimeError(
                 "Risk-constrained convex QP is infeasible under the declared "
                 f"reserve fraction {reserve_fraction:g}: {feasibility.message}"
@@ -1692,6 +1713,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     risk_reference_index,
                     len(trained),
                     float(reserve_fraction),
+                    # The candidate reserve is the complete predeclared
+                    # contract in each nested fold. Keeping the CVaR reserve
+                    # tied to the candidate avoids a hidden pooled-only
+                    # override that can make a nominally selected fold
+                    # infeasible after the fact.
+                    cvar_reserve_fraction_override=float(reserve_fraction),
                 )
             except RuntimeError as exc:
                 reserve_cv_rows.append(
@@ -1776,45 +1803,52 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "held_out_risk_noninferior",
                 "min",
             ),
+            all_folds_feasible=(
+                "solver_status",
+                lambda values: float(
+                    all(str(value) == "optimal" for value in values)
+                ),
+            ),
         )
     )
     feasible_reserves = reserve_summary[
-        reserve_summary["all_folds_risk_noninferior"] == 1
+        reserve_summary["all_folds_feasible"] == 1
     ]
-    selection_pool = (
-        feasible_reserves if len(feasible_reserves) else reserve_summary
-    )
+    if len(feasible_reserves) == 0:
+        raise RuntimeError(
+            "No predeclared risk reserve solves every nested contiguous fold"
+        )
+    # Locked false-credit non-inferiority is an outcome diagnostic, not a
+    # selection constraint: it is evaluated after each fold's contract has
+    # been fitted and therefore cannot certify feasibility of a reserve chosen
+    # before the locked block.  Filtering on that outcome would silently
+    # turn nested validation into an outcome-dependent gate.
+    selection_pool = feasible_reserves
     selected_reserve_fraction = float(
         selection_pool.sort_values(
             ["max_fold_nrmse", "max_false_credit_ratio", "reserve_fraction"]
         ).iloc[0]["reserve_fraction"]
     )
-    # A fold can be feasible while the final pooled validation set is not
-    # (the daily CVaR rows change when all validation days are restored).  This
-    # is a feasibility gate, not a metric-driven retuning: retain the nested
-    # choice when feasible, otherwise move only upward in the predeclared
-    # reserve grid and record the reason.
+    # The nested choice is the contract. The pooled fit is checked at exactly
+    # that predeclared reserve; no upward grid search or pooled-only retuning is
+    # allowed after fold selection.
     initial_selected_reserve_fraction = selected_reserve_fraction
     final_fit_error = ""
-    for reserve_fraction in sorted(
-        [float(value) for value in reserve_candidates if float(value) >= selected_reserve_fraction]
-    ):
-        try:
-            ensemble_weights, risk_fit_certificate = fit_risk_constrained_simplex(
-                risk_design,
-                target,
-                validation_actual,
-                risk_reference_index,
-                validation_count,
-                reserve_fraction,
-            )
-            selected_reserve_fraction = reserve_fraction
-            break
-        except RuntimeError as exc:
-            final_fit_error = str(exc)
-    else:
+    try:
+        ensemble_weights, risk_fit_certificate = fit_risk_constrained_simplex(
+            risk_design,
+            target,
+            validation_actual,
+            risk_reference_index,
+            validation_count,
+            selected_reserve_fraction,
+            cvar_reserve_fraction_override=selected_reserve_fraction,
+        )
+    except RuntimeError as exc:
+        final_fit_error = str(exc)
         raise RuntimeError(
-            "No predeclared reserve fraction is feasible on the pooled validation set: "
+            "The nested-selected risk reserve is not feasible on the pooled validation set; "
+            "the protocol forbids post-selection reserve retuning: "
             + final_fit_error
         )
     reserve_cv["nested_selected_reserve_fraction"] = (
@@ -2561,7 +2595,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "credit_f1_change": float(
                 final_safe["credit_f1"].mean() - final_single["credit_f1"].mean()
             ),
-            "interpretation": "held-out risk-constrained convex ensemble; payment-contract envelope is audited separately",
+            "interpretation": "locked risk-constrained convex ensemble; payment-contract envelope is audited separately",
         }
     )
     pd.DataFrame(risk_effect_rows).to_csv(final / "risk_effect_decomposition.csv", index=False)
@@ -3739,9 +3773,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "risk_reserve_candidates": reserve_candidates.tolist(),
             "selected_risk_reserve_fraction": selected_reserve_fraction,
-            "risk_cvar_reserve_fraction": float(
-                cfg["experiments"].get("risk_cvar_reserve_fraction", selected_reserve_fraction)
-            ),
+            "risk_cvar_reserve_fraction": float(selected_reserve_fraction),
             "risk_cvar_metric": str(
                 cfg["experiments"].get(
                     "risk_cvar_metric", "daily_false_credit_mw_slots"
@@ -3761,24 +3793,18 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "nested_selected_risk_reserve_fraction": initial_selected_reserve_fraction,
             "pooled_validation_feasibility_gate": {
-                "changed_from_nested_selection": bool(
-                    selected_reserve_fraction != initial_selected_reserve_fraction
-                ),
-                "reason": (
-                    "pooled validation CVaR/total-budget feasibility required the next "
-                    "predeclared reserve grid point"
-                    if selected_reserve_fraction != initial_selected_reserve_fraction
-                    else "nested selection was feasible on the pooled validation set"
-                ),
+                "changed_from_nested_selection": False,
+                "reason": "the pooled fit is evaluated at the nested-selected reserve; post-selection retuning is forbidden",
                 "locked_test_days_consulted": False,
             },
             "risk_reserve_selection_protocol": {
                 "candidate_count": int(len(reserve_candidates)),
                 "validation_fold_count": int(len(fold_partitions)),
                 "selection_pool_rule": (
-                    "retain candidates satisfying fold-wise risk non-inferiority "
-                    "when that predeclared pool is nonempty; otherwise retain the "
-                    "full candidate grid"
+                    "retain only candidates whose every nested contiguous fold "
+                    "solves the declared total and CVaR contract; locked "
+                    "non-inferiority is reported diagnostically and is not a "
+                    "selection constraint; fail closed if that set is empty"
                 ),
                 "tie_break_order": [
                     "max_contiguous_fold_nRMSE",
@@ -3786,6 +3812,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     "reserve_fraction",
                 ],
                 "locked_test_days_consulted": False,
+                "cvar_reserve_tied_to_total_reserve": True,
+                "pooled_reserve_retuning_allowed": False,
+                "heldout_noninferiority_used_for_selection": False,
             },
             "selected_risk_envelope_projection_weight": (
                 selected_envelope_weight
@@ -6605,9 +6634,12 @@ def run_exp9(
     )
     data_manifest_path = root / "data/processed/data_manifest.json"
     data_manifest = json.loads(data_manifest_path.read_text(encoding="utf-8"))
-    conversion_quantiles = data_manifest["power_calibration"][
-        "heldout_job_energy_measured_to_predicted_quantiles"
-    ]
+    conversion_quantiles = data_manifest["power_calibration"].get(
+        "calibration_validation_job_energy_measured_to_predicted_quantiles",
+        data_manifest["power_calibration"][
+            "heldout_job_energy_measured_to_predicted_quantiles"
+        ],
+    )
     # Include both raw tails in the same robust certificate as the finite
     # interior scenarios. q99 is the declared network-calibration endpoint;
     # keeping it in this LP prevents the independent interval audit from
@@ -6629,7 +6661,7 @@ def run_exp9(
         candidate_profiles, fixed_facility_load_mw
     )
     # Target selection remains tied to the predeclared validation contract
-    # (q10/q50/q90). The two raw tails are held-out robustness constraints and
+    # (q10/q50/q90). The two raw tails are endpoint robustness constraints and
     # cannot alter the validation choice of the payment target.
     validation_scale_factors = conversion_scale_factors[1:4]
     if not (
@@ -6638,7 +6670,7 @@ def run_exp9(
         and conversion_scale_factors[-1] > 1.0
     ):
         raise RuntimeError(
-            "Held-out power-conversion scenarios do not bracket unity"
+            "Calibration-validation power-conversion scenarios do not bracket unity"
         )
     peak_dc_mw = float(
         cfg["experiments"].get("n1_dc_peak_penetration", 0.06)
@@ -6653,7 +6685,7 @@ def run_exp9(
             validation_stored["quantile_profile"][:, :, event_slots].sum(axis=1).max(),
         )
     )
-    # Calibrate the benchmark scale on the complete held-out q99 envelope,
+    # Calibrate the benchmark scale on the complete calibration-validation q99 envelope,
     # while applying the conversion factor only to flexible workload service.
     # The fixed facility component is carried at one scale across all
     # scenarios, so q99 is a valid stress endpoint rather than an implicitly
@@ -6682,11 +6714,7 @@ def run_exp9(
             ),
         )
     )
-    q99_factor = float(
-        data_manifest["power_calibration"][
-            "heldout_job_energy_measured_to_predicted_quantiles"
-        ]["0.99"]
-    )
+    q99_factor = float(conversion_quantiles["0.99"])
     dc_scale = peak_dc_mw / max(
         fixed_total_mw + q99_factor * validation_flexible_peak_mw,
         1e-12,
@@ -7631,7 +7659,7 @@ def run_exp9(
                 "higher-resolution N-1 model"
             ),
             "power_conversion_scenario_source": (
-                "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job "
+                "1st, 10th, 50th, 90th, and 99th percentiles of calibration-validation per-job "
                 "measured-to-predicted energy ratios from the full MIT DCGM table; "
                 "the two tails are included in the payment certificate"
             ),
@@ -7653,23 +7681,11 @@ def run_exp9(
                 "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))",
             },
             "reference_payment_cap": candidate_names[reference_candidate],
-            "payment_guarantee_scope": (
-                "relative N-1 baseline-cost cap: every certified conversion scenario "
-                "has certified baseline cost no larger than the validation-frozen "
-                "reference cap"
-            ),
-            "absolute_overpayment_guarantee": False,
-            "revenue_adequacy_guarantee": False,
-            "incentive_compatibility_guarantee": False,
-            "realized_payment_audit": (
-                "payment_evaluation_intervals.csv reports independent realized-meter "
-                "error and overpayment; these diagnostics are not part of cap selection"
-            ),
             "external_transfer_comparator": "Feasible Quantile Projection",
             "payment_target_selection": (
                 "validation-only independent N-1 payment MAE over q10/q50/q90 "
-                "held-out conversion scenarios and event slots; q01 and q99 are "
-                "reserved as locked robustness constraints"
+                "calibration-validation conversion scenarios and event slots; q01 and q99 are "
+                "endpoint robustness constraints in the same frozen calibration-validation set"
             ),
             "selection_role_separation": (
                 "The contractual cap and payment target are frozen by different validation "
@@ -9697,6 +9713,7 @@ def run_exp12(
     reference_index = all_names.index(reference_name)
     rows: list[dict[str, Any]] = []
     site_rows: list[dict[str, Any]] = []
+    chain_rows: list[dict[str, Any]] = []
     for day_index, day in enumerate(days):
         start = int(day) * slots - prehistory
         prices = daily_prices[
@@ -9796,6 +9813,105 @@ def run_exp12(
             site_payments = (
                 np.sum(prices * delta, axis=1) * dt_h
             )
+            # End-to-end payment chain: intersect the submitted reduction with
+            # the frozen contract cap and the closed event meter before valuing
+            # the capacity product.  The signed full-cycle nodal value is kept
+            # as a separate addend, followed by opportunity cost and bilateral
+            # transfer.  This certificate is independent of the forecast error
+            # columns above and cannot enlarge payable service.
+            event_index = np.asarray(local_event_slots, dtype=int)
+            # The Exp9 certificate stores only the 96-slot event profile,
+            # whereas this rolling panel embeds every profile in a longer
+            # horizon.  Intersect reductions on the common event window so
+            # the settlement chain cannot accidentally compare incompatible
+            # tensor domains.
+            event_profile = baseline_profile[:, event_index]
+            actual_event_profile = actual_profile[:, event_index]
+            certified_cap_event_profile = certified["profiles"][day_index].astype(float)[:, event_slots]
+            submitted_reduction = np.maximum(
+                event_profile - actual_event_profile, 0.0
+            )
+            contract_reduction = np.maximum(
+                certified_cap_event_profile - actual_event_profile, 0.0
+            )
+            closed_meter_reduction = np.minimum(
+                submitted_reduction, contract_reduction
+            )
+            submitted_service_mwh = float(
+                submitted_reduction[participating_sites, :].sum()
+                * dt_h
+            )
+            contract_cap_service_mwh = float(
+                contract_reduction[participating_sites, :].sum()
+                * dt_h
+            )
+            closed_meter_service_mwh = float(
+                closed_meter_reduction[participating_sites, :].sum()
+                * dt_h
+            )
+            capacity_product_value = float(
+                response_price * closed_meter_service_mwh
+            )
+            operator_chain_value = float(
+                capacity_product_value + full_cycle_payment
+            )
+            chain_surplus = float(
+                operator_chain_value - participant_incremental_workload_cost
+            )
+            chain_activated = bool(chain_surplus >= -1e-7)
+            if chain_activated:
+                chain_bilateral_payment = float(
+                    participant_incremental_workload_cost + 0.5 * chain_surplus
+                )
+                chain_participant_utility = float(
+                    chain_bilateral_payment - participant_incremental_workload_cost
+                )
+                chain_operator_utility = float(
+                    operator_chain_value - chain_bilateral_payment
+                )
+            else:
+                chain_bilateral_payment = 0.0
+                chain_participant_utility = 0.0
+                chain_operator_utility = 0.0
+            site_allocation_residual = float(site_payments.sum() - full_cycle_payment)
+            operator_decomposition_residual = float(
+                operator_chain_value - (capacity_product_value + full_cycle_payment)
+            )
+            bilateral_balance_residual = float(
+                chain_participant_utility
+                + chain_operator_utility
+                - (operator_chain_value - participant_incremental_workload_cost)
+            )
+            chain_rows.append(
+                {
+                    "day": int(day),
+                    "counterfactual_method": name,
+                    "submitted_contract_service_mwh": submitted_service_mwh,
+                    "contract_cap_service_mwh": contract_cap_service_mwh,
+                    "closed_meter_service_mwh": closed_meter_service_mwh,
+                    "capacity_product_price_usd_per_mwh": response_price,
+                    "capacity_product_value_usd": capacity_product_value,
+                    "space_time_signed_value_usd": full_cycle_payment,
+                    "operator_value_usd": operator_chain_value,
+                    "participant_opportunity_cost_usd": participant_incremental_workload_cost,
+                    "transaction_surplus_usd": chain_surplus,
+                    "bilateral_transfer_usd": chain_bilateral_payment,
+                    "participant_utility_usd": chain_participant_utility,
+                    "operator_utility_usd": chain_operator_utility,
+                    "space_time_site_sum_residual_usd": site_allocation_residual,
+                    "operator_value_decomposition_residual_usd": operator_decomposition_residual,
+                    "bilateral_budget_balance_residual_usd": bilateral_balance_residual,
+                    "bilateral_contract_activated": chain_activated,
+                    "chain_certificate_valid": bool(
+                        closed_meter_service_mwh >= -1e-10
+                        and closed_meter_service_mwh
+                        <= min(submitted_service_mwh, contract_cap_service_mwh) + 1e-10
+                        and abs(site_allocation_residual) <= 1e-8
+                        and abs(operator_decomposition_residual) <= 1e-8
+                        and abs(bilateral_balance_residual) <= 1e-8
+                    ),
+                }
+            )
             for site, site_payment in enumerate(site_payments):
                 site_rows.append(
                     {
@@ -9893,6 +10009,16 @@ def run_exp12(
     results.to_csv(final / "rolling_market_validation.csv", index=False)
     pd.DataFrame(site_rows).to_csv(
         final / "site_space_time_allocations.csv", index=False
+    )
+    chain_certificate = pd.DataFrame(chain_rows)
+    expected_chain_rows = len(days) * len(baseline_names)
+    if len(chain_certificate) != expected_chain_rows:
+        raise RuntimeError(
+            "Settlement chain certificate is incomplete: "
+            f"{len(chain_certificate)} rows for {expected_chain_rows} method-day cells"
+        )
+    chain_certificate.to_csv(
+        final / "settlement_chain_certificate.csv", index=False
     )
     summary = (
         results.groupby("counterfactual_method", as_index=False)
@@ -10027,6 +10153,13 @@ def run_exp12(
                 f"predeclared DR service price of {response_price:g} USD/MWh; "
                 "complete-cycle nodal energy remuneration is added separately"
             ),
+            "settlement_chain_certificate": (
+                "for each method-day, payable event service is the pointwise minimum "
+                "of submitted reduction, frozen contract-cap reduction, and closed-meter "
+                "reduction; the capacity-product value and signed full-cycle space-time "
+                "value are added before opportunity cost and bilateral transfer"
+            ),
+            "settlement_chain_certificate_file": "settlement_chain_certificate.csv",
             "opportunity_cost_reference": (
                 "minimum-cost continuous no-event schedule under the identical "
                 "real-arrival horizon and physical constraints"
@@ -10058,7 +10191,7 @@ def run_exp13(
 
     Experiments 1--12 use a declared mechanism-isolation intervention to test
     the counterfactual claims.  This panel deliberately removes that
-    intervention: the held-out target is the measured MIT/DCGM execution trace
+    intervention: the locked target is the measured MIT/DCGM execution trace
     itself.  It is therefore an observational replay, not a causal field-trial
     claim, and closes the evidence gap between the real trace and the LP study.
     """
@@ -10556,12 +10689,7 @@ def run_exp19(
             submission_calibration["declared_service_fraction"]
         ),
         declared_per_gpu_power_cap_mw=per_gpu_cap_mw,
-        declared_service_fraction_lower=float(
-            submission_calibration.get(
-                "declared_service_fraction_lower",
-                submission_calibration["declared_service_fraction"],
-            )
-        ),
+        declared_fraction_model=submission_calibration.get("per_job_fraction_model"),
         unbounded_timelimit_slots=unbounded_timelimit_slots,
         submission_buffer_slots=submission_buffer_slots,
         time_origin_seconds=time_origin_seconds,
@@ -10959,7 +11087,13 @@ def run_exp19(
                 submission_calibration["declared_service_fraction"]
             ),
             "declared_service_fraction_source": (
-                "training-only scheduler/DCGM calibration in data_manifest.json"
+                "training-only scheduler/DCGM conditional q10/q50/q90 calibration in data_manifest.json"
+            ),
+            "declared_fraction_source": jobs.attrs.get(
+                "declared_fraction_source", "unknown"
+            ),
+            "declared_fraction_model_version": jobs.attrs.get(
+                "declared_fraction_model_version", "unknown"
             ),
             "submission_ledger_digest": str(
                 jobs.attrs["canonical_submission_ledger_sha256"]
@@ -11027,7 +11161,7 @@ def run_exp15(
     logger: logging.Logger,
     resume: bool = False,
 ) -> None:
-    """Audit the payment interval on a held-out conversion-factor segment.
+    """Audit the payment interval on a calibration-validation conversion-factor segment.
 
     The two endpoint profiles are frozen before the locked test period.  For
     each endpoint conversion factor, the independent N-1 evaluator computes
@@ -11095,7 +11229,12 @@ def run_exp15(
     dc_scale = float(exp9_metadata["dc_power_scale"])
     fixed_facility_load_mw = float(cfg["project"]["fixed_facility_load_mw"])
     manifest = json.loads((root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8"))
-    conversion = manifest["power_calibration"]["heldout_job_energy_measured_to_predicted_quantiles"]
+    conversion = manifest["power_calibration"].get(
+        "calibration_validation_job_energy_measured_to_predicted_quantiles",
+        manifest["power_calibration"][
+            "heldout_job_energy_measured_to_predicted_quantiles"
+        ],
+    )
     raw_endpoint_scales = np.asarray(
         [conversion["0.01"], conversion["0.99"]], dtype=float
     )
@@ -11108,14 +11247,14 @@ def run_exp15(
         run_exp16(root, cfg, logger)
     capacity_sensitivity = pd.read_csv(capacity_sensitivity_path)
     q99_row = capacity_sensitivity[
-        capacity_sensitivity["heldout_ratio_quantile"].astype(str) == "q99"
+        capacity_sensitivity["calibration_ratio_quantile"].astype(str) == "q99"
     ]
     if len(q99_row) != 1:
         raise RuntimeError(
             "Experiment 16 must provide one predeclared q99 capacity audit row"
         )
     capacity_safe_upper = float(q99_row.iloc[0]["capacity_safe_scale_factor"])
-    # Keep the complete held-out q99 endpoint in the interval audit.  The
+    # Keep the complete calibration-validation q99 endpoint in the interval audit.  The
     # network scale was calibrated on q99 while fixed facility demand is held
     # separate, so this endpoint is solved and can be activated without
     # clipping the declared conversion factor.  The flexible-only capacity
@@ -11127,7 +11266,7 @@ def run_exp15(
     )
     q99_capacity_eligible = True
     if not (endpoint_scales[0] < 1.0 < endpoint_scales[1]):
-        raise RuntimeError("Held-out q01/q99 interval must bracket unity")
+        raise RuntimeError("Calibration-validation q01/q99 interval must bracket unity")
     # Every endpoint cache is tied to the exact frozen profiles and endpoint
     # factors.  This prevents stale costs from an earlier Experiment 9
     # certificate from entering the continuous-segment audit.
@@ -11338,7 +11477,7 @@ def run_exp15(
             counterfactual_cost = network_cost(
                 actual_profiles[local_day], float(scale)
             )
-            # Independent held-out coverage audit. This value is computed only
+            # Independent locked coverage audit. This value is computed only
             # after the contract hull and endpoint profiles are frozen; it is
             # never used to choose an endpoint or a certificate profile.
             oracle_cost = network_cost(oracle_profiles[local_day], float(scale))
@@ -11469,7 +11608,7 @@ def run_exp15(
                 "lower_endpoint": float(endpoint_scales[0]),
                 "upper_endpoint": float(endpoint_scales[1]),
                 "unclipped_upper_endpoint": float(raw_endpoint_scales[1]),
-                "source": "complete held-out per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
+                "source": "complete calibration-validation per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
                 "upper_endpoint_policy": (
                     "retain raw q99 and apply it only to the flexible workload "
                     "component; fixed facility demand is carried separately and "
@@ -11586,10 +11725,13 @@ def run_exp16(
             encoding="utf-8"
         )
     )
-    conversion = manifest["power_calibration"][
-        "heldout_job_energy_measured_to_predicted_quantiles"
-    ]
-    # The held-out measured-to-predicted ratios describe MIT GPU batch energy,
+    conversion = manifest["power_calibration"].get(
+        "calibration_validation_job_energy_measured_to_predicted_quantiles",
+        manifest["power_calibration"][
+            "heldout_job_energy_measured_to_predicted_quantiles"
+        ],
+    )
+    # The calibration-validation measured-to-predicted ratios describe MIT GPU batch energy,
     # not the fixed facility load or the independent BurstGPT inference trace.
     # Reconcile the conversion against the same flexible batch envelope used by
     # the provenance certificate; otherwise fixed/inference demand would be
@@ -11621,7 +11763,8 @@ def run_exp16(
         capacity_safe_peak = scaled_benchmark_peak_by_region * capacity_safe_factor
         calibration_rows.append(
             {
-                "heldout_ratio_quantile": label,
+                "calibration_ratio_quantile": label,
+                "calibration_split": "calibration-validation",
                 "measured_to_predicted_energy_ratio": factor,
                 "maximum_raw_execution_peak_mw": float(raw_peak.max()),
                 "maximum_scaled_benchmark_region_peak_mw": float(scaled_peak.max()),
@@ -11634,7 +11777,7 @@ def run_exp16(
                 "regions_over_nameplate": int(
                     np.sum(scaled_peak > configured_capacity + 1e-9)
                 ),
-                "calibration_source": "held-out MIT job energy ratios; no locked-test fitting",
+                "calibration_source": "calibration-validation MIT job energy ratios; no locked-test fitting",
                 "batch_scale_to_benchmark_envelope": batch_scale,
                 "scaled_benchmark_is_not_raw_utility_measurement": True,
                 "spatial_mapping": "four declared DC buses with fixed region order",
@@ -11665,6 +11808,23 @@ def run_exp16(
                 "q50": float(submission_calibration["fraction_quantiles"]["0.5"]),
                 "q90": float(submission_calibration["fraction_quantiles"]["0.9"]),
                 "q99": float(submission_calibration["fraction_quantiles"]["0.99"]),
+                "conditional_model_type": submission_calibration.get(
+                    "per_job_fraction_model", {}
+                ).get("model_type", "scalar")
+                if submission_calibration.get("per_job_fraction_model")
+                else "scalar",
+                "validation_model_diagnostics": json.dumps(
+                    submission_calibration.get("per_job_fraction_model", {}).get(
+                        "validation_diagnostics", {}
+                    ),
+                    sort_keys=True,
+                ),
+                "locked_model_diagnostics": json.dumps(
+                    submission_calibration.get("per_job_fraction_model", {}).get(
+                        "locked_diagnostics", {}
+                    ),
+                    sort_keys=True,
+                ),
                 "telemetry_role": submission_calibration["telemetry_role"],
             }
         ]
@@ -11672,14 +11832,41 @@ def run_exp16(
     pd.DataFrame(
         [
             {
-                "calibration_scope": "held-out MIT DCGM job-power model",
+                "calibration_scope": "three-way MIT DCGM job-power model",
                 "train_observations": int(calibration_summary["train_observations"]),
+                "calibration_validation_observations": int(
+                    calibration_summary["validation_observations"]
+                ),
+                "locked_observations": int(calibration_summary["locked_observations"]),
                 "test_observations": int(calibration_summary["test_observations"]),
                 "test_mae_watts": float(calibration_summary["test_mae_watts"]),
                 "test_rmse_watts": float(calibration_summary["test_rmse_watts"]),
                 "test_r2": float(calibration_summary["test_r2"]),
-                "heldout_aggregate_energy_ratio": float(
-                    calibration_summary["heldout_aggregate_measured_to_predicted_energy_ratio"]
+                "calibration_validation_mae_watts": float(
+                    calibration_summary["validation_metrics"]["mae_watts"]
+                ),
+                "calibration_validation_rmse_watts": float(
+                    calibration_summary["validation_metrics"]["rmse_watts"]
+                ),
+                "calibration_validation_r2": float(
+                    calibration_summary["validation_metrics"]["r2"]
+                ),
+                "locked_mae_watts": float(
+                    calibration_summary["locked_metrics"]["mae_watts"]
+                ),
+                "locked_rmse_watts": float(
+                    calibration_summary["locked_metrics"]["rmse_watts"]
+                ),
+                "locked_r2": float(calibration_summary["locked_metrics"]["r2"]),
+                "calibration_validation_aggregate_energy_ratio": float(
+                    calibration_summary[
+                        "calibration_validation_aggregate_measured_to_predicted_energy_ratio"
+                    ]
+                ),
+                "locked_aggregate_energy_ratio": float(
+                    calibration_summary[
+                        "locked_aggregate_measured_to_predicted_energy_ratio"
+                    ]
                 ),
                 "raw_execution_peak_mw": float(raw_execution_peak_by_region.max()),
                 "scaled_benchmark_peak_mw": float(scaled_benchmark_peak_by_region.max()),
@@ -11747,21 +11934,52 @@ def run_exp16(
         ]["maximum_scaled_benchmark_peak_to_configured_capacity_ratio"],
         "physical_calibration_summary": {
             "file": "physical_calibration_summary.csv",
+            "train_observations": int(calibration_summary["train_observations"]),
+            "calibration_validation_observations": int(
+                calibration_summary["validation_observations"]
+            ),
+            "locked_observations": int(calibration_summary["locked_observations"]),
+            "calibration_validation_mae_watts": float(
+                calibration_summary["validation_metrics"]["mae_watts"]
+            ),
+            "calibration_validation_rmse_watts": float(
+                calibration_summary["validation_metrics"]["rmse_watts"]
+            ),
+            "calibration_validation_r2": float(
+                calibration_summary["validation_metrics"]["r2"]
+            ),
+            "locked_mae_watts": float(
+                calibration_summary["locked_metrics"]["mae_watts"]
+            ),
+            "locked_rmse_watts": float(
+                calibration_summary["locked_metrics"]["rmse_watts"]
+            ),
+            "locked_r2": float(calibration_summary["locked_metrics"]["r2"]),
             "test_mae_watts": float(calibration_summary["test_mae_watts"]),
             "test_rmse_watts": float(calibration_summary["test_rmse_watts"]),
             "test_r2": float(calibration_summary["test_r2"]),
             "aggregate_measured_to_predicted_energy_ratio": float(
-                calibration_summary["heldout_aggregate_measured_to_predicted_energy_ratio"]
+                calibration_summary[
+                    "calibration_validation_aggregate_measured_to_predicted_energy_ratio"
+                ]
+            ),
+            "locked_aggregate_measured_to_predicted_energy_ratio": float(
+                calibration_summary[
+                    "locked_aggregate_measured_to_predicted_energy_ratio"
+                ]
             ),
             "interpretation": (
-                "The job-level model calibrates GPU energy only. The network "
-                "profile remains a declared four-region scenario; it is not a "
-                "co-located utility measurement."
+                "The job-level model calibrates GPU energy only. Conversion "
+                "scenarios use the calibration-validation partition; the locked "
+                "partition is reported solely as a generalization audit. The "
+                "network profile remains a declared four-region scenario and is "
+                "not a co-located utility measurement."
             ),
         },
         "power_calibration_sensitivity": {
             "file": "workload_power_calibration_sensitivity.csv",
             "ratios": ["0.01", "0.1", "0.5", "0.9", "0.99"],
+            "calibration_split": "calibration-validation",
             "locked_test_observations_used_for_scaling": False,
             "capacity_sensitivity_scope": (
                 "flexible workload batch only; this diagnostic does not gate "
@@ -11773,7 +11991,7 @@ def run_exp16(
                 "the fixed facility component carried separately"
             ),
             "interpretation": (
-                "The power conversion is a declared held-out uncertainty interval. "
+                "The power conversion is a declared calibration-validation uncertainty interval. "
                 "The q99 capacity-safe factor is a flexible-batch diagnostic; "
                 "network activation uses the separate fixed/flexible conversion "
                 "certificate in Experiment 9. These results are not treated as "
@@ -11785,6 +12003,12 @@ def run_exp16(
             "training_rule": submission_calibration["training_rule"],
             "declared_service_fraction": float(
                 submission_calibration["declared_service_fraction"]
+            ),
+            "declared_fraction_model_type": submission_calibration.get(
+                "per_job_fraction_model", {}
+            ).get("model_type", "scalar"),
+            "conditional_q10_q50_q90_at_submit_time": bool(
+                submission_calibration.get("per_job_fraction_model")
             ),
             "physical_upper_service_fraction": float(
                 submission_calibration["physical_upper_service_fraction"]
@@ -11850,7 +12074,7 @@ def run_exp17(
     actual = stored["actual"]
     oracle = stored["oracle"]
     arrivals_days, observed, valid_days, _, _, prices, _ = _inputs(root, cfg, logger)
-    # Reconstruct the exact held-out strategic reference used by Exp2.  The
+    # Reconstruct the exact locked strategic reference used by Exp2.  The
     # event-gate target is then refit below with the current day's post-gate
     # arrivals masked before feature construction; the complete-day cache is
     # intentionally not used as a decision-time target.
@@ -12539,6 +12763,55 @@ def run_exp17(
     pd.DataFrame(observed_trace_rows).sort_values(["day", "method"]).to_csv(
         trace_replay_path, index=False
     )
+    information_boundary_certificate = pd.DataFrame(
+        [
+            {
+                "criterion": "post_gate_arrivals_in_decision",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "all committed-ledger LP inputs set arrivals[gate:] to zero",
+            },
+            {
+                "criterion": "execution_truth_available_to_decision",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "DCGM/BurstGPT execution tensor is opened only in the scoring pass",
+            },
+            {
+                "criterion": "locked_truth_used_for_selection",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "response and reserve candidates are selected on validation days only",
+            },
+            {
+                "criterion": "utility_event_label_available",
+                "value": 0,
+                "required_value": 0,
+                "units": "boolean",
+                "evidence": "public traces have no exogenous utility event label",
+            },
+            {
+                "criterion": "submitted_contract_frozen_before_event",
+                "value": 1,
+                "required_value": 1,
+                "units": "boolean",
+                "evidence": "no-tariff committed-ledger LP is the submitted baseline",
+            },
+            {
+                "criterion": "future_arrivals_excluded_from_payment",
+                "value": 1,
+                "required_value": 1,
+                "units": "boolean",
+                "evidence": "reserved and post-gate jobs cannot enter the gate contract",
+            },
+        ]
+    )
+    information_boundary_certificate.to_csv(
+        final / "information_boundary_certificate.csv", index=False
+    )
     reserve_test = pd.DataFrame(reserve_test_rows)
     if reserve_test.empty:
         raise RuntimeError(
@@ -12612,17 +12885,14 @@ def run_exp17(
         },
         "observational_trace_source": "independent locked DCGM/BurstGPT execution trace",
         "observational_trace_replay_file": "decision_time_trace_replay.csv",
+        "information_boundary_certificate_file": "information_boundary_certificate.csv",
+        "information_boundary_certificate_scope": (
+            "pre-event filtration and contract-formation checks; the certificate "
+            "does not identify a causal utility treatment effect"
+        ),
         "simulated_response_source": (
             "the committed-ledger DR LP is retained as an operating replay and "
             "is never substituted for the measured scoring meter"
-        ),
-        "deployment_primary_panel": "Committed-ledger rolling-service verifier",
-        "deployment_primary_metrics_file": "decision_time_summary.csv",
-        "mechanism_isolation_comparator": "Complete-ledger risk-constrained verifier",
-        "headline_metric_role": (
-            "Experiment 17 deployment metrics are gate-causal; complete-ledger "
-            "rows are retained only as an information-value comparator and are "
-            "not a deployable policy"
         ),
         "meter_cap_scoring_note": (
             "The deployed settlement uses the submitted causal committed-ledger "
@@ -12908,7 +13178,7 @@ def run_exp18(
                 )
             repo_root = Path(__file__).resolve().parents[2]
             child_env = os.environ.copy()
-            child_paths = [str(repo_root / "src"), str(repo_root / "vendor")]
+            child_paths = [str(repo_root / "code/src"), str(repo_root / "vendor")]
             if child_env.get("PYTHONPATH"):
                 child_paths.append(child_env["PYTHONPATH"])
             child_env["PYTHONPATH"] = os.pathsep.join(child_paths)

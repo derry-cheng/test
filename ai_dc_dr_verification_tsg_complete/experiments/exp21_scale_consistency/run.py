@@ -4,7 +4,7 @@ import logging
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "code/src"))
 from aicdr.scale_audit import run_exp21_scale_consistency
 from aicdr.utils import load_config
 

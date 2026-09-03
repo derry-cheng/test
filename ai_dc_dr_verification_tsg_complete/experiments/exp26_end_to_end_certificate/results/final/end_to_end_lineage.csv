@@ -1,6 +1,0 @@
-stage,certificate,maximum_residual_or_violation,passed
-job witness,"exact declared-energy equality, GPU bound, and regional capacity",0.0,True
-aggregate risk contract,validation-fitted total plus daily-CVaR constraints,1.3908228291281688e-08,True
-relative payment cap,certified N-1 baseline cost no larger than the validation-frozen cap,8.92032403498888e-09,True
-network valuation,RTS-24 N-1 value evaluated from the indexed job witness,0.0,True
-complete outage replay,all 37 finite non-islanding line outages for every frozen profile cell,1.0000000000000022,True

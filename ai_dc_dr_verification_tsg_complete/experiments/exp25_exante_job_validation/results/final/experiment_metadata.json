@@ -1,13 +1,87 @@
 {
   "experiment": "independent submit-time declaration validation",
-  "submission_ledger_digest": "078534ee2e3df7a79c9b7fde3e51850cf93d21e3a3afc4c6b56924bdce0f83d0",
+  "submission_ledger_digest": "1060e9e1e9334c11f84a9111a4c87ecfdde55ff49812454ac4a2167ad3622832",
   "execution_ledger_role": "post-event scoring only",
   "telemetry_used_in_exp19_decision": false,
   "population_rule": "all valid scheduler submissions; execution matching is a post-event audit",
   "submitted_jobs": 75326,
   "execution_matched_jobs": 71128,
   "declared_service_fraction": 0.0011383333333333334,
-  "declared_service_fraction_lower": 5.7238037480974145e-06,
+  "declared_fraction_source": "frozen submit-time conditional q10/q50/q90 utilization model fit on the chronological calibration partition",
+  "declared_fraction_model_version": "three conditional QuantileRegressor models on log utilization fraction",
+  "conditional_fraction_model": {
+    "model_type": "three conditional QuantileRegressor models on log utilization fraction",
+    "fit_scope": "chronological submit/end-time calibration jobs only",
+    "features": [
+      "log_requested_gpus",
+      "log_declared_runtime_slots",
+      "unlimited_timelimit",
+      "job_type::LLSUB:BATCH",
+      "job_type::LLSUB:INTERACTIVE",
+      "job_type::OTHER"
+    ],
+    "job_type_categories": [
+      "LLMAPREDUCE:MAP",
+      "LLSUB:BATCH",
+      "LLSUB:INTERACTIVE",
+      "OTHER"
+    ],
+    "reference_job_type": "LLMAPREDUCE:MAP",
+    "quantile_levels": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "target": "log(measured_energy / requested_GPU_nameplate_energy)",
+    "physical_clip": "[1e-12, 1] applied only to the declared fraction at reconstruction",
+    "quantile_models": {
+      "0.1": {
+        "coefficients": [
+          -1.8151359497413262,
+          -1.5693096989601771,
+          -0.18535774558182228,
+          -2.520678878639112,
+          -1.0458311201777768,
+          -1.7958778851443546
+        ],
+        "intercept": -2.0661617963787533
+      },
+      "0.5": {
+        "coefficients": [
+          0.5406120127487081,
+          -0.626042058567498,
+          -0.6097873944843581,
+          -0.8914280595683102,
+          -0.10769971167098191,
+          -2.5723568977765185
+        ],
+        "intercept": -3.8653408260442244
+      },
+      "0.9": {
+        "coefficients": [
+          0.7088484823840485,
+          -0.7063977096444233,
+          -0.4407076262286816,
+          -0.28943854395207586,
+          -0.0035708383236290886,
+          -0.757728210714097
+        ],
+        "intercept": -2.2886937635040483
+      }
+    },
+    "validation_diagnostics": {
+      "jobs": 31284,
+      "median_observed_to_predicted_q50": 1.0,
+      "q90_observed_to_predicted_q50": 17.578254185490433,
+      "q10_q90_interval_coverage": 0.800025572177471
+    },
+    "locked_diagnostics": {
+      "jobs": 39857,
+      "median_observed_to_predicted_q50": 4.4390306710020475,
+      "q90_observed_to_predicted_q50": 78.64692411927138,
+      "q10_q90_interval_coverage": 0.5913892164488045
+    }
+  },
   "physical_upper_service_fraction": 1.0,
   "declared_per_gpu_power_cap_mw": 0.001,
   "unbounded_timelimit_slots": 128,
@@ -24,20 +98,17 @@
     "stress_day_index": 127,
     "cohort_jobs": 79,
     "service_variables": 53720,
-    "binary_start_variables": 663,
+    "binary_start_variables": 679,
     "selected_start_variables": 79,
-    "capacity_mw_per_region": 0.0006647866667,
-    "event_service_floor_mwh": 0.004,
-    "absolute_event_service_floor_mwh": 0.004,
-    "cohort_declared_entitlement_mwh": 0.014126716666666667,
-    "event_service_floor_fraction_of_cohort_entitlement": 0.2831514282040059,
-    "event_service_delivered_mwh": 0.004154916666666666,
-    "active_event_capacity_slot_fraction": 0.78125,
-    "minimum_event_capacity_slack_mwh": 8.33334052804946e-15,
+    "capacity_mw_per_region": 0.0001603677778,
+    "event_service_floor_mwh": 0.00108,
+    "event_service_delivered_mwh": 0.0010832855767037468,
+    "active_event_capacity_slot_fraction": 0.6875,
+    "minimum_event_capacity_slack_mwh": 5.555553575769395e-15,
     "maximum_job_energy_residual_mwh": 0.0,
     "solver_success": true,
     "solver": "scipy.optimize.milp with binary start variables and exact contiguous fixed-rate blocks",
     "solution_file": "job_level_capacity_stress_solution.npz"
   },
-  "interpretation": "The central q50 declaration is a training-only ex-ante entitlement; the q10 declaration is an empirical lower coverage envelope and the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality. The stress floor is the larger of the 0.004-MWh absolute floor and 0.25 of the cohort entitlement; for this locked cohort the absolute floor binds. The panel is solved with one binary start per job, so capacity and the event-service floor are tested on an executable nonpreemptive schedule."
+  "interpretation": "The central declaration is a training-only ex-ante entitlement; the full requested nameplate is the physical upper bound. Observed DCGM energy is reported for coverage and cannot alter a release, deadline, or service equality. The stress panel is solved with one binary start per job, so capacity and the event-service floor are tested on an executable nonpreemptive schedule."
 }

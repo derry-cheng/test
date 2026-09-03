@@ -1,8 +1,0 @@
-name,passed,detail
-no_drafting_or_stale_claim_residue,True,none found
-all_float_labels_are_referenced,True,all labels have an in-text reference
-table_count_within_tsg_limit,True,5 tables; the locked paper limit is five
-figure_count_is_explicit,True,2 figures in the manuscript source
-introduction_has_no_subsections,True,Introduction is a single section
-conclusion_has_no_subsections,True,Conclusion is a single section
-critical_claim_scope_and_lineage_phrases_present,True,all C1--C5 scope anchors present

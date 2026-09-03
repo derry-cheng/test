@@ -612,6 +612,11 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/settlement_chain_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
       "passed": true,
       "detail": "exists and non-empty"
@@ -807,6 +812,11 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/information_boundary_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_17:experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
       "passed": true,
       "detail": "exists and non-empty"
@@ -947,6 +957,11 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_protocol_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
       "passed": true,
       "detail": "exists and non-empty"
@@ -1022,134 +1037,99 @@
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "name": "manuscript_sources:paper/main.tex",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "name": "manuscript_sources:paper/main.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "name": "manuscript_sources:paper/IEEEtran.cls",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "name": "manuscript_sources:paper/references.bib",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "name": "manuscript_sources:paper/formula_source_matrix.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "name": "manuscript_sources:paper/model_formulation.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "experiment_26:experiments/exp26_end_to_end_certificate/README.md",
+      "name": "manuscript_sources:paper/paper_outline_zh.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/main.tex",
+      "name": "manuscript_sources:paper/theoretical_results.md",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/main.pdf",
+      "name": "manuscript_sources:paper/figures/framework_architecture.drawio",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/IEEEtran.cls",
+      "name": "manuscript_sources:paper/figures/framework_architecture.svg",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/references.bib",
+      "name": "manuscript_sources:paper/figures/method_detail.drawio",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/formula_source_matrix.md",
+      "name": "manuscript_sources:paper/figures/method_detail.svg",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/model_formulation.md",
+      "name": "manuscript_sources:paper/figures/fig0_framework.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/paper_outline_zh.md",
+      "name": "manuscript_sources:paper/figures/fig0_framework.png",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/theoretical_results.md",
+      "name": "manuscript_sources:paper/figures/fig_method_detail.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/figures/framework_architecture.drawio",
+      "name": "manuscript_sources:paper/figures/fig_method_detail.png",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/figures/framework_architecture.svg",
+      "name": "manuscript_sources:paper/figures/fig17_cross_layer_robustness.png",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
-      "name": "paper_sources:paper/figures/method_detail.drawio",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/method_detail.svg",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig0_framework.pdf",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig0_framework.png",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig_method_detail.pdf",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig_method_detail.png",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig17_cross_layer_robustness.png",
-      "passed": true,
-      "detail": "exists and non-empty"
-    },
-    {
-      "name": "paper_sources:paper/figures/fig17_cross_layer_robustness.pdf",
+      "name": "manuscript_sources:paper/figures/fig17_cross_layer_robustness.pdf",
       "passed": true,
       "detail": "exists and non-empty"
     },
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "28/28 stages recorded; canonical request=all; audit status=running"
+      "detail": "27/27 stages recorded; canonical request=all; audit status=completed"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
@@ -1159,42 +1139,7 @@
     {
       "name": "model_formula_citation_traceability",
       "passed": true,
-      "detail": "26/26 required source keys in bibliography, formula-source matrix, and complete formulation"
-    },
-    {
-      "name": "no_drafting_or_stale_claim_residue",
-      "passed": true,
-      "detail": "none found"
-    },
-    {
-      "name": "all_float_labels_are_referenced",
-      "passed": true,
-      "detail": "all labels have an in-text reference"
-    },
-    {
-      "name": "table_count_within_tsg_limit",
-      "passed": true,
-      "detail": "5 tables; the locked paper limit is five"
-    },
-    {
-      "name": "figure_count_is_explicit",
-      "passed": true,
-      "detail": "2 figures in the manuscript source"
-    },
-    {
-      "name": "introduction_has_no_subsections",
-      "passed": true,
-      "detail": "Introduction is a single section"
-    },
-    {
-      "name": "conclusion_has_no_subsections",
-      "passed": true,
-      "detail": "Conclusion is a single section"
-    },
-    {
-      "name": "critical_claim_scope_and_lineage_phrases_present",
-      "passed": true,
-      "detail": "all C1--C5 scope anchors present"
+      "detail": "31/31 required source keys in bibliography, formula-source matrix, and complete formulation"
     },
     {
       "name": "official_ieee_journal_template",
@@ -1204,32 +1149,32 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "38 in-text citation groups checked"
+      "detail": "42 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
       "passed": true,
-      "detail": "30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]"
+      "detail": "35 verified bibliography entries; 35 unique in-text citations; uncited=[]; missing=[]"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
     },
     {
       "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
       "passed": true,
-      "detail": "raw source deferred to verified archive; locked processed artifact retained"
+      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
     },
     {
       "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
@@ -1254,17 +1199,22 @@
     {
       "name": "chronological_submit_time_calibration_boundary",
       "passed": true,
-      "detail": "submit-time entitlement calibration is chronological and kept separate from the complete scheduler population; execution matching is not an Exp19 eligibility filter"
+      "detail": "submit-time entitlement uses frozen conditional q10/q50/q90 models fit chronologically and kept separate from the complete scheduler population; execution matching is not an Exp19 eligibility filter"
     },
     {
-      "name": "heldout_power_conversion_scenarios_complete",
+      "name": "calibration_validation_power_conversion_scenarios_complete",
       "passed": true,
-      "detail": "40,768 held-out jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors=0.536697, 0.669059, 0.924071, 1.409561, 4.755718"
+      "detail": "6540 calibration-validation jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors=0.582671, 0.687118, 0.969849, 1.349061, 5.320913"
+    },
+    {
+      "name": "three_way_power_calibration_partition_and_locked_audit",
+      "passed": true,
+      "detail": "train/validation/locked=44391/9637/41154 observations; conversion scenarios use calibration-validation ratios and the locked split is scoring-only"
     },
     {
       "name": "complete_source_to_evaluation_data_flow",
       "passed": true,
-      "detail": "7 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 44391 train + 50791 held out"
+      "detail": "8 source/join/window/split stages; full immutable join 71128 -> 68664 common-window jobs; calibration 44391 train + 9637 calibration-validation + 41154 locked"
     },
     {
       "name": "processed_data_finite_nonnegative",
@@ -1352,6 +1302,11 @@
       "detail": "gate diagnostic, deployable response, and complete-ledger comparator are separately named"
     },
     {
+      "name": "explicit_decision_information_boundary_certificate",
+      "passed": true,
+      "detail": "the gate certificate records zero post-gate arrivals, execution truth, locked-outcome selection, and utility event labels at decision time, while requiring a frozen submitted contract and payment exclusion of future jobs"
+    },
+    {
       "name": "causal_response_grid_selection",
       "passed": true,
       "detail": "42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget"
@@ -1359,7 +1314,7 @@
     {
       "name": "causal_reserve_is_validation_selected_and_payment_ineligible",
       "passed": true,
-      "detail": "4 validation candidates select eta=0.60 under the declared false-credit budget; the held-out reserve is reported for capacity planning while committed-ledger payment remains separate"
+      "detail": "4 validation candidates select eta=0.60 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate"
     },
     {
       "name": "cross_network_ac_n1_admissibility_panel",
@@ -1419,12 +1374,12 @@
     {
       "name": "closest_feasible_baseline_comparison",
       "passed": true,
-      "detail": "risk verifier has significantly lower mean false-credit exposure than the complete-ledger feasible-quantile projection; the higher mean nRMSE is retained as an explicit tradeoff (0.323961 versus 0.300888)"
+      "detail": "risk verifier has significantly lower mean false-credit exposure than the complete-ledger feasible-quantile projection; the higher mean nRMSE is retained as an explicit tradeoff (0.323061 versus 0.300888)"
     },
     {
       "name": "active_cvar_frontier_certificate",
       "passed": true,
-      "detail": "the validation-only CVaR frontier is feasible at every predeclared reserve grid contains a boundary that touches the minimum achievable CVaR under the total-risk budget; the pooled contract uses the separately recorded 0.97 tail reserve"
+      "detail": "the predeclared validation-only CVaR frontier contains a feasible pooled reserve and an active boundary that touches the minimum achievable CVaR under the total-risk budget; the pooled contract uses the separately recorded 1.00 tail reserve"
     },
     {
       "name": "matched_effect_sizes_with_dependence_robust_intervals",
@@ -1489,12 +1444,12 @@
     {
       "name": "convex_projection_simplex",
       "passed": true,
-      "detail": "7 coefficients; sum=0.999999999978"
+      "detail": "7 coefficients; sum=1.000000000000"
     },
     {
       "name": "contiguous_blocked_validation",
       "passed": true,
-      "detail": "4 held-out temporal folds"
+      "detail": "4 locked temporal folds"
     },
     {
       "name": "independent_full_constraint_certificates",
@@ -1604,7 +1559,7 @@
     {
       "name": "scenario_robust_exact_n1_payment_noninferiority_certificate",
       "passed": true,
-      "detail": "54/54 lexicographically solved daily certificates across five held-out conversion scenarios; formal four-segment maximum cap violation=8.935e-09 USD; the independent 40-segment transfer comparison is evaluated by its paired mean"
+      "detail": "54/54 lexicographically solved daily certificates across five calibration-validation conversion scenarios; formal four-segment maximum cap violation=8.935e-09 USD; the independent 40-segment transfer comparison is evaluated by its paired mean"
     },
     {
       "name": "payment_panel_lineage_matches_current_profiles_and_manifest",
@@ -1619,7 +1574,7 @@
     {
       "name": "complete_independent_payment_model_transfer_evaluation",
       "passed": true,
-      "detail": "1080 method-day-scenario outcomes scored across five held-out conversion factors with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
+      "detail": "1080 method-day-scenario outcomes scored across five calibration-validation conversion factors with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
     },
     {
       "name": "paired_payment_accuracy_and_overpayment_pareto",
@@ -1644,7 +1599,7 @@
     {
       "name": "independent_nondegenerate_payment_candidate_hull",
       "passed": true,
-      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 24 distinct daily optimal weight vectors"
+      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 28 distinct daily optimal weight vectors"
     },
     {
       "name": "validation_only_payment_target_selection",
@@ -1682,6 +1637,11 @@
       "detail": "216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option"
     },
     {
+      "name": "typed_end_to_end_settlement_chain_certificate",
+      "passed": true,
+      "detail": "216 method-day chains bind submitted, capped, and metered service before capacity value; space-time decomposition and bilateral budget residuals are zero"
+    },
+    {
       "name": "immutable_ledger_provenance_and_capacity_reconciliation",
       "passed": true,
       "detail": "216,572 submit-time rows and 71,128 matched execution rows; submission digest 122179c57225..., execution telemetry is excluded from decision provenance, and raw-to-join energy is conserved for the post-event reconciliation"
@@ -1702,14 +1662,14 @@
       "detail": "submit-time runtime declarations plus the precommitted queue allowance are used (window slots 97--680), observed completion is excluded, and net/gross/rebound arithmetic is explicit"
     },
     {
-      "name": "heldout_power_conversion_capacity_safe_sensitivity",
+      "name": "calibration_validation_power_conversion_capacity_safe_sensitivity",
       "passed": true,
-      "detail": "5 held-out ratio endpoints are explicit; capacity-safe clipping remains below the precommitted nameplate"
+      "detail": "5 calibration-validation ratio endpoints are explicit; capacity-safe clipping remains below the precommitted nameplate"
     },
     {
       "name": "physical_calibration_is_separate_from_utility_scale",
       "passed": true,
-      "detail": "44,391/50,791 chronological train/test GPU-power observations are reconciled with finite MAE/RMSE/R2 while raw measurement and declared spatial mapping remain explicitly separated from utility-scale claims"
+      "detail": "44391/9637/41154 chronological train/validation/locked GPU-power observations are reconciled with finite metrics while raw measurement and declared spatial mapping remain explicitly separated from utility-scale claims"
     },
     {
       "name": "exact_job_to_network_coupling_certificate",
@@ -1737,6 +1697,11 @@
       "detail": "54 locked days are replayed under a predeclared tariff intervention; the independently parameterized meter policy differs from the gate policy, is scored without verifier outputs, and makes no field-causal claim"
     },
     {
+      "name": "independent_event_information_and_policy_certificate",
+      "passed": true,
+      "detail": "the independent event uses only the gate-masked ledger, has no verifier or locked-outcome input, differs by predeclared tariff/participants, and separates its policy trajectory before scoring"
+    },
+    {
       "name": "ex_ante_submission_job_validation_and_binding_capacity_panel",
       "passed": true,
       "detail": "the declaration-only job validation covers the complete submitted population, while a compact 79-job stress cohort binds regional capacity and satisfies its service floor with numerical residuals below 1e-8"
@@ -1745,11 +1710,6 @@
       "name": "full_finite_n1_frozen_profile_panel",
       "passed": true,
       "detail": "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment"
-    },
-    {
-      "name": "end_to_end_lineage_certificate",
-      "passed": true,
-      "detail": "Exp26 recomputes the indexed witness-to-network residuals, retains separate risk/payment roles, and closes the relative-cap and all-outage chain"
     },
     {
       "name": "no_stale_atomic_temporary_artifacts",
@@ -1763,12 +1723,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 3.872385887091423,
+      "observed_mean_difference": 3.8732856310424872,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.2794367749709438,
+      "block_sum_lag1_autocorrelation": 0.2792790803060485,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "High-5-of-10 | false_response_ratio": {
@@ -1776,12 +1736,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.7466084655392531,
+      "observed_mean_difference": 0.7475952206888663,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": -0.0471226221064916,
+      "block_sum_lag1_autocorrelation": -0.0528316262217595,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "High-5-of-10 | credit_f1": {
@@ -1789,12 +1749,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.308471919295335,
+      "observed_mean_difference": 0.310407537810299,
       "extreme_assignments": 4,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 1.52587890625e-05,
-      "block_sum_lag1_autocorrelation": 0.6966107698812332,
+      "block_sum_lag1_autocorrelation": 0.6969564904973335,
       "holm_adjusted_p_value": 0.0001068115234375
     },
     "Metadata Gradient Boosting | nrmse": {
@@ -1802,12 +1762,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 1.877214730203342,
+      "observed_mean_difference": 1.8781144741544056,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.2497544876222801,
+      "block_sum_lag1_autocorrelation": 0.2496567648232741,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Metadata Gradient Boosting | false_response_ratio": {
@@ -1815,12 +1775,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.6699439488542572,
+      "observed_mean_difference": 0.6709307040038703,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": -0.0661758147019737,
+      "block_sum_lag1_autocorrelation": -0.071003990339151,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Metadata Gradient Boosting | credit_f1": {
@@ -1828,25 +1788,25 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.192235903897347,
-      "extreme_assignments": 860,
+      "observed_mean_difference": 0.1941715224123111,
+      "extreme_assignments": 780,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.0032806396484375,
-      "block_sum_lag1_autocorrelation": 0.6351319998423209,
-      "holm_adjusted_p_value": 0.0098419189453125
+      "two_sided_exact_p_value": 0.0029754638671875,
+      "block_sum_lag1_autocorrelation": 0.6358056231111977,
+      "holm_adjusted_p_value": 0.0089263916015625
     },
     "Ex-post Metadata Gradient Boosting | nrmse": {
       "effect_direction": "comparator_minus_proposed",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 1.8019407844375976,
+      "observed_mean_difference": 1.802840528388661,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.2404547689054807,
+      "block_sum_lag1_autocorrelation": 0.2400616395325672,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Ex-post Metadata Gradient Boosting | false_response_ratio": {
@@ -1854,12 +1814,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.6654418142375064,
+      "observed_mean_difference": 0.6664285693871199,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.0052523145899986,
+      "block_sum_lag1_autocorrelation": 0.0001580815785046,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Ex-post Metadata Gradient Boosting | credit_f1": {
@@ -1867,25 +1827,25 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.1861198053025015,
-      "extreme_assignments": 1306,
+      "observed_mean_difference": 0.1880554238174656,
+      "extreme_assignments": 1190,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.0049819946289062,
-      "block_sum_lag1_autocorrelation": 0.6766632570365974,
-      "holm_adjusted_p_value": 0.0099639892578125
+      "two_sided_exact_p_value": 0.0045394897460937,
+      "block_sum_lag1_autocorrelation": 0.6770155367096546,
+      "holm_adjusted_p_value": 0.0090789794921875
     },
     "Ex-post Quantile Gradient Boosting | nrmse": {
       "effect_direction": "comparator_minus_proposed",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.6082626034167872,
-      "extreme_assignments": 22,
+      "observed_mean_difference": 0.6091623473678502,
+      "extreme_assignments": 20,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 8.392333984375e-05,
-      "block_sum_lag1_autocorrelation": 0.2557985308585639,
+      "two_sided_exact_p_value": 7.62939453125e-05,
+      "block_sum_lag1_autocorrelation": 0.2556784257737305,
       "holm_adjusted_p_value": 0.00018310546875
     },
     "Ex-post Quantile Gradient Boosting | false_response_ratio": {
@@ -1893,12 +1853,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.3233926598510364,
+      "observed_mean_difference": 0.3243794150006496,
       "extreme_assignments": 12,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 4.57763671875e-05,
-      "block_sum_lag1_autocorrelation": -0.0707473408368977,
+      "block_sum_lag1_autocorrelation": -0.0670452052216488,
       "holm_adjusted_p_value": 0.0001373291015625
     },
     "Ex-post Quantile Gradient Boosting | credit_f1": {
@@ -1906,25 +1866,25 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": -0.0822918498154181,
-      "extreme_assignments": 19652,
+      "observed_mean_difference": -0.080356231300454,
+      "extreme_assignments": 21128,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.0749664306640625,
-      "block_sum_lag1_autocorrelation": 0.4904020310498785,
-      "holm_adjusted_p_value": 0.0749664306640625
+      "two_sided_exact_p_value": 0.080596923828125,
+      "block_sum_lag1_autocorrelation": 0.4905704997384112,
+      "holm_adjusted_p_value": 0.080596923828125
     },
     "Synthetic Control | nrmse": {
       "effect_direction": "comparator_minus_proposed",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 2.273877738965074,
+      "observed_mean_difference": 2.2747774829161367,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.2782423730509731,
+      "block_sum_lag1_autocorrelation": 0.278005801262225,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Synthetic Control | false_response_ratio": {
@@ -1932,12 +1892,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.7018068175314721,
+      "observed_mean_difference": 0.7027935726810851,
       "extreme_assignments": 2,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 7.62939453125e-06,
-      "block_sum_lag1_autocorrelation": 0.1187310184883889,
+      "block_sum_lag1_autocorrelation": 0.1132128372179968,
       "holm_adjusted_p_value": 5.340576171875e-05
     },
     "Synthetic Control | credit_f1": {
@@ -1945,51 +1905,51 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.2494950063874132,
-      "extreme_assignments": 182,
+      "observed_mean_difference": 0.2514306249023774,
+      "extreme_assignments": 164,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.0006942749023437,
-      "block_sum_lag1_autocorrelation": 0.737154136359471,
-      "holm_adjusted_p_value": 0.002777099609375
+      "two_sided_exact_p_value": 0.0006256103515625,
+      "block_sum_lag1_autocorrelation": 0.7366936226037846,
+      "holm_adjusted_p_value": 0.00250244140625
     },
     "Feasible Quantile Projection | nrmse": {
       "effect_direction": "comparator_minus_proposed",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": -0.0230721829851827,
-      "extreme_assignments": 35382,
+      "observed_mean_difference": -0.0221724390341196,
+      "extreme_assignments": 37410,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.1349716186523437,
-      "block_sum_lag1_autocorrelation": 0.1264242064671097,
-      "holm_adjusted_p_value": 0.1349716186523437
+      "two_sided_exact_p_value": 0.1427078247070312,
+      "block_sum_lag1_autocorrelation": 0.132058401042183,
+      "holm_adjusted_p_value": 0.1427078247070312
     },
     "Feasible Quantile Projection | false_response_ratio": {
       "effect_direction": "comparator_minus_proposed",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.0241758981593604,
-      "extreme_assignments": 28984,
+      "observed_mean_difference": 0.0251626533089736,
+      "extreme_assignments": 24476,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.110565185546875,
-      "block_sum_lag1_autocorrelation": -0.0511643220022285,
-      "holm_adjusted_p_value": 0.110565185546875
+      "two_sided_exact_p_value": 0.0933685302734375,
+      "block_sum_lag1_autocorrelation": -0.0499926926272094,
+      "holm_adjusted_p_value": 0.0933685302734375
     },
     "Feasible Quantile Projection | credit_f1": {
       "effect_direction": "proposed_minus_comparator",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": -0.0677494919171637,
+      "observed_mean_difference": -0.0658138734021996,
       "extreme_assignments": 10,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 3.814697265625e-05,
-      "block_sum_lag1_autocorrelation": -0.01613114177063,
+      "block_sum_lag1_autocorrelation": -0.013053913826124,
       "holm_adjusted_p_value": 0.0001907348632812
     },
     "Single Feasible Projection | nrmse": {
@@ -1997,12 +1957,12 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.0153086315614138,
+      "observed_mean_difference": 0.016208375512477,
       "extreme_assignments": 16,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 6.103515625e-05,
-      "block_sum_lag1_autocorrelation": -0.0597084757606831,
+      "block_sum_lag1_autocorrelation": -0.0633044074825612,
       "holm_adjusted_p_value": 0.00018310546875
     },
     "Single Feasible Projection | false_response_ratio": {
@@ -2010,25 +1970,25 @@
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.025925037422065,
-      "extreme_assignments": 40,
+      "observed_mean_difference": 0.0269117925716781,
+      "extreme_assignments": 48,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
-      "two_sided_exact_p_value": 0.000152587890625,
-      "block_sum_lag1_autocorrelation": 0.2957934173830735,
-      "holm_adjusted_p_value": 0.00030517578125
+      "two_sided_exact_p_value": 0.00018310546875,
+      "block_sum_lag1_autocorrelation": 0.2977294304821997,
+      "holm_adjusted_p_value": 0.0003662109375
     },
     "Single Feasible Projection | credit_f1": {
       "effect_direction": "proposed_minus_comparator",
       "paired_days": 54,
       "block_length_days": 3,
       "blocks": 18,
-      "observed_mean_difference": 0.0325713506078497,
+      "observed_mean_difference": 0.0345069691228138,
       "extreme_assignments": 4,
       "total_sign_assignments": 262144,
       "minimum_attainable_two_sided_p": 7.62939453125e-06,
       "two_sided_exact_p_value": 1.52587890625e-05,
-      "block_sum_lag1_autocorrelation": 0.1327711541181269,
+      "block_sum_lag1_autocorrelation": 0.1222474441456207,
       "holm_adjusted_p_value": 0.0001068115234375
     }
   },
@@ -2102,23 +2062,23 @@
   "generated_artifacts": [
     {
       "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
-      "bytes": 1245148,
-      "sha256": "3a73d76b09455cbec5139fbe7c808fb3bc9c178c82b571e5846c2656d7f8b94e"
+      "bytes": 1258021,
+      "sha256": "81028d4ae5310bde2c141155ceba604ecb175c243024a842fe879fa02738158a"
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
-      "bytes": 1014,
-      "sha256": "e24f2050964dce0c3084727406db01296ea6e45fdef772f174e861e6b1fae869"
+      "bytes": 1020,
+      "sha256": "a5e26a2462f11eec5c9ea2ae40f13b2b36269166a3b1a522eb0d3fe7a5e999b8"
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
-      "bytes": 239735,
-      "sha256": "d9802bb55cc966d46dbfa014058940a40059e2547baf8b3a3e02d5c0cedb3d2e"
+      "bytes": 241256,
+      "sha256": "07ffdf4eecc764f24a3699a78357441919939241c233b91b3d664a9c006ce531"
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
-      "bytes": 1784,
-      "sha256": "4a57fe97dbb9d64efb5574bb9ac14804c2feba47d8d1d2cc09afb6f3467f8237"
+      "bytes": 1790,
+      "sha256": "868bf25a37d87318d2be954079370849f4fc7cd971ce51e30103dd21f71bc7a3"
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/experiment_metadata.json",
@@ -2127,33 +2087,33 @@
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
-      "bytes": 1192578,
-      "sha256": "6008c1c5ce28c07166bda96b84e67e4eb6874a42c0e5562d791a04ca72886c95"
+      "bytes": 1192495,
+      "sha256": "9fb43cff9fa3580b3ca0c3777265d3084db474baca46e987aa3ff82b933ad4bc"
     },
     {
       "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
-      "bytes": 1242,
-      "sha256": "468e847dd9a75d744e7b424d3bd270c9ddc255a24c587ead527896047b5a6505"
+      "bytes": 1238,
+      "sha256": "a4591225e9292b9fa63b5327ac003b133a5eaf685f28495064e0eb7f69a2d4a3"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
       "bytes": 1187,
-      "sha256": "82fded3a6e71c5a6fb901d33a04a97dade74b111cebaaf9405965620b55606ec"
+      "sha256": "8033d0ddcfbfe6e0e05f582ea226544605131623d6175a465fb3d9ae8d4c5c41"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
-      "bytes": 45746,
-      "sha256": "0fbd234a9fcf2d1d3b733ccea09714905951199098c2cc6c7af76f578731b42c"
+      "bytes": 45739,
+      "sha256": "780e0f75c4bfac4c69611dee208778734921f6ee15c19323b24147b7716640bd"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
-      "bytes": 4529030,
-      "sha256": "a37aba85c157930381cf7205473145e84d66a915531ee57240f07411ee04d018"
+      "bytes": 4527002,
+      "sha256": "d3f85a671016adb580848749d58293d988f26e10653c19bc1df6c372b682dfe1"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
-      "bytes": 2018,
-      "sha256": "bce8dc13268e8dd122d123c6fb9be310f5bc738f60ae74b3454f563c5b390f44"
+      "bytes": 2017,
+      "sha256": "c9f527b548b9fab8733dad57b91b1c296aca37d4a6f56281e90c6c2b2c977827"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_mapping_audit.csv",
@@ -2172,8 +2132,8 @@
     },
     {
       "path": "experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
-      "bytes": 2201,
-      "sha256": "e28feaa15defb1a89f65b78d082abf6edf4dc80d011c3d1373bb9685872eec54"
+      "bytes": 2587,
+      "sha256": "f069868f66961c883135b3b05bd8ef72c0c72ec01bbb7c3bb70d395bf5b39b2e"
     },
     {
       "path": "experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
@@ -2194,6 +2154,11 @@
       "path": "experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
       "bytes": 100450,
       "sha256": "7feddd1c2ce67972792a47e77efca1d36c729538c77d29d2309277154d651f7c"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/settlement_chain_certificate.csv",
+      "bytes": 58400,
+      "sha256": "b955c8eebc8be5a60ba2fcd33c04c97102a7bbdc06b958e8de9b6cf48c770e2b"
     },
     {
       "path": "experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
@@ -2247,33 +2212,33 @@
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
-      "bytes": 2682,
-      "sha256": "65764961cd85826d40738511867a0ae35ce5aca9114404bc4065340dc7da9c67"
+      "bytes": 2696,
+      "sha256": "5989e2402d3a0df241a9452cbf04eb1f3f5def01465a935a97ea34fd87401f74"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
-      "bytes": 475,
-      "sha256": "8bb6c4c989be2fcabb5c1037d5d5f6d4b34f91d8fc5d006eb7c36e3a6d60a4b9"
+      "bytes": 514,
+      "sha256": "e86c347a9f80a392105ca5e91c99b2def85e9e14f989c961019ed573559f6c7d"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
-      "bytes": 127891,
-      "sha256": "c9511ee83b7dbbffa7fa0b5d1a62ea4ab7cf3ca2e36f8d2b90fccc8a753c42d9"
+      "bytes": 127790,
+      "sha256": "ff505f9c5d36e25e5239915b5144e4f81c7209908144b662f9e3a0810710d5e6"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
-      "bytes": 46101,
-      "sha256": "8215f5e2b062008b54cd387cd005fbf547836c0ed7269ca166f3f5671014a094"
+      "bytes": 46245,
+      "sha256": "77c2f8c15cada19f42c860120d2e0d8ec2820bf9c1e883abb354c9961165d1de"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
-      "bytes": 47780,
-      "sha256": "9f46e1d99f4eb87ea2029878e81542792b14d7699542b9a52e51c51d9d8263da"
+      "bytes": 47863,
+      "sha256": "8d408f05ff9c673abf27ce4d6e1729ed0beb4880deaacb4f9dee207d8cf51e62"
     },
     {
       "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
-      "bytes": 280,
-      "sha256": "3e529e9e8fddc9806d0c8f04ff869ff5d25506cd304d938e0a60f181b647084e"
+      "bytes": 279,
+      "sha256": "dfc27f3250f6af8ff4186c90d3a46bec4f51e7e614395d00452e8fce7620fac1"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
@@ -2282,8 +2247,8 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
-      "bytes": 3089,
-      "sha256": "4dc97e2fc76e242acf17ebefc68ebba869f2d77739b29cf61cd8d5a00761dba6"
+      "bytes": 3925,
+      "sha256": "1fb9f9663be8c152bea3a4f74b29d4178b1de0ca0d06c2b5d805f0b68f72bf12"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
@@ -2297,8 +2262,8 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/physical_calibration_summary.csv",
-      "bytes": 452,
-      "sha256": "8a6729ed8390f9f1385c2283ed36cf0b661934f3b4e132946310dd83dca0ef84"
+      "bytes": 834,
+      "sha256": "61fc1bc8f48a4561a904b610c61aafddcf1f4578a7fdea4f6d67cf5a441f8e18"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
@@ -2307,23 +2272,23 @@
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/submission_calibration_summary.csv",
-      "bytes": 347,
-      "sha256": "a88fafb28b57aad4c2c9f854e68637ceff470421c1fe58e1380d7a53ce78fe69"
+      "bytes": 846,
+      "sha256": "301fb78aa119a1cfad613ba1dde751f694837e7116b5fa59a168dfaefbd1a2d6"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/results/final/workload_power_calibration_sensitivity.csv",
-      "bytes": 1585,
-      "sha256": "af6ae310e7f8a4b26f6960fb3177f04b64b6fde456747d607695ccc2fe550a70"
+      "bytes": 1793,
+      "sha256": "77162ad4af57468fcb687e72e24d3c517a0f3b0a670692fbd1aa7fce2228f377"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 22351,
-      "sha256": "3640d7806d98b67e0503147e0c4f11c9f8467b3c6f6dd57d40877abedb0ea22c"
+      "bytes": 22112,
+      "sha256": "690398abf55d5e6fda94d2d23c80ef01a22edaf8650914eb18aedea431b69c14"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
-      "bytes": 204,
-      "sha256": "9489c57ea8e2dd1255c2ad449bf09e9ed6cf42df3a80e27cea6d9c856e970711"
+      "bytes": 202,
+      "sha256": "f44dc80c4844369e3353e53a4959b2c7e2db7ba33bda5c0b95cf4f4570c3c98f"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
@@ -2347,23 +2312,28 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
-      "bytes": 186014,
-      "sha256": "aaa1d86a482333f29e81b487d5d8e7f5f34eedf72715cb36b2efb193bd545403"
+      "bytes": 184467,
+      "sha256": "affc95c53133c9c416a15277c0d798013f9ff3815fef6c538cebe32b0ef1462d"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
-      "bytes": 1052,
-      "sha256": "a464ef4966944e8f62710c7b1d426ec0cda266c541a9713a51f6f71544b42074"
+      "bytes": 1049,
+      "sha256": "fc0864b32f17df86812e9e6da1e264b84730b40fe8993eadec3506fe3438fb14"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
-      "bytes": 46436,
-      "sha256": "7c58eeb0af3055113485679eea8c6a4c637501de4a6957f045695780226dad52"
+      "bytes": 46168,
+      "sha256": "9a48382869d60fe57de7f77a76dc510716f4041adf1deb19defca9501c858eed"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
-      "bytes": 5358,
-      "sha256": "d8a50e23122d74ce6df5085112a122f83d68f355345109dd897dc4f896576176"
+      "bytes": 5201,
+      "sha256": "d89d59d104681d49808c68881a8e6c03abcd95ecef417a8c36aa2cd99dea48e1"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/information_boundary_certificate.csv",
+      "bytes": 687,
+      "sha256": "4f922ac2c9a55f2860ab1385875c47addb6bc42e37c5ecfc67d71bf1f2a2b854"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
@@ -2382,8 +2352,8 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
-      "bytes": 3800,
-      "sha256": "3a8f1ca38200f8ca4eba7dfcc92436aaad501bac4a52de40ccf33c11032cd2ef"
+      "bytes": 4080,
+      "sha256": "1c29c2277e8800d68cdbf1be27f570384eb62942a32d087802c314fdff88cbf6"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_capacity_stress_daily.csv",
@@ -2402,18 +2372,18 @@
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
-      "bytes": 3491838,
-      "sha256": "74c26535f99ff82ef66fff1cdbe7301886b7c89954c8bcd9712bae97254f7f6c"
+      "bytes": 3502795,
+      "sha256": "d071e78e1f36ea58fb3aac45f4520bdbea007023687c8c82fc1cd4ef205ee98f"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
-      "bytes": 1728331,
-      "sha256": "6d592762f0b16034df5a575cf5e55b27130a4947e5a996874fa3c9fe15d096ce"
+      "bytes": 1843731,
+      "sha256": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
-      "bytes": 991,
-      "sha256": "25be8c950cd0361a94f1e542ea87c29a8a44c7da50c0ac1b4a64def1d09c1eba"
+      "bytes": 997,
+      "sha256": "384e6a2360cced624176e626cd272d45877f387f05444625df1dcb5c124010ce"
     },
     {
       "path": "experiments/exp1_manipulation/results/final/experiment_metadata.json",
@@ -2432,68 +2402,68 @@
     },
     {
       "path": "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
-      "bytes": 103383,
-      "sha256": "42b7c5c26cfba3d13cae2f1d8e2529b0c6c93a699bbc9b5c232fda43a735ed30"
+      "bytes": 103375,
+      "sha256": "59951b85032dc5d17dfd144d1c26a41f81934fa6921f451623366e210c5a646b"
     },
     {
       "path": "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
-      "bytes": 2718,
-      "sha256": "8b1a52d7523826acd0d91c0d342458274c971871606d713d518ee28d8220b16c"
+      "bytes": 2721,
+      "sha256": "ca3e1112093e9317d04e71683ec9eadc12ce20e20ec80b65b0fd49054943231b"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
-      "bytes": 2254863,
-      "sha256": "1975e053092e5887483e444dd812a0958cdc5b9d4acf178ab7c5b5796a474b63"
+      "bytes": 2227546,
+      "sha256": "87354bd4c401ff55ea5cea56afbb0a2b181060387428f8257f8d986b065ee5d5"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
-      "bytes": 1513,
-      "sha256": "cd7dc4c5ee97f5b6c95d0889667949aced38366a76931d5fd94ed3a52dbe5a9d"
+      "bytes": 1508,
+      "sha256": "8f4de1d1e7347680cd72ee7e91653a6a1f9d647d837402725c3d64a58e12147c"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
-      "bytes": 2396250,
-      "sha256": "ba5f8559a3d5fc81d30559dd03a4f2478f03056097040c3cdbb0dfb45338707f"
+      "bytes": 2406768,
+      "sha256": "bbb5cf4a1bcedc23e560f7db5ff749c9db5ea234c7e9a4c9030b388a56ba0fd3"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
-      "bytes": 995,
-      "sha256": "1cd4c4be75d0b335fe10b15c9604ba5ca7e7a94114e5b1937a01fe45482e4baa"
+      "bytes": 992,
+      "sha256": "a9d7c9d1b018976a6efca75314f13537b5bb2866aa1f838fca9c7fc7248cbe41"
     },
     {
       "path": "experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv",
-      "bytes": 893,
-      "sha256": "4fcd3bd31441bce62fcc23bb832400ca9e806fef33cce8393e5bd42f24e1f97f"
+      "bytes": 899,
+      "sha256": "fed719676592010961d1432d6ebaaa424aacbece5d14c7d95760660a3368769b"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
-      "bytes": 1517,
-      "sha256": "fa704855b44c873ac6211d8c448edfe87c37bdc13d71a56f3c2720678f28acc3"
+      "bytes": 1522,
+      "sha256": "75c699b6ef09a097c945f6fb5e026e36bac79860995619e81817ffa51fe44657"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_scale_replay.csv",
-      "bytes": 1242,
-      "sha256": "cd757796f2b4beda3028ef02245dae88a9a7ca1dcc50141524510acddc54bc26"
+      "bytes": 1241,
+      "sha256": "ea1ba0364da10b2e16b01f713b88a8111b1608e34319f359aedf57c32c79674d"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
-      "bytes": 933,
-      "sha256": "fd02d4b319ab6cda7cebecade7657abb00ee455ab0c21a52b5a2be2b33bf3418"
+      "bytes": 906,
+      "sha256": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
-      "bytes": 1108,
-      "sha256": "9f6e251aad2e6aac105c12fac788d81b9ee67ab82acf7fb6947d3708d845a592"
+      "bytes": 1120,
+      "sha256": "36f4044a53fb95ecf660d0d521498df0f89c3b0dc0a422bff232d06999f1a362"
     },
     {
       "path": "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
-      "bytes": 3208,
-      "sha256": "1f847f44f8d839c16a6ae516fc145e27ee3e4473719da63104adf1c1ff1393c8"
+      "bytes": 3225,
+      "sha256": "a1a4df5226657cd656bde1a5b5f4601905722e2e9beef98ee3fdb14ee7d88f3a"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
-      "bytes": 2122,
-      "sha256": "b3e54ba92c271b3f2f1c62f873cb3a94de6249e8e8433e539e4ad2f2e237ddab"
+      "bytes": 2341,
+      "sha256": "2bf63cc98df209ffcf4530e5a4b718422692e94e1da42b5dc659237d148bed8b"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
@@ -2501,24 +2471,29 @@
       "sha256": "5ded077859a2f9296160cc4b4d2233d6ad2e4a1d1c0bfe960e3aad89d4705092"
     },
     {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_protocol_certificate.csv",
+      "bytes": 878,
+      "sha256": "285017f45b9c3ba150942b88449b348571d0d423af9784281a83170befab5349"
+    },
+    {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
-      "bytes": 49578,
-      "sha256": "505e858db4290fe927a01b3e7290094d86b28944750a517d6114e548f54e060a"
+      "bytes": 49544,
+      "sha256": "90021753c19142bac9974a993dba2955c787ea0db0276d70dedf55bd56837aac"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
-      "bytes": 483,
-      "sha256": "c01bc6112a8577e4171a1b6e10a5da30932fc9c92448829cdee5684e6c7f4778"
+      "bytes": 482,
+      "sha256": "89220fd9136f86833291efd257674d261f949eade64f7ba2725239ea0727be2a"
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
-      "bytes": 110270,
-      "sha256": "4b88d2df52631fbda4d8174c20292eccbf3466439c676dc0848473fe4183e240"
+      "bytes": 110003,
+      "sha256": "a3e88e9ea6cb191f35b27d7b5c92f8bd2a319bd76fa1e3091d9f98079df86220"
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
       "bytes": 381,
-      "sha256": "dc1636f940b16ec4e33f44b4e3367ca1636de13925d0a6865e24ba92c2c38a9f"
+      "sha256": "70da1719e9f77692e9898393bfe9d4dbed7ded2b0e75141d93c9014d070da58a"
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
@@ -2527,63 +2502,33 @@
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/exante_job_validation_by_type.csv",
-      "bytes": 450,
-      "sha256": "7a7558883a853ff4227425563024369e6bde40c84953f38c40d7b679fecc5010"
+      "bytes": 755,
+      "sha256": "28615408806add06ee0cc8883a2749eb8a29e1cc7511bb2436cb667b69beb107"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/exante_job_validation_summary.csv",
-      "bytes": 617,
-      "sha256": "d96578b9d119df4decc4ebc6da036f92da0cc4f638f9adf4f3eb4274460c9707"
+      "bytes": 616,
+      "sha256": "38d58c42280148d609c5dc401a067afac9c6d58b38f895702e923413f03a8a75"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
-      "bytes": 2558,
-      "sha256": "e34b8bcc5e3549787c8c02f2e6209f80dce4bc7ee86d5105c2a9e1f65d3786b9"
+      "bytes": 4504,
+      "sha256": "163ff34d3e89a32d6aa8fc59dfc1e147bbe3af0c257acf83308052fcd25a2ec1"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_event_slots.csv",
-      "bytes": 605,
-      "sha256": "9a28e8e02e697f9f6de7bf21110fe35a379fe179b62a73c126cf4f57c1beac7c"
+      "bytes": 622,
+      "sha256": "950cb6b73fee0754382a4f43cfe6a9c671de2a18634247f3c646a819db8f2863"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_solution.npz",
-      "bytes": 3353,
-      "sha256": "10b6fc888b3f251ed1d64c2043d8268fd3f6c2bc3a290d7f50549f5798ac33a5"
+      "bytes": 3469,
+      "sha256": "dca7346f3ad50c74fd327a940df5d4fc076e862b3902234de60f4dc7114d5005"
     },
     {
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_summary.csv",
-      "bytes": 708,
-      "sha256": "9156d188a6c4f13feb4dd53335aa19751cabf19a1260060d0aceaa0cf3bd1bae"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
-      "bytes": 3470,
-      "sha256": "12e621caccd8c602333278048a0fa87fb75d305b53c8c941702fb4de07c252a1"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
-      "bytes": 564,
-      "sha256": "38675b3802f8cac27ffd9b64347c55ccd7476002d9d7ee08eb7d21b3c62f7ef2"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
-      "bytes": 3470,
-      "sha256": "12e621caccd8c602333278048a0fa87fb75d305b53c8c941702fb4de07c252a1"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
-      "bytes": 367,
-      "sha256": "e97598fdf6976c591e1031871b2ffe517228b60e2a18d39204f8e67fb9f10dbf"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
-      "bytes": 1317,
-      "sha256": "90827529cec7f78121d3e989c726a8d76addb2185f96421d87ac8473c6457b03"
-    },
-    {
-      "path": "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
-      "bytes": 401,
-      "sha256": "80c81271e513822ea0820339dd4d3c28efbdaccd8de8fe77e56eb6fc0fee955a"
+      "bytes": 532,
+      "sha256": "1c05036e59be9b45d18af52b20abd90f71e5eb9c1379f2fd4ea684e9a7d24992"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
@@ -2592,8 +2537,8 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
-      "bytes": 13864,
-      "sha256": "b9d4ad023ba425d8c7226aeb805d95dcf57179237042592ada5974478350b3d7"
+      "bytes": 13855,
+      "sha256": "9c4ab7915311909174a328c41c11dd252d2f128b2bde255c57594b56c381dea4"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
@@ -2603,7 +2548,7 @@
     {
       "path": "experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
       "bytes": 7981,
-      "sha256": "f845a440db725ffe02de8723af02a38b7b3f71dddf69a7627417bc1c1fff0045"
+      "sha256": "4790f4e12e78d67d5d7096742bc8c0d798c6781e7b17d56a64a5d228b0f59b3e"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
@@ -2617,8 +2562,8 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
-      "bytes": 302,
-      "sha256": "4c2c10366720a9c318aa8f786a5bd6242e874efae6f5df764a3575ae723a240c"
+      "bytes": 303,
+      "sha256": "66c80b89689ca04bffadb143decba2d58188050a719ad2d9eec667e90244af0d"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
@@ -2632,18 +2577,18 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
-      "bytes": 366,
-      "sha256": "932a8e51a09649938012c2c46b813e4730f0b93b8f644dbc2cc9d4ae519076a3"
+      "bytes": 363,
+      "sha256": "9ba39b74f442e640fbb702e7a00a8513024c8f545b67f5cb3fbf4c0a8249b35c"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
-      "bytes": 10102,
-      "sha256": "3a9b3a1216474f0f91778c289da07d8c684429c01ffe6daa60a14499e9e5e1b2"
+      "bytes": 10295,
+      "sha256": "7751ef2fe63a669d158ac352a0ef95f298e8dd553e6a0240baedee82fc055d09"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/final_risk_contract_audit.csv",
-      "bytes": 17035,
-      "sha256": "4bde9898e4f950ed76eea9fd32d6cebc69a4a06c59a98868b3e5b072a88e0a17"
+      "bytes": 17145,
+      "sha256": "eed294eeb1100fa41bb18b6a0570652f1cc8100bf434b22063a869b383bf24ba"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
@@ -2652,33 +2597,33 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
-      "bytes": 270599,
-      "sha256": "71fc9d99acf3e86a8d49e88982b3c7b59ec3654d34071c53b733244c08ef0262"
+      "bytes": 272002,
+      "sha256": "aa4ab397af6e08c88989a23864dc6351baad9cc55cc0c1dd011fe17bec06e935"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
       "bytes": 6469,
-      "sha256": "709857e81b4691eb48d46531d9170a49228205b5267ba79ebc18c9b806be4fa4"
+      "sha256": "7aa88556e3cf902885e05fb5abb2fccb4a1649f0c7d7735b78a78aec9e48b54c"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
-      "bytes": 3972,
-      "sha256": "f4f73798abd5852b8dd26fd9331fad5126a13d8ade8b75c5fcae23aedadcca92"
+      "bytes": 3977,
+      "sha256": "f4eac31844c5b900e4c8fa7475f376ba48e1c1b15550ae411bfb7490a0426515"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
-      "bytes": 1515,
-      "sha256": "dc916a54812dc7aeaef35c42280b59a5e82e479ec7f86d70e4d3531be12eaddf"
+      "bytes": 1511,
+      "sha256": "7b5b136bef608bfebe127d07de0eb2dd4647431d8dd2ccfe64f7e126cbacbeac"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
-      "bytes": 277835,
-      "sha256": "d249d48ecf03e8de9d0d4892d813434b8b64112ed997c47a3855751a9b56e85e"
+      "bytes": 277812,
+      "sha256": "bd6fe43bb0101518be8498552f0e516e523aea57712684d466933cc7b137c1b8"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
-      "bytes": 1704,
-      "sha256": "532e4b8c471f9d61aff5f53a7b945422b9efb8e932805a253acb619bd0db155f"
+      "bytes": 1700,
+      "sha256": "d4c350c066993d4daab86aa60e4ced0a96a936ffaa28f7bd8d9f987ab35e9921"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
@@ -2687,53 +2632,53 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
-      "bytes": 1840,
-      "sha256": "cdabe99c76fa74eb1d064e37b4993f825d1ae8a09eb96a9c5be91734fd33538d"
+      "bytes": 1809,
+      "sha256": "0f4aab8ad51b9163e00f3a31bcc12785f19297b43f79d073d4aab6dfc75f711c"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_cvar_stress_sensitivity.csv",
-      "bytes": 884,
-      "sha256": "c3ff8d823b0c52c227e8d31e10aaf599a6646c11bfafea46192b18f1080a4bc2"
+      "bytes": 958,
+      "sha256": "6f728aaef4cc5d88e3ef5abc589de1b9dbc99d014d4f129e23742384b73fdcdb"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_effect_decomposition.csv",
-      "bytes": 1598,
-      "sha256": "240bd97fbaafac3e90333ab8fb0abcb9c0e49c849040829902b904d8cd196b37"
+      "bytes": 1596,
+      "sha256": "5598466f5f7779397e9e470bab525ae2a83aa579727f2904a8fb1a68c5d01857"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
-      "bytes": 1008,
-      "sha256": "559cfc79e75f846ef795fb3cc2335b78250281f156798fdde10ad4ef5560a3b3"
+      "bytes": 1012,
+      "sha256": "e514cfd9cf28936bbd64ba424659125d08c12913417accdc3b9384fff796fb0f"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation.csv",
-      "bytes": 1387,
-      "sha256": "48efe252d40e7e22d53673c646f47fc065238e9d11b16eb7e8cb20ff2f417180"
+      "bytes": 1385,
+      "sha256": "a184adb063f434d37a466e379a74d38b08bb85665173664c8b726c69ff927576"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation_daily.csv",
-      "bytes": 144292,
-      "sha256": "1c87eaed1e7af1b73ec5d0b5256691f93379794a03d60bc0074037fd7097ed1c"
+      "bytes": 144191,
+      "sha256": "00c83120ef10676f3a624a8ecb78077b5c3dcede30d90a5618c36533954d2c88"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation_weights.csv",
-      "bytes": 1035,
-      "sha256": "f161c915c5a985f37ad4f69cba7a06fd5305b77c7c321c877f50c34492ffc342"
+      "bytes": 1026,
+      "sha256": "92760949ced195e0db4510a9157765fd8429f0a610631924b224d60b40a574e3"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
-      "bytes": 2605,
-      "sha256": "d6185333a3e81f7d8472b21ab616c393749d3635697fd87183c6d7031eaaaebd"
+      "bytes": 2373,
+      "sha256": "8810e4ff24ccd627d49a877a1103ac1b7173e2eb39b1dc7b9c83957429a385b3"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
-      "bytes": 218,
-      "sha256": "c14d1b7b578c4cbc317578efa36b23b908f5768f81cfde7d9dd56fdc587521aa"
+      "bytes": 293,
+      "sha256": "74bb80d34410b3bea4f3ac758a7b90c4fee81e3dbdd678f6c4a6f7432b1c03f3"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
       "bytes": 15399,
-      "sha256": "2843d4dd91d1e6b6d948f1fc3c27d221d7f062a41b09d90c4e83e32ccf4704d0"
+      "sha256": "a52bf8f934f5eac7bb278ed27e538706589b8472090da3df9515fdfcd7d28dd4"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
@@ -2752,13 +2697,13 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/trace_meter_replay.csv",
-      "bytes": 127747,
-      "sha256": "754a15f2814eb32d9ff57f3dc85d29df6d21a10ec5ed3faa8dcd144c5aed0dbf"
+      "bytes": 127740,
+      "sha256": "34e6f6374919f965cdd1eb4cb5cd6dea0b6349ca1fc30be865cc54ba1355bd05"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
-      "bytes": 7216,
-      "sha256": "668b0b66c4eae8b57fa0634c88dd1fd6840d7f3c9a9009ddd0d322724858a205"
+      "bytes": 7135,
+      "sha256": "107939396c0116441f69b118c636211c9592b425dd215870c41ff2dd758fc728"
     },
     {
       "path": "experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
@@ -2922,83 +2867,83 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
-      "bytes": 128961,
-      "sha256": "ca3947c8d971d11ffe2c16828e626c2e7caf40fbcf58f2b7a9494bb0f083b7b0"
+      "bytes": 128863,
+      "sha256": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
-      "bytes": 23348,
-      "sha256": "fb746da8f9d17980bbdb4a403f0e7c6f5847676e3637bf3a2c8eea97000a00ef"
+      "bytes": 23676,
+      "sha256": "6f02bbfc8a87b0c71389fbae6efcb5e8ffa77b3cb2c067e1505dffe7f5cfeda2"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
-      "bytes": 31675,
-      "sha256": "113e8913cfbdad1abbda2443d38305dd9b86a2cd0db52c1f090ee4899324abf1"
+      "bytes": 31793,
+      "sha256": "f0bf8c3af437857d8415ba7e1e55b440d7cea30d4e86dbd7ff49c69f6bfcc41f"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
-      "bytes": 5726,
-      "sha256": "ccd0afa4a40c9b39a614a397a7330356abc7fe7405aacd8cd69facad929cf445"
+      "bytes": 5302,
+      "sha256": "69d962e6dcdfc972a1dd949552df97ba6910397c32cab18f13d8a2957754a6ac"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
-      "bytes": 22075,
-      "sha256": "30f4bb0e7c5dccabbf83a7fdc653b1a9bc486ec711149bdf92a9928f06c86857"
+      "bytes": 21516,
+      "sha256": "d145b2569553e82d40f82b91092dc368f3d505a867bb059e249de8d15471f1c0"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
-      "bytes": 148623,
-      "sha256": "5cd5042f2669d046d20848a0a74cae90abd713f43f6b623184b70f691025841f"
+      "bytes": 148691,
+      "sha256": "ad566612f36f415fd4cdf8366ad02a47ce92a5ceb88759fb3532dfb5c4c77a3e"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
-      "bytes": 1808047,
-      "sha256": "e57853c94d8c822652d1905a79adc1dd8d6498fa6c9571c61909c2a67815b9d6"
+      "bytes": 1811114,
+      "sha256": "94764ee172527b521bd89ae47134e976a26b14424513764935af20b9202f9cd0"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
-      "bytes": 3136,
-      "sha256": "e6a201aacc5a04afdb70a990e418273a9942bcfeb14631d259f04d20a8731d33"
+      "bytes": 3127,
+      "sha256": "b84b61c14ddb0f9f3c247fdf7fcc3e3ddfb6fe0cecd45ae2e886ab8e6b4620f2"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
-      "bytes": 78198,
-      "sha256": "df328d1d7db860293ee0f985b4a5975ca0400344581b446a79a0f6230cb2d566"
+      "bytes": 78189,
+      "sha256": "e618c4bdf0d200b2485f2b0a04327bd845258c5e180722db79aeb0fc72ebb78d"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
       "bytes": 918,
-      "sha256": "efa676d4ed55eb2b9aab0fefab1660a2d0099915c8f0f1e788de81ea6f6de51d"
+      "sha256": "f7eda06969a77440708ee7c3747aac432053df58184d09cfd8bb0f74da6f6149"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
-      "bytes": 513,
-      "sha256": "c3ed0442391360b5f4b3568efb51ec7878e363da78b6f3831d9344c8b814d255"
+      "bytes": 512,
+      "sha256": "b170a31333946f8d6c4f00ff4e48ac8836ae8fb87b137951145d4063c31ad397"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_pareto_paired_ci.csv",
-      "bytes": 2960,
-      "sha256": "0d9d5bfd56dee43dabfddba33104e38f6edb7b699e4f11005056b7859798642a"
+      "bytes": 2962,
+      "sha256": "51a4c4d229c7e42e35847d521dc0323213c948307966ee6ae88bb7578a2aa801"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
       "bytes": 916,
-      "sha256": "cc3c384a93b9faaabd4154f8853925307dbff9a3fcc460032cf2839beb9a2ed6"
+      "sha256": "e989394803e0063f5a252edcdfe0b662afafb1129577323c7277931a708cfcf4"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.pdf",
-      "bytes": 20041,
-      "sha256": "04fb5a007f481bfb2b0a075d69790a098a98d0c0d227cd98ce3201a793b19ff4"
+      "bytes": 20005,
+      "sha256": "9ea35e61d816e6d4c4ef713744b380e83ad49e178d85ccff3bb2067a1446d8b5"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
-      "bytes": 289674,
-      "sha256": "51ee2f31ccd039b15ff1bb92c3ae744208cd8f704b220f8361540a212a90c35c"
+      "bytes": 286201,
+      "sha256": "226b36bd81fbd9176dfecc401e7b6979a96e83aa45d67d93a0f44739a74cdd8c"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.pdf",
-      "bytes": 19301,
-      "sha256": "bf5e61dedf660b10492af4eb193646a9322ffd9d44a32a1c72b327d33fb57520"
+      "bytes": 19312,
+      "sha256": "08f55f22d0abb0afcbc0fcb57f17a07c6a31f174dd13aa78b73d3b0097b269f2"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
@@ -3007,68 +2952,68 @@
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.pdf",
-      "bytes": 22055,
-      "sha256": "87c7cf7e05b3516429d53ed02dac3948a43286698f401b8daa5b13cb3ea03962"
+      "bytes": 22069,
+      "sha256": "715f608276f5a256e7a2c07a5cf4c474b0f9aa76b1d75589d0d00c52af839270"
     },
     {
       "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
-      "bytes": 322302,
-      "sha256": "ecffa733470101629bd0102b2b25231693483c27a8fc0647eaa9071866fc220e"
+      "bytes": 322775,
+      "sha256": "68fb0a68f63e7cc982c440228d3c06376c4afedb600207070c3a0eb7a4a294dd"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.pdf",
-      "bytes": 51808,
-      "sha256": "4482ab64d6e9b193db1b9495b8d2e92344b1a07b3afa4a83a59f9443ed2155c4"
+      "bytes": 52981,
+      "sha256": "ed1d233ab724981b5b1082b495e5b977f26e8993a9550b837d4421b07404f081"
     },
     {
       "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
-      "bytes": 315929,
-      "sha256": "ae4637b2e5cd2cfa53f274e0131296ae72f0bc88901832d856257ee74e72a892"
+      "bytes": 315034,
+      "sha256": "e0ed253de159eebe5de1c10ba1b3c4b7a4c859a376dc3cc72232b18f41378115"
     },
     {
       "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.pdf",
-      "bytes": 24753,
-      "sha256": "a25f1fcc36a921bb920bda2b85c948e694b69e926f245adcd6ad2a2afb6d15cc"
+      "bytes": 24748,
+      "sha256": "14b9d9d06e21a80d72457f4636724bdf00b77e516e215f9bb578a487bca8d809"
     },
     {
       "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
-      "bytes": 418822,
-      "sha256": "f140e9aeb4674794c8f5cb5d3c7fa184b304199bfb8da59fd58c3b2352e19617"
+      "bytes": 418825,
+      "sha256": "7ee36c3cc77988559ab436ad89a87d1e08e45fcc64324f02fa0b47e2e340b771"
     },
     {
       "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.pdf",
       "bytes": 19635,
-      "sha256": "190568c157b37d87eea9d62959f0929fb149f93cd84c16ff01976bad831deaae"
+      "sha256": "a887ddfa5ba0f3dd8b1aafa23b428492a027ac0a98e871d5851663d100a1367f"
     },
     {
       "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
-      "bytes": 367532,
-      "sha256": "ebb416ab57ce02e4f2824c223092218bd1b651c5c74f8e59e304b1f6b97231eb"
+      "bytes": 367444,
+      "sha256": "c00cef201c00c417f92649c8dfb6721009c006281b51b0b988a7f3e6092c604f"
     },
     {
       "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.pdf",
       "bytes": 169755,
-      "sha256": "f2d125f9b15ff607d86b7b7987a6626017fe825d7a217de17c12756f79f42a24"
+      "sha256": "7a9c6c4947ff42d19a22dcf5b17d737ab92a7c7073ca566a39a9d5a8de3611ab"
     },
     {
       "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
-      "bytes": 361152,
-      "sha256": "427e14495986b1285ca8c376aacbd05318fbe793654cdd80708c63a3aef64cbb"
+      "bytes": 338384,
+      "sha256": "d5b4a1a68ada17cfbf6e0a0547d00743020ba0fd7f3666069ac647d5d274d802"
     },
     {
       "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.pdf",
-      "bytes": 44655,
-      "sha256": "aa68d24853fae2419f9c00eefbf3be63101392a761f3bc03eff9551dff887205"
+      "bytes": 44625,
+      "sha256": "c8b86767831469ea0cea60638cf76d08bccec729dcd7304e947dd5fec21d2b83"
     },
     {
       "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
-      "bytes": 355875,
-      "sha256": "1ab8143275a91abdac035a4e9043d4c86d7b64759f20864385810f011b70ddf4"
+      "bytes": 357382,
+      "sha256": "ea90301a2dda80d23103db006d9d1a6086f46f03d76f1d625efb548a899ab9c1"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
       "bytes": 19022,
-      "sha256": "05f8e4ebfdf584c52687ea874a46d8278613e99656569077343205329d3a2bbf"
+      "sha256": "eae2df57315659e0eaf8973590d3bb9dbcf26e4c04b5b07b49ab23b1c38e80aa"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
@@ -3077,18 +3022,18 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
-      "bytes": 17045,
-      "sha256": "eb7e1b388b2a30a786c1758ed6fa20e01168eb947386e141594ad82643899476"
+      "bytes": 17029,
+      "sha256": "c83fddb93efee4dfe4583cc39528d5f2597574bc9ccc2cef335a96da19dab9b9"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
-      "bytes": 300673,
-      "sha256": "2c21ef03eb6cb27461de043e3f09261681e66af6122a7ee89cc9f8cbf4bf2084"
+      "bytes": 300525,
+      "sha256": "26fa707c45b084b0c11bc0ed42db8cf3243e6092574bf9ccd882e6d7a90f1bbe"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
       "bytes": 25589,
-      "sha256": "b02e7fcc8af28a0bb428edfe656714398ccabfae6f8351d988868aece5b0c382"
+      "sha256": "7a42ba2a87c4c7d28ba144a44da319b9aa87ea2a02507868c611374d5e3c2850"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
@@ -3117,18 +3062,18 @@
     },
     {
       "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.pdf",
-      "bytes": 20271,
-      "sha256": "159d9ec35b41a16c35a47883120fc5337e186ed9dab4ba62abbd460b3ce412e8"
+      "bytes": 20277,
+      "sha256": "97a048bcf0c0ab0be3893ae9ab7ae805ab4416ac3bb7692ded8a4c9461c9568d"
     },
     {
       "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
-      "bytes": 190350,
-      "sha256": "e8a359d92c31c3684397b8d070894b5124e5838f8e2484d45becae5296b26581"
+      "bytes": 190348,
+      "sha256": "53ac3dd5ae06f93dc185da06a5f970243a7c62e66ebee2d71f0943dbc7adc552"
     },
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf",
       "bytes": 13237,
-      "sha256": "58b7d17efca19f6a8496c64353e1b2c34a10e14773f4546e6c9a3a71e97e057e"
+      "sha256": "ae259e186c106106c92f2fb9f252aff3d51d6e838b799858344f96693e052a61"
     },
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
@@ -3137,8 +3082,8 @@
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.pdf",
-      "bytes": 17126,
-      "sha256": "c75a32ef5b5444e5e71d6e6da9c549884c56a7e8cc86f19b5862735a9df15b45"
+      "bytes": 17129,
+      "sha256": "5faab922b18c142877ddb66b676d73de8b13898db73046a85aee53cf4dfa7e5d"
     },
     {
       "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
@@ -3147,33 +3092,33 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
-      "bytes": 50561,
-      "sha256": "6e479bb15faefe85b0746a82c3b9adaa724f6a611a412a562e4d7f327827bc74"
+      "bytes": 50649,
+      "sha256": "607cc73eb306d514625ebede691a38a8fb757c5247ea478f6c735379d9c2a98e"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
-      "bytes": 466101,
-      "sha256": "ebc5a374c76c3eb08f8469e7be06fe90454fdb3a33912d1c85d8422abd5da7ff"
+      "bytes": 466409,
+      "sha256": "f53ee9eafb7a6b72e5ec29710f44f26a5a83e8cf58c8ab58bcf8f0e18369a48c"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.pdf",
-      "bytes": 27734,
-      "sha256": "0c88c66ff46ed4ed3c0d6ee8b43e969727d920b7f1350c08867e2716d1c23d44"
+      "bytes": 27749,
+      "sha256": "7889cc5c473de600aeb08d75cba3b948abed167789535a7b5746abb3322d4870"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
-      "bytes": 490146,
-      "sha256": "b080224a0b4c331fe19aa8c9f4ea0181c80c5ffdfbf2bdac830968d461ee4e3c"
+      "bytes": 490120,
+      "sha256": "83a0fb6412297a2ac8fa606242197ae91b903884fded5364b220199ace46fd79"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.pdf",
-      "bytes": 16612,
-      "sha256": "42e8320afed00d1cac72ff4d9f034faba98444f7b985d2aa860ff0f58ad88850"
+      "bytes": 16622,
+      "sha256": "3e799046ed615f7b3e81e0db27a05e663c8130ef1ba33562c58eaf0191a86ce1"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
-      "bytes": 207533,
-      "sha256": "d31375472d7f66a5dc63553c7589a405a0635db9e4403c4d40414e42f8b92ef4"
+      "bytes": 207178,
+      "sha256": "cbb4e6fcacf831f6a503335f7a4847edbe102351108f2170fd103f03b9ce8ddc"
     },
     {
       "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.pdf",
@@ -3287,13 +3232,13 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
-      "bytes": 23120,
-      "sha256": "13914ff332b4e2988d2e220c690b163af13aa5c0fbbc050366ca3b1a9ac6563c"
+      "bytes": 23096,
+      "sha256": "b9bdef2a8ce25654b1f4162324c371fa901504af1a54bc33b1d33f3b6ac9ca1b"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
-      "bytes": 353251,
-      "sha256": "c6edd8bfe3876241e5ce40c048b3ff0390a190e5e5d2d9c3c775c478b734825d"
+      "bytes": 353239,
+      "sha256": "29561b6e5bd16417fb3e68c46d5d02e2ccd06bbbe605981059d1046cbb9b9811"
     }
   ],
   "limitations": [

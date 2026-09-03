@@ -8,7 +8,7 @@ filter the complete scheduler population used by the Exp19 counterfactual. The
 experiment also reconciles the committed 118-MW nameplate with the observed
 trace envelope.
 
-`workload_power_calibration_sensitivity.csv` evaluates held-out
+`workload_power_calibration_sensitivity.csv` evaluates calibration-validation
 measured-to-predicted energy ratios at quantiles 0.01, 0.10, 0.50, 0.90, and
 0.99. The direct ratios are reported even when they exceed the committed
 capacity; the current flexible-only `capacity_safe_scale_factor` is 0.890086.

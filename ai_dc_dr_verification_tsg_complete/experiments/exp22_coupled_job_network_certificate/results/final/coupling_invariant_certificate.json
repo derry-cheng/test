@@ -10,9 +10,9 @@
     "max_aggregation_residual_mwh": 0.0,
     "max_network_mapping_residual_mw": 0.0,
     "minimum_service_mwh": 0.0,
-    "minimum_gpu_bound_slack_mwh": 8.380333333333334e-05,
+    "minimum_gpu_bound_slack_mwh": 0.00016757838093261576,
     "maximum_gpu_bound_violation_mwh": 0.0,
-    "minimum_site_capacity_slack_mwh": 29.4864441575,
+    "minimum_site_capacity_slack_mwh": 29.495686297196574,
     "valid": true
   },
   "network_mapping_certificate": {
@@ -26,9 +26,9 @@
     "max_aggregation_residual_mwh": 0.0,
     "max_network_mapping_residual_mw": 0.0,
     "minimum_service_mwh": 0.0,
-    "minimum_gpu_bound_slack_mwh": 8.380333333333334e-05,
+    "minimum_gpu_bound_slack_mwh": 0.00016757838093261576,
     "maximum_gpu_bound_violation_mwh": 0.0,
-    "minimum_site_capacity_slack_mwh": 29.4864441575,
+    "minimum_site_capacity_slack_mwh": 29.495686297196574,
     "valid": true
   },
   "mapping_one_hot_bus_indices_zero_based": [
