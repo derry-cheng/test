@@ -11,6 +11,11 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
+try:
+    from pypdf import PdfReader
+except ImportError:  # pragma: no cover - requirements.txt pins pypdf for releases
+    PdfReader = None  # type: ignore[assignment,misc]
+
 from .data import load_workload
 from .optimization import parse_pglib_case, solve_sced, solve_workload_schedule
 from .utils import sha256, write_json
@@ -276,6 +281,15 @@ EXPECTED_FILES = {
         "experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
         "experiments/exp25_exante_job_validation/README.md",
     ],
+    "experiment_26": [
+        "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+        "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+        "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+        "experiments/exp26_end_to_end_certificate/README.md",
+    ],
     "manuscript_sources": [
         "paper/main.tex",
         "paper/main.pdf",
@@ -301,6 +315,14 @@ EXPECTED_FILES = {
 
 def _check(condition: bool, name: str, detail: str, checks: list[dict[str, Any]]) -> None:
     checks.append({"name": name, "passed": bool(condition), "detail": detail})
+
+
+def _all_true(values: pd.Series) -> bool:
+    """Return True only when every serialized boolean is explicitly true."""
+    if pd.api.types.is_bool_dtype(values):
+        return bool(values.all())
+    normalized = values.astype(str).str.strip().str.lower()
+    return bool(normalized.eq("true").all())
 
 
 def run_audit(
@@ -346,6 +368,7 @@ def run_audit(
         "exp23",
         "exp24",
         "exp25",
+        "exp26",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -366,7 +389,8 @@ def run_audit(
         (
             f"{len(recorded_stages)}/{len(expected_stages)} stages recorded; "
             f"canonical request={unified_manifest.get('stage_requested')}; "
-            f"audit status={recorded_stages.get('audit', {}).get('status')}"
+            f"audit status={recorded_stages.get('audit', {}).get('status')} "
+            "(running is expected during the self-check)"
         ),
         checks,
     )
@@ -390,6 +414,41 @@ def run_audit(
         "; ".join(figure_failures if figure_failures else figure_dimensions),
         checks,
     )
+    pdf_path = root / "paper/main.pdf"
+    if PdfReader is None:
+        _check(
+            False,
+            "ieeetran_pdf_length_and_geometry",
+            "pypdf is required by requirements.txt to inspect the release PDF",
+            checks,
+        )
+    else:
+        try:
+            reader = PdfReader(str(pdf_path))
+            page_boxes = [
+                (
+                    float(page.mediabox.width),
+                    float(page.mediabox.height),
+                )
+                for page in reader.pages
+            ]
+            letter_pages = all(
+                abs(width - 612.0) < 0.5 and abs(height - 792.0) < 0.5
+                for width, height in page_boxes
+            )
+            _check(
+                len(reader.pages) == 10 and letter_pages,
+                "ieeetran_pdf_length_and_geometry",
+                f"{len(reader.pages)} pages; boxes={page_boxes[:2]}{'...' if len(page_boxes) > 2 else ''}",
+                checks,
+            )
+        except Exception as exc:
+            _check(
+                False,
+                "ieeetran_pdf_length_and_geometry",
+                f"PDF inspection failed: {type(exc).__name__}: {exc}",
+                checks,
+            )
     required_citation_keys = {
         "wang2022baseline",
         "caiso2017baseline",
@@ -482,6 +541,47 @@ def run_audit(
             f"uncited={sorted(bibliography_keys - cited_keys)}; "
             f"missing={sorted(cited_keys - bibliography_keys)}"
         ),
+        checks,
+    )
+    manuscript_labels = re.findall(r"\\label\{([^}]+)\}", manuscript_text)
+    manuscript_refs = re.findall(r"\\(?:ref|eqref)\{([^}]+)\}", manuscript_text)
+    unreferenced_labels = sorted(set(manuscript_labels) - set(manuscript_refs))
+    missing_labels = sorted(set(manuscript_refs) - set(manuscript_labels))
+    _check(
+        len(manuscript_labels) == len(set(manuscript_labels))
+        and not unreferenced_labels
+        and not missing_labels,
+        "every_labeled_equation_figure_table_is_referenced",
+        (
+            f"{len(manuscript_labels)} labels; unreferenced={unreferenced_labels}; "
+            f"missing={missing_labels}"
+        ),
+        checks,
+    )
+    required_expansions = {
+        "mixed-integer linear program (MILP)": "MILP",
+        "Massachusetts Institute of Technology (MIT)": "MIT",
+        "Data Center GPU Manager (DCGM)": "DCGM",
+        "Power Grid Library (PGLib)": "PGLib",
+        "Secure Hash Algorithm 256 (SHA-256)": "SHA-256",
+        "quadratic program (QP)": "QP",
+        "mean absolute error (MAE)": "MAE",
+        "root-mean-square error (RMSE)": "RMSE",
+        "F1 (harmonic-mean) score": "F1",
+    }
+    _check(
+        all(phrase in manuscript_text for phrase in required_expansions),
+        "required_abbreviation_expansions_present",
+        "; ".join(
+            f"{abbr}={'ok' if phrase in manuscript_text else 'missing'}"
+            for phrase, abbr in required_expansions.items()
+        ),
+        checks,
+    )
+    _check(
+        "\\\\operatorname{SHA256}" not in manuscript_text,
+        "sha256_symbol_is_hyphenated",
+        "SHA-256 is written consistently in prose and equations",
         checks,
     )
 
@@ -3842,6 +3942,115 @@ def run_audit(
             "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding "
             "outages without AC screening or post-solution workload adjustment"
         ),
+        checks,
+    )
+
+    lineage = pd.read_csv(
+        root
+        / "experiments/exp26_end_to_end_certificate/results/final/"
+        "end_to_end_lineage.csv"
+    )
+    profile_roles = pd.read_csv(
+        root
+        / "experiments/exp26_end_to_end_certificate/results/final/"
+        "profile_role_lineage.csv"
+    )
+    lineage_metadata = json.loads(
+        (
+            root
+            / "experiments/exp26_end_to_end_certificate/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    certificate_roles = {
+        str(row["stage"]): bool(row["passed"])
+        for _, row in lineage.iterrows()
+    }
+    role_names = set(profile_roles["profile_role"].astype(str))
+    risk_role = profile_roles.loc[
+        profile_roles["profile_role"] == "validation-fitted aggregate risk target"
+    ]
+    mapping_role = profile_roles.loc[
+        profile_roles["profile_role"]
+        == "recomputed job-to-network certificate summary"
+    ]
+    payment_role = profile_roles.loc[
+        profile_roles["profile_role"] == "payment-certified feasible profile hull"
+    ]
+    _check(
+        set(certificate_roles)
+        == {
+            "job witness",
+            "aggregate risk contract",
+            "relative payment cap",
+            "network valuation",
+            "complete outage replay",
+        }
+        and all(certificate_roles.values())
+        and role_names
+        == {
+            "executable submitted-job witness",
+            "validation-fitted aggregate risk target",
+            "payment-certified feasible profile hull",
+            "recomputed job-to-network certificate summary",
+            "frozen-profile all-outage N-1 replay",
+        }
+        and len(risk_role) == 1
+        and _all_true(risk_role["risk_contract_satisfied"])
+        and len(mapping_role) == 1
+        and _all_true(mapping_role["network_mapping_recomputed_from_job_witness"])
+        and len(payment_role) == 1
+        and _all_true(payment_role["payment_cap_is_relative_n1_cap"])
+        and lineage_metadata.get("profile_roles", {}).get("profile_identity_asserted") is False
+        and lineage_metadata.get("network_mapping_certificate", {}).get("valid") is True
+        and float(
+            lineage_metadata.get("network_mapping_certificate", {}).get(
+                "max_network_mapping_residual_mw", np.inf
+            )
+        )
+        <= 1e-10
+        and lineage_metadata.get("network_mapping_one_hot_bus_indices_zero_based")
+        == [2, 7, 14, 20]
+        and len(lineage_metadata.get("upstream_artifact_hashes", {})) == 5
+        and lineage_metadata.get("all_outage_replay", {}).get(
+            "all_finite_nonislanding_outages_evaluated"
+        )
+        is True,
+        "end_to_end_declaration_to_settlement_lineage_certificate",
+        (
+            "Exp26 recomputes the indexed coupling, verifies risk/payment/outage "
+            "certificates, records five upstream hashes, and preserves explicit "
+            "role separation without asserting profile identity"
+        ),
+        checks,
+    )
+
+    upstream_paths = {
+        "executable submitted-job witness":
+            "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+        "validation-fitted aggregate risk target":
+            "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
+        "payment-certified feasible profile hull":
+            "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+        "recomputed job-to-network certificate summary":
+            "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
+        "frozen-profile all-outage N-1 replay":
+            "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+    }
+    recorded_hashes = lineage_metadata.get("upstream_artifact_hashes", {})
+    hash_details = []
+    hash_matches = set(recorded_hashes) == set(upstream_paths)
+    for role, rel in upstream_paths.items():
+        path = root / rel
+        expected = str(recorded_hashes.get(role, ""))
+        actual = sha256(path) if path.exists() else ""
+        matched = bool(re.fullmatch(r"[0-9a-f]{64}", expected)) and expected == actual
+        hash_matches = hash_matches and matched
+        hash_details.append(f"{role}={'ok' if matched else 'mismatch'}")
+    _check(
+        hash_matches,
+        "end_to_end_upstream_hashes_match_current_artifacts",
+        "; ".join(hash_details),
         checks,
     )
 

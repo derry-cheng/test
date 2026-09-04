@@ -35,6 +35,7 @@ from .coupling_certificate import run_exp22_coupled_job_network_certificate
 from .independent_event import run_exp23_independent_event_replay
 from .all_outage_security import run_exp24_all_outage_security_panel
 from .exante_validation import run_exp25_exante_job_validation
+from .end_to_end_certificate import run_exp26_end_to_end_certificate
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
 
@@ -129,6 +130,7 @@ def run_pipeline(
         ("exp23", lambda: run_exp23_independent_event_replay(root, cfg, logger)),
         ("exp24", lambda: run_exp24_all_outage_security_panel(root, cfg, logger)),
         ("exp25", lambda: run_exp25_exante_job_validation(root, cfg, logger)),
+        ("exp26", lambda: run_exp26_end_to_end_certificate(root, cfg, logger)),
         (
             "audit",
             lambda: run_audit(
@@ -216,10 +218,11 @@ def run_pipeline(
         "exp22",
         "exp23",
         "exp24",
+        "exp26",
         "audit",
-    } and stage not in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24"}:
+    } and stage not in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24", "exp26"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24"}:
+    elif stage in {"audit", "exp20", "exp21", "exp22", "exp23", "exp24", "exp26"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound

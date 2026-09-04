@@ -1,0 +1,6 @@
+source_file,source_sha256,profile_role,shape_or_scope,risk_contract_satisfied,network_mapping_recomputed_from_job_witness,payment_cap_is_relative_n1_cap
+experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz,93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081,executable submitted-job witness,"(13198247,)",False,False,False
+experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz,a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7,validation-fitted aggregate risk target,"(54, 4, 96)",True,False,False
+experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz,235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c,payment-certified feasible profile hull,"(54, 4, 96)",False,False,True
+experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv,533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c,recomputed job-to-network certificate summary,metric table,False,True,False
+experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv,a3e88e9ea6cb191f35b27d7b5c92f8bd2a319bd76fa1e3091d9f98079df86220,frozen-profile all-outage N-1 replay,"(864, 11)",False,False,False

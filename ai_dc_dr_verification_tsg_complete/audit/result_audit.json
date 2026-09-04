@@ -1037,6 +1037,41 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "manuscript_sources:paper/main.tex",
       "passed": true,
       "detail": "exists and non-empty"
@@ -1129,12 +1164,17 @@
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "27/27 stages recorded; canonical request=all; audit status=completed"
+      "detail": "28/28 stages recorded; canonical request=all; audit status=running (running is expected during the self-check)"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
       "passed": true,
       "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1253; fig27_all_outage_security.png=2309x1253; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643"
+    },
+    {
+      "name": "ieeetran_pdf_length_and_geometry",
+      "passed": true,
+      "detail": "10 pages; boxes=[(612.0, 792.0), (612.0, 792.0)]..."
     },
     {
       "name": "model_formula_citation_traceability",
@@ -1149,12 +1189,27 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "42 in-text citation groups checked"
+      "detail": "41 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
       "passed": true,
       "detail": "35 verified bibliography entries; 35 unique in-text citations; uncited=[]; missing=[]"
+    },
+    {
+      "name": "every_labeled_equation_figure_table_is_referenced",
+      "passed": true,
+      "detail": "45 labels; unreferenced=[]; missing=[]"
+    },
+    {
+      "name": "required_abbreviation_expansions_present",
+      "passed": true,
+      "detail": "MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok"
+    },
+    {
+      "name": "sha256_symbol_is_hyphenated",
+      "passed": true,
+      "detail": "SHA-256 is written consistently in prose and equations"
     },
     {
       "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
@@ -1710,6 +1765,16 @@
       "name": "full_finite_n1_frozen_profile_panel",
       "passed": true,
       "detail": "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment"
+    },
+    {
+      "name": "end_to_end_declaration_to_settlement_lineage_certificate",
+      "passed": true,
+      "detail": "Exp26 recomputes the indexed coupling, verifies risk/payment/outage certificates, records five upstream hashes, and preserves explicit role separation without asserting profile identity"
+    },
+    {
+      "name": "end_to_end_upstream_hashes_match_current_artifacts",
+      "passed": true,
+      "detail": "executable submitted-job witness=ok; validation-fitted aggregate risk target=ok; payment-certified feasible profile hull=ok; recomputed job-to-network certificate summary=ok; frozen-profile all-outage N-1 replay=ok"
     },
     {
       "name": "no_stale_atomic_temporary_artifacts",
@@ -2529,6 +2594,36 @@
       "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_summary.csv",
       "bytes": 532,
       "sha256": "1c05036e59be9b45d18af52b20abd90f71e5eb9c1379f2fd4ea684e9a7d24992"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "bytes": 3850,
+      "sha256": "74b00b781f62a732923afe93f6a167d3f75dfc726e16229fed3cca0ee3a11c08"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "bytes": 595,
+      "sha256": "bef4528736c59955454cb220a765cb8c389a76aecd05ec11937dddfc0011f827"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "bytes": 3850,
+      "sha256": "74b00b781f62a732923afe93f6a167d3f75dfc726e16229fed3cca0ee3a11c08"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "bytes": 369,
+      "sha256": "ac3e4d9b1ae0d34fca0dd36a5abef1a9643a97a8e01d8c74e64e4f14194b8bc6"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "bytes": 1271,
+      "sha256": "c62f8f512c878462c83c17882e0820b96f68918857dc280d22569ee13fa3e1d9"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "bytes": 402,
+      "sha256": "7d2a5a1010c39cb8fd032cced119e56de3cf20d2948a8247d8c517fbf3d549c6"
     },
     {
       "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",

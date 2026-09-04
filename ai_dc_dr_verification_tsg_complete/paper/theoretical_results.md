@@ -47,8 +47,9 @@ fitted from the reported outcomes.
 
 ## Proposition 2: exact cumulative-state formulation
 
-Let \(x_{skdt}\) be workload of source \(s\), class \(k\), served at destination
-\(d\) in interval \(t\), and define
+Let \(x_{skd\tau}\) be workload of source \(s\), class \(k\), served at destination
+\(d\) in service interval \(\tau\), and reserve \(t\) for release/state
+checkpoints. Define
 
 \[
 y_{skt}=\sum_{\tau=0}^{t}\sum_d x_{skd\tau}.
@@ -66,13 +67,15 @@ y_{skt}\geq A_{sk,t-D_k},
 \]
 
 where \(A\) is cumulative arrival energy and the second constraint applies for
-\(t\geq D_k\). The equality
+\(t\geq D_k\). With \(y_{sk,-1}=0\), the state recursion is
 
 \[
-y_{skt}-y_{sk,t-1}=\sum_d x_{skdt}
+y_{skt}-y_{sk,t-1}=\sum_d x_{skd t}.
 \]
 
-and terminal conservation complete the formulation. Substitution proves both
+This equality is evaluated at each release/state checkpoint \(t\); the service
+variable is the previously defined \(x_{skd\tau}\) at \(\tau=t\). Terminal
+conservation completes the formulation. Substitution proves both
 directions of equivalence. The original prefix-matrix construction required
 \(O(SKDT^2)\) nonzeros; the cumulative-state formulation requires
 \(O(SKDT)\) nonzeros. This reduction enables the 1,216-slot continuous
@@ -118,7 +121,10 @@ F_j^{(z)}=\sum_{n\in\mathcal V_j}
 \]
 
 The validation risk contract uses \(z=\mathrm{sim}\), while the observed
-meter is an independent locked replay. No maximum over the two sources is
+meter is an independent locked replay. In the implementation the
+trace-anchored diagnostic is the measured no-event tensor, so
+\(p^{\mathrm{obs}}=p^0\) only in that observational replay; the simulated
+source remains \(p^{1,\mathrm{sim}}\). No maximum over the two sources is
 taken: doing so would mix an offline oracle with the deployable risk
 definition. For a pre-declared reserve
 \(\beta\in(0,1]\), define the fixed validation-mechanism denominator

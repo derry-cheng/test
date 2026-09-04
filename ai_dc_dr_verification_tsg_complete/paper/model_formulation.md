@@ -20,7 +20,8 @@ models.
 
 Inference arrivals and token volumes use the complete BurstGPT release
 \cite{wang2024burstgpt}; submitted batch arrivals and independently observed GPU
-execution energy use the joined MIT Supercloud scheduler/DCGM release
+execution energy use the joined Massachusetts Institute of Technology (MIT)
+Supercloud scheduler/Data Center GPU Manager (DCGM) release
 \cite{samsi2021supercloud}. Neither source contains co-located utility demand or
 four-site geography, so the trace-to-capacity scaling and feature-stratified
 regional assignment are explicitly declared benchmark transformations rather
@@ -45,28 +46,35 @@ job before the commitment was created. Experiment 16 checks both digests, the
 one-to-one join, temporal order, positive-energy conservation, and the measured
 regional execution capacity envelope.
 
-Let \(t\in\mathcal T=\{0,\ldots,T-1\}\) index 15-minute intervals,
+Let \(t\in\mathcal T=\{0,\ldots,T-1\}\) index release intervals and let
+\(\tau\in\mathcal T\) index service intervals,
 \(s\in\mathcal S\) workload origins, \(d\in\mathcal D\) data-center
 destinations, and \(k\in\mathcal K\) service classes. The measured or submitted
 workload arrival is \(a_{skt}\) MWh, class deadline is \(D_k\) intervals,
 destination flexible-energy capacity is \(\bar E_d=\bar P_d\Delta t\), and
-\(\lambda_{dt}\) is the energy price. The decision
+\(\lambda_{d\tau}\) is the energy price. The decision
 
 \[
-x_{skdt}\geq 0
+x_{skd\tau}\geq 0
 \]
 
-is the energy from origin \(s\), class \(k\), served at \(d\) during \(t\).
+is the energy from origin \(s\), class \(k\), served at \(d\) during service
+interval \(\tau\). This release/service index distinction is used throughout
+the implementation; a displayed \(t\) in a summation over service is shorthand
+for \(\tau\) only where the distinction is immaterial.
 Deadline-constrained temporal deferral and geographic assignment follow the
 data-center scheduling foundations in \cite{cao2022flexibility}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters rather than facts inferred from those papers.
 
-For an event window, \(p^0\) is the no-event counterfactual and
+For an event window, \(p^0\) is the trace-anchored no-event counterfactual and
 \(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
 only in mechanism-isolation replays. The measured execution meter
 \(p^{\mathrm{obs}}\) is an independent observational target for locked trace
-alignment; the public releases contain no utility event label. For each source
+alignment. In the implementation the trace-anchored diagnostic uses that same
+measured no-event tensor, so \(p^{\mathrm{obs}}=p^0\) only for the observational
+replay; the simulated source remains \(p^{1,\mathrm{sim}}\). The public releases
+contain no utility event label. For each source
 \(z\in\{\mathrm{obs},\mathrm{sim}\}\), define submitted and true credit by
 
 \[
@@ -99,9 +107,12 @@ Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
 In mechanism-isolation evaluation, \(p^0\) is the trace-anchored no-event
 profile and \(p^{1,\mathrm{sim}}\) is the solved operating response. The
 deployable quantity \(p^{\rm con}\) is frozen before the event and is the only
-baseline used in payment formation; the measured meter enters only after the
-decision as an observational replay. No causal intervention is inferred from
-the public traces.
+baseline used in payment formation. In the payment-band panel it is the
+separately solved \(p^{\rm safe}\); in the decision-time panel it is the
+no-tariff committed-ledger profile. These are instantiations of one frozen
+contract role, not interchangeable statistical estimates. The measured meter
+enters only after the decision as an observational replay. No causal
+intervention is inferred from the public traces.
 
 When a tariff-bearing operating plan \(p^{\rm plan}\) is evaluated, it is not
 relabelled as a baseline. Planned reduction, metered reduction, and true
@@ -149,7 +160,7 @@ scheduling model.
 The implemented linear feasible set is
 
 \[
-y_{skt}-y_{sk,t-1}-\sum_d x_{skdt}=0,
+y_{skt}-y_{sk,t-1}-\sum_d x_{skd t}=0,
 \quad y_{sk,-1}=0,
 \]
 
@@ -162,7 +173,7 @@ y_{skt}\geq A_{sk,t-D_k},\qquad t\geq D_k,
 \]
 
 \[
-\sum_{s,k}x_{skdt}\leq \bar E_d,
+\sum_{s,k}x_{skd\tau}\leq \bar E_d,
 \]
 
 \[
@@ -171,6 +182,10 @@ y_{sk,T^+}=A_{sk,\max\{T^0,T^+-D_k\}}.
 
 These constraints respectively impose state evolution, no service before
 release, deadline completion, destination capacity, and terminal conservation.
+The recursion is indexed by the release/state checkpoint \(t\); \(x_{skd t}\)
+is the service variable \(x_{skd\tau}\) evaluated at the same interval. The
+separate symbol \(\tau\) is retained in service-profile sums so that no release
+index is silently reused as a decision variable.
 The underlying scheduling requirements are standard in
 \cite{cao2022flexibility}; their \(O(T)\) cumulative-state
 representation and its equivalence proof are Proposition 2 of this study. The
@@ -192,8 +207,9 @@ introduces no user-selected penalty tradeoff.
 The aggregate service variables are not an independent network input. Partition
 the committed job ledger by source, class, and native destination as
 \(\mathcal J_{skd}\). For job \(j\), let \(u_{j\tau}\) be its service energy in
-an admissible interval \(r_j\leq\tau<d_j\). The executable witness first
-defines \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\),
+an admissible interval \(r_j\leq\tau<d_j\). The executable witness sets
+\(\bar p_{\rm GPU}=0.001\) MW/GPU as the committed nameplate and defines
+\(c_j=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\),
 \(K_j=\lceil\widehat E_j/c_j\rceil\), and the terminal-slot remainder
 \(e_j^{\rm rem}=\widehat E_j-(K_j-1)c_j\). A binary \(z_{j\theta}\) selects exactly one
 \(\theta\in\{r_j,\ldots,d_j-K_j\}\), and
@@ -240,8 +256,8 @@ For energy cost, migration charge \(m_{sd}\), and class waiting coefficient
 
 \[
 \min_{x,y}\;
-\sum_{s,k,d,t}
-\left(\lambda_{dt}+m_{sd}+w_k t\right)x_{skdt}.
+\sum_{s,k,d,\tau}
+\left(\lambda_{d\tau}+m_{sd}+w_k \tau\right)x_{skd\tau}.
 \]
 
 Data-center energy-aware scheduling, temporal deferral, and geographic balancing
@@ -250,11 +266,11 @@ resulting workload operating cost by \(\mathcal C_{\mathrm w}(x)\), reserving
 \(V(p)\) for the network dispatch value and \(C_i(g_i)\) for generator-segment
 costs. The linear migration and waiting coefficients are declared experimental
 parameters. Although the
-implemented waiting term uses service time \(t\), it is exactly equivalent for
+implemented waiting term uses service interval \(\tau\), it is exactly equivalent for
 optimization to waiting duration:
 
 \[
-\sum_t w_k t\sum_d x_{skdt}
+\sum_\tau w_k \tau\sum_d x_{skd\tau}
 -\sum_t w_k t a_{skt},
 \]
 
@@ -269,7 +285,7 @@ price \(\pi^{\mathrm{DR}}\), the reference-day objective becomes
 \min_{x,y}\;
  \mathcal C_{\mathrm w,j}(x)-\frac{q\pi^{\mathrm{DR}}}{10}
 \sum_{s,k}\sum_{d\in\mathcal D_{\mathrm{part}}}
-\sum_{t\in\mathcal T_{\mathrm{event}}}x_{skdt}.
+\sum_{\tau\in\mathcal T_{\mathrm{event}}}x_{skd\tau}.
 \]
 
 Historical-day baselines are motivated by \cite{caiso2017baseline}; endogenous
@@ -282,7 +298,7 @@ To certify that threshold independently, the honest program adds
 
 \[
 \sum_{s,k}\sum_{d\in\mathcal D_{\mathrm{part}}}
-\sum_{t\in\mathcal T_{\mathrm{event}}}x_{skdt}\geq R_j^0.
+\sum_{\tau\in\mathcal T_{\mathrm{event}}}x_{skd\tau}\geq R_j^0.
 \]
 
 If \(\mu_j\leq0\) is the solver marginal for the equivalent row
@@ -527,7 +543,9 @@ G=r^{\rm DR}Q^{\rm cap}+\Pi^{\rm ST}.
 \]
 
 Here \(p^\emptyset\) is re-solved as the minimum-cost no-event trajectory on
-the identical continuous real-arrival horizon. Capacity-service credits and
+the identical continuous real-arrival horizon. It is a bilateral-product
+reference and need not equal the trace-anchored diagnostic \(p^0\) used for
+mechanism-isolation scoring. Capacity-service credits and
 voluntary participation follow
 \cite{satchidanandan2023twostage,chen2021incentive}; the signed space--time
 term prevents the capacity product from ignoring spatial migration or

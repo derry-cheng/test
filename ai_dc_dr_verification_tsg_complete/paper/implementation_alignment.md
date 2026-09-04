@@ -2,6 +2,7 @@
 
 | Paper claim | Implementation | Direct evidence |
 |---|---|---|
+| Declaration-to-settlement provenance is auditable across stages | run_exp26_end_to_end_certificate reads only locked upstream artifacts, recomputes the indexed job-to-region aggregation and the declared RTS-24 region-to-bus incidence, and verifies risk, payment, and outage certificates before recording source hashes | Five explicit profile roles, five SHA-256 digests, zero typed residuals, 864 frozen outage cells, and end_to_end_lineage.csv with no profile-identity assertion |
 | Multi-day baseline rules create endogenous manipulation incentives | `run_exp1`, `mode="strategic_reference"`, independent minimum-service dual certificates | Complete 8-price × 7-call-probability grid over ten reference days; 56/56 strict-profit boundary agreement |
 | Workload-state constraints verify a counterfactual independently of its generator | cumulative-state LP; total-plus-daily-tail risk convex counterfactual; exact pointwise event risk envelope | Twelve-method, 54-day Experiment 2 panel including complete-ledger quantile boosting, its exact feasible projection, and synthetic control |
 | Physical feasibility—not privileged information—drives the gain | complete submitted-job ledger supplied to ex-post Metadata Gradient Boosting, the selected single projection, tail-risk counterfactual, and risk-safe verifier at the same decision time | Information-set audit, matched comparisons, independent trace-meter replay, and deterministic false-credit-MWh noninferiority certificate |

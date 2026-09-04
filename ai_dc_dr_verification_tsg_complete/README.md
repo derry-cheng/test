@@ -63,7 +63,7 @@ modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--25 each own a README, final results,
+the LaTeX source. Experiments 1--26 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
 inventory and the numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
@@ -74,7 +74,9 @@ deterministic event-window-mean N--1 replay on the explicitly pinned public
 IEEE RTS-24 case. Experiment 24 then freezes the profiles and covers all finite
 non-islanding outages without screening or post-solution reoptimization. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
-panels.
+panels. Experiment 26 is a cached-only end-to-end lineage certificate: it
+recomputes indexed coupling residuals and verifies source hashes and role
+separation before the release audit.
 
 ## Reproducibility boundaries
 
