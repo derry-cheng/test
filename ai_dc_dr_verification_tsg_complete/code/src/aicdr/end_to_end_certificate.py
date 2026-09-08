@@ -71,6 +71,7 @@ def run_exp26_end_to_end_certificate(
     outage_meta_path = root / "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json"
     common_witness_path = root / "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz"
     common_summary_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv"
+    common_typed_certificate_path = root / "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json"
     common_settlement_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv"
     common_meta_path = root / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
     required = [
@@ -88,6 +89,7 @@ def run_exp26_end_to_end_certificate(
         outage_meta_path,
         common_witness_path,
         common_summary_path,
+        common_typed_certificate_path,
         common_settlement_path,
         common_meta_path,
     ]
@@ -101,6 +103,9 @@ def run_exp26_end_to_end_certificate(
     payment_meta = json.loads(payment_meta_path.read_text(encoding="utf-8"))
     outage_meta = json.loads(outage_meta_path.read_text(encoding="utf-8"))
     common_meta = json.loads(common_meta_path.read_text(encoding="utf-8"))
+    common_typed_certificate = json.loads(
+        common_typed_certificate_path.read_text(encoding="utf-8")
+    )
     manifest = json.loads(
         (root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8")
     )
@@ -127,6 +132,9 @@ def run_exp26_end_to_end_certificate(
     common = np.load(common_witness_path, allow_pickle=False)
     common_runtime = np.asarray(common["runtime_slots"], dtype=np.int64)
     common_runtime_energy = np.asarray(common["runtime_energy_mwh"], dtype=float)
+    common_region = np.asarray(common["region"], dtype=np.int64)
+    common_baseline_service = np.asarray(common["baseline_service_mwh"], dtype=float)
+    common_counterfactual_service = np.asarray(common["counterfactual_service_mwh"], dtype=float)
     common_baseline = np.asarray(common["baseline_mwh"], dtype=float)
     common_counterfactual = np.asarray(common["counterfactual_mwh"], dtype=float)
     common_submit = np.asarray(common["submit_slot"], dtype=np.int64)
@@ -139,6 +147,14 @@ def run_exp26_end_to_end_certificate(
         raise RuntimeError("Exp27 does not assert identity of its saved workload profiles")
     if common_meta.get("source_submission_digest") != source_digest:
         raise RuntimeError("Exp27 and Exp19 do not share the same submission-ledger digest")
+    if (
+        common_typed_certificate.get("witness_digest") != common_digest
+        or common_typed_certificate.get("source_submission_digest") != source_digest
+        or common_typed_certificate.get("profile_identity_asserted") is not True
+        or common_typed_certificate.get("baseline", {}).get("valid") is not True
+        or common_typed_certificate.get("counterfactual", {}).get("valid") is not True
+    ):
+        raise RuntimeError("Exp27 typed runtime coupling certificate is invalid or detached")
     if not (
         len(common_submit) == len(common_deadline) == len(common_runtime)
         == len(common_runtime_energy) == len(starts)
@@ -152,6 +168,32 @@ def run_exp26_end_to_end_certificate(
         raise RuntimeError("Exp27 runtime/deadline identity check failed")
     if common_baseline.shape != common_counterfactual.shape or common_baseline.ndim != 2:
         raise RuntimeError("Exp27 saved workload profiles have incompatible shapes")
+    common_baseline_typed_recheck = validate_job_network_coupling(
+        service_mwh=common_baseline_service,
+        job_energy_mwh=common_runtime_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_baseline,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    common_counterfactual_typed_recheck = validate_job_network_coupling(
+        service_mwh=common_counterfactual_service,
+        job_energy_mwh=common_runtime_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_counterfactual,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    if not common_baseline_typed_recheck.valid or not common_counterfactual_typed_recheck.valid:
+        raise RuntimeError("Exp27 stored service vectors fail the typed coupling recheck")
     common_settlement = pd.read_csv(common_settlement_path)
     if common_settlement.empty:
         raise RuntimeError("Exp27 settlement replay is empty")
@@ -161,6 +203,14 @@ def run_exp26_end_to_end_certificate(
     common_metrics = dict(zip(common_summary["metric"].astype(str), common_summary["value"].astype(float)))
     if abs(common_metrics.get("baseline_energy_residual_mwh", np.inf)) > 1e-9 or abs(common_metrics.get("counterfactual_energy_residual_mwh", np.inf)) > 1e-9:
         raise RuntimeError("Exp27 runtime-complete energy certificate exceeds tolerance")
+    for prefix in ("baseline", "counterfactual"):
+        if (
+            float(common_typed_certificate[prefix]["max_job_energy_residual_mwh"]) > 1e-12
+            or float(common_typed_certificate[prefix]["max_aggregation_residual_mwh"]) > 1e-12
+            or float(common_typed_certificate[prefix]["maximum_gpu_bound_violation_mwh"]) > 1e-12
+            or float(common_typed_certificate[prefix]["minimum_site_capacity_slack_mwh"]) < -1e-12
+        ):
+            raise RuntimeError(f"Exp27 {prefix} typed runtime coupling residual exceeds tolerance")
 
     # Exp19 uses zero-based regional labels.  The first certificate checks the
     # indexed witness and regional aggregation before any network valuation.
@@ -357,9 +407,23 @@ def run_exp26_end_to_end_certificate(
             },
             {
                 "stage": "common executable witness",
-                "certificate": "the same declaration-indexed runtime-complete witness digest is reused by network settlement",
-                "maximum_residual_or_violation": float(max(abs(common_metrics["baseline_energy_residual_mwh"]), abs(common_metrics["counterfactual_energy_residual_mwh"]))),
-                "passed": bool(common_meta.get("profile_identity_asserted") is True and common_settlement["solver_success"].all()),
+                "certificate": "the same declaration-indexed runtime-complete witness digest and typed job/aggregation certificate are reused by network settlement",
+                "maximum_residual_or_violation": float(
+                    max(
+                        abs(common_metrics["baseline_energy_residual_mwh"]),
+                        abs(common_metrics["counterfactual_energy_residual_mwh"]),
+                        common_typed_certificate["baseline"]["max_job_energy_residual_mwh"],
+                        common_typed_certificate["counterfactual"]["max_job_energy_residual_mwh"],
+                        common_typed_certificate["baseline"]["max_aggregation_residual_mwh"],
+                        common_typed_certificate["counterfactual"]["max_aggregation_residual_mwh"],
+                    )
+                ),
+                "passed": bool(
+                    common_meta.get("profile_identity_asserted") is True
+                    and common_typed_certificate.get("baseline", {}).get("valid") is True
+                    and common_typed_certificate.get("counterfactual", {}).get("valid") is True
+                    and common_settlement["solver_success"].all()
+                ),
             },
             {
                 "stage": "complete outage replay",
@@ -412,6 +476,31 @@ def run_exp26_end_to_end_certificate(
             "profile_shape": list(common_counterfactual.shape),
             "settlement_rows": int(len(common_settlement)),
             "all_settlement_solves_successful": bool(common_settlement["solver_success"].all()),
+            "typed_certificate_file": _relative(root, common_typed_certificate_path),
+            "typed_certificate_valid": bool(
+                common_typed_certificate.get("baseline", {}).get("valid") is True
+                and common_typed_certificate.get("counterfactual", {}).get("valid") is True
+            ),
+            "typed_certificate_max_job_energy_residual_mwh": float(
+                max(
+                    common_typed_certificate["baseline"]["max_job_energy_residual_mwh"],
+                    common_typed_certificate["counterfactual"]["max_job_energy_residual_mwh"],
+                )
+            ),
+            "typed_certificate_max_aggregation_residual_mwh": float(
+                max(
+                    common_typed_certificate["baseline"]["max_aggregation_residual_mwh"],
+                    common_typed_certificate["counterfactual"]["max_aggregation_residual_mwh"],
+                )
+            ),
+            "stored_service_vector_lengths": {
+                "baseline": int(len(common_baseline_service)),
+                "counterfactual": int(len(common_counterfactual_service)),
+            },
+            "stored_service_vector_recheck_valid": bool(
+                common_baseline_typed_recheck.valid
+                and common_counterfactual_typed_recheck.valid
+            ),
             "finite_n1_contingencies_per_cell": int(common_settlement["finite_n1_contingencies"].iloc[0]),
         },
         "network_mapping_one_hot_bus_indices_zero_based": (configured_buses - 1).tolist(),
@@ -446,7 +535,10 @@ aggregate risk and payment profiles remain explicitly labeled analysis views.
 The certificate does not refit, select, clip, or re-optimize any upstream
 profile. Outputs are written to `results/final/`: `end_to_end_lineage.csv`,
 `profile_role_lineage.csv`, `payment_relative_cap_audit.csv`,
-`realized_payment_audit.csv`, and the JSON certificate.
+`realized_payment_audit.csv`, and the JSON certificate. The Exp27 typed
+runtime coupling certificate is loaded and checked before this lineage is
+written, but remains a derived certificate rather than a separate profile
+role.
 """,
         encoding="utf-8",
     )

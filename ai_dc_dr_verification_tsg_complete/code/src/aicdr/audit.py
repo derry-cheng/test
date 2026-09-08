@@ -291,6 +291,23 @@ EXPECTED_FILES = {
         "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
         "experiments/exp26_end_to_end_certificate/README.md",
     ],
+    "experiment_27": [
+        "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
+        "experiments/exp27_executable_common_witness/results/final/job_level_runtime_summary.csv",
+        "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv",
+        "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
+        "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
+        "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json",
+        "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.png",
+        "experiments/exp27_executable_common_witness/README.md",
+    ],
+    "experiment_28": [
+        "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv",
+        "experiments/exp28_risk_tail_audit/results/final/risk_tail_paired_bootstrap.csv",
+        "experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json",
+        "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png",
+        "experiments/exp28_risk_tail_audit/README.md",
+    ],
     "manuscript_sources": [
         "paper/main.tex",
         "paper/main.pdf",
@@ -370,6 +387,8 @@ def run_audit(
         "exp24",
         "exp25",
         "exp26",
+        "exp27",
+        "exp28",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -4118,6 +4137,49 @@ def run_audit(
             "Exp26 recomputes the indexed coupling, verifies risk/payment/outage "
             "certificates, records the common witness and settlement hashes, and "
             "preserves explicit role separation"
+        ),
+        checks,
+    )
+
+    runtime_typed_certificate_path = (
+        root
+        / "experiments/exp27_executable_common_witness/results/final/"
+        "runtime_witness_coupling_certificate.json"
+    )
+    runtime_typed_certificate = json.loads(
+        runtime_typed_certificate_path.read_text(encoding="utf-8")
+    )
+    runtime_certificate_values = [
+        runtime_typed_certificate.get("baseline", {}),
+        runtime_typed_certificate.get("counterfactual", {}),
+    ]
+    runtime_certificate_valid = bool(
+        runtime_typed_certificate.get("profile_identity_asserted") is True
+        and all(item.get("valid") is True for item in runtime_certificate_values)
+        and runtime_typed_certificate.get("witness_digest")
+        == lineage_metadata.get("common_witness_certificate", {}).get("witness_digest")
+        and runtime_typed_certificate.get("source_submission_digest")
+        == json.loads(
+            (
+                root
+                / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
+            ).read_text(encoding="utf-8")
+        ).get("source_submission_digest")
+        and all(
+            float(item.get("max_job_energy_residual_mwh", np.inf)) <= 1e-12
+            and float(item.get("max_aggregation_residual_mwh", np.inf)) <= 1e-12
+            and float(item.get("maximum_gpu_bound_violation_mwh", np.inf)) <= 1e-12
+            and float(item.get("minimum_site_capacity_slack_mwh", -np.inf)) >= -1e-12
+            for item in runtime_certificate_values
+        )
+    )
+    _check(
+        runtime_certificate_valid,
+        "runtime_complete_witness_typed_coupling_certificate",
+        (
+            "Exp27 baseline and counterfactual service vectors independently satisfy "
+            "job-energy, regional aggregation, GPU-nameplate, and site-capacity "
+            "residual bounds and remain attached to the settlement witness digest"
         ),
         checks,
     )

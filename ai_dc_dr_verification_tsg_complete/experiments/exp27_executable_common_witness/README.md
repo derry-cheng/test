@@ -8,5 +8,7 @@ saved arrays are then reused verbatim for the RTS-24 DC N-1 network valuation
 and settlement replay. Execution telemetry, aggregate risk targets, and
 payment-selected profiles are not inputs.
 
-The final directory contains the NPZ witness, job-level runtime certificate,
-common witness summary, settlement replay, metadata, and publication figure.
+The final directory contains the NPZ witness with both indexed service vectors,
+the job-level runtime certificate, the typed job/aggregation/GPU/capacity
+certificate, common witness summary, settlement replay, metadata, and
+publication figure.

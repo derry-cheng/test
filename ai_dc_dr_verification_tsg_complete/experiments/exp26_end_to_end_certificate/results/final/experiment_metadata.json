@@ -4,7 +4,7 @@
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "runtime-complete common witness used by network settlement": "22758df5f8c44326ed15794a24c3d24696e39eb59301068f8193c14cd4c377e4",
+    "runtime-complete common witness used by network settlement": "e455f1778cb93c7906345c90723001beeafe29bfd9ad51bbe2bb8d9c0f6f7f31",
     "N-1 settlement replay of the runtime-complete common witness": "6823e98c68bd455310816bc6608d3c4240f2fe4f1521cd13a0af976b01880368",
     "validation-fitted aggregate risk target": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
     "payment-certified feasible profile hull": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c",
@@ -75,6 +75,15 @@
     ],
     "settlement_rows": 432,
     "all_settlement_solves_successful": true,
+    "typed_certificate_file": "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
+    "typed_certificate_valid": true,
+    "typed_certificate_max_job_energy_residual_mwh": 8.881784197001252e-16,
+    "typed_certificate_max_aggregation_residual_mwh": 6.328271240363392e-15,
+    "stored_service_vector_lengths": {
+      "baseline": 13198247,
+      "counterfactual": 13198247
+    },
+    "stored_service_vector_recheck_valid": true,
     "finite_n1_contingencies_per_cell": 37
   },
   "network_mapping_one_hot_bus_indices_zero_based": [

@@ -197,17 +197,17 @@ declaration; it is converted to \(R_j=\lceil\mathrm{timelimit}_j/\dt\rceil\)
 slots and combined with a precommitted queue allowance \(B=96\) slots, so
 \(d_j=r_j+R_j+B\). The unlimited Slurm sentinel is mapped to the precommitted
 horizon \(H_{\infty}=128\) slots before adding \(B\); finite declarations are
-retained exactly. The $0.001$-MW-per-GPU nameplate is fixed before the split. The
-training-calibrated entitlement \(\widehat E_j\) is retained only for the
+retained exactly. The $0.001$-MW-per-GPU nameplate is fixed before the split.
+The training-calibrated entitlement \(\widehat E_j\) is retained only for the
 aggregate Exp19 calibration audit; it is not used to claim task completion. The
-executable witness uses the declared allocation runtime itself. Let \(s_j\) be
-its submit-time scenario region and \(g_j^{\rm req}\) its requested GPU count.
+executable witness uses the declared allocation runtime itself. Let
+\(\bar p_{\rm GPU}=0.001\) MW/GPU be the committed nameplate, $s_j$ the
+submit-time scenario region, and \(g_j^{\rm req}\) the requested GPU count.
 Define the runtime-complete entitlement
 \(E_j^{\rm run}=R_jg_j^{\rm req}\bar p_{\rm GPU}\dt\). The indexed service
 variable \(u_{j\tau}\) is the energy assigned to job \(j\) in interval \(\tau\),
 and the executable witness requires one contiguous fixed-rate block of exactly
-\(R_j\) slots. Let \(\bar p_{\rm GPU}=0.001\) MW/GPU be the committed
-nameplate, \(w_{\rm batch}\) the predeclared waiting-cost coefficient per
+\(R_j\) slots. Let \(w_{\rm batch}\) be the predeclared waiting-cost coefficient per
 MWh-slot, and \(r^{\rm DR}\) the event service tariff. Define
 \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\dt\) and
 \(\Theta_j=\{r_j,\ldots,d_j-R_j\}\). For each admissible start \(\theta\),
@@ -822,23 +822,24 @@ lower endpoint of (\ref{eq:paymentinterval}) is the exact joint-LP minimum over
 the declared affine workload segment and convexity makes its endpoint maximum
 exact; Experiments~9 and 15 use independent 40- and four-segment models.
 
-Finally, SHA-256 collision resistance makes post-commit changes to the
-scheduler-only tuple detectable in $h_{\rm sub}$, while execution joins check
-ordering and energy conservation after the event. An optimum of
-(\ref{eq:jobindexed}) gives each job its entitlement within its submitted
-window, enforces site capacity and the GPU nameplate, and avoids aggregate
-rounding; contiguous execution is audited separately.
-With $B_{dj}=\mathbf1\{s_j=d\}$ and bus map $M$, the job, aggregation, and
-mapping residuals are
+Finally, the digest detects post-commit changes to the scheduler tuple and the
+execution join audits ordering and energy conservation. An optimum of
+(\ref{eq:jobindexed}) gives each job its declaration-only runtime entitlement,
+site-capacity and GPU-nameplate feasibility, and no aggregate rounding;
+contiguous execution is audited separately. With
+$B_{dj}=\mathbf1\{s_j=d\}$ and bus map $M$, the job, aggregation, and mapping
+residuals are
 \begin{align*}
-r^{\rm job}_j&=\sum_{\tau=r_j}^{d_j-1}u_{j\tau}-\widehat E_j,\\
+r^{\rm job}_j&=\sum_{\tau=r_j}^{d_j-1}u_{j\tau}-E_j^{\rm run},\\
 r^{\rm agg}_{d\tau}&=X_{d\tau}-\sum_jB_{dj}u_{j\tau},\\
 r^{\rm map}_{b\tau}&=p_{b\tau}-P^{\rm fix}_{b\tau}-\dt^{-1}\sum_dM_{bd}X_{d\tau}.
 \end{align*}
-If their typed norms are at most $\varepsilon$, the dispatched profile is the
-same indexed witness up to that tolerance; at zero residual an independently
-optimized aggregate cannot receive settlement value. Experiment~22 checks
-these residuals before N--1 valuation and preserves $\sum_i\phi_i=v(N)$.
+The first residual uses the same $E_j^{\rm run}$ as
+(\ref{eq:jobindexed}); $\widehat E_j$ remains an aggregate diagnostic. Typed
+residuals at most $\varepsilon$ identify the dispatched witness to that
+tolerance. Experiment~22 checks the calibrated indexed witness and Exp27
+checks the runtime witness before N--1 valuation; the allocation panel checks
+$\sum_i\phi_i=v(N)$ separately.
 
 \section{Experimental Design}\label{sec:design}
 

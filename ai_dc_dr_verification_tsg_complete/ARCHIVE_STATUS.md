@@ -3,7 +3,7 @@
 The uploaded `ai_dc_dr_verification_tsg_complete.tar(1).gz` stream was
 truncated and cannot by itself reproduce the study (`gzip: unexpected end of
 file`). The workspace has been completed with verified public raw inputs and
-contains the source code, processed arrays, all 25 experiment directories,
+contains the source code, processed arrays, all 28 experiment directories,
 audit reports, tests, manuscript sources, editable figures, and generated
 results.
 
@@ -27,7 +27,10 @@ tariff-bearing LP and predeclared service floor, and
 Experiment 24 evaluates every finite non-islanding RTS-24 outage for frozen
 profiles. Experiment 25 validates the submit-time declaration boundary and
 binding-capacity stress cohort without using execution telemetry in the
-counterfactual. The tracked
+counterfactual. Experiment 27 adds the declaration-only runtime-complete
+common witness, its typed job/aggregation/GPU/capacity certificate, and the
+RTS-24 settlement replay; Experiment 28 audits the held-out risk tail. The
+tracked
 PGLib IEEE-118 file supports the separate cross-network/AC panels.
 
 The large raw inputs remain outside the Git working tree because they exceed

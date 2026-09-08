@@ -44,7 +44,7 @@ and its simplex differs from the CVaR-only ablation by
 frontier reaches an active boundary at reserve 0.97, while no locked outcome is
 used for selection. The downstream payment, AC, spatial, information-boundary,
 and trace-replay panels are regenerated from the current profile lineage. The
-release audit now reports 358/358 checks passed, and the final IEEEtran build is
+release audit now reports 372/372 checks passed, and the final IEEEtran build is
 10 pages with no overfull boxes or unresolved references.
 
 Experiment 26 closes the remaining declaration-to-settlement hand-off with a
@@ -62,4 +62,8 @@ uses its digest for 432 common-witness RTS-24 settlement cells, and reports the
 same witness at the job and network layers. Experiment 28 independently audits
 the held-out total-plus-CVaR tail against the total-budget-only ablation with a
 paired block bootstrap. The final release tree contains the updated paper,
-figures, manifests, and all 358 audit checks.
+figures, manifests, and all 372 audit checks. The canonical all-stage manifest
+now records Exp27 and Exp28 explicitly, and Exp27 exports a typed runtime
+coupling certificate for both the baseline and declaration-only counterfactual
+service vectors; Exp26 verifies that certificate before accepting the settlement
+lineage.

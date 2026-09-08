@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 from .optimization import build_n1_security_factors, power_system_from_ppc, solve_n1_sced
+from .coupling_invariant import validate_job_network_coupling
 from .progress import progress as tqdm
 from .utils import write_json
 
@@ -51,6 +52,36 @@ def _aggregate_blocks(
     # A block ending exactly at the horizon is represented by the sentinel
     # column and therefore does not require a special-case truncation.
     return np.cumsum(delta[:, :-1], axis=1) * float(dt_h)
+
+
+def _service_window_from_runtime_blocks(
+    starts: np.ndarray,
+    runtime_slots: np.ndarray,
+    submit_slot: np.ndarray,
+    deadline_slot: np.ndarray,
+    energy_per_slot_mwh: np.ndarray,
+) -> np.ndarray:
+    """Materialize one indexed service vector for a contiguous runtime witness.
+
+    The vector follows the canonical Exp19 ordering: each job owns the complete
+    ``[submit_slot, deadline_slot)`` window, with zero service outside its
+    selected runtime block.  Keeping the queue allowance in the window makes
+    the declaration-only certificate directly comparable with the indexed
+    job/network invariant used by Exp22 and Exp26.
+    """
+    widths = np.asarray(deadline_slot, dtype=np.int64) - np.asarray(submit_slot, dtype=np.int64)
+    offsets = np.concatenate(([0], np.cumsum(widths, dtype=np.int64)))
+    service = np.zeros(int(offsets[-1]), dtype=float)
+    for index, (start, release, runtime, offset) in enumerate(
+        zip(starts, submit_slot, runtime_slots, offsets[:-1])
+    ):
+        local_start = int(start) - int(release)
+        begin = int(offset) + local_start
+        end = begin + int(runtime)
+        if local_start < 0 or end > int(offset + widths[index]):
+            raise ValueError("runtime block falls outside its indexed declaration window")
+        service[begin:end] = float(energy_per_slot_mwh[index])
+    return service
 
 
 def _select_exact_starts(
@@ -183,9 +214,49 @@ def run_exp27_executable_common_witness(
     response_profile = _aggregate_blocks(
         response_starts, runtime_slots, region, power_mw, n_regions, horizon_slots, dt_h
     )
+    baseline_service_window = _service_window_from_runtime_blocks(
+        baseline_starts,
+        runtime_slots,
+        submit_slot,
+        deadline_slot,
+        energy_per_slot_mwh,
+    )
+    response_service_window = _service_window_from_runtime_blocks(
+        response_starts,
+        runtime_slots,
+        submit_slot,
+        deadline_slot,
+        energy_per_slot_mwh,
+    )
     baseline_energy_residual = baseline_profile.sum() - runtime_energy_mwh.sum()
     response_energy_residual = response_profile.sum() - runtime_energy_mwh.sum()
     site_capacity_mw = float(cfg["project"]["flexible_capacity_mw"])
+    baseline_typed_certificate = validate_job_network_coupling(
+        service_mwh=baseline_service_window,
+        job_energy_mwh=runtime_energy_mwh,
+        submit_slot=submit_slot,
+        deadline_slot=deadline_slot,
+        region=region,
+        aggregate_mwh=baseline_profile,
+        dt_h=dt_h,
+        requested_gpus=requested_gpus,
+        per_gpu_power_cap_mw=per_gpu_cap_mw,
+        site_capacity_mw=site_capacity_mw,
+    )
+    response_typed_certificate = validate_job_network_coupling(
+        service_mwh=response_service_window,
+        job_energy_mwh=runtime_energy_mwh,
+        submit_slot=submit_slot,
+        deadline_slot=deadline_slot,
+        region=region,
+        aggregate_mwh=response_profile,
+        dt_h=dt_h,
+        requested_gpus=requested_gpus,
+        per_gpu_power_cap_mw=per_gpu_cap_mw,
+        site_capacity_mw=site_capacity_mw,
+    )
+    if not baseline_typed_certificate.valid or not response_typed_certificate.valid:
+        raise RuntimeError("Runtime-complete witness typed coupling certificate failed")
     minimum_baseline_slack_mwh = float(np.min(site_capacity_mw * dt_h - baseline_profile))
     minimum_response_slack_mwh = float(np.min(site_capacity_mw * dt_h - response_profile))
     if max(abs(baseline_energy_residual), abs(response_energy_residual)) > 1.0e-10:
@@ -212,6 +283,18 @@ def run_exp27_executable_common_witness(
         baseline_profile,
         response_profile,
     )
+    typed_certificate = {
+        "schema_version": 1,
+        "witness_digest": witness_digest,
+        "source_submission_digest": source_submission_digest,
+        "profile_identity_asserted": True,
+        "runtime_definition": (
+            "one contiguous block at requested GPU nameplate inside each "
+            "submit-to-deadline declaration window"
+        ),
+        "baseline": baseline_typed_certificate.to_dict(),
+        "counterfactual": response_typed_certificate.to_dict(),
+    }
     np.savez_compressed(
         final / "runtime_complete_witness.npz",
         submit_slot=submit_slot,
@@ -223,11 +306,14 @@ def run_exp27_executable_common_witness(
         runtime_energy_mwh=runtime_energy_mwh,
         baseline_start_slot=baseline_starts,
         response_start_slot=response_starts,
+        baseline_service_mwh=baseline_service_window,
+        counterfactual_service_mwh=response_service_window,
         baseline_mwh=baseline_profile,
         counterfactual_mwh=response_profile,
         source_submission_digest=np.asarray([source_submission_digest]),
         witness_digest=np.asarray([witness_digest]),
     )
+    del baseline_service_window, response_service_window
     job_summary = pd.DataFrame(
         {
             "job_index": np.arange(len(submit_slot), dtype=np.int64),
@@ -264,9 +350,18 @@ def run_exp27_executable_common_witness(
             {"metric": "event_response_delay_mwh", "value": event_response_delay_mwh, "unit": "MWh"},
             {"metric": "baseline_jobs_with_one_contiguous_block", "value": len(baseline_starts), "unit": "jobs"},
             {"metric": "counterfactual_jobs_with_one_contiguous_block", "value": len(response_starts), "unit": "jobs"},
+            {"metric": "baseline_max_job_energy_residual_mwh", "value": baseline_typed_certificate.max_job_energy_residual_mwh, "unit": "MWh"},
+            {"metric": "counterfactual_max_job_energy_residual_mwh", "value": response_typed_certificate.max_job_energy_residual_mwh, "unit": "MWh"},
+            {"metric": "baseline_max_aggregation_residual_mwh", "value": baseline_typed_certificate.max_aggregation_residual_mwh, "unit": "MWh"},
+            {"metric": "counterfactual_max_aggregation_residual_mwh", "value": response_typed_certificate.max_aggregation_residual_mwh, "unit": "MWh"},
+            {"metric": "baseline_max_gpu_bound_violation_mwh", "value": baseline_typed_certificate.maximum_gpu_bound_violation_mwh, "unit": "MWh"},
+            {"metric": "counterfactual_max_gpu_bound_violation_mwh", "value": response_typed_certificate.maximum_gpu_bound_violation_mwh, "unit": "MWh"},
+            {"metric": "baseline_minimum_typed_capacity_slack_mwh", "value": baseline_typed_certificate.minimum_site_capacity_slack_mwh, "unit": "MWh"},
+            {"metric": "counterfactual_minimum_typed_capacity_slack_mwh", "value": response_typed_certificate.minimum_site_capacity_slack_mwh, "unit": "MWh"},
         ]
     )
     summary.to_csv(final / "common_witness_summary.csv", index=False)
+    write_json(final / "runtime_witness_coupling_certificate.json", typed_certificate)
     logger.info("Exp27 declaration witness [35%%]: jobs=%d, runtime energy=%.3f MWh", len(submit_slot), runtime_energy_mwh.sum())
 
     # The network replay is evaluated on exactly the same response and baseline
@@ -388,6 +483,35 @@ def run_exp27_executable_common_witness(
         "event_reduction_mwh": event_reduction_mwh,
         "witness_digest": witness_digest,
         "profile_identity_asserted": True,
+        "runtime_typed_certificate": {
+            "file": "runtime_witness_coupling_certificate.json",
+            "baseline_valid": bool(baseline_typed_certificate.valid),
+            "counterfactual_valid": bool(response_typed_certificate.valid),
+            "maximum_job_energy_residual_mwh": float(
+                max(
+                    baseline_typed_certificate.max_job_energy_residual_mwh,
+                    response_typed_certificate.max_job_energy_residual_mwh,
+                )
+            ),
+            "maximum_aggregation_residual_mwh": float(
+                max(
+                    baseline_typed_certificate.max_aggregation_residual_mwh,
+                    response_typed_certificate.max_aggregation_residual_mwh,
+                )
+            ),
+            "maximum_gpu_bound_violation_mwh": float(
+                max(
+                    baseline_typed_certificate.maximum_gpu_bound_violation_mwh,
+                    response_typed_certificate.maximum_gpu_bound_violation_mwh,
+                )
+            ),
+            "minimum_site_capacity_slack_mwh": float(
+                min(
+                    baseline_typed_certificate.minimum_site_capacity_slack_mwh,
+                    response_typed_certificate.minimum_site_capacity_slack_mwh,
+                )
+            ),
+        },
         "network_settlement": {
             "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
             "network_buses_one_based": (buses + 1).tolist(),
@@ -405,6 +529,7 @@ def run_exp27_executable_common_witness(
             "witness": "runtime_complete_witness.npz",
             "job_level": "job_level_runtime_summary.csv",
             "summary": "common_witness_summary.csv",
+            "typed_coupling_certificate": "runtime_witness_coupling_certificate.json",
             "settlement": "common_witness_settlement.csv",
             "figure": "fig28_common_executable_witness.pdf",
         },
@@ -421,8 +546,10 @@ saved arrays are then reused verbatim for the RTS-24 DC N-1 network valuation
 and settlement replay. Execution telemetry, aggregate risk targets, and
 payment-selected profiles are not inputs.
 
-The final directory contains the NPZ witness, job-level runtime certificate,
-common witness summary, settlement replay, metadata, and publication figure.
+The final directory contains the NPZ witness with both indexed service vectors,
+the job-level runtime certificate, the typed job/aggregation/GPU/capacity
+certificate, common witness summary, settlement replay, metadata, and
+publication figure.
 """,
         encoding="utf-8",
     )

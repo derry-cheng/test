@@ -66,7 +66,8 @@ data-center scheduling foundations in \cite{cao2022flexibility}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters, not facts inferred from those papers.
 
-For an event window, \(p^0\) is the trace-anchored no-event counterfactual and
+For an event window, \(\widetilde p\) is the baseline fitted from the declared
+information set, \(p^0\) is the trace-anchored no-event counterfactual, and
 \(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
 only in mechanism-isolation replays. The measured execution meter
 \(p^{\mathrm{obs}}\) is an independent observational target for locked trace
@@ -77,7 +78,7 @@ contain no utility event label. For each source
 \(z\in\{\mathrm{obs},\mathrm{sim}\}\), define submitted and true credit by
 
 \[
-\widehat r^{(z)}_{dt}=\left[\widehat p^0_{dt}-p^{(z)}_{dt}\right]_+,
+\widehat r^{(z)}_{dt}=\left[\widetilde p_{dt}-p^{(z)}_{dt}\right]_+,
 \qquad
 r^{(z)}_{dt}=\left[p^0_{dt}-p^{(z)}_{dt}\right]_+.
 \]
@@ -99,7 +100,7 @@ After the event meter closes, the payable response is
 
 \[
 Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
-\min\left\{[\widehat p^0_{dt}-p^{\mathrm{obs}}_{dt}]_+,
+\min\left\{[\widetilde p_{dt}-p^{\mathrm{obs}}_{dt}]_+,
 [p^{\mathrm{con}}_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
 \]
 
@@ -206,7 +207,8 @@ introduces no user-selected penalty tradeoff.
 The aggregate service variables are not an independent network input. Partition
 the committed job ledger by source, class, and native destination as
 \(\mathcal J_{skd}\). For job \(j\), let \(u_{j\tau}\) be its service energy in
-an admissible interval \(r_j\leq\tau<d_j\). The executable witness sets
+an admissible interval \(r_j\leq\tau<d_j\). The calibrated Exp19 indexed
+witness sets
 \(\bar p_{\rm GPU}=0.001\) MW/GPU as the committed nameplate and defines
 \(c_j=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\),
 \(K_j=\lceil\widehat E_j/c_j\rceil\), and the terminal-slot remainder
@@ -228,7 +230,7 @@ p^{\rm job}_{d\tau}
 =\sum_{s,k}x^{\rm job}_{skd\tau}.
 \]
 
-The exact flow used for the workload certificate is therefore
+The exact flow used for the calibrated Exp19 workload certificate is therefore
 \(x_{skd\tau}=x^{\rm job}_{skd\tau}\), with the same release, deadline,
 capacity, and terminal constraints. Experiment 19 stores the selected
 job--slot service vector from a model that enumerates 13,198,247 admissible
@@ -239,6 +241,24 @@ the committed indexed witness, not to a second aggregate optimization. The
 network replay uses the arithmetic mean of every declared event slot solely as
 a deterministic representative interval on the public IEEE RTS-24 case; the
 underlying equality is checked at every event slot.
+
+The declaration-only Exp27 witness is a separate physical evidence layer. It
+uses the same submission digest but replaces the fitted entitlement with
+\[
+E_j^{\rm run}=R_j g_j^{\rm req}\bar p_{\rm GPU}\Delta t,
+\qquad
+u^{\rm run}_{j\tau}
+=g_j^{\rm req}\bar p_{\rm GPU}\Delta t\,
+{\bf1}\{\theta_j\leq\tau<\theta_j+R_j\},
+\]
+where \(\theta_j\) is selected from every declaration-feasible start in the
+precommitted queue allowance. No measured execution field or \(\widehat E_j\)
+enters this witness. Exp27 reconstructs its regional profile from
+\(u^{\rm run}_{j\tau}\), records a separate witness digest, and uses those
+same arrays for the RTS-24 settlement replay. Thus the calibrated Exp19
+coupling certificate and the runtime-complete Exp27 settlement certificate
+share an immutable submission index while retaining distinct entitlement
+semantics.
 
 For scale, let \(s_{\rm raw}\) be the source-to-energy normalization and
 \(s_{\rm cap}\) the largest factor that respects the committed network

@@ -33,7 +33,7 @@
 
 ## 正文公式标签逐一追踪
 
-下表与 `main.tex` 中全部 30 个带编号公式标签一一对应。“本文推导”表示不能用外部文献替代证明，正文必须给出命题、假设与证明；“标准模型”或“标准工具”表示正文首次使用时必须引用所列来源。
+下表与 `main.tex` 中全部 34 个带编号公式标签一一对应。“本文推导”表示不能用外部文献替代证明，正文必须给出命题、假设与证明；“标准模型”或“标准工具”表示正文首次使用时必须引用所列来源。
 
 | 正文标签 | 对应条目 | 依据或证明位置 |
 |---|---|---|
@@ -50,6 +50,8 @@
 | `eq:sced` | M4 | 标准无损直流经济调度与对偶价格模型依据 \cite{stott2009dc,zimmerman2011matpower}；公开 PGLib 参数依据 \cite{babaeinejadsarookolaee2021pglib}。 |
 | `eq:value` | P3 | 基于 `eq:sced` 最优值函数的有符号差定义；与线性结算的关系由命题 3 证明。 |
 | `eq:projection` | C2、P2.2 | 绝对值上图与凸投影依据 \cite{boyd2004convex}；工作负载可行域保持性由命题 2 证明。 |
+| `eq:jobindexed` | P6、C1 | 声明运行时、固定 GPU 名牌和区域容量约束下的连续块起始变量；其 declaration-only runtime entitlement 与 Exp27 见证一致，非训练期 \(\widehat E_j\) 诊断。 |
+| `eq:riskobjective` | P2.2 | 总暴露与日级 CVaR 的归一化联合凸目标；权重和尺度在验证期锁定，不能由锁定测试结果反推。 |
 | `eq:totalrisk` | P2.2 | 正部凸约束依据 \cite{boyd2004convex}；风险预算构造为本文方法。 |
 | `eq:cvar` | P2.2 | 条件风险价值及其经验上图依据 \cite{rockafellar2000cvar}；与总暴露的联合约束为本文方法。 |
 | `eq:riskepigraph` | P2.2 | CVaR 的阈值与尾部松弛上图依据 \cite{rockafellar2000cvar,boyd2004convex}；线性化实现和验证期预算为本文方法。 |
@@ -63,11 +65,13 @@
 | `eq:operatorvalue` | M5b、M5c | 时空能量项与容量产品的组合定义；两部分分别依据 \cite{zhang2022remunerating,satchidanandan2023twostage}。 |
 | `eq:nashcontract` | M5c | 对称纳什议价解依据 \cite{nash1950bargaining}；不成交外部选择和机会成本口径在实验 12 逐日审计。 |
 | `eq:n1` | M4b | PTDF/LODF 依据 \cite{stott2009dc,tejada2018lodf}；N--1 规划准则依据 \cite{nerc2020tpl}。 |
+| `eq:fixedflexconversion` | P4、M4c | 固定负荷与柔性负荷分离的功率换算定义；五个校准—验证分位场景来自独立 DCGM 能量比，固定分量不随 \(\xi\) 缩放。 |
 | `eq:paymentcert` | P4 | SCED 原始可行域和线性规划上图依据 \cite{zimmerman2011matpower,boyd2004convex}；以验证期选定的单一可行投影为合同参考、以可行分位投影为外部转账比较的多换算场景词典序证书为本文方法。 |
 | `eq:paymentdominance` | P4 | 本文确定性推论；由 `eq:paymentcert` 的可行调度上界和同场景实际成本相消得到，完整证明见命题 4。参考对象是验证期选定的单一可行投影，不是分位投影。 |
 | `eq:paymentinterval` | P5 | 连续 workload-hull 支付区间是本文的确定性值函数定义与命题 5；有限换算场景和闭区间端点由验证期锁定候选 profile 生成，不宣称概率覆盖。 |
 | `eq:shapley` | M6、M6b | Shapley 定义、效率和组合权重依据 \cite{shapley1953value}；有符号调度特征函数为本文实例化。 |
-| `eq:acplan` | M4c | 交流最优潮流与公开测试系统依据 \cite{zimmerman2011matpower}；跨事故固定非参考机组有功计划是本文预防性验证边界。 |
+| `eq:settlementchain` | M5b、M5c | 提交量、冻结合同和闭合电表的点式交集；这是结算记账定义，不是第二个优化问题。 |
+| AC model-out panel (unnumbered) | M4c | 交流最优潮流与公开测试系统依据 \cite{zimmerman2011matpower}；跨事故固定非参考机组有功计划是本文预防性验证边界，主文将其作为模型外验证而未引入新的编号公式。 |
 
 ## 无外部文献替代、但必须披露的实验参数
 

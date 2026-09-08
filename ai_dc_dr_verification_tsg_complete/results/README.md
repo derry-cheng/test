@@ -24,3 +24,8 @@ The revised closure stages are:
 - `exp26_end_to_end_certificate`: cached-only recomputation of indexed
   coupling residuals, source hashes, risk/payment role separation, and the
   complete outage replay.
+- `exp27_executable_common_witness`: declaration-only runtime-complete
+  witness, typed job/aggregation/GPU/capacity certificate, and the common
+  RTS-24 N--1 settlement replay.
+- `exp28_risk_tail_audit`: paired held-out tail-risk audit against the
+  total-budget-only ablation.

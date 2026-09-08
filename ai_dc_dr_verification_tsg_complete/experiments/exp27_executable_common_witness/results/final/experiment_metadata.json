@@ -40,6 +40,15 @@
   "event_reduction_mwh": 41.1564999999994,
   "witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
   "profile_identity_asserted": true,
+  "runtime_typed_certificate": {
+    "file": "runtime_witness_coupling_certificate.json",
+    "baseline_valid": true,
+    "counterfactual_valid": true,
+    "maximum_job_energy_residual_mwh": 8.881784197001252e-16,
+    "maximum_aggregation_residual_mwh": 6.328271240363392e-15,
+    "maximum_gpu_bound_violation_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 28.59525000000007
+  },
   "network_settlement": {
     "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
     "network_buses_one_based": [
@@ -117,6 +126,7 @@
     "witness": "runtime_complete_witness.npz",
     "job_level": "job_level_runtime_summary.csv",
     "summary": "common_witness_summary.csv",
+    "typed_coupling_certificate": "runtime_witness_coupling_certificate.json",
     "settlement": "common_witness_settlement.csv",
     "figure": "fig28_common_executable_witness.pdf"
   }

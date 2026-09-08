@@ -52,13 +52,13 @@
       "migration_note": "reused independently completed stage artifact"
     },
     "audit": {
-      "started_utc": "2026-09-04T09:20:10.000989+00:00",
+      "started_utc": "2026-09-08T15:25:51.904327+00:00",
       "status": "completed",
-      "finished_utc": "2026-09-04T09:20:11.154931+00:00",
-      "elapsed_seconds": 1.153942
+      "finished_utc": "2026-09-08T15:25:53.407892+00:00",
+      "elapsed_seconds": 1.503565
     },
     "exp10": {
-      "started_utc": "2026-09-03T11:59:01.166808+00:00",
+      "started_utc": "2026-09-08T05:42:57.783118+00:00",
       "stage_requested": "exp10",
       "resume": true,
       "environment": {
@@ -69,22 +69,22 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp10": {
-          "started_utc": "2026-09-03T11:59:01.368454+00:00",
+          "started_utc": "2026-09-08T05:42:57.799062+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T12:42:07.576119+00:00",
-          "elapsed_seconds": 2586.207665
+          "finished_utc": "2026-09-08T06:00:14.269000+00:00",
+          "elapsed_seconds": 1036.469938
         }
       },
-      "finished_utc": "2026-09-03T12:42:07.576838+00:00",
+      "finished_utc": "2026-09-08T06:00:14.269612+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
     "exp11": {
-      "started_utc": "2026-09-03T12:42:23.629597+00:00",
+      "started_utc": "2026-09-08T04:52:08.904232+00:00",
       "stage_requested": "exp11",
       "resume": true,
       "environment": {
@@ -95,22 +95,22 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp11": {
-          "started_utc": "2026-09-03T12:42:23.832251+00:00",
+          "started_utc": "2026-09-08T04:52:08.922298+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T12:48:58.193198+00:00",
-          "elapsed_seconds": 394.360947
+          "finished_utc": "2026-09-08T05:04:55.562375+00:00",
+          "elapsed_seconds": 766.640077
         }
       },
-      "finished_utc": "2026-09-03T12:48:58.194054+00:00",
+      "finished_utc": "2026-09-08T05:04:55.562965+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
     "exp12": {
-      "started_utc": "2026-09-03T12:21:25.737566+00:00",
+      "started_utc": "2026-09-08T05:06:49.555333+00:00",
       "stage_requested": "exp12",
       "resume": true,
       "environment": {
@@ -121,17 +121,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp12": {
-          "started_utc": "2026-09-03T12:21:25.944577+00:00",
+          "started_utc": "2026-09-08T05:06:49.585144+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T12:21:33.067562+00:00",
-          "elapsed_seconds": 7.122985
+          "finished_utc": "2026-09-08T05:16:28.058265+00:00",
+          "elapsed_seconds": 578.473121
         }
       },
-      "finished_utc": "2026-09-03T12:21:33.067939+00:00",
+      "finished_utc": "2026-09-08T05:16:28.059652+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -174,7 +174,7 @@
       "migration_note": "reused independently completed stage artifact"
     },
     "exp17": {
-      "started_utc": "2026-09-03T12:31:29.612696+00:00",
+      "started_utc": "2026-09-08T06:01:44.067172+00:00",
       "stage_requested": "exp17",
       "resume": true,
       "environment": {
@@ -185,17 +185,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp17": {
-          "started_utc": "2026-09-03T12:31:29.816721+00:00",
+          "started_utc": "2026-09-08T06:01:44.112736+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T12:32:54.980673+00:00",
-          "elapsed_seconds": 85.163952
+          "finished_utc": "2026-09-08T06:05:21.211096+00:00",
+          "elapsed_seconds": 217.09836
         }
       },
-      "finished_utc": "2026-09-03T12:32:54.981041+00:00",
+      "finished_utc": "2026-09-08T06:05:21.211600+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -252,9 +252,9 @@
       "migration_note": "reused independently completed stage artifact"
     },
     "exp20": {
-      "started_utc": "2026-09-03T10:47:26.917390+00:00",
+      "started_utc": "2026-09-08T06:07:16.835963+00:00",
       "stage_requested": "exp20",
-      "resume": false,
+      "resume": true,
       "environment": {
         "python": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
         "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
@@ -263,17 +263,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp20": {
-          "started_utc": "2026-09-03T10:47:26.920982+00:00",
+          "started_utc": "2026-09-08T06:07:16.852975+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T10:47:27.913235+00:00",
-          "elapsed_seconds": 0.992253
+          "finished_utc": "2026-09-08T06:07:18.579473+00:00",
+          "elapsed_seconds": 1.726498
         }
       },
-      "finished_utc": "2026-09-03T10:47:27.913524+00:00",
+      "finished_utc": "2026-09-08T06:07:18.580097+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -330,7 +330,7 @@
       "migration_note": "reused independently completed stage artifact"
     },
     "exp23": {
-      "started_utc": "2026-09-03T10:46:35.827526+00:00",
+      "started_utc": "2026-09-08T04:18:07.858625+00:00",
       "stage_requested": "exp23",
       "resume": false,
       "environment": {
@@ -341,22 +341,22 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp23": {
-          "started_utc": "2026-09-03T10:46:35.831996+00:00",
+          "started_utc": "2026-09-08T04:18:07.883574+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T10:47:10.455161+00:00",
-          "elapsed_seconds": 34.623165
+          "finished_utc": "2026-09-08T04:18:10.703429+00:00",
+          "elapsed_seconds": 2.819855
         }
       },
-      "finished_utc": "2026-09-03T10:47:10.455435+00:00",
+      "finished_utc": "2026-09-08T04:18:10.704369+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
     "exp24": {
-      "started_utc": "2026-09-03T10:47:36.252019+00:00",
+      "started_utc": "2026-09-08T03:32:17.869791+00:00",
       "stage_requested": "exp24",
       "resume": false,
       "environment": {
@@ -367,17 +367,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp24": {
-          "started_utc": "2026-09-03T10:47:36.255495+00:00",
+          "started_utc": "2026-09-08T03:32:17.887416+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T10:48:54.367495+00:00",
-          "elapsed_seconds": 78.112
+          "finished_utc": "2026-09-08T03:34:46.193142+00:00",
+          "elapsed_seconds": 148.305726
         }
       },
-      "finished_utc": "2026-09-03T10:48:54.367966+00:00",
+      "finished_utc": "2026-09-08T03:34:46.194472+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -415,7 +415,7 @@
       "migration_note": "reused previously completed immutable artifact; no C1-C5 input dependency"
     },
     "exp9": {
-      "started_utc": "2026-09-03T10:55:15.292338+00:00",
+      "started_utc": "2026-09-08T04:17:56.195305+00:00",
       "stage_requested": "exp9",
       "resume": true,
       "environment": {
@@ -426,17 +426,17 @@
         "pandas": "2.2.3",
         "scipy": "1.17.0",
         "scikit_learn": "1.8.0",
-        "git_commit": "b80825eeb981bd57760ba5cef297fbf3a44a838e"
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
       },
       "stages": {
         "exp9": {
-          "started_utc": "2026-09-03T10:55:15.495393+00:00",
+          "started_utc": "2026-09-08T04:17:56.213423+00:00",
           "status": "completed",
-          "finished_utc": "2026-09-03T11:57:03.165033+00:00",
-          "elapsed_seconds": 3707.66964
+          "finished_utc": "2026-09-08T04:17:56.279619+00:00",
+          "elapsed_seconds": 0.066196
         }
       },
-      "finished_utc": "2026-09-03T11:57:03.165676+00:00",
+      "finished_utc": "2026-09-08T04:17:56.280057+00:00",
       "status": "completed",
       "migration_note": "reused independently completed stage artifact"
     },
@@ -445,6 +445,58 @@
       "status": "completed",
       "finished_utc": "2026-09-04T08:57:01.245342+00:00",
       "elapsed_seconds": 3.264374
+    },
+    "exp27": {
+      "started_utc": "2026-09-08T15:23:48.605402+00:00",
+      "stage_requested": "exp27",
+      "resume": true,
+      "environment": {
+        "python": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
+        "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
+        "processor_count": 9,
+        "numpy": "2.3.5",
+        "pandas": "2.2.3",
+        "scipy": "1.17.0",
+        "scikit_learn": "1.8.0",
+        "git_commit": "89c2c7d39512519df793df49c61f50f319705393"
+      },
+      "stages": {
+        "exp27": {
+          "started_utc": "2026-09-08T15:23:48.623945+00:00",
+          "status": "completed",
+          "finished_utc": "2026-09-08T15:25:06.449677+00:00",
+          "elapsed_seconds": 77.825732
+        }
+      },
+      "finished_utc": "2026-09-08T15:25:06.450078+00:00",
+      "status": "completed",
+      "migration_note": "reused independently completed stage artifact"
+    },
+    "exp28": {
+      "started_utc": "2026-09-08T03:23:10.596467+00:00",
+      "stage_requested": "exp28",
+      "resume": false,
+      "environment": {
+        "python": "3.12.13 (main, Aug  7 2026, 02:25:39) [Clang 22.1.3 ]",
+        "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
+        "processor_count": 9,
+        "numpy": "2.3.5",
+        "pandas": "2.2.3",
+        "scipy": "1.17.0",
+        "scikit_learn": "1.8.0",
+        "git_commit": "159de4aa68f8252f5b4e1a2d18f5792f447ef400"
+      },
+      "stages": {
+        "exp28": {
+          "started_utc": "2026-09-08T03:23:10.633068+00:00",
+          "status": "completed",
+          "finished_utc": "2026-09-08T03:23:14.195344+00:00",
+          "elapsed_seconds": 3.562276
+        }
+      },
+      "finished_utc": "2026-09-08T03:23:14.195792+00:00",
+      "status": "completed",
+      "migration_note": "reused independently completed stage artifact"
     }
   },
   "resume_events_utc": [
@@ -467,8 +519,10 @@
     "2026-09-04T08:59:23.228659+00:00",
     "2026-09-04T09:00:07.497084+00:00",
     "2026-09-04T09:14:09.471880+00:00",
-    "2026-09-04T09:20:09.999243+00:00"
+    "2026-09-04T09:20:09.999243+00:00",
+    "2026-09-08T15:12:45.334226+00:00",
+    "2026-09-08T15:25:51.901923+00:00"
   ],
-  "finished_utc": "2026-09-04T09:20:11.156116+00:00",
+  "finished_utc": "2026-09-08T15:25:53.409405+00:00",
   "status": "completed"
 }

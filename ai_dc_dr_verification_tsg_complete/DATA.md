@@ -88,6 +88,14 @@ then freezes the two locked profiles and evaluates all 37 finite non-islanding
 RTS-24 outages in all 864 day/slot/profile cells. The public PGLib IEEE-118
 case supplies the independent cross-network/AC benchmark.
 
+Experiment 27 uses the same immutable submission digest but defines a separate
+declaration-only runtime entitlement from each requested GPU count, nameplate,
+and allocation runtime. It exports a typed baseline/counterfactual service
+certificate before the common RTS-24 settlement replay; no measured execution
+field or fitted aggregate entitlement enters that witness. Experiment 28 audits
+the held-out total-plus-CVaR tail against the total-budget-only ablation with a
+paired block bootstrap.
+
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-
 to-join positive-energy conservation, and stores the source-file hashes. The

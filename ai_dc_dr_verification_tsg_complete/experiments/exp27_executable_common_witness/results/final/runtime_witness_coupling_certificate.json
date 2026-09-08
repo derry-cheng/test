@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+  "source_submission_digest": "1060e9e1e9334c11f84a9111a4c87ecfdde55ff49812454ac4a2167ad3622832",
+  "profile_identity_asserted": true,
+  "runtime_definition": "one contiguous block at requested GPU nameplate inside each submit-to-deadline declaration window",
+  "baseline": {
+    "version": "coupling-invariant-v1",
+    "jobs": 75326,
+    "service_variables": 13198247,
+    "regions": 4,
+    "slots": 12656,
+    "dt_h": 0.25,
+    "max_job_energy_residual_mwh": 8.881784197001252e-16,
+    "max_aggregation_residual_mwh": 6.328271240363392e-15,
+    "max_network_mapping_residual_mw": 0.0,
+    "minimum_service_mwh": 0.0,
+    "minimum_gpu_bound_slack_mwh": 0.0,
+    "maximum_gpu_bound_violation_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 28.59575000000007,
+    "valid": true
+  },
+  "counterfactual": {
+    "version": "coupling-invariant-v1",
+    "jobs": 75326,
+    "service_variables": 13198247,
+    "regions": 4,
+    "slots": 12656,
+    "dt_h": 0.25,
+    "max_job_energy_residual_mwh": 8.881784197001252e-16,
+    "max_aggregation_residual_mwh": 5.329070518200751e-15,
+    "max_network_mapping_residual_mw": 0.0,
+    "minimum_service_mwh": 0.0,
+    "minimum_gpu_bound_slack_mwh": 0.0,
+    "maximum_gpu_bound_violation_mwh": 0.0,
+    "minimum_site_capacity_slack_mwh": 28.59525000000007,
+    "valid": true
+  }
+}

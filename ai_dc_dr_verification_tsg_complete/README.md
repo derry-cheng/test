@@ -4,7 +4,7 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, README, figures, and final results. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
+`code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, protocol README, and final results; stages that require long execution or publication figures additionally retain `results/intermediate/` checkpoints or a `figures/` subdirectory. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
 ## Reproduction
 
@@ -63,15 +63,18 @@ modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--28 each own a README, final results,
-checkpoint, and figures, while the audit module checks the expected output
-inventory and numerical certificates. Experiment 21 reports both the
+the LaTeX source. Experiments 1--28 each own a protocol README and final
+results; long-running stages add checkpoints and visualization-producing
+stages add figures. The audit module checks the expected output inventory and
+numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
 not treat a scaled witness as a second re-optimised LP. Experiment 22 retains
 the aggregate indexed coupling certificate and checks typed zero residuals
 before dispatch. Experiment 27 then forms the runtime-complete declaration
-witness and reuses its digest for the common RTS-24 N--1 valuation and
-settlement replay. Experiment 24 independently freezes its profiles and
+witness, exports a typed baseline/counterfactual coupling certificate, and
+reuses its digest for the common RTS-24 N--1 valuation and settlement replay.
+Experiment 28 audits the held-out total-plus-CVaR tail against the
+total-budget-only ablation. Experiment 24 independently freezes its profiles and
 evaluates all 37 finite RTS-24 DC N--1 outages per cell; native-inadmissible
 outages are screened before workload injection and reported by network. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC

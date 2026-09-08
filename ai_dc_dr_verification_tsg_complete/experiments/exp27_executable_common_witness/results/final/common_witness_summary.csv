@@ -15,3 +15,11 @@ event_reduction_mwh,41.1564999999994,MWh
 event_response_delay_mwh,0.474000000000086,MWh
 baseline_jobs_with_one_contiguous_block,75326.0,jobs
 counterfactual_jobs_with_one_contiguous_block,75326.0,jobs
+baseline_max_job_energy_residual_mwh,8.881784197001252e-16,MWh
+counterfactual_max_job_energy_residual_mwh,8.881784197001252e-16,MWh
+baseline_max_aggregation_residual_mwh,6.328271240363392e-15,MWh
+counterfactual_max_aggregation_residual_mwh,5.329070518200751e-15,MWh
+baseline_max_gpu_bound_violation_mwh,0.0,MWh
+counterfactual_max_gpu_bound_violation_mwh,0.0,MWh
+baseline_minimum_typed_capacity_slack_mwh,28.59575000000007,MWh
+counterfactual_minimum_typed_capacity_slack_mwh,28.59525000000007,MWh
