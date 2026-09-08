@@ -1,0 +1,19 @@
+{
+  "experiment": "held-out tail-risk audit for the total-plus-CVaR module",
+  "source_file": "experiments/exp2_baseline_verification/results/final/risk_module_ablation_daily.csv",
+  "source_sha256": "a1c1408e74df8b2010dfbc018be331b9a2b091117c19047e55bf274717f0b047",
+  "locked_test_days": 54,
+  "risk_cvar_metric": "daily_false_credit_ratio",
+  "risk_cvar_level": 0.75,
+  "joint_module": "total+CVaR ensemble",
+  "comparison_module": "total-budget-only ensemble",
+  "joint_mean_false_credit_ratio": 0.08335008483051307,
+  "joint_cvar_false_credit_ratio": 0.2408790369283678,
+  "joint_q90_false_credit_ratio": 0.2089802364226517,
+  "paired_bootstrap": "circular contiguous blocks over the 54 locked days; no post-hoc module selection",
+  "files": {
+    "summary": "risk_tail_audit.csv",
+    "bootstrap": "risk_tail_paired_bootstrap.csv",
+    "figure": "fig_risk_tail_tradeoff.pdf"
+  }
+}

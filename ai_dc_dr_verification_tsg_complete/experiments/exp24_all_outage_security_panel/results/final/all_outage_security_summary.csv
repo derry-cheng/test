@@ -1,3 +1,3 @@
 method,locked_days,replay_cells,secure_cost_usd_per_interval,max_base_loading,max_postcontingency_loading,minimum_contingencies,maximum_contingencies,all_cells_successful
-Risk-Constrained Convex Verifier,54,432,13361.077245638715,0.7518981293160723,1.0000000000000022,37,37,True
+Risk-Constrained Convex Verifier,54,432,13361.092533692254,0.7518939396027463,1.0000000000000022,37,37,True
 Single Feasible Projection,54,432,13361.523459296652,0.7519126195744723,1.0000000000000022,37,37,True

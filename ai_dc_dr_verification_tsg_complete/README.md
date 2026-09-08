@@ -31,7 +31,7 @@ canonical all-stage manifest. The deterministic regression suite is run with
 The entry points clamp BLAS/HiGHS numerical backends to one thread per worker;
 configured worker pools are checked against the 20-core ceiling.
 
-The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized controlled-event replay with a nonzero predeclared service floor, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
+The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized declaration-only replay with a distinct predeclared tariff and no future-arrival or execution-telemetry input, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
 PYTHONPATH=code/src:vendor .venv/bin/python experiments/exp20_trace_meter_replay/run.py
@@ -63,20 +63,22 @@ modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--26 each own a README, final results,
+the LaTeX source. Experiments 1--28 each own a README, final results,
 checkpoint, and figures, while the audit module checks the expected output
-inventory and the numerical certificates. Experiment 21 reports both the
+inventory and numerical certificates. Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
-not pretend that a scaled witness is a second re-optimised LP. Experiment 22
-reconstructs the network profile from the exact Experiment 19 job--slot
-witness, checks typed zero residuals before dispatch, and reports a
-deterministic event-window-mean N--1 replay on the explicitly pinned public
-IEEE RTS-24 case. Experiment 24 then freezes the profiles and covers all finite
-non-islanding outages without screening or post-solution reoptimization. The
+not treat a scaled witness as a second re-optimised LP. Experiment 22 retains
+the aggregate indexed coupling certificate and checks typed zero residuals
+before dispatch. Experiment 27 then forms the runtime-complete declaration
+witness and reuses its digest for the common RTS-24 N--1 valuation and
+settlement replay. Experiment 24 independently freezes its profiles and
+evaluates all 37 finite RTS-24 DC N--1 outages per cell; native-inadmissible
+outages are screened before workload injection and reported by network. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
 panels. Experiment 26 is a cached-only end-to-end lineage certificate: it
-recomputes indexed coupling residuals and verifies source hashes and role
-separation before the release audit.
+recomputes indexed coupling residuals, verifies the common witness and
+settlement hashes, and records the explicit role separation before the release
+audit.
 
 ## Reproducibility boundaries
 

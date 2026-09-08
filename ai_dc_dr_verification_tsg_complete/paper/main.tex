@@ -28,33 +28,27 @@ Nodal Net-Value Settlement for Spatially Coupled AI Data Centers}
 \maketitle
 
 \begin{abstract}
-Artificial-intelligence (AI) data centers can provide demand response (DR), but
-a meter-only baseline cannot verify that credited work was committed before an
-event or distinguish local reduction from spatial rebound. This paper
-develops an auditable submit--execute--settle verifier that carries a declared
-workload state into signed nodal settlement. A sparse cumulative program and an
-exact job-indexed start-time model enforce release, runtime, energy,
-graphics processing unit (GPU) nameplate, contiguity, and regional-capacity
-constraints. A validation-fitted simplex combines total and daily
-conditional-value-at-risk (CVaR) budgets; a submission-masked gate and a
-fixed/flexible power-conversion certificate keep locked event-execution
-telemetry out of contract formation. On the locked 54-day
-mechanism-isolation panel, the total-plus-daily-CVaR profile attains
-normalized root-mean-square error (nRMSE) 0.323, false credit 1.786 MWh/day,
-and F1 (harmonic-mean) score \(F_1=0.453\); the total-only fit
-reaches 0.318, 1.795 MWh/day, and 0.464, making the accuracy--credit
-trade-off explicit rather than hiding it in an aggregate score. The complete
-scheduler population has 75,326
-submissions and 71,128 post-event execution matches; the indexed model
-enumerates 13,198,247 admissible job--slot starts, and its witness selects one
-start per submission with an energy residual below
-\(10^{-15}\) MWh. A binding 79-job declaration panel remains feasible under a
-0.0001604-MW regional cap, with 68.75\% of capacity rows active, and the
-coupled witness is replayed over all 37
-finite RTS-24 contingencies. Fixed facility demand is separate and the raw
-\(q_{99}\) endpoint is retained; activation uses the declared workload,
-information, and network conditions, while closed-meter telemetry only caps
-post-event payment.
+AI data centers can provide demand response (DR), yet a meter decrease does not
+show that the credited work was committed before the event or that a local
+reduction created network value. This paper develops a declaration-indexed
+verification and settlement framework for spatially coupled AI data centers.
+Scheduler declarations define release, allocation runtime, requested GPUs,
+regional assignment, and a fixed GPU nameplate. An exact contiguous start-time
+witness is then carried through regional aggregation, security-constrained
+network valuation, and nodal settlement under one submission digest. A separate
+validation-fitted simplex controls total and daily conditional-value-at-risk
+(CVaR) false credit, while execution telemetry is opened only for locked
+scoring. On the locked 54-day panel, the joint risk fit obtains normalized
+root-mean-square error (nRMSE) 0.323, false credit 1.786 MWh/day, and the F1 (harmonic-mean) score 0.453; its held-out false-credit ratio is 0.0834 on
+average and 0.209 at
+the 90th percentile, compared with 0.0869 and 0.234 for the total-budget-only
+ablation. The declaration-only independent tariff replay gives $F_1=0.919$.
+Across 75,326 submissions, every runtime-complete block satisfies its declared
+window and GPU nameplate, with a $10^{-11}$-MWh aggregate energy residual; the
+common witness shifts 41.1565 MWh out of the event window and is evaluated in
+432 locked RTS-24 cells with all 37 finite non-islanding contingencies. The
+result is a reproducible physical-to-market certificate whose aggregate risk
+fit, execution scoring, and topology assumptions remain explicitly identified.
 \end{abstract}
 
 \noindent\textbf{Index Terms---}AI data centers, counterfactual verification,
@@ -91,19 +85,16 @@ Data-center scheduling studies provide this physical state: temporal deferral
 and geographical balancing reduce energy cost and peak demand
 \cite{cao2022flexibility}. Data-driven flexibility and
 security-constrained coordination optimize spatial--temporal dispatch
-\cite{cao2022flexibility,cao2024nonwire}. Balancing-market and clean-computing
-studies provide complementary dispatch contexts
-\cite{takci2025flexibility,riepin2025clean}. Virtual-link clearing and
+\cite{cao2022flexibility,cao2024nonwire}. Balancing-market and load-shifting
+studies provide complementary dispatch contexts. Virtual-link clearing and
 space--time remuneration model geographical and temporal transfers
 \cite{zhang2020virtuallinks,zhang2022remunerating}. Receding-horizon frequency
 regulation retains multi-site state and future arrivals
 \cite{zhang2023receding}. These
 methods optimize operator-controlled schedules; verification of an independently
 submitted DR counterfactual against an auditable workload ledger remains open.
-Recent trace and aggregator studies likewise leave ledger-to-settlement coupling
-open \cite{dcaopt2024,caprara2026}, while cross-regional dispatchable-capacity
-and coupled-regulation models provide no provenance-bound certificate
-\cite{han2026dispatchable,chen2021idccoupling}. Whole-facility measurements
+Coupled-regulation models likewise provide no provenance-bound certificate
+\cite{chen2021idccoupling}. Whole-facility measurements
 also require a bottom-up GPU-to-facility conversion; calibration, benchmark
 scaling, and network placement are therefore kept as separate evidence layers.
 
@@ -120,18 +111,17 @@ replay but not a causal utility event, so measured execution, counterfactual
 construction, and network valuation must remain separate.
 
 This paper makes three power-system contributions. 1) It defines a typed
-submit--execute--settle evidence chain: an exact job-indexed counterfactual is
-formed only from scheduler declarations (release, runtime, requested GPUs,
-and declared energy entitlement), whereas the execution ledger is retained
-for post-event scoring and the settlement ledger is generated only after the
-coupling certificate passes. The indexed witness is independently rechecked
-before its regional profile is valued in the N--1 model. 2) It formulates a
-workload-state verifier with an explicit information boundary and a
-validation-fitted total-plus-daily-CVaR risk fit, while keeping the pointwise
-false-credit cap in a separately auditable payment profile. It also defines a
-declaration-only service-feasibility certificate that couples each submitted
-entitlement to a contiguous start-time witness, regional nameplate, and service
-floor under jointly active capacity and deadline constraints. 3) It develops signed
+submit--execute--settle evidence chain in which a runtime-complete job witness
+is formed only from scheduler declarations (release, allocation runtime,
+requested GPUs, and regional assignment). The same indexed witness digest is
+rechecked at regional aggregation and reused verbatim by the RTS-24 N--1 value
+and settlement replay; execution telemetry is retained for post-event scoring
+only. 2) It formulates a workload-state verifier with an explicit information
+boundary and a validation-fitted total-plus-daily-CVaR risk fit, while keeping
+the pointwise false-credit cap in a separately auditable payment profile. It
+also distinguishes the training-calibrated aggregate entitlement from a
+declaration-only runtime-complete entitlement and certifies every submitted
+job's contiguous block, regional nameplate, and deadline. 3) It develops signed
 space--time nodal remuneration and a payment-activation rule over
 calibration-validation power-conversion factors: the raw $q_{99}$ endpoint is retained under the
 declared fixed/flexible payment-network scale, while the independently
@@ -204,25 +194,23 @@ declaration; it is converted to \(R_j=\lceil\mathrm{timelimit}_j/\dt\rceil\)
 slots and combined with a precommitted queue allowance \(B=96\) slots, so
 \(d_j=r_j+R_j+B\). The unlimited Slurm sentinel is mapped to the precommitted
 horizon \(H_{\infty}=128\) slots before adding \(B\); finite declarations are
-retained exactly. The $0.001$-MW-per-GPU nameplate is an audit-only feasibility
-precheck: if a declared window cannot serve \(\widehat E_j\), the run fails closed and the
-window is not enlarged. Thus \(d_j\) is available at submission and never uses
-the observed completion time. Let \(\widehat E_j\) be the training-calibrated
-declared service entitlement, \(s_j\) its submit-time scenario region, and
-\(g_j^{\rm req}\) its requested GPU count. The indexed service variable
-\(u_{j\tau}\) is the amount of energy assigned to job \(j\) in interval
-\(\tau\). To make the witness executable, service is a single contiguous
-fixed-rate block. Let \(\bar p_{\rm GPU}=0.001\) MW/GPU be the committed
-nameplate, let \(w_{\rm batch}\) be the predeclared waiting-cost coefficient per
-MWh-slot, and let \(r^{\rm DR}\) denote the event service tariff. Define
-\(c_j=g_j^{\rm req}\bar p_{\rm GPU}\dt\),
-\(K_j=\lceil\widehat E_j/c_j\rceil\), and the terminal-slot remainder
-\(e_j^{\rm rem}=\widehat E_j-(K_j-1)c_j\). For each admissible start
-\(\theta\in\Theta_j=\{r_j,\ldots,d_j-K_j\}\), a binary \(z_{j\theta}\)
-selects one block. With
-\(u^{j\theta}_{\tau}=c_j\mathbf1\{\theta\leq\tau<\theta+K_j\}
--(c_j-e_j^{\rm rem})\mathbf1\{\tau=\theta+K_j-1\}\), the exact start-time
-mixed-integer linear program (MILP) is
+retained exactly. The $0.001$-MW-per-GPU nameplate is fixed before the split. The
+training-calibrated entitlement \(\widehat E_j\) is retained only for the
+aggregate Exp19 calibration audit; it is not used to claim task completion. The
+executable witness uses the declared allocation runtime itself. Let \(s_j\) be
+its submit-time scenario region and \(g_j^{\rm req}\) its requested GPU count.
+Define the runtime-complete entitlement
+\(E_j^{\rm run}=R_jg_j^{\rm req}\bar p_{\rm GPU}\dt\). The indexed service
+variable \(u_{j\tau}\) is the energy assigned to job \(j\) in interval \(\tau\),
+and the executable witness requires one contiguous fixed-rate block of exactly
+\(R_j\) slots. Let \(\bar p_{\rm GPU}=0.001\) MW/GPU be the committed
+nameplate, \(w_{\rm batch}\) the predeclared waiting-cost coefficient per
+MWh-slot, and \(r^{\rm DR}\) the event service tariff. Define
+\(c_j=g_j^{\rm req}\bar p_{\rm GPU}\dt\) and
+\(\Theta_j=\{r_j,\ldots,d_j-R_j\}\). For each admissible start \(\theta\),
+a binary \(z_{j\theta}\) selects the block and
+\(u^{j\theta}_{\tau}=c_j\mathbf1\{\theta\leq\tau<\theta+R_j\}\). The exact
+start-time mixed-integer linear program (MILP) is
 \begin{equation}
 \begin{aligned}
  &\sum_{\theta\in\Theta_j}z_{j\theta}=1,\qquad z_{j\theta}\in\{0,1\},\\
@@ -233,27 +221,30 @@ mixed-integer linear program (MILP) is
 \end{aligned}
 \label{eq:jobindexed}
 \end{equation}
-This exact construction enforces entitlement, contiguity, the GPU nameplate, and
-regional capacity at every slot. Experiment~19 enumerates every admissible
-start for all 75,326 records; Experiment~25 solves the same model with a
-binding regional row. The measured
-\([t_j^{\rm start},t_j^{\rm end}]\) interval is opened only for the independent
-native replay after the counterfactual is fixed: 71,128 execution matches
-never constrain \(z\), \(u\), or \(d_j\).
+This exact construction enforces runtime completion, contiguity, the GPU
+nameplate, and regional capacity at every slot. Experiment~27 enumerates every
+admissible start for all 75,326 records and stores both the earliest-start
+declaration baseline and the tariff response; Experiment~25 solves the same
+declaration model with a binding regional row. The measured
+\([t_j^{\rm start},t_j^{\rm end}]\) interval is opened only for independent
+post-event scoring after the declaration witness is fixed: 71,128 execution
+matches never constrain \(z\), \(u\), or \(d_j\). The aggregate \(\widehat E_j\)
+diagnostic and the runtime-complete \(E_j^{\rm run}\) certificate therefore
+have distinct, explicit semantics.
 For the job-to-network certificate, the indexed witness is mapped without a
-second optimization. Let $\mathcal J_{skd}$ be the ledger partition whose
-source, class, and declared destination labels are $s,k,d$; Experiment~19
-uses the native assignment $d=s_j$ and therefore has no outcome-dependent
-migration:
+second optimization. To avoid overloading the deadline endpoint $d_j$, let
+$\mathcal J_{sk\delta}$ be the ledger partition whose source, class, and
+declared destination labels are $s,k,\delta$; Experiment~27 uses the native
+assignment $\delta=s_j$ and therefore has no outcome-dependent migration:
 \begin{align}
- x^{\rm job}_{skd\tau}&=\sum_{j\in\mathcal J_{skd}:\,r_j\leq\tau<d_j}
+ x^{\rm job}_{sk\delta\tau}&=\sum_{j\in\mathcal J_{sk\delta}:\,r_j\leq\tau<d_j}
  u_{j\tau},\\
- p^{\rm job}_{d\tau}&=P_d^{\rm fix}+\dt^{-1}X^{\rm job}_{d\tau},\qquad
- X^{\rm job}_{d\tau}=\sum_{s,k}x^{\rm job}_{skd\tau}.
+ p^{\rm job}_{\delta\tau}&=P_\delta^{\rm fix}+\dt^{-1}X^{\rm job}_{\delta\tau},\qquad
+ X^{\rm job}_{\delta\tau}=\sum_{s,k}x^{\rm job}_{sk\delta\tau}.
  \label{eq:jobnetworkcoupling}
 \end{align}
 Aggregate migration remains a matched-workload control; (\ref{eq:jobnetworkcoupling})
-is the indexed replay profile. Experiment~22 reconstructs $X^{\rm job}$ from
+is the indexed replay profile. Experiment~27 reconstructs $X^{\rm job}$ from
 every stored $u_{j\tau}$, rechecks the indexed primal, and verifies equality
 before network valuation; no separately optimized aggregate receives a network
 value. Workload deferral and geographic assignment follow
@@ -269,13 +260,13 @@ defined by
 \begin{equation}
 \begin{aligned}
  \ell_j^{\rm sub}={}&(\mathrm{id}_j,t_j^{\rm submit},\mathrm{timelimit}_j,
- q_j,\kappa_j,\sigma_j),\\
+ g_j^{\rm req},\kappa_j,\sigma_j),\\
  \mathcal L_{\rm sub}={}&\operatorname{sort}\{\ell_j^{\rm sub}:j\in\mathcal J_{\rm sub}\},\\
  h_{\rm sub}={}&\operatorname{SHA\text{-}256}\!\left(\operatorname{serialize}(\mathcal L_{\rm sub})\right).
 \end{aligned}
 \label{eq:ledgerdigest}
 \end{equation}
-where $q_j$, $\kappa_j$, and $\sigma_j$ denote the requested-resource,
+where $g_j^{\rm req}$, $\kappa_j$, and $\sigma_j$ denote the requested-GPU,
 class, and scheduler-state fields. The execution ledger separately stores
 start/end times, DCGM energy, and telemetry counts; its one-to-one join,
 release--execution order, and raw-to-join energy equality are checked only for
@@ -291,8 +282,11 @@ is outside this certificate.
 
 \subsection{Counterfactual, response, and false credit}
 
-For event set $\mathcal E\subset\mathcal T$, $p^0$ is the trace-anchored
-no-event counterfactual, $p^{1,\mathrm{sim}}$ is the workload-optimized event
+For event set $\mathcal E\subset\mathcal T$, every $p$ symbol denotes a
+regional facility-power trajectory in MW and every time sum is converted with
+$\dt$ to MWh. The statistical estimate $\widetilde p$ is the baseline fitted
+from the declared information set; $p^0$ is the trace-anchored no-event
+counterfactual, $p^{1,\mathrm{sim}}$ is the workload-optimized event
 trajectory, and $p^{\rm obs}$ is the independently measured
 Massachusetts Institute of Technology (MIT) Data Center GPU Manager (DCGM)
 execution trace. In the implementation, the trace-anchored diagnostic is the
@@ -302,7 +296,7 @@ event label is present, $p^{\rm obs}$ is never a causal outcome or a
 pre-decision input. In
 mechanism-isolation rows \(r=p^0-p^{1,\mathrm{sim}}\) is signed, so rebound is
 retained. For source \(z\in\{\mathrm{obs},\mathrm{sim}\}\), submitted and true
-credit are \(\widehat r^{(z)}=[\widehat p^0-p^{(z)}]_+\) and
+credit are \(\widehat r^{(z)}=[\widetilde p-p^{(z)}]_+\) and
 \(r^{(z)}=[p^0-p^{(z)}]_+\); source-specific false credit is
 \begin{equation}
  F^{(z)}=\dt\sum_{d,t\in\mathcal E}
@@ -321,7 +315,7 @@ operator freezes \(p^{\rm con}\), the profile actually offered for the product,
 and after meter closure the payable response is the pointwise intersection
 \begin{equation}
 Q^{\rm pay}=\dt\sum_{d,t\in\mathcal E}
-\min\!\left\{[\widehat p^0_{dt}-p^{\rm obs}_{dt}]_+,
+\min\!\left\{[\widetilde p_{dt}-p^{\rm obs}_{dt}]_+,
  [p^{\rm con}_{dt}-p^{\rm obs}_{dt}]_+\right\}.
 \label{eq:meter_cap}
 \end{equation}
@@ -332,7 +326,7 @@ different instantiations of the frozen contract role, not interchangeable
 statistical estimates. The trace-anchored $p^0$ is an offline over/underpayment
 diagnostic and never enters fitting, gate decisions, workload optimization, or
 transfer formation. On locked event slots,
-\(\mathrm{nRMSE}=\sqrt{N_E^{-1}\sum_n(\widehat p^0_n-p^0_n)^2}/
+\(\mathrm{nRMSE}=\sqrt{N_E^{-1}\sum_n(\widetilde p_n-p^0_n)^2}/
 \max\{N_E^{-1}\sum_n p^0_n,\epsilon\}\), while bias is the signed mean baseline
 error. With \(M=\sum_n\min\{\widehat r_n,r_n\}\), precision \(P\), recall \(R\),
 and \(F_1\) are \(M/\max\{\sum_n\widehat r_n,\epsilon\}\),
@@ -454,7 +448,8 @@ $E_j=\max\{\sum_{n\in j}r_n^{(\mathrm{sim})},\epsilon_E\}$ be the
 validation credited-energy denominator and write
 $\widetilde F_j=F_j/E_j$ and $\widetilde B_j^{\rm cap}=B_j^{\rm cap}/E_j$.
 The denominators are fixed before the locked split and the observed-meter
-source is audited separately. For reserve $\beta\in(0,1]$, the exact validation program is
+source is audited separately. Let $m=\lceil(1-\gamma)J\rceil$ be the number
+of upper-tail days. For reserve $\beta\in(0,1]$, the exact validation program is
 \begin{equation}
 \begin{aligned}
 \min_{\alpha,f,\nu,u}\quad
@@ -487,12 +482,13 @@ $f_n\geq0$, a CVaR threshold $\nu\geq0$, and tail slacks $u_j\geq0$:
   f_n&\geq p^\alpha_n-p^{(\mathrm{sim})}_n-r^{(\mathrm{sim})}_n,\\
   F_j^{(\mathrm{sim})}&=\sum_{n\in j}f_n,\\
   \widetilde F_j-\nu-u_j&\leq0,\\
-  \nu+\frac{1}{0.25J}\sum_j u_j
+  \nu+\frac{1}{m}\sum_j u_j
   &\leq\beta\,\mathrm{CVaR}_{0.75}(\widetilde B_j^{\rm cap}).
  \label{eq:riskepigraph}
  \end{align}
-The linear CVaR epigraph in (\ref{eq:riskepigraph}) is used for every retained
-axis and avoids sorting. Here
+The linear CVaR epigraph in (\ref{eq:riskepigraph}) uses the same $m$-day
+upper-tail denominator as the reported empirical CVaR for every retained axis;
+it avoids sorting. Here
 $r^{(\mathrm{sim})}_n=[p^0_n-p^{(\mathrm{sim})}_n]_+$ is the
 mechanism-isolation credit; the implementation checks the equivalent threshold
 identity. The daily ratio is reported as CVaR and the total row in MW-slot
@@ -854,9 +850,11 @@ intervals define scoring truth. Chronological workload scaling uses the first
 40 complete days. The GPU-power model uses 44,391 training jobs, 9,637
 calibration-validation jobs, and 41,154 locked jobs; the calibration-validation
 ratios define the five scenarios $\Xi_5$ in (\ref{eq:paymentcert}) without
-synthetic replacement. Experiment~14 retains all 71,128 matches, whereas Experiment~19
-uses every valid declaration with a training-only entitlement; execution joins
-open only for post-event scoring. The runtime window plus a precommitted
+synthetic replacement. Experiment~14 retains all 71,128 matches, whereas
+Experiment~19 uses every valid declaration with a training-only aggregate
+entitlement; Experiment~27 forms the runtime-complete declaration witness,
+while execution joins open only for post-event scoring. The runtime window
+plus a precommitted
 96-slot queue allowance defines the contract window, not a
 submit-to-completion interpretation of Slurm runtime, and membership is never
 outcome-filtered.
@@ -907,11 +905,12 @@ settlement, transfer, risk, and N--1 value; 10--12 test AC/spatial transfer and
 continuous-cycle remuneration; 13--16 provide measured replay, indexed witness,
 conversion intervals, and reconciliation. Experiments~17--25 freeze the gate,
 verify shared-plan AC feasibility, audit scale/coupling, replay an independent
-event, and enumerate all RTS-24 outages. Comparisons use the same 54 locked
-days unless a deterministic network or ledger rule is stated.
-Experiment~26 independently recomputes the declaration-to-network residuals and
-checks the source hashes and role separation of the risk, payment, and outage
-artifacts.
+event, and enumerate all RTS-24 outages. Experiment~27 adds the runtime-complete
+common witness, and Experiment~28 audits the held-out risk tail with a fixed
+block bootstrap. Comparisons use the same 54 locked days unless a deterministic
+network or ledger rule is stated. Experiment~26 independently recomputes the
+declaration-to-network residuals and checks the common witness digest, source
+hashes, and role labels of the risk, payment, and outage artifacts.
 
 \section{Results}\label{sec:results}
 
@@ -927,17 +926,19 @@ marginal boundary and does not use a fitted classifier; the complete grid and
 its phase diagram are retained in the experiment output.
 
 Experiment~2 evaluates twelve methods on the locked 54-day panel
-(Table~\ref{tab:base}). Joint total-plus-daily-CVaR gives
-nRMSE/$F_1$/false credit 0.323/0.453/1.786 MWh/day; total-only and CVaR-only
-give 0.318/0.464/1.795 and 0.322/0.455/1.791. The total row retains
-5.55 MW-slot slack and the daily-CVaR row remains feasible with a normalized
-slack of 0.00671; the validation-only stress frontier reaches an active
-boundary at reserve 0.97. The joint simplex differs from CVaR-only by
-$L_\infty=2.95\times10^{-2}$. Single
-projection gives 0.339/0.418/1.823, whereas the unconstrained fit gives
-0.297/0.521/3.241. Validation joint/CVaR-only/total-only values are
-0.426/0.432/3.140, 0.424/0.436/3.158, and 0.418/0.449/3.177; the payment
-contract cap is separate from this accuracy--credit trade-off.
+(Table~\ref{tab:base}). The joint total-plus-daily-CVaR fit gives
+nRMSE/$F_1$/false credit 0.323/0.453/1.786 MWh/day. Its held-out daily
+false-credit ratio has mean 0.0834, CVaR$_{0.75}$ 0.2409, and 90th percentile
+0.2090; the corresponding total-budget-only values are 0.0869, 0.2458, and
+0.2340 (Fig.~\ref{fig:result_certificates}). A circular three-day block
+bootstrap gives a paired joint-minus-total mean-ratio difference of $-0.00358$
+with 95\% interval $[-0.00612,-0.00112]$. The total-only fit has nRMSE 0.314,
+whereas the joint fit spends part of that point-estimation margin to control
+the declared tail exposure. The total row retains 5.55 MW-slot slack and the
+daily-CVaR row remains feasible with normalized slack 0.00671; both budgets
+are fixed before the locked split. Single projection gives
+0.339/0.418/1.823, whereas the unconstrained fit gives 0.297/0.521/3.241.
+The payment-contract cap is separate from this risk-fit objective.
 
 \begin{table}[t]
 \centering
@@ -966,6 +967,18 @@ Tail-Risk Feasible Counterfactual & 0.322 & 1.791 & 12.878 & 0.455\\
 }
 \end{table}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.47\textwidth]{figures/fig_risk_tail_tradeoff.pdf}\hfill
+\includegraphics[width=0.47\textwidth]{figures/fig28_common_executable_witness.pdf}
+\caption{Result evidence for the two coupled certificates. Left: held-out
+false-credit ratios for the joint total-plus-CVaR fit and the total-budget-only
+ablation, including the empirical upper tail. Right: declaration baseline and
+event response generated by the same runtime-complete job witness on a locked
+day; the shaded interval is the predeclared event window.}
+\label{fig:result_certificates}
+\end{figure*}
+
 The independent trace-meter replay is a deployment check: event-window MAE is
 2.673/2.865/2.871 MW for feasible quantile/\TailRisk/\RiskSafe on the same
 54 days (three-day block intervals in Experiment~20). It measures closed-DCGM
@@ -976,7 +989,7 @@ slots, and locked days. Event-reward and batch-flexibility translations give
 nRMSE/false-credit/$F_1$ 3.068/114.776/0.137 and 0.339/1.823/0.418. Rolling-
 horizon, cross-regional dispatchable-capacity, and coupled multi-service
 translations use the same ledger; their equations and information sets are in
-the baseline audit \cite{cao2022flexibility,han2026dispatchable}. They are
+the baseline audit \cite{cao2022flexibility,chen2021idccoupling}. They are
 published-equation translations, not reproductions of private software or data;
 temporal-only and joint-ledger controls migrate 0 and 0.206 MWh.
 The ablation panel contains 810 globally solved schedules (binding shares
@@ -1044,81 +1057,87 @@ validation N--1 MAE the payment target. Factors are
 $q_{01}=0.583$, $q_{10}=0.687$, $q_{50}=0.970$, $q_{90}=1.349$, and
 $q_{99}=5.321$, with every certificate violation below $9\times10^{-9}$ USD.
 For PaymentSafe/single/feasible-quantile/RiskSafe, q50 MAE is
-39.288, 32.880, 34.391, and 33.090 USD/day, with overpayment
-1.642, 4.313, 3.884, and 4.237 USD/day; q99 MAE is
-217.949, 183.077, 191.684, and 184.465 USD/day, with overpayment
-9.472, 24.749, 22.293, and 24.371 USD/day.
+39.288, 32.880, 34.391, and 33.084 USD/day, with overpayment
+1.642, 4.313, 3.884, and 4.241 USD/day; q99 MAE is
+217.949, 183.077, 191.684, and 184.434 USD/day, with overpayment
+9.472, 24.749, 22.293, and 24.388 USD/day.
 Moving-block intervals are stored for each comparator. Experiment~15 retains
 both raw endpoints without clipping; 0.8901 is planning-only. Unseen 0.80/1.20
-MAE is \$9.303/\$13.958 (payment) and \$9.841/\$14.764 (feasible quantile);
+MAE is \$8.333/\$12.502 (payment) and \$8.815/\$13.224 (feasible quantile);
 neither factor is certified.
 
 Experiment~10 replaces the linear network with AC OPF
 \cite{zimmerman2011matpower}: all 864 connected-base and 5,400 corrective
 IEEE-9/14 cells are feasible, with zero deviation in 3,888 shared-plan cells
 (0.880/0.907/0.935 p.u. at 3/6/9\%). Experiment~18 extends the fixed-active
-plan to four networks and 9,648 outages over six snapshots, with zero voltage
-violation and maximum loading 1.000 p.u. Experiment~11 averages all 26
+plan to four networks and 9,648 native-admissible contingency solves plus 144
+intact reference solves over six snapshots. Native-inadmissible connected
+outages are screened before workload injection and reported by network; all
+remaining cells have zero voltage violation and maximum loading 1.000 p.u.
+Experiment~11 averages all 26
 assignments across three penetrations, four counterfactuals, and 54 days; its
-3/6/9\% MAE is \$101.377/\$203.806/\$303.862 for RiskSafe,
+3/6/9\% MAE is \$101.155/\$203.361/\$303.195 for RiskSafe,
 \$105.250/\$211.555/\$315.490 for single, and
 \$81.613/\$164.249/\$244.481 for feasible quantile. Experiment~16 audits
 44,391/9,637/41,154 training, calibration-validation, and locked GPU records
 (mean absolute error (MAE), root-mean-square error (RMSE), and $R^2$ are
 10.803/14.463/0.8956 and 13.543/20.075/0.8196 W/W/1).
 Experiment~12 reports event-window MAE
-\$26.937/\$15.969/\$5.325/\$5.325 and complete-cycle residual
-\$0.621/\$0.607/\$0/\$0 for feasible-quantile, payment-certified, RiskSafe,
-and single; the latter are LP accounting certificates, whereas event-window
-error is predictive and all 54 contracts activate.
+\$26.937/\$34.166/\$8.659/\$5.325 and complete-cycle residual
+\$0.621/\$0.569/\$0.104/\$0 for feasible-quantile, payment-certified, RiskSafe,
+and single. These residuals are settlement-value accounting diagnostics,
+whereas event-window error is predictive; all 54 contracts activate.
 
 \subsection{Independent trace and deployment-boundary audits}
 
 The immutable scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
 100\% coverage and a 71,128-job residual below $10^{-17}$ MWh; no utility-event
 label exists. Experiment~20 gives trace-meter MAE 2.988 MW (2.673 for feasible
-quantile). Experiment~23 solves a submission-masked LP with predeclared
-tariffs, participants, and service floor, using neither verifier profiles nor
-locked outcomes; across 54 days its policy differs by at most 28 MW in response
-and 118 MW in baseline. Table~\ref{tab:security} records the seven-row protocol
-certificate, not a field-causal intervention.
+quantile). Experiment~23 instead re-enumerates every declaration-feasible start
+under a distinct, predeclared event tariff. Against that independent exact
+declaration replay, the common runtime-complete witness obtains nRMSE 0.0292,
+false response 0.0104 MWh/day, and $F_1=0.919$ over all 54 locked days. The
+protocol certificate verifies zero use of future arrivals or execution
+telemetry and an identical submission digest. This is an optimization-policy
+replay rather than a field-causal intervention; Table~\ref{tab:security}
+records the information boundary explicitly.
 
 \begin{table}[t]
 \centering
 \caption{Declared information-boundary and security-replay coverage. The
-independent-event criteria are computed before locked scoring.}
+independent declaration checks are computed before locked scoring.}
 \label{tab:security}
 \scriptsize
 \begin{tabular}{@{}p{0.48\columnwidth}p{0.43\columnwidth}@{}}
 \toprule
 Panel & Cells and certificate\\
 \midrule
-Independent event policy & 7/7 pre-scoring information checks pass\\
-Preventive DC N--1 (RTS-24) & 54$\times$8$\times$37; 1.0000 p.u.\\
+Independent declaration replay & 6/6 information checks; nRMSE 0.0292, $F_1=0.919$\\
+Frozen-profile DC N--1 (RTS-24) & 864 cells; 37 outages/cell; 1.0000 p.u.\\
 Shared-plan AC (IEEE-9) & 3,888; 0.880/0.907/0.935 p.u.\\
 Corrective AC (IEEE-9/14) & 864 base + 5,400 outage solves; all feasible\\
-All-outage AC (four networks) & 31,968 outage solves; all feasible\\
+Admissible fixed-plan AC N--1 (four networks) & 9,648 contingency + 144 intact solves; all certified\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Indexed workload counterfactual}
 
-Experiment~19 assigns each of 75,326 valid submissions an exact contiguous
-start; the declared windows, 0.001-MW/GPU bound, regional entitlement, and
-118-MW capacity yield 13,198,247 choices. The witness has zero job-energy
-residual and 29.497-MWh minimum site slack (Table~\ref{tab:jobcounterfactual}).
-Experiment~22 replays it over 1,056 slots and all finite RTS-24 outages, with
-raw/fixed-nameplate/capacity-proportional secure value
-\$0.004228/\$0.012823/\$28.910502; Experiment~21 reports
-6838.672\(\times\)/3.033\(\times\) scales. Experiment~25 validates 71,128/75,326
-execution matches; its 79-job cohort binds 0.00016037 MW in 68.75\% of rows at
-the 0.00108-MWh floor. Experiment~24 freezes two profiles and completes 864
-cells/31,968 solves over 37 outages (Table~\ref{tab:jobcounterfactual}).
-Experiment~26 recomputes job-to-region and region-to-bus residuals before
-dispatch; its five-stage certificate passes with zero typed residuals, five
-current-artifact SHA-256 matches, and 864 frozen outage cells while preserving
-distinct roles for the risk target, payment profile, and indexed witness.
+Experiment~27 assigns each of 75,326 valid submissions a runtime-complete
+contiguous block at the declared GPU nameplate. The declaration windows and
+118-MW regional capacity yield 13,198,247 admissible start choices. The
+runtime entitlement totals 1,972.115 MWh, the aggregate energy residual is
+below $10^{-11}$ MWh, and minimum site slack is 28.595 MWh
+(Table~\ref{tab:jobcounterfactual}). The same saved baseline and event-response
+arrays produce 41.1565 MWh of event-window reduction and are replayed in 432
+locked RTS-24 cells, each with all 37 finite non-islanding contingencies.
+Experiment~25 validates the separate 71,128/75,326 execution join; its
+79-job declaration cohort binds 0.00016037 MW at the 0.00108-MWh service
+floor. Experiment~24 independently completes 864 DC-SCED cells and 31,968
+sample-contingency evaluations. Experiment~26 recomputes job-to-region and
+region-to-bus residuals and verifies the common witness digest before network
+settlement; its lineage certificate passes with zero typed residuals and
+explicitly labels the aggregate risk and payment profiles as analysis views.
 
 \begin{table}[t]
 \centering
@@ -1130,12 +1149,12 @@ distinct roles for the risk target, payment profile, and indexed witness.
 Quantity & Value\\
 \midrule
 Submitted / execution-matched jobs; admissible starts & 75,326 / 71,128; 13,198,247\\
-Native / counterfactual event energy; gross/net; rebound (MWh) & 0.194 / 0; \textbf{0.194}/\textbf{0.194}; 0\\
-Maximum job residual; minimum site slack (MWh) & 0; 29.496\\
+Runtime entitlement; common-witness event reduction (MWh) & 1,972.115; \textbf{41.1565}\\
+Baseline / response event energy (MWh) & 165.436 / 124.280\\
+Maximum aggregate energy residual; minimum site slack (MWh) & $7.8\times10^{-12}$; 28.595\\
 Binding stress cohort / capacity / service floor (jobs/MW/MWh) & 79 / 0.00016037 / 0.00108\\
-Capacity-proportional / fixed-nameplate scale ($\times$) & 6838.672 / 3.033\\
-Job-to-network residual; coupled event slots (MWh / count) & 0; 1,056\\
-Secure N--1 value; RTS-24 outages / cells / solves & \textbf{0.004228}; 37 / 864 / 31,968\\
+Job-to-network residual; common settlement cells (MWh / count) & 0; 432\\
+DC N--1 profile panel; RTS-24 outages / cells / evaluations & 37 / 864 / 31,968\\
 Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 \bottomrule
 \end{tabular}
@@ -1145,20 +1164,24 @@ Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 
 This paper couples a provenance-bound workload verifier with signed nodal
 settlement. On locked data, the joint profile reaches
-nRMSE/false credit/$F_1=0.323/1.786/0.453$ MWh/day, while the slot-60 protocol
-uses only committed declarations (Table~\ref{tab:security}). The exact indexed
-witness gives 0.194 MWh net reduction with zero rebound and typed RTS-24 N--1
-coupling; the binding cohort meets its service floor. Fixed demand stays
-outside conversion, and deployment requires signed telemetry and topology;
-causal field validation remains external.
-The end-to-end lineage certificate closes the declared hand-off between these
-layers without asserting that their aggregate and job-indexed trajectories are
-numerically identical.
+nRMSE/false credit/$F_1=0.323/1.786/0.453$ MWh/day, and its paired tail audit
+reduces the held-out false-credit ratio relative to the total-budget-only
+ablation (Fig.~\ref{fig:result_certificates}). The runtime-complete declaration
+witness covers all 75,326 submissions, conserves 1,972.115 MWh of declared
+runtime energy, shifts 41.1565 MWh from the event window, and carries one
+digest through 432 locked RTS-24 settlement cells and 37 finite N--1 outages
+per cell. The independent declaration replay confirms the response under a
+separate exact tariff policy. Fixed demand remains outside the flexible
+conversion, and deployment requires signed scheduler, telemetry, and topology
+attestation; field-causal validation remains a separate operational step.
+The aggregate risk fit is therefore reported as a statistical contract view,
+while the runtime-complete witness is the executable physical state used for
+network settlement.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
 % Use IEEE's compact reference convention while retaining the 10-point body.
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\scriptsize\setlength{\itemsep}{-0.15pt}}{\savedendthebibliography}
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.3}{6.6}\selectfont\setlength{\itemsep}{-0.60pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

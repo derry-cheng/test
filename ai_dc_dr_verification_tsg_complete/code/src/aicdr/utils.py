@@ -114,6 +114,12 @@ def ensure_dirs(root: Path) -> None:
         "experiments/exp26_end_to_end_certificate/results/intermediate",
         "experiments/exp26_end_to_end_certificate/results/final",
         "experiments/exp26_end_to_end_certificate/figures",
+        "experiments/exp27_executable_common_witness/results/intermediate",
+        "experiments/exp27_executable_common_witness/results/final",
+        "experiments/exp27_executable_common_witness/figures",
+        "experiments/exp28_risk_tail_audit/results/intermediate",
+        "experiments/exp28_risk_tail_audit/results/final",
+        "experiments/exp28_risk_tail_audit/figures",
         "audit",
     ]:
         (root / rel).mkdir(parents=True, exist_ok=True)

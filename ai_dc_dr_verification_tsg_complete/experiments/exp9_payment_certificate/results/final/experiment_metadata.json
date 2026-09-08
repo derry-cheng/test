@@ -25,10 +25,10 @@
   "contractual_cap_profile": "Projection rho=0.03",
   "contractual_cap_selection": "single feasible projection selected by worst contiguous-fold validation nRMSE; its rho is recorded in Experiment 2 and is the sole payment-cap reference",
   "certificate_schema_version": 10,
-  "test_profile_file_checksum": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "test_profile_file_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
   "validation_profile_file_checksum": "3c3ac48f99f24022764a4df9528822b3383c1fc06edd186445f8db49272112ef",
   "data_manifest_checksum": "52b2df94f97c80ef702c6103482027a824574fba787399981d51a841c5f0a1f2",
-  "config_checksum": "b840bf679552e92c3b269b7806a8d8a2ad2e17d7d0b6df69a337ef4316e9037b",
+  "config_checksum": "d95734d2d265437cc6520d3b379900acf2b9a81a70b53f78849f5424a5e928de",
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
   "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {
@@ -86,5 +86,9 @@
   "dc_power_scale": 0.12390220330669541,
   "validation_peak_trace_mw": 252.92852185302473,
   "validation_flexible_peak_mw": 228.92852185302473,
-  "test_peak_used_for_scaling": false
+  "test_peak_used_for_scaling": false,
+  "payment_evaluation_profile_source": "current Experiment-2 locked test_profiles.npz",
+  "payment_evaluation_profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+  "payment_evaluation_recomputed_after_profile_refit": true,
+  "payment_evaluation_recompute_scope": "Risk-Constrained Convex Verifier rows were recomputed from the current test profile cache at the declared settlement/evaluation segment counts; all other payment rows were retained because their profile bytes are unchanged under the current Experiment-2 artifact."
 }

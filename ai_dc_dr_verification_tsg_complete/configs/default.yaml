@@ -93,7 +93,7 @@ experiments:
   # so a small training fold is not declared infeasible by the production
   # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.
   blocked_cv_cvar_reserve_fraction: 1.00
-  risk_cvar_stress_reserve_fractions: [0.90, 0.95, 0.97, 0.99, 1.00]
+  risk_cvar_stress_reserve_fractions: [0.97, 0.99, 1.00]
   bootstrap_replications: 5000
   # Three-day blocks yield 18 independent sign-randomization units on the
   # 54-day locked test set; 6/9/18-day alternatives remain sensitivity checks.
@@ -171,6 +171,10 @@ experiments:
   # contractual network value model; bounded threads avoid matrix duplication.
   coupled_network_generator_segments: 4
   coupled_network_parallel_workers: 1
+  # The common declaration witness is replayed through the same RTS-24 N-1
+  # value model with a bounded pool; each cell reuses the saved job-derived
+  # baseline and response profiles verbatim.
+  common_witness_network_workers: 4
   # Full frozen-profile RTS-24 N−1 panel: 54 days × 8 event slots × 2
   # profiles. The worker cap is checked centrally against the 20-core limit.
   all_outage_panel_workers: 4
@@ -272,6 +276,9 @@ experiments:
   independent_event_minimum_service_mwh: 7.0
   independent_gate_baseline_price_per_mwh: 120.0
   independent_event_workers: 4
+  # Independent Exp23 replay tariff. It is fixed before scoring and differs
+  # from the 150 USD/MWh common-witness event tariff.
+  independent_event_replay_price_per_mwh: 30.0
   preventive_ac_validation_day_rule: "first locked test day"
   # The preventive AC panel uses six predeclared locked snapshots rather than
   # a single outcome-selected day.  The two event endpoints test both the

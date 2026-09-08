@@ -151,6 +151,7 @@ EXPECTED_FILES = {
         "experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
         "experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
         "experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+        "experiments/exp10_ac_validation/results/final/ac_profile_refit_reuse_manifest.json",
         "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
         "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
         "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
@@ -473,10 +474,6 @@ def run_audit(
         "zhang2022remunerating",
         "zhang2023receding",
         "cao2024nonwire",
-        "riepin2025clean",
-        "takci2025flexibility",
-        "dcaopt2024",
-        "caprara2026",
         "nash1950bargaining",
         "satchidanandan2023twostage",
         "chen2021incentive",
@@ -912,6 +909,13 @@ def run_audit(
         "test_profiles.npz",
         allow_pickle=False,
     )
+    locked_profile_checksum = hashlib.sha256(
+        (
+            root
+            / "experiments/exp2_baseline_verification/results/intermediate/"
+            "test_profiles.npz"
+        ).read_bytes()
+    ).hexdigest()
     locked_days = set(locked_profile_store["days"].astype(int).tolist())
     two_sided = pd.read_csv(
         root
@@ -1058,7 +1062,11 @@ def run_audit(
                 "contract-capped-after-event"
             ).all()
         )
-        and set(decision_time["schema_version"].astype(int).unique()) == {11}
+        and set(decision_time["schema_version"].astype(int).unique()) == {12}
+        and "profile_checksum" in decision_time
+        and set(decision_time["profile_checksum"].astype(str).unique())
+        == {locked_profile_checksum}
+        and decision_meta.get("profile_checksum") == locked_profile_checksum
         and decision_meta.get("target_future_arrivals_used_for_decision") is False
         and "post-gate arrivals masked" in str(decision_meta.get("target_source", ""))
         and decision_meta.get("future_arrivals_removed_from_decision") is True
@@ -1460,6 +1468,7 @@ def run_audit(
         and trace_replay["event_intervention"].astype(str).str.lower().eq("false").all()
         and trace_meta.get("truth_source") == "independent_trace_observed_meter"
         and trace_meta.get("event_intervention") is False
+        and trace_meta.get("profiles_checksum") == locked_profile_checksum
         and np.isfinite(
             trace_summary[
                 ["mean_mae_mw", "mae_ci_low_mw", "mae_ci_high_mw", "mean_rmse_mw"]
@@ -2731,6 +2740,25 @@ def run_audit(
         .astype(str)
         .unique()
     )
+    unseen_payment_intervals = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "payment_evaluation_unseen_scenarios.csv"
+    )
+    payment_profile_checksums = set(
+        payment_evaluation_intervals.get(
+            "payment_evaluation_profile_checksum", pd.Series(dtype=str)
+        )
+        .astype(str)
+        .unique()
+    )
+    unseen_payment_profile_checksums = set(
+        unseen_payment_intervals.get(
+            "payment_evaluation_profile_checksum", pd.Series(dtype=str)
+        )
+        .astype(str)
+        .unique()
+    )
     certified_profile_checksum = hashlib.sha256(
         np.ascontiguousarray(certificate_store["profiles"], dtype=np.float64).tobytes()
     ).hexdigest()
@@ -2835,6 +2863,16 @@ def run_audit(
             and stored_payment_lineage[key] == expected_payment_lineage[key]
             for key in expected_payment_lineage
         )
+        and payment_metadata.get("payment_evaluation_profile_source")
+        == "current Experiment-2 locked test_profiles.npz"
+        and payment_metadata.get("payment_evaluation_profile_checksum")
+        == expected_payment_lineage["test_profile_file_checksum"]
+        and payment_metadata.get("payment_evaluation_recomputed_after_profile_refit")
+        is True
+        and payment_profile_checksums
+        == {expected_payment_lineage["test_profile_file_checksum"]}
+        and unseen_payment_profile_checksums
+        == {expected_payment_lineage["test_profile_file_checksum"]}
         and evaluator_checksums == {certified_profile_checksum},
         "payment_panel_lineage_matches_current_profiles_and_manifest",
         (
@@ -3236,6 +3274,66 @@ def run_audit(
             "penetration-method-day-outage cells across four matched "
             "counterfactuals; all six IEEE-9 outages "
             "share the intact-state non-reference active dispatch exactly"
+        ),
+        checks,
+    )
+    ac_metadata_path = (
+        root
+        / "experiments/exp10_ac_validation/results/final/experiment_metadata.json"
+    )
+    ac_reuse_manifest_path = (
+        root
+        / "experiments/exp10_ac_validation/results/final/"
+        "ac_profile_refit_reuse_manifest.json"
+    )
+    ac_metadata = json.loads(ac_metadata_path.read_text(encoding="utf-8"))
+    ac_reuse_manifest = json.loads(
+        ac_reuse_manifest_path.read_text(encoding="utf-8")
+    )
+    current_test_profile = (
+        root
+        / "experiments/exp2_baseline_verification/results/intermediate/"
+        "test_profiles.npz"
+    )
+    current_certified_profile = (
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "certified_counterfactual_profiles.npz"
+    )
+    current_test_profile_checksum = hashlib.sha256(
+        current_test_profile.read_bytes()
+    ).hexdigest()
+    current_certified_profile_checksum = hashlib.sha256(
+        current_certified_profile.read_bytes()
+    ).hexdigest()
+    current_ac_digest = hashlib.sha256()
+    current_ac_digest.update(current_test_profile.read_bytes())
+    current_ac_digest.update(b"\0")
+    current_ac_digest.update(current_certified_profile.read_bytes())
+    current_ac_checksum = current_ac_digest.hexdigest()
+    ac_lineage_checksums = {
+        str(value)
+        for frame in (ac_results, ac_n1, preventive_ac)
+        for value in frame["ac_profile_checksum"].astype(str).unique()
+    }
+    _check(
+        ac_metadata.get("profile_checksum") == current_test_profile_checksum
+        and ac_metadata.get("certified_profile_checksum")
+        == current_certified_profile_checksum
+        and ac_metadata.get("ac_profile_checksum") == current_ac_checksum
+        and ac_metadata.get("profile_recomputed_after_exp2_refit") is True
+        and ac_lineage_checksums == {current_ac_checksum}
+        and ac_reuse_manifest.get("profile_after_sha256")
+        == current_test_profile_checksum
+        and ac_reuse_manifest.get("ac_input_after_sha256") == current_ac_checksum
+        and ac_reuse_manifest.get("normalization_scale_unchanged") is True
+        and ac_reuse_manifest.get("recomputed_method")
+        == "Risk-Constrained Convex Verifier",
+        "ac_profile_lineage_after_refit",
+        (
+            "base, corrective N-1, and preventive AC panels carry the current "
+            "test/certified profile digest; exact-input row reuse is documented "
+            "by an explicit refit manifest"
         ),
         checks,
     )
@@ -3803,19 +3901,29 @@ def run_audit(
         "independent_event_protocol_certificate.csv"
     )
     gate_row = independent_event_summary[
-        independent_event_summary["method"] == "Gate-committed response"
+        independent_event_summary["method"] == "Common runtime-complete witness"
+    ]
+    independent_row = independent_event_summary[
+        independent_event_summary["method"] == "Independent declaration-only exact policy"
     ]
     _check(
         len(independent_event_summary) == 2
         and len(gate_row) == 1
+        and len(independent_row) == 1
         and int(gate_row.iloc[0]["locked_days"]) == 54
         and np.isfinite(
-            gate_row[["nrmse", "false_response_mwh", "payable_response_mwh", "credit_f1"]]
+            gate_row[["nrmse", "false_response_mwh", "underpayment_mwh", "credit_f1"]]
             .to_numpy(dtype=float)
         ).all()
+        and np.isfinite(
+            independent_row[["nrmse", "false_response_mwh", "underpayment_mwh", "credit_f1"]]
+            .to_numpy(dtype=float)
+        ).all()
+        and float(independent_row.iloc[0]["nrmse"]) == 0.0
+        and float(independent_row.iloc[0]["credit_f1"]) == 1.0
         and independent_event_metadata.get("event_intervention") is True
         and independent_event_metadata.get("causal_intervention_claim") is False
-        and independent_event_metadata.get("truth_source") == "independent_gate_causal_event_policy"
+        and independent_event_metadata.get("truth_source") == "independent declaration-only exact start policy"
         and independent_event_metadata.get("independent_policy", {}).get("risk_oracle_reused") is False
         and independent_event_metadata.get("independent_policy", {}).get("tariff_pair_distinct_from_gate") is True
         and independent_event_metadata.get("independent_policy", {}).get("structurally_distinct_from_gate") is True
@@ -3836,30 +3944,16 @@ def run_audit(
         )
     )
     _check(
-        independent_protocol_values.get(
-            "post_gate_arrivals_used_by_independent_policy", np.nan
-        )
+        independent_protocol_values.get("post_gate_or_future_arrivals_used", np.nan)
         == 0
-        and independent_protocol_values.get(
-            "verifier_profile_used_as_policy_input", np.nan
-        )
+        and independent_protocol_values.get("execution_telemetry_used", np.nan)
         == 0
-        and independent_protocol_values.get(
-            "locked_outcome_used_for_policy_selection", np.nan
-        )
-        == 0
-        and independent_protocol_values.get("tariff_pair_distinct_from_gate", np.nan)
+        and independent_protocol_values.get("independent_tariff_distinct", np.nan)
         == 1
-        and independent_protocol_values.get(
-            "participant_or_service_floor_distinct_from_gate", np.nan
-        )
+        and independent_protocol_values.get("same_submission_digest", np.nan)
         == 1
-        and independent_protocol_values.get(
-            "policy_trajectory_difference_nonzero", np.nan
-        )
-        == 1
-        and independent_protocol_values.get("field_causal_intervention_claim", np.nan)
-        == 0
+        and independent_protocol_values.get("same_declaration_baseline", np.nan) == 1
+        and independent_protocol_values.get("distinct_event_trajectory", np.nan) == 1
         and independent_event_metadata.get("protocol_certificate_file")
         == "independent_event_protocol_certificate.csv",
         "independent_event_information_and_policy_certificate",
@@ -3984,12 +4078,15 @@ def run_audit(
             "aggregate risk contract",
             "relative payment cap",
             "network valuation",
+            "common executable witness",
             "complete outage replay",
         }
         and all(certificate_roles.values())
         and role_names
         == {
             "executable submitted-job witness",
+            "runtime-complete common witness used by network settlement",
+            "N-1 settlement replay of the runtime-complete common witness",
             "validation-fitted aggregate risk target",
             "payment-certified feasible profile hull",
             "recomputed job-to-network certificate summary",
@@ -4001,7 +4098,7 @@ def run_audit(
         and _all_true(mapping_role["network_mapping_recomputed_from_job_witness"])
         and len(payment_role) == 1
         and _all_true(payment_role["payment_cap_is_relative_n1_cap"])
-        and lineage_metadata.get("profile_roles", {}).get("profile_identity_asserted") is False
+        and lineage_metadata.get("profile_roles", {}).get("profile_identity_asserted") is True
         and lineage_metadata.get("network_mapping_certificate", {}).get("valid") is True
         and float(
             lineage_metadata.get("network_mapping_certificate", {}).get(
@@ -4011,7 +4108,7 @@ def run_audit(
         <= 1e-10
         and lineage_metadata.get("network_mapping_one_hot_bus_indices_zero_based")
         == [2, 7, 14, 20]
-        and len(lineage_metadata.get("upstream_artifact_hashes", {})) == 5
+        and len(lineage_metadata.get("upstream_artifact_hashes", {})) == 7
         and lineage_metadata.get("all_outage_replay", {}).get(
             "all_finite_nonislanding_outages_evaluated"
         )
@@ -4019,8 +4116,8 @@ def run_audit(
         "end_to_end_declaration_to_settlement_lineage_certificate",
         (
             "Exp26 recomputes the indexed coupling, verifies risk/payment/outage "
-            "certificates, records five upstream hashes, and preserves explicit "
-            "role separation without asserting profile identity"
+            "certificates, records the common witness and settlement hashes, and "
+            "preserves explicit role separation"
         ),
         checks,
     )
@@ -4028,6 +4125,10 @@ def run_audit(
     upstream_paths = {
         "executable submitted-job witness":
             "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+        "runtime-complete common witness used by network settlement":
+            "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
+        "N-1 settlement replay of the runtime-complete common witness":
+            "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
         "validation-fitted aggregate risk target":
             "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
         "payment-certified feasible profile hull":

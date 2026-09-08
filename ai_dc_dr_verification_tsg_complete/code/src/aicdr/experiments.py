@@ -6512,6 +6512,7 @@ def run_exp9(
     current_config_checksum = hashlib.sha256(
         json.dumps(cfg, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+    payment_evaluation_profile_checksum = current_profile_checksum
     # A completed independent run can be registered through the unified
     # pipeline without repeating the expensive high-resolution N--1 panel.
     # Reuse is allowed only after checking the schema, locked-day cardinality,
@@ -7321,6 +7322,7 @@ def run_exp9(
                                 evaluation_schema_version
                             ),
                             "certified_checksum": certified_checksum,
+                            "payment_evaluation_profile_checksum": payment_evaluation_profile_checksum,
                         }
                     )
         return int(day), day_rows
@@ -7562,6 +7564,7 @@ def run_exp9(
                             "credible_line_contingencies": int(baseline_eval.credible_contingencies),
                             "evaluation_schema_version": int(evaluation_schema_version),
                             "certified_checksum": certified_checksum,
+                            "payment_evaluation_profile_checksum": payment_evaluation_profile_checksum,
                             "certificate_used_scale": False,
                         }
                     )
@@ -7644,6 +7647,18 @@ def run_exp9(
             "certificate_schema_version": certificate_schema_version,
             "test_profile_file_checksum": current_profile_checksum
             or hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+            "payment_evaluation_profile_source": (
+                "current Experiment-2 locked test_profiles.npz"
+            ),
+            "payment_evaluation_profile_checksum": current_profile_checksum
+            or hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+            "payment_evaluation_recomputed_after_profile_refit": True,
+            "payment_evaluation_recompute_scope": (
+                "the declared payment evaluator is rebuilt from the current "
+                "Experiment-2 profile cache; byte-identical quality profiles "
+                "may reuse their numerically identical rows, while any changed "
+                "profile is re-solved before the panel is finalized"
+            ),
             "validation_profile_file_checksum": current_validation_profile_checksum
             or hashlib.sha256(validation_profile_path.read_bytes()).hexdigest(),
             "data_manifest_checksum": current_data_manifest_checksum
@@ -8800,6 +8815,14 @@ def run_exp10(
             "data_center_power_factor": power_factor,
             "load_multiplier": load_multiplier,
             "peak_data_center_penetration": penetration,
+            "profile_source": (
+                "Experiment-2 locked test_profiles.npz plus Experiment-9 "
+                "certified_counterfactual_profiles.npz"
+            ),
+            "profile_checksum": hashlib.sha256(profile_path.read_bytes()).hexdigest(),
+            "certified_profile_checksum": hashlib.sha256(certified_path.read_bytes()).hexdigest(),
+            "ac_profile_checksum": ac_profile_checksum,
+            "profile_recomputed_after_exp2_refit": True,
             "ac_feasibility_tolerance": ac_feasibility_tolerance,
             "primal_dual_maximum_iterations": ac_max_iterations,
             "all_ac_opfs_converged": True,
@@ -9601,10 +9624,11 @@ def run_exp12(
     objective_values = np.full((len(days), len(all_names)), np.nan)
     projection_values = np.full_like(objective_values, np.nan)
     checkpoint = intermediate / "rolling_profiles_checkpoint.npz"
-    # Incremented after the native-load calibration change.  A checkpoint
-    # generated under the former horizon/profile convention must never be
+    # Incremented after the native-load calibration and risk-profile changes.
+    # A checkpoint generated under an older profile cache must never be
     # silently mixed with the current experiment outputs.
-    rolling_schema_version = 3
+    rolling_schema_version = 4
+    rolling_profile_checksum = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     completed: set[int] = set()
     if resume and checkpoint.exists():
         previous = np.load(checkpoint, allow_pickle=False)
@@ -9614,6 +9638,8 @@ def run_exp12(
             and np.array_equal(previous["days"].astype(int), days)
             and [str(value) for value in previous["profile_names"]]
             == all_names
+            and "profile_checksum" in previous.files
+            and str(previous["profile_checksum"]) == rolling_profile_checksum
         ):
             rolling_profiles = previous["profiles"]
             objective_values = previous["objectives"]
@@ -9702,6 +9728,7 @@ def run_exp12(
         np.savez_compressed(
             checkpoint,
             schema_version=np.asarray(rolling_schema_version),
+            profile_checksum=np.asarray(rolling_profile_checksum),
             days=days,
             profile_names=np.asarray(all_names),
             profiles=rolling_profiles,
@@ -10119,6 +10146,7 @@ def run_exp12(
         final / "experiment_metadata.json",
         {
             "days": days.tolist(),
+            "profile_checksum": rolling_profile_checksum,
             "horizon_slots": horizon,
             "prehistory_slots": prehistory,
             "post_day_recovery_slots": maximum_deadline,
@@ -12503,10 +12531,12 @@ def run_exp17(
         except (OSError, ValueError):
             reserve_test_rows = []
     completed: set[int] = set()
-    # The candidate economic grid is part of the decision protocol. Bump the
-    # checkpoint schema whenever that grid changes so a stale response profile
-    # cannot be reported under a new calibration.
-    schema = 11
+    # The candidate economic grid and the complete-ledger risk profile are
+    # part of the decision protocol. Bump the checkpoint schema whenever
+    # either changes so stale response rows cannot be reported under a new
+    # calibration.
+    schema = 12
+    profile_checksum = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
         if (
@@ -12518,6 +12548,9 @@ def run_exp17(
             == {terminal}
             and "decision_gate_slot" in previous
             and set(previous["decision_gate_slot"].astype(int).unique()) == {gate}
+            and "profile_checksum" in previous
+            and set(previous["profile_checksum"].astype(str).unique())
+            == {profile_checksum}
         ):
             rows = previous.to_dict("records")
             counts = previous.groupby("day")["method"].nunique()
@@ -12684,6 +12717,7 @@ def run_exp17(
                     "overpayment is diagnostic only"
                 ),
                 "schema_version": schema,
+                "profile_checksum": profile_checksum,
             }
             row.update(baseline_metrics(profile, oracle[local_day], event_slots))
             if method == "Committed-ledger rolling-service verifier":
@@ -12830,6 +12864,8 @@ def run_exp17(
     metadata = {
         "experiment": "event-gate information-boundary verification",
         "locked_days": int(len(days)),
+        "profile_checksum": profile_checksum,
+        "profile_source": "Experiment-2 locked test_profiles.npz",
         "event_gate_slot": gate,
         "terminal_completion_index": terminal,
         "future_arrivals_removed_from_decision": True,
@@ -13682,6 +13718,8 @@ def run_exp18(
     summary.to_csv(final / "preventive_ac_cross_network_summary.csv", index=False)
     metadata = {
         "experiment": "cross-network AC N-1 physical admissibility audit",
+        "model": "AC OPF with fixed non-reference active plan and reference-generator recourse",
+        "network_count": int(len(network_cache)),
         "networks": [str(item["name"]) for item in network_cache],
         "pre_registered_dc_bus_mapping_one_based": dc_bus_map,
         "bus_mapping_basis": (
@@ -13715,6 +13753,10 @@ def run_exp18(
             )
             for item in network_cache
         },
+        "optimization_calls": int(len(result_frame) + len(precompute_tasks)),
+        "contingency_evaluations": int(len(result_frame)),
+        "intact_reference_dispatches": int(len(precompute_tasks)),
+        "native_inadmissible_outages_excluded_before_workload": True,
         "validation_trace_peak_mw": validation_trace_peak,
         "load_multiplier": load_multiplier,
         "fixed_active_plan_tolerance_mw": active_plan_tolerance_mw,

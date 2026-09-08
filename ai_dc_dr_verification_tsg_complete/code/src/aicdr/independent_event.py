@@ -489,3 +489,19 @@ def run_exp23_independent_event_replay(
     }
     (final / "experiment_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     logger.info("Experiment 23 complete: %d independent event days", len(days))
+
+
+# The original controlled replay used an aggregate risk profile as its meter.
+# The publication pipeline now routes Exp23 through the declaration-only
+# common-witness replay below so the released artifact cannot silently mix
+# aggregate and job-indexed workload states.  The legacy implementation above
+# remains in the source history for provenance but is unreachable from the
+# stage entry point.
+def run_exp23_independent_event_replay(
+    root: Path,
+    cfg: dict[str, Any],
+    logger: logging.Logger,
+) -> None:
+    from .declaration_event_replay import run_declaration_only_replay
+
+    run_declaration_only_replay(root, cfg, logger, output_experiment="exp23_independent_event_replay")

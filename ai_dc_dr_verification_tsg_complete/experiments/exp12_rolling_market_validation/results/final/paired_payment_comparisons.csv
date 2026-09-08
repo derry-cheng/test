@@ -1,4 +1,4 @@
 target,comparator,paired_days,block_length_days,blocks,observed_mean_difference,extreme_assignments,total_sign_assignments,minimum_attainable_two_sided_p,two_sided_exact_p_value,block_sum_lag1_autocorrelation
-Payment-Certified N-1 Verifier,Feasible Quantile Projection,54,3,18,0.01382234993579834,5888,262144,7.62939453125e-06,0.0224609375,-0.2688584671314838
-Payment-Certified N-1 Verifier,Single Feasible Projection,54,3,18,-0.606817693137918,4,262144,7.62939453125e-06,1.52587890625e-05,0.16699967619395448
-Payment-Certified N-1 Verifier,Risk-Constrained Convex Verifier,54,3,18,-0.606817693137918,4,262144,7.62939453125e-06,1.52587890625e-05,0.16699967619395448
+Payment-Certified N-1 Verifier,Feasible Quantile Projection,54,3,18,0.05165988420094773,166844,262144,7.62939453125e-06,0.6364593505859375,0.09981036257641636
+Payment-Certified N-1 Verifier,Single Feasible Projection,54,3,18,-0.5689801588727685,4,262144,7.62939453125e-06,1.52587890625e-05,-0.05089122740907862
+Payment-Certified N-1 Verifier,Risk-Constrained Convex Verifier,54,3,18,-0.4649824586902663,52,262144,7.62939453125e-06,0.0001983642578125,-0.10213711051156232

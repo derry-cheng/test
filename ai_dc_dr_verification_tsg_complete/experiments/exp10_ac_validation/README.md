@@ -31,3 +31,10 @@ PYTHONPATH=code/src:vendor python experiments/exp10_ac_validation/run.py
 The run checkpoints the base-case network-day cells, the corrective
 method-day-outage panel, and the shared-active-plan preventive panel, and emits
 full tables plus English PNG/PDF visualizations.
+
+After a profile refit, the run compares every upstream method array and the
+AC peak-trace normalization maximum before resuming. Rows whose numeric input
+is bytewise identical are carried forward with the current combined profile
+digest; changed RiskSafe rows are re-solved. The resulting reuse and refit
+lineage is stored in `results/final/ac_profile_refit_reuse_manifest.json` and
+is checked by the repository audit.

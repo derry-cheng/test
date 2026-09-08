@@ -79,10 +79,9 @@
 
 ## 近年结构性对照
 
-非输电替代方案、清洁能源灵活性和数据中心灵活性分别由
-\cite{cao2024nonwire}、\cite{riepin2025clean} 和
-\cite{takci2025flexibility} 提供结构性参照；面向负荷聚合协调和生产轨迹
-灵活性的近期研究由 \cite{dcaopt2024,caprara2026} 补充。它们用于限定
+非输电替代方案、批处理灵活性和空间时间虚拟链路分别由
+\cite{cao2024nonwire}、\cite{cao2022flexibility} 和
+\cite{zhang2020virtuallinks,zhang2022remunerating} 提供结构性参照。它们用于限定
 相关工作与 baseline panel 的比较边界，不被当作本文门控账本、冻结合同
 基线或闭合电表结算规则的直接来源；这些规则仍由正文中的定义、命题和
 实验审计负责。

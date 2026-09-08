@@ -10,6 +10,7 @@ not contain an intervention label.
 from __future__ import annotations
 
 import json
+import hashlib
 import logging
 from pathlib import Path
 from typing import Any
@@ -179,6 +180,7 @@ def run_trace_meter_replay(root: Path, cfg: dict[str, Any], logger: logging.Logg
         "block_length_days": block_length,
         "bootstrap_replications": replications,
         "profiles_file": str(profiles_path.relative_to(root)),
+        "profiles_checksum": hashlib.sha256(profiles_path.read_bytes()).hexdigest(),
         "daily_file": "trace_meter_replay_daily.csv",
         "summary_file": "trace_meter_replay_summary.csv",
         "figure": "fig25_trace_meter_replay.pdf",

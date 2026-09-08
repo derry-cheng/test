@@ -1,9 +1,9 @@
 conversion_scenario,conversion_scale_factor,counterfactual_method,mean_absolute_error_usd,mean_overpayment_usd,maximum_post_contingency_loading
 heldout-interior-high,1.2,Feasible Quantile Projection,13.224405486477849,1.4932443055895799,1.0
 heldout-interior-high,1.2,Payment-Certified N-1 Verifier,12.502137573841082,1.1221248582435617,1.0
-heldout-interior-high,1.2,Risk-Constrained Convex Verifier,14.751064392236685,2.7600020667290437,1.0
+heldout-interior-high,1.2,Risk-Constrained Convex Verifier,14.720439947843639,2.7433290278438185,1.0
 heldout-interior-high,1.2,Single Feasible Projection,15.201942566490251,3.082033319790488,1.0
 heldout-interior-low,0.8,Feasible Quantile Projection,8.815041303512354,0.9952370508608889,1.0
 heldout-interior-low,0.8,Payment-Certified N-1 Verifier,8.333411324523695,0.7477113948444488,1.0
-heldout-interior-low,0.8,Risk-Constrained Convex Verifier,9.831809875373438,1.839273018805746,1.0
+heldout-interior-low,0.8,Risk-Constrained Convex Verifier,9.81139393297201,1.828160345047839,1.0
 heldout-interior-low,0.8,Single Feasible Projection,10.132298247294102,2.053898837643677,1.0

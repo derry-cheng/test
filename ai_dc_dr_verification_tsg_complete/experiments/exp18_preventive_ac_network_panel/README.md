@@ -28,5 +28,9 @@ schema-6 checkpoint permits restart after interruption without reusing
 results from a different load multiplier, fixed-plan tolerance, or solver
 protocol.
 
-The resulting CSVs and English visualization are stored under `results/` and
-`figures/`; checkpoints make the complete outage panel restartable.
+The panel records 9,648 admissible fixed-plan AC contingency solves and 144
+intact reference dispatches. Native-inadmissible connected outages are screened
+before workload injection and are reported explicitly in the metadata; they are
+outside the declared AC admissibility scope. The resulting CSVs and English
+visualization are stored under `results/` and `figures/`; checkpoints make the
+complete outage panel restartable.

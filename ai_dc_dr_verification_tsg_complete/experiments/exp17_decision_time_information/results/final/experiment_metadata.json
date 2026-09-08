@@ -1,6 +1,8 @@
 {
   "experiment": "event-gate information-boundary verification",
   "locked_days": 54,
+  "profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+  "profile_source": "Experiment-2 locked test_profiles.npz",
   "event_gate_slot": 60,
   "terminal_completion_index": 95,
   "future_arrivals_removed_from_decision": true,

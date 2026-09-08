@@ -169,7 +169,9 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
         float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
     }
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
-    assert set(comparison["schema_version"].astype(int)) == {11}
+    assert set(comparison["schema_version"].astype(int)) == {12}
+    assert comparison["profile_checksum"].nunique() == 1
+    assert metadata["profile_checksum"] == comparison["profile_checksum"].iloc[0]
     assert not comparison.loc[
         comparison["method"] == "Decision-time truncated-ledger verifier",
         "future_arrivals_used_for_decision",

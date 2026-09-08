@@ -69,6 +69,10 @@ def run_exp26_end_to_end_certificate(
     payment_profile_path = root / "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz"
     outage_path = root / "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv"
     outage_meta_path = root / "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json"
+    common_witness_path = root / "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz"
+    common_summary_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv"
+    common_settlement_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv"
+    common_meta_path = root / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
     required = [
         job_path,
         job_meta_path,
@@ -82,6 +86,10 @@ def run_exp26_end_to_end_certificate(
         payment_profile_path,
         outage_path,
         outage_meta_path,
+        common_witness_path,
+        common_summary_path,
+        common_settlement_path,
+        common_meta_path,
     ]
     missing = [str(path) for path in required if not path.exists() or path.stat().st_size == 0]
     if missing:
@@ -92,6 +100,7 @@ def run_exp26_end_to_end_certificate(
     risk_meta = json.loads(risk_meta_path.read_text(encoding="utf-8"))
     payment_meta = json.loads(payment_meta_path.read_text(encoding="utf-8"))
     outage_meta = json.loads(outage_meta_path.read_text(encoding="utf-8"))
+    common_meta = json.loads(common_meta_path.read_text(encoding="utf-8"))
     manifest = json.loads(
         (root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8")
     )
@@ -110,6 +119,48 @@ def run_exp26_end_to_end_certificate(
         raise ValueError("Exp19 witness arrays have inconsistent job dimensions")
     if aggregate.ndim != 2 or not np.isfinite(service).all() or not np.isfinite(aggregate).all():
         raise ValueError("Exp19 witness has an invalid service or aggregate array")
+
+    # Exp27 is the declaration-only runtime-complete witness used by the new
+    # common physical chain. It must be indexed by the same immutable
+    # submission digest as Exp19, and its settlement rows must reference the
+    # exact saved profile digest rather than a separately fitted trajectory.
+    common = np.load(common_witness_path, allow_pickle=False)
+    common_runtime = np.asarray(common["runtime_slots"], dtype=np.int64)
+    common_runtime_energy = np.asarray(common["runtime_energy_mwh"], dtype=float)
+    common_baseline = np.asarray(common["baseline_mwh"], dtype=float)
+    common_counterfactual = np.asarray(common["counterfactual_mwh"], dtype=float)
+    common_submit = np.asarray(common["submit_slot"], dtype=np.int64)
+    common_deadline = np.asarray(common["deadline_slot"], dtype=np.int64)
+    common_gpus = np.asarray(common["requested_gpus"], dtype=float)
+    common_cap = float(np.asarray(common["per_gpu_power_cap_mw"], dtype=float).reshape(-1)[0])
+    common_digest = str(np.asarray(common["witness_digest"]).reshape(-1)[0])
+    source_digest = str(np.asarray(job["submission_digest"]).reshape(-1)[0])
+    if common_meta.get("profile_identity_asserted") is not True:
+        raise RuntimeError("Exp27 does not assert identity of its saved workload profiles")
+    if common_meta.get("source_submission_digest") != source_digest:
+        raise RuntimeError("Exp27 and Exp19 do not share the same submission-ledger digest")
+    if not (
+        len(common_submit) == len(common_deadline) == len(common_runtime)
+        == len(common_runtime_energy) == len(starts)
+    ):
+        raise RuntimeError("Exp27 runtime-complete witness is not indexed by the Exp19 submission ledger")
+    expected_runtime = common_gpus * common_cap * dt_h * common_runtime
+    if np.max(np.abs(expected_runtime - common_runtime_energy)) > 1e-12:
+        raise RuntimeError("Exp27 runtime energy is not implied by the declared GPU/runtime fields")
+    queue_buffer = int(common_meta["queue_buffer_slots"])
+    if np.max(np.abs(common_deadline - (common_submit + common_runtime + queue_buffer))) > 0:
+        raise RuntimeError("Exp27 runtime/deadline identity check failed")
+    if common_baseline.shape != common_counterfactual.shape or common_baseline.ndim != 2:
+        raise RuntimeError("Exp27 saved workload profiles have incompatible shapes")
+    common_settlement = pd.read_csv(common_settlement_path)
+    if common_settlement.empty:
+        raise RuntimeError("Exp27 settlement replay is empty")
+    if not common_settlement["baseline_witness_profile_sha256"].eq(common_digest).all() or not common_settlement["counterfactual_witness_profile_sha256"].eq(common_digest).all():
+        raise RuntimeError("Exp27 settlement rows do not reference the common witness digest")
+    common_summary = pd.read_csv(common_summary_path)
+    common_metrics = dict(zip(common_summary["metric"].astype(str), common_summary["value"].astype(float)))
+    if abs(common_metrics.get("baseline_energy_residual_mwh", np.inf)) > 1e-9 or abs(common_metrics.get("counterfactual_energy_residual_mwh", np.inf)) > 1e-9:
+        raise RuntimeError("Exp27 runtime-complete energy certificate exceeds tolerance")
 
     # Exp19 uses zero-based regional labels.  The first certificate checks the
     # indexed witness and regional aggregation before any network valuation.
@@ -217,6 +268,8 @@ def run_exp26_end_to_end_certificate(
 
     source_records = [
         _source_record(root, job_path, "executable submitted-job witness", str(service.shape)),
+        _source_record(root, common_witness_path, "runtime-complete common witness used by network settlement", str(common_counterfactual.shape)),
+        _source_record(root, common_settlement_path, "N-1 settlement replay of the runtime-complete common witness", str(common_settlement.shape)),
         _source_record(root, risk_path, "validation-fitted aggregate risk target", str(risk_profile.shape)),
         _source_record(root, payment_profile_path, "payment-certified feasible profile hull", str(payment_profile.shape)),
         _source_record(root, coupling_path, "recomputed job-to-network certificate summary", "metric table"),
@@ -231,6 +284,13 @@ def run_exp26_end_to_end_certificate(
     )
     lineage["payment_cap_is_relative_n1_cap"] = lineage["profile_role"].eq(
         "payment-certified feasible profile hull"
+    )
+    lineage["common_witness_identity_asserted"] = lineage["profile_role"].isin(
+        [
+            "executable submitted-job witness",
+            "runtime-complete common witness used by network settlement",
+            "N-1 settlement replay of the runtime-complete common witness",
+        ]
     )
     lineage.to_csv(final / "profile_role_lineage.csv", index=False)
 
@@ -296,6 +356,12 @@ def run_exp26_end_to_end_certificate(
                 "passed": mapped_coupling.valid and coupling_meta.get("network_profile_is_same_job_witness") is True,
             },
             {
+                "stage": "common executable witness",
+                "certificate": "the same declaration-indexed runtime-complete witness digest is reused by network settlement",
+                "maximum_residual_or_violation": float(max(abs(common_metrics["baseline_energy_residual_mwh"]), abs(common_metrics["counterfactual_energy_residual_mwh"]))),
+                "passed": bool(common_meta.get("profile_identity_asserted") is True and common_settlement["solver_success"].all()),
+            },
+            {
                 "stage": "complete outage replay",
                 "certificate": "all 37 finite non-islanding line outages for every frozen profile cell",
                 "maximum_residual_or_violation": float(outage["max_postcontingency_loading"].max()),
@@ -310,7 +376,7 @@ def run_exp26_end_to_end_certificate(
     calibration = manifest.get("submission_calibration", {})
     metadata = {
         "experiment": "end-to-end evidence-chain lineage certificate",
-        "schema_version": 1,
+        "schema_version": 2,
         "locked_days": int(len(risk_days)),
         "upstream_artifact_hashes": {
             record["profile_role"]: record["source_sha256"] for record in source_records
@@ -320,14 +386,17 @@ def run_exp26_end_to_end_certificate(
             "indexed witness -> regional aggregation and nodal mapping",
             "validation-only aggregate risk target -> relative N-1 payment cap",
             "indexed witness -> RTS-24 N-1 network valuation",
+            "runtime-complete common witness -> the same RTS-24 N-1 settlement replay",
             "frozen profiles -> all finite non-islanding outage replay",
         ],
         "profile_roles": {
             "risk_profile": "validation-fitted aggregate contract target from Exp2",
             "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
-            "indexed_job_witness": "Exp19 exact submitted-job service vector used by Exp22 network replay",
-            "profile_identity_asserted": False,
-            "role_separation_reason": "Aggregate risk and indexed job ledgers have different provenance; the certificate prevents silent substitution rather than asserting numerical identity.",
+            "indexed_job_witness": "Exp19 exact submitted-job declaration index",
+            "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
+            "network_settlement_witness_digest": common_digest,
+            "profile_identity_asserted": True,
+            "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness.",
         },
         "job_entitlement_semantics": {
             "central_fraction_q50": float(calibration.get("declared_service_fraction", np.nan)),
@@ -336,6 +405,15 @@ def run_exp26_end_to_end_certificate(
         },
         "coupling_certificate": coupling.to_dict(),
         "network_mapping_certificate": mapped_coupling.to_dict(),
+        "common_witness_certificate": {
+            "witness_digest": common_digest,
+            "submitted_jobs": int(len(common_submit)),
+            "runtime_energy_mwh": float(common_runtime_energy.sum()),
+            "profile_shape": list(common_counterfactual.shape),
+            "settlement_rows": int(len(common_settlement)),
+            "all_settlement_solves_successful": bool(common_settlement["solver_success"].all()),
+            "finite_n1_contingencies_per_cell": int(common_settlement["finite_n1_contingencies"].iloc[0]),
+        },
         "network_mapping_one_hot_bus_indices_zero_based": (configured_buses - 1).tolist(),
         "payment_certificate_scope": "relative N-1 baseline-cost cap; no absolute no-overpayment, revenue-adequacy, or incentive-compatibility theorem is asserted",
         "payment_cap_maximum_violation_usd": max_violation,
@@ -359,12 +437,11 @@ def run_exp26_end_to_end_certificate(
     (folder / "README.md").write_text(
         """# Experiment 26: End-to-end evidence-chain certificate
 
-This cached-only certificate recomputes the indexed job-to-network residuals and
-checks the frozen risk, relative payment, and complete RTS-24 outage artifacts.
-It records SHA-256 source hashes and explicit roles for the aggregate risk
-profile, payment-certified profile, and executable submitted-job witness. The
-roles remain separate; no numerical identity or universal payment theorem is
-asserted.
+This cached-only certificate recomputes the indexed job-to-network residuals,
+checks the runtime-complete common witness, and verifies the frozen risk,
+relative payment, and complete RTS-24 outage artifacts. The declaration witness
+and its N-1 settlement replay carry one digest and one submission index. The
+aggregate risk and payment profiles remain explicitly labeled analysis views.
 
 The certificate does not refit, select, clip, or re-optimize any upstream
 profile. Outputs are written to `results/final/`: `end_to_end_lineage.csv`,

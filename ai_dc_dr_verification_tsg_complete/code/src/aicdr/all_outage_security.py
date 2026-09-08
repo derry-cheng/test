@@ -149,7 +149,7 @@ def run_exp24_all_outage_security_panel(
                medianprops={"color": "#D55E00", "linewidth": 1.5})
     ax.axhline(1.0, color="#333333", linestyle="--", linewidth=1.0, label="N−1 limit")
     ax.set_ylabel("Maximum post-contingency loading (p.u.)")
-    ax.set_title("Frozen profiles under every finite RTS-24 N−1 outage")
+    ax.set_title("Frozen profiles under every finite RTS-24 DC N−1 outage")
     ax.grid(axis="y", alpha=0.25)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -160,6 +160,7 @@ def run_exp24_all_outage_security_panel(
 
     metadata = {
         "experiment": "full finite N-1 frozen-profile security replay",
+        "model": "DC N-1 SCED",
         "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
         "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
         "profile_source": "Exp2 locked-test profiles frozen before network replay",
@@ -167,6 +168,9 @@ def run_exp24_all_outage_security_panel(
         "locked_days": int(len(days)),
         "event_slots": event_slots,
         "replay_cells": int(len(frame)),
+        "optimization_cells": int(len(tasks)),
+        "contingency_evaluations": int(len(tasks) * int(security[3])),
+        "contingency_definition": "37 finite non-islanding RTS-24 branch outages per DC SCED cell",
         "credible_contingencies_per_cell": int(security[3]),
         "all_finite_nonislanding_outages_evaluated": True,
         "ac_admissibility_screen": False,

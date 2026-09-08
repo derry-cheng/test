@@ -1,5 +1,6 @@
 {
   "experiment": "full finite N-1 frozen-profile security replay",
+  "model": "DC N-1 SCED",
   "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
   "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
   "profile_source": "Exp2 locked-test profiles frozen before network replay",
@@ -19,6 +20,9 @@
     71
   ],
   "replay_cells": 864,
+  "optimization_cells": 864,
+  "contingency_evaluations": 31968,
+  "contingency_definition": "37 finite non-islanding RTS-24 branch outages per DC SCED cell",
   "credible_contingencies_per_cell": 37,
   "all_finite_nonislanding_outages_evaluated": true,
   "ac_admissibility_screen": false,

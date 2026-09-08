@@ -7,11 +7,10 @@ definition, or a proposition derived in this study. Citation keys resolve in
 `references.bib`.
 
 The related-work boundary is explicit. Recent power-system studies on non-wire
-alternatives and clean-energy flexibility \cite{cao2024nonwire,riepin2025clean}
-and a data-center flexibility review \cite{takci2025flexibility}, together with
-load-aggregator coordination and production-trace flexibility studies
-\cite{dcaopt2024,caprara2026}, motivate the published-equation translation panel. None of
-these sources supplies the gate-causal ledger, submitted/frozen contract
+alternatives and data-center flexibility \cite{cao2024nonwire,cao2022flexibility}
+together with virtual-link remuneration \cite{zhang2020virtuallinks,zhang2022remunerating}
+motivate the published-equation translation panel. None of these sources supplies
+the gate-causal ledger, submitted/frozen contract
 separation, or closed-meter settlement rule used here. Those elements are
 defined and proved below rather than presented as consequences of the cited
 models.

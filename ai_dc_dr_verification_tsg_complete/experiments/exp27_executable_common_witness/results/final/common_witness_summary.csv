@@ -1,0 +1,17 @@
+metric,value,unit
+submitted_jobs,75326.0,jobs
+runtime_slots_min,1.0,slots
+runtime_slots_median,24.0,slots
+runtime_slots_p90,128.0,slots
+runtime_slots_max,584.0,slots
+declared_runtime_energy_mwh,1972.1150000000002,MWh
+baseline_energy_residual_mwh,-7.73070496506989e-12,MWh
+counterfactual_energy_residual_mwh,2.2737367544323206e-13,MWh
+baseline_minimum_site_capacity_slack_mwh,28.59575000000007,MWh
+counterfactual_minimum_site_capacity_slack_mwh,28.59525000000007,MWh
+baseline_event_energy_mwh,165.43649999999946,MWh
+counterfactual_event_energy_mwh,124.28000000000006,MWh
+event_reduction_mwh,41.1564999999994,MWh
+event_response_delay_mwh,0.474000000000086,MWh
+baseline_jobs_with_one_contiguous_block,75326.0,jobs
+counterfactual_jobs_with_one_contiguous_block,75326.0,jobs

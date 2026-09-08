@@ -1,27 +1,32 @@
 {
   "experiment": "end-to-end evidence-chain lineage certificate",
-  "schema_version": 1,
+  "schema_version": 2,
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "validation-fitted aggregate risk target": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+    "runtime-complete common witness used by network settlement": "22758df5f8c44326ed15794a24c3d24696e39eb59301068f8193c14cd4c377e4",
+    "N-1 settlement replay of the runtime-complete common witness": "6823e98c68bd455310816bc6608d3c4240f2fe4f1521cd13a0af976b01880368",
+    "validation-fitted aggregate risk target": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
     "payment-certified feasible profile hull": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c",
     "recomputed job-to-network certificate summary": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c",
-    "frozen-profile all-outage N-1 replay": "a3e88e9ea6cb191f35b27d7b5c92f8bd2a319bd76fa1e3091d9f98079df86220"
+    "frozen-profile all-outage N-1 replay": "9ff56d6d691f20166007605bdadca89164bf765565b848ffbd358435a46c9d03"
   },
   "chain": [
     "submit-time declarations -> exact indexed job witness",
     "indexed witness -> regional aggregation and nodal mapping",
     "validation-only aggregate risk target -> relative N-1 payment cap",
     "indexed witness -> RTS-24 N-1 network valuation",
+    "runtime-complete common witness -> the same RTS-24 N-1 settlement replay",
     "frozen profiles -> all finite non-islanding outage replay"
   ],
   "profile_roles": {
     "risk_profile": "validation-fitted aggregate contract target from Exp2",
     "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
-    "indexed_job_witness": "Exp19 exact submitted-job service vector used by Exp22 network replay",
-    "profile_identity_asserted": false,
-    "role_separation_reason": "Aggregate risk and indexed job ledgers have different provenance; the certificate prevents silent substitution rather than asserting numerical identity."
+    "indexed_job_witness": "Exp19 exact submitted-job declaration index",
+    "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
+    "network_settlement_witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+    "profile_identity_asserted": true,
+    "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness."
   },
   "job_entitlement_semantics": {
     "central_fraction_q50": 0.0011383333333333334,
@@ -59,6 +64,18 @@
     "maximum_gpu_bound_violation_mwh": 0.0,
     "minimum_site_capacity_slack_mwh": 29.495686297196574,
     "valid": true
+  },
+  "common_witness_certificate": {
+    "witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+    "submitted_jobs": 75326,
+    "runtime_energy_mwh": 1972.1150000000002,
+    "profile_shape": [
+      4,
+      12656
+    ],
+    "settlement_rows": 432,
+    "all_settlement_solves_successful": true,
+    "finite_n1_contingencies_per_cell": 37
   },
   "network_mapping_one_hot_bus_indices_zero_based": [
     2,

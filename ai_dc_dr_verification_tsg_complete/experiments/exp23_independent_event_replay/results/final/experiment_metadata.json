@@ -1,7 +1,11 @@
 {
-  "experiment": "independent controlled-event replay",
+  "experiment": "independent declaration-only event replay",
+  "schema_version": 2,
   "locked_days": 54,
-  "event_gate_slot": 60,
+  "truth_source": "independent declaration-only exact start policy",
+  "assessment_source": "Exp27 runtime-complete common witness response",
+  "event_intervention": true,
+  "common_witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
   "event_slots": [
     64,
     65,
@@ -12,43 +16,33 @@
     70,
     71
   ],
-  "truth_source": "independent_gate_causal_event_policy",
-  "event_intervention": true,
+  "independent_event_tariff_per_mwh": 30.0,
+  "common_witness_event_tariff_per_mwh": 150.0,
+  "future_arrivals_used": false,
+  "execution_telemetry_used": false,
   "causal_intervention_claim": false,
-  "identification_statement": "A predeclared tariff shock and service floor are applied to the gate-masked submitted ledger. The independently parameterized policy has no statistical target, risk envelope, candidate weights, or verifier output as an input. This is a controlled optimization replay, not a field utility-event estimate.",
   "independent_policy": {
-    "objective": "exact release/deadline/capacity LP with a distinct event tariff and a predeclared event-service floor on the participating site set",
-    "response_price_per_mwh": 210.0,
-    "baseline_price_per_mwh": 85.0,
-    "participating_data_center_indices": [
-      0,
-      1
-    ],
-    "minimum_participant_event_mwh": 7.0,
+    "description": "exact enumeration of every contiguous declaration-feasible start under a distinct predeclared event tariff",
+    "risk_oracle_reused": false,
     "tariff_pair_distinct_from_gate": true,
-    "participant_set_distinct_from_gate": true,
     "structurally_distinct_from_gate": true,
-    "policy_family": "exact release/deadline LP with independent tariff and participant set",
-    "maximum_response_difference_from_gate_mw": 28.000000000000007,
-    "mean_event_response_difference_from_gate_mw": 0.875,
-    "maximum_baseline_difference_from_gate_mw": 118.0,
-    "mean_event_baseline_difference_from_gate_mw": 30.479144527000336,
-    "post_gate_arrivals_used": false,
-    "future_arrivals_used_for_decision": false,
-    "risk_oracle_reused": false
+    "minimum_participant_event_mwh": 0.00025,
+    "maximum_response_difference_from_gate_mw": 0.04199999999999998
   },
-  "gate_policy": {
-    "objective": "same exact LP with the selected gate tariff and committed service constraint",
-    "response_price_per_mwh": 150.0,
-    "baseline_price_per_mwh": 120.0,
-    "committed_event_service_mwh": 5.0,
-    "post_gate_arrivals_used": false
-  },
-  "workers": 4,
-  "daily_file": "independent_event_replay_daily.csv",
-  "summary_file": "independent_event_replay_summary.csv",
-  "profiles_file": "independent_event_profiles.npz",
   "protocol_certificate_file": "independent_event_protocol_certificate.csv",
-  "protocol_certificate_scope": "independent policy inputs, predeclared tariff separation, and nonzero trajectory separation before scoring",
-  "figure": "fig26_independent_event_replay.pdf"
+  "profile_identity_asserted": true,
+  "replay_metrics": {
+    "mean_nrmse": 0.029150467539919903,
+    "mean_false_response_mwh": 0.010425925925926246,
+    "mean_underpayment_mwh": 0.005041666666666374,
+    "mean_credit_f1": 0.9191679652425526
+  },
+  "files": {
+    "daily": "independent_event_replay_daily.csv",
+    "summary": "independent_event_replay_summary.csv",
+    "profiles": "independent_event_profiles.npz",
+    "protocol": "independent_event_protocol_certificate.csv",
+    "figure": "fig26_independent_event_replay.pdf"
+  },
+  "source_code_sha256": "e8aff6f99ed348c044c76689f9455f8d98d2e9f0f468045a346ad40c44ae7c28"
 }

@@ -55,6 +55,7 @@
     113,
     114
   ],
+  "profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
   "horizon_slots": 1216,
   "prehistory_slots": 608,
   "post_day_recovery_slots": 512,

@@ -1,6 +1,7 @@
 stage,certificate,maximum_residual_or_violation,passed
 job witness,"exact declared-energy equality, GPU bound, regional capacity, and regional aggregation",0.0,True
-aggregate risk contract,validation-fitted total plus daily-CVaR constraints,3.3306690738754696e-16,True
+aggregate risk contract,validation-fitted total plus daily-CVaR constraints,0.0,True
 relative payment cap,certified N-1 baseline cost no larger than the validation-frozen cap,8.934875950217247e-09,True
 network valuation,Exp22 network profile is reconstructed from the indexed witness,0.0,True
+common executable witness,the same declaration-indexed runtime-complete witness digest is reused by network settlement,7.73070496506989e-12,True
 complete outage replay,all 37 finite non-islanding line outages for every frozen profile cell,1.0000000000000022,True
