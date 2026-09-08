@@ -8,7 +8,7 @@
 \usepackage{url}
 \emergencystretch=1em
 % Retain IEEEtran's journal baseline; page length is controlled by prose and
-% float placement rather than compressed line spacing.
+% float placement without compressed line spacing.
 \setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
 \setlength{\floatsep}{4pt plus 1pt minus 1pt}
 \setlength{\intextsep}{5pt plus 1pt minus 1pt}
@@ -32,7 +32,8 @@ AI data centers can provide demand response (DR), yet a meter decrease does not
 show that the credited work was committed before the event or that a local
 reduction created network value. This paper develops a declaration-indexed
 verification and settlement framework for spatially coupled AI data centers.
-Scheduler declarations define release, allocation runtime, requested GPUs,
+Scheduler declarations define release, allocation runtime, requested
+graphics processing units (GPUs),
 regional assignment, and a fixed GPU nameplate. An exact contiguous start-time
 witness is then carried through regional aggregation, security-constrained
 network valuation, and nodal settlement under one submission digest. A separate
@@ -166,7 +167,9 @@ $D_k$, release and deadline feasibility are
  y_{skt}&\leq A_{skt}, \label{eq:release}\\
  y_{skt}&\geq A_{sk,t-D_k},\quad t\geq D_k. \label{eq:deadline}
 \end{align}
-The state recursion equals service and terminal service equals total arrivals;
+The state recursion is $y_{skt}-y_{sk,t-1}=\sum_d x_{skdt}$ with
+$y_{sk,-1}=0$, and terminal service equals the declared arrivals due in the
+window; the site-capacity constraint is
 $\sum_{s,k}x_{skdt}\leq\bar P_d\dt$. Facility demand is
 \begin{equation}
  p_{dt}=P_d^{\rm fix}+\dt^{-1}\sum_{s,k}x_{skdt}.
@@ -309,7 +312,7 @@ for the simulated and observed trajectories. The simulated source defines the
 validation epigraph; the observed source is recomputed only in the locked
 replay. For nonnegative true credit,
 \(p^{(\mathrm{sim})}+r^{(\mathrm{sim})}
-=\max\{p^0,p^{(\mathrm{sim})}\}\), an audited identity rather than a new meter
+=\max\{p^0,p^{(\mathrm{sim})}\}\), an audited identity with no new meter
 trajectory. The gross forecast credit is not a transfer: before the event, the
 operator freezes \(p^{\rm con}\), the profile actually offered for the product,
 and after meter closure the payable response is the pointwise intersection
@@ -528,7 +531,8 @@ single projection proves nonemptiness. Thus the output remains attainable and
 can fall below the single reference when supported by the risk fit. Equations
 (\ref{eq:totalrisk}) and (\ref{eq:cvar}) control aggregate and daily-tail
 exposure; the upper side is the deterministic payment cap, whereas the lower
-side is an under-credit regularizer rather than an unseen-trace guarantee.
+side is an under-credit regularizer and does not provide an unseen-trace
+guarantee.
 Realized overpayment is handled by (\ref{eq:meter_cap}).
 
 \paragraph{Decision-time information boundary.}
@@ -551,10 +555,10 @@ Equation~(\ref{eq:causalreserve}) uses earlier days only. Candidates are selecte
 on validation days under a declared false-credit budget and used only for
 capacity planning; no reserved job enters payment before commitment.
 
-The cumulative state makes storage linear rather than quadratic: explicit
-prefixes scale as
-$O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|^2)$, whereas the cumulative
-matrix scales as $O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|)$. A 512-slot
+The cumulative state uses
+$O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|)$ nonzeros, whereas explicit
+prefixes require
+$O(|\mathcal S||\mathcal K||\mathcal D||\mathcal T|^2)$. A 512-slot
 deadline is handled by (\ref{eq:rollingterminal}) with every observed future
 arrival retained; no zero-arrival completion buffer is used in the final
 continuous-horizon certificate. The day trajectory is embedded by two
@@ -656,7 +660,7 @@ The settlement chain in (\ref{eq:settlementchain}) is evaluated after the
 submitted profile, frozen contract, and closed meter are fixed; it is an
 accounting identity, not a second optimization. Experiment~12 stores the chain,
 site allocation, $G$ decomposition, and bilateral budget residuals below
-$10^{-8}$ USD; these are accounting certificates rather than accuracy claims.
+ $10^{-8}$ USD; these are accounting certificates, not accuracy claims.
 
 Security-aware settlement augments (\ref{eq:sced}) with every finite
 non-islanding single-line outage. If $L_{\ell k}$ is the LODF from outage $k$
@@ -889,6 +893,10 @@ three-day bootstrap replicates and all $2^{18}$ block-sign assignments use Holm 
 \cite{kunsch1989bootstrap,holm1979multiple}. Sparse-system size grows from
 5,760 variables/13,424 nonzeros at 96 slots to 36,480/85,488 at 608 slots
 (0.039--0.212 s).
+All release runs clamp BLAS and HiGHS to one numerical-backend thread per
+worker; the bounded pools use at most 12 workers and remain below the
+project-wide 20-core ceiling. Every long panel writes a schema- and
+profile-validated checkpoint before a resumed cell is accepted.
 
 The model-out check uses polar alternating-current optimal power flow (AC OPF)
 with active/reactive balance, voltage/reactive-generation bounds, and
@@ -1092,15 +1100,16 @@ whereas event-window error is predictive; all 54 contracts activate.
 
 The immutable scheduler/DCGM replay gives slot MAE 3.740 versus 5.678 MW at
 100\% coverage and a 71,128-job residual below $10^{-17}$ MWh; no utility-event
-label exists. Experiment~20 gives trace-meter MAE 2.988 MW (2.673 for feasible
-quantile). Experiment~23 instead re-enumerates every declaration-feasible start
-under a distinct, predeclared event tariff. Against that independent exact
-declaration replay, the common runtime-complete witness obtains nRMSE 0.0292,
-false response 0.0104 MWh/day, and $F_1=0.919$ over all 54 locked days. The
-protocol certificate verifies zero use of future arrivals or execution
-telemetry and an identical submission digest. This is an optimization-policy
-replay rather than a field-causal intervention; Table~\ref{tab:security}
-records the information boundary explicitly.
+label exists. Experiment~17 quantifies the deployment information cost:
+complete-ledger nRMSE/false response/$F_1$ is 0.3221/1.7913/0.4548, while the
+slot-60 gate with post-gate arrivals masked gives 0.5683/3.5092/0.1005. The
+gate is fixed before locked scoring. Experiment~20 gives trace-meter MAE
+2.988 MW (2.673 for feasible quantile). Experiment~23 enumerates every
+declaration-feasible start under a distinct tariff; its common witness gives
+nRMSE 0.0292, false response 0.0104 MWh/day, and $F_1=0.919$ over 54 days.
+The certificate verifies no future arrivals or execution telemetry enter the
+policy and makes no field-causal claim. Table~\ref{tab:security} records the
+boundary.
 
 \begin{table}[t]
 \centering
@@ -1130,11 +1139,12 @@ runtime entitlement totals 1,972.115 MWh, the aggregate energy residual is
 below $10^{-11}$ MWh, and minimum site slack is 28.595 MWh
 (Table~\ref{tab:jobcounterfactual}). The same saved baseline and event-response
 arrays produce 41.1565 MWh of event-window reduction and are replayed in 432
-locked RTS-24 cells, each with all 37 finite non-islanding contingencies.
-Experiment~25 validates the separate 71,128/75,326 execution join; its
-79-job declaration cohort binds 0.00016037 MW at the 0.00108-MWh service
-floor. Experiment~24 independently completes 864 DC-SCED cells and 31,968
-sample-contingency evaluations. Experiment~26 recomputes job-to-region and
+common-witness settlement cells (54 days times eight event slots), each with
+37 finite contingencies. Experiment~25 validates the 71,128/75,326 execution
+join; its 79-job cohort binds 0.00016037 MW at the 0.00108-MWh floor.
+Experiment~24 separately covers 864 frozen-profile cells and 31,968
+contingency evaluations; it does not re-optimize the indexed witness.
+Experiment~26 recomputes job-to-region and
 region-to-bus residuals and verifies the common witness digest before network
 settlement; its lineage certificate passes with zero typed residuals and
 explicitly labels the aggregate risk and payment profiles as analysis views.
@@ -1181,7 +1191,7 @@ network settlement.
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
 % Use IEEE's compact reference convention while retaining the 10-point body.
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.3}{6.6}\selectfont\setlength{\itemsep}{-0.60pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.1}{6.4}\selectfont\setlength{\itemsep}{-0.70pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

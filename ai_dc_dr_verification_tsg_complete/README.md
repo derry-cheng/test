@@ -49,7 +49,7 @@ row counts, hashes, joins, temporal coverage, calibration, scaling, and all
 split rules are recorded in `data/processed/data_manifest.json` and
 `data/processed/data_flow_audit.csv`. The large workload and telemetry inputs
 are intentionally excluded from version control; the tracked PGLib case is a
-public network benchmark rather than private telemetry. Public traces do not expose facility geography, so the
+public network benchmark with no private telemetry. Public traces do not expose facility geography, so the
 four-region placement and trace-to-power conversion are declared benchmark
 scenarios; all 24 region-to-bus permutations plus two predeclared concentration
 controls are evaluated in Experiment 11.

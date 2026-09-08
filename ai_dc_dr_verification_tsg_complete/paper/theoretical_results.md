@@ -220,7 +220,7 @@ generator buses, capacities, line limits, and public quadratic cost curves but
 independently re-solves them at 80-segment resolution. Zero error is therefore
 not guaranteed even with a trace-anchored counterfactual. With an estimated
 counterfactual, the measured error includes baseline error and declared
-resolution discrepancy rather than a positive-payment truncation artifact.
+resolution discrepancy, not a positive-payment truncation artifact.
 
 The subgradient inequality at \(p^0\) gives the global certificate
 
@@ -333,7 +333,7 @@ An inserted or removed row changes the row count, join cardinality, energy
 sum, or digest. A timestamp alteration violating the release--execution order
 fails the temporal predicate. The LP then preserves the exact energy of each
 committed job and the measured aggregate slot profile, so its numerical
-residual certifies solver feasibility rather than unverified provenance.
+residual certifies solver feasibility, not unverified provenance.
 Experiment 16 evaluates all conditions on the complete scheduler/DCGM release,
 stores the digest and source hashes, and reconciles the measured regional
 capacity envelope with the 118-MW nameplate committed before the

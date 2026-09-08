@@ -26,7 +26,7 @@ all 24 trace-to-bus permutations plus the two predeclared concentration controls
 contracts activated, and Experiment 18 contains 9,648 fixed-active-plan AC
 N--1 outcomes across RTS-24, IEEE-30, IEEE-39, and IEEE-118. The final audit is
 rerun after all dependent artifacts are regenerated; its check count and the
-LaTeX page count are recorded from the release build rather than copied from an
+LaTeX page count are recorded from the release build and not copied from an
 earlier run.
 Experiment 12 now names its complete-cycle metric as a settlement-value
 residual and records the no-event reference definition explicitly, preventing
@@ -44,7 +44,7 @@ and its simplex differs from the CVaR-only ablation by
 frontier reaches an active boundary at reserve 0.97, while no locked outcome is
 used for selection. The downstream payment, AC, spatial, information-boundary,
 and trace-replay panels are regenerated from the current profile lineage. The
-release audit now reports 356/356 checks passed, and the final IEEEtran build is
+release audit now reports 358/358 checks passed, and the final IEEEtran build is
 10 pages with no overfull boxes or unresolved references.
 
 Experiment 26 closes the remaining declaration-to-settlement hand-off with a
@@ -55,3 +55,11 @@ certificates, verifies all 37 finite RTS-24 outages, and records SHA-256 digests
 for seven upstream artifacts, including the runtime-complete common witness and
 its N--1 settlement replay. The certificate stores explicit profile roles and
 checks the identity of that common witness before network valuation.
+
+Experiments 27 and 28 close the two remaining release checks. Experiment 27
+constructs the runtime-complete declaration witness for all 75,326 submissions,
+uses its digest for 432 common-witness RTS-24 settlement cells, and reports the
+same witness at the job and network layers. Experiment 28 independently audits
+the held-out total-plus-CVaR tail against the total-budget-only ablation with a
+paired block bootstrap. The final release tree contains the updated paper,
+figures, manifests, and all 358 audit checks.

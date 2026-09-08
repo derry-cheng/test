@@ -12,7 +12,7 @@ together with virtual-link remuneration \cite{zhang2020virtuallinks,zhang2022rem
 motivate the published-equation translation panel. None of these sources supplies
 the gate-causal ledger, submitted/frozen contract
 separation, or closed-meter settlement rule used here. Those elements are
-defined and proved below rather than presented as consequences of the cited
+defined and proved below; they are not presented as consequences of the cited
 models.
 
 ## A. Indices, data, and decision variables
@@ -64,7 +64,7 @@ for \(\tau\) only where the distinction is immaterial.
 Deadline-constrained temporal deferral and geographic assignment follow the
 data-center scheduling foundations in \cite{cao2022flexibility}.
 The four-region topology, three service classes, and numerical capacities are
-declared scenario parameters rather than facts inferred from those papers.
+declared scenario parameters, not facts inferred from those papers.
 
 For an event window, \(p^0\) is the trace-anchored no-event counterfactual and
 \(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
@@ -706,7 +706,7 @@ comparator uses the same complete submitted ledger as the verifier.
 The exact nonoverlapping block-sign test treats each pre-declared three-day block
 sum as one exchangeable sign under the null. It enumerates all
 \(2^{18}=262{,}144\) sign assignments; it is an exact test definition in this study's
-analysis protocol rather than an asymptotic independence claim.
+analysis protocol, not an asymptotic independence claim.
 
 All workload programs are sparse linear programs solved with the HiGHS method
 \cite{huangfu2018highs}. A reported solution is retained only when the solver
