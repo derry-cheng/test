@@ -295,7 +295,13 @@
         "q10_q90_interval_coverage": 0.5913892164488045
       }
     },
-    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound"
+    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound",
+    "join_scope_definition": "positive scheduler/DCGM energy-label join with valid submit/end, timelimit, and requested-GPU fields; a valid execution interval is not required because this join is used only for the training label",
+    "full_execution_join_comparison": {
+      "full_positive_execution_join_jobs": 71128,
+      "label_join_excess_jobs": 13,
+      "execution_interval_filter_applied_to_full_join": true
+    }
   },
   "processing": {
     "interval_seconds": 900,

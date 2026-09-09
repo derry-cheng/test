@@ -74,6 +74,9 @@ def run_exp26_end_to_end_certificate(
     common_summary_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv"
     common_typed_certificate_path = root / "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json"
     common_settlement_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv"
+    common_settlement_summary_path = root / "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv"
+    risk_bridge_path = root / "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv"
+    risk_bridge_certificate_path = root / "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json"
     common_meta_path = root / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
     required = [
         job_path,
@@ -92,6 +95,9 @@ def run_exp26_end_to_end_certificate(
         common_summary_path,
         common_typed_certificate_path,
         common_settlement_path,
+        common_settlement_summary_path,
+        risk_bridge_path,
+        risk_bridge_certificate_path,
         common_meta_path,
     ]
     missing = [str(path) for path in required if not path.exists() or path.stat().st_size == 0]
@@ -106,6 +112,9 @@ def run_exp26_end_to_end_certificate(
     common_meta = json.loads(common_meta_path.read_text(encoding="utf-8"))
     common_typed_certificate = json.loads(
         common_typed_certificate_path.read_text(encoding="utf-8")
+    )
+    risk_bridge_certificate = json.loads(
+        risk_bridge_certificate_path.read_text(encoding="utf-8")
     )
     manifest = json.loads(
         (root / cfg["data"]["processed_dir"] / "data_manifest.json").read_text(encoding="utf-8")
@@ -138,6 +147,21 @@ def run_exp26_end_to_end_certificate(
     common_counterfactual_service = np.asarray(common["counterfactual_service_mwh"], dtype=float)
     common_baseline = np.asarray(common["baseline_mwh"], dtype=float)
     common_counterfactual = np.asarray(common["counterfactual_mwh"], dtype=float)
+    common_central_baseline = np.asarray(common["central_baseline_mwh"], dtype=float)
+    common_central_counterfactual = np.asarray(common["central_counterfactual_mwh"], dtype=float)
+    common_risk_aligned = np.asarray(common["risk_aligned_mwh"], dtype=float)
+    common_central_risk_aligned = np.asarray(
+        common["central_risk_aligned_mwh"], dtype=float
+    )
+    common_locked_risk_profile = np.asarray(common["locked_risk_profile"], dtype=float)
+    common_risk_contract_upper = np.asarray(
+        common["risk_contract_profile_upper"], dtype=float
+    )
+    common_risk_contract_central = np.asarray(
+        common["risk_contract_profile_central"], dtype=float
+    )
+    common_declared_energy = np.asarray(common["declared_job_energy_mwh"], dtype=float)
+    common_declared_upper = np.asarray(common["declared_job_energy_upper_mwh"], dtype=float)
     common_submit = np.asarray(common["submit_slot"], dtype=np.int64)
     common_deadline = np.asarray(common["deadline_slot"], dtype=np.int64)
     common_baseline_start = np.asarray(common["baseline_start_slot"], dtype=np.int64)
@@ -159,6 +183,10 @@ def run_exp26_end_to_end_certificate(
         or common_typed_certificate.get("service_vector_identity_asserted") is not True
         or common_typed_certificate.get("baseline", {}).get("valid") is not True
         or common_typed_certificate.get("counterfactual", {}).get("valid") is not True
+        or common_typed_certificate.get("central_baseline", {}).get("valid") is not True
+        or common_typed_certificate.get("central_counterfactual", {}).get("valid") is not True
+        or common_typed_certificate.get("risk_aligned", {}).get("valid") is not True
+        or common_typed_certificate.get("central_risk_aligned", {}).get("valid") is not True
     ):
         raise RuntimeError("Exp27 typed runtime coupling certificate is invalid or detached")
     if not (
@@ -169,6 +197,12 @@ def run_exp26_end_to_end_certificate(
     expected_runtime = common_gpus * common_cap * dt_h * common_runtime
     if np.max(np.abs(expected_runtime - common_runtime_energy)) > 1e-12:
         raise RuntimeError("Exp27 runtime energy is not implied by the declared GPU/runtime fields")
+    if len(common_declared_energy) != len(common_runtime) or len(common_declared_upper) != len(common_runtime):
+        raise RuntimeError("Exp27 central and upper declared energies are not job-indexed")
+    if np.any(common_declared_energy < -1.0e-12) or np.any(common_declared_energy > common_declared_upper + 1.0e-10):
+        raise RuntimeError("Exp27 central declared energy violates its nameplate upper bound")
+    if np.max(np.abs(common_declared_upper - expected_runtime)) > 1.0e-12:
+        raise RuntimeError("Exp27 declared nameplate upper energy is inconsistent with runtime fields")
     queue_buffer = int(common_meta["queue_buffer_slots"])
     if np.max(np.abs(common_deadline - (common_submit + common_runtime + queue_buffer))) > 0:
         raise RuntimeError("Exp27 runtime/deadline identity check failed")
@@ -199,12 +233,26 @@ def run_exp26_end_to_end_certificate(
         common_runtime,
         common_region,
         common_gpus,
+        common_declared_energy,
+        common_declared_upper,
         common_baseline_start,
         common_counterfactual_start,
         common_baseline_service,
         common_counterfactual_service,
         common_baseline,
         common_counterfactual,
+        common["central_baseline_service_mwh"],
+        common["central_counterfactual_service_mwh"],
+        common_central_baseline,
+        common_central_counterfactual,
+        common["risk_aligned_start_slot"],
+        common["risk_aligned_service_mwh"],
+        common_risk_aligned,
+        common["central_risk_aligned_service_mwh"],
+        common["central_risk_aligned_mwh"],
+        common["locked_risk_profile"],
+        common_risk_contract_upper,
+        common_risk_contract_central,
     )
     if recomputed_common_digest != common_digest:
         raise RuntimeError("Exp27 witness digest does not bind every saved service/profile array")
@@ -232,13 +280,215 @@ def run_exp26_end_to_end_certificate(
         per_gpu_power_cap_mw=common_cap,
         site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
     )
-    if not common_baseline_typed_recheck.valid or not common_counterfactual_typed_recheck.valid:
+    central_baseline_service = np.asarray(common["central_baseline_service_mwh"], dtype=float)
+    central_counterfactual_service = np.asarray(common["central_counterfactual_service_mwh"], dtype=float)
+    risk_aligned_service = np.asarray(common["risk_aligned_service_mwh"], dtype=float)
+    central_risk_aligned_service = np.asarray(
+        common["central_risk_aligned_service_mwh"], dtype=float
+    )
+    central_energy_per_slot = common_declared_energy / common_runtime
+    expected_central_baseline_service = _service_window_from_runtime_blocks(
+        common_baseline_start,
+        common_runtime,
+        common_submit,
+        common_deadline,
+        central_energy_per_slot,
+    )
+    expected_central_counterfactual_service = _service_window_from_runtime_blocks(
+        common_counterfactual_start,
+        common_runtime,
+        common_submit,
+        common_deadline,
+        central_energy_per_slot,
+    )
+    if not np.array_equal(central_baseline_service, expected_central_baseline_service) or not np.array_equal(central_counterfactual_service, expected_central_counterfactual_service):
+        raise RuntimeError("Exp27 central service vectors are not implied by the same starts")
+    expected_central_risk_aligned_service = _service_window_from_runtime_blocks(
+        np.asarray(common["risk_aligned_start_slot"], dtype=np.int64),
+        common_runtime,
+        common_submit,
+        common_deadline,
+        central_energy_per_slot,
+    )
+    if not np.array_equal(
+        central_risk_aligned_service, expected_central_risk_aligned_service
+    ):
+        raise RuntimeError("Exp27 central risk-aligned service is not implied by the same starts")
+    central_baseline_typed_recheck = validate_job_network_coupling(
+        service_mwh=central_baseline_service,
+        job_energy_mwh=common_declared_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_central_baseline,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    central_counterfactual_typed_recheck = validate_job_network_coupling(
+        service_mwh=central_counterfactual_service,
+        job_energy_mwh=common_declared_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_central_counterfactual,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    risk_aligned_typed_recheck = validate_job_network_coupling(
+        service_mwh=risk_aligned_service,
+        job_energy_mwh=common_runtime_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_risk_aligned,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    central_risk_aligned_typed_recheck = validate_job_network_coupling(
+        service_mwh=central_risk_aligned_service,
+        job_energy_mwh=common_declared_energy,
+        submit_slot=common_submit,
+        deadline_slot=common_deadline,
+        region=common_region,
+        aggregate_mwh=common_central_risk_aligned,
+        dt_h=dt_h,
+        requested_gpus=common_gpus,
+        per_gpu_power_cap_mw=common_cap,
+        site_capacity_mw=float(cfg["project"]["flexible_capacity_mw"]),
+    )
+    if not all(
+        certificate.valid
+        for certificate in (
+            common_baseline_typed_recheck,
+            common_counterfactual_typed_recheck,
+            central_baseline_typed_recheck,
+            central_counterfactual_typed_recheck,
+            risk_aligned_typed_recheck,
+            central_risk_aligned_typed_recheck,
+        )
+    ):
         raise RuntimeError("Exp27 stored service vectors fail the typed coupling recheck")
     common_settlement = pd.read_csv(common_settlement_path)
     if common_settlement.empty:
         raise RuntimeError("Exp27 settlement replay is empty")
     if not common_settlement["baseline_witness_profile_sha256"].eq(common_digest).all() or not common_settlement["counterfactual_witness_profile_sha256"].eq(common_digest).all():
         raise RuntimeError("Exp27 settlement rows do not reference the common witness digest")
+    with np.load(risk_path, allow_pickle=False) as early_risk_store:
+        risk_days = np.asarray(early_risk_store["days"], dtype=np.int64)
+        risk_methods = [str(value) for value in early_risk_store["methods"].tolist()]
+        if "Risk-Constrained Convex Verifier" not in risk_methods:
+            raise RuntimeError("Exp2 archive lacks the locked risk verifier profile")
+        risk_profile = np.asarray(
+            early_risk_store["baselines"][:, risk_methods.index("Risk-Constrained Convex Verifier")],
+            dtype=float,
+        )
+        risk_day_count = int(len(risk_days))
+    expected_full_cycle_rows = risk_day_count * int(cfg["project"]["slots_per_day"])
+    if len(common_settlement) != expected_full_cycle_rows or not common_settlement["settlement_window"].eq("full_declared_day").all():
+        raise RuntimeError("Exp27 settlement replay does not cover every slot of every locked day")
+    if not np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0):
+        raise RuntimeError("Exp27 settlement applies a hidden nonnegative clipping rule")
+    common_settlement_summary = pd.read_csv(common_settlement_summary_path)
+    settlement_values = dict(zip(common_settlement_summary["metric"].astype(str), common_settlement_summary["value"].astype(float)))
+    if int(settlement_values.get("full_cycle_cells", -1)) != expected_full_cycle_rows or not np.isclose(settlement_values.get("signed_payable_settlement_usd", np.nan), common_settlement["payable_settlement_usd"].sum(), atol=1e-9, rtol=0.0):
+        raise RuntimeError("Exp27 signed settlement summary is inconsistent with its ledger")
+    bridge = pd.read_csv(risk_bridge_path)
+    required_bridge_columns = {
+        "day",
+        "raw_risk_profile_total_energy_mwh",
+        "upper_contract_profile_total_energy_mwh",
+        "central_contract_profile_total_energy_mwh",
+        "upper_capacity_realization_energy_mwh",
+        "central_energy_realization_energy_mwh",
+        "upper_capacity_realization_nrmse",
+        "central_energy_realization_nrmse",
+        "same_declaration_digest",
+    }
+    if (
+        len(bridge) != risk_day_count
+        or not required_bridge_columns.issubset(bridge.columns)
+        or not bridge["same_declaration_digest"].eq(source_digest).all()
+    ):
+        raise RuntimeError("Exp27 risk-to-executable bridge is not aligned with the submission digest")
+    if risk_bridge_certificate.get("submission_digest") != source_digest or not risk_bridge_certificate.get("same_submission_index"):
+        raise RuntimeError("Exp27 risk-to-executable bridge certificate is detached")
+    if common_locked_risk_profile.shape != risk_profile.shape or not np.allclose(
+        common_locked_risk_profile, risk_profile, atol=1e-12, rtol=0.0
+    ):
+        raise RuntimeError("Exp27 does not retain the locked Exp2 risk profile exactly")
+    fixed_load = float(cfg["project"]["fixed_facility_load_mw"])
+    risk_flexible = np.maximum(risk_profile - fixed_load, 0.0)
+    risk_flexible_energy = float(risk_flexible.sum() * dt_h)
+    locked_submit_mask = np.isin(
+        common_submit // int(cfg["project"]["slots_per_day"]), risk_days
+    )
+    expected_upper_scale = (
+        float(common_declared_upper[locked_submit_mask].sum()) / risk_flexible_energy
+    )
+    expected_central_scale = (
+        float(common_declared_energy[locked_submit_mask].sum()) / risk_flexible_energy
+    )
+    expected_upper_contract = fixed_load + expected_upper_scale * risk_flexible
+    expected_central_contract = fixed_load + expected_central_scale * risk_flexible
+    if not np.allclose(
+        common_risk_contract_upper, expected_upper_contract, atol=1e-12, rtol=0.0
+    ):
+        raise RuntimeError("Exp27 upper risk contract is not implied by locked submit-time declarations")
+    if not np.allclose(
+        common_risk_contract_central, expected_central_contract, atol=1e-12, rtol=0.0
+    ):
+        raise RuntimeError("Exp27 central risk contract is not implied by locked submit-time declarations")
+    if not np.isclose(
+        float(risk_bridge_certificate.get("upper_contract_scale", np.nan)),
+        expected_upper_scale,
+        atol=1e-12,
+        rtol=0.0,
+    ) or not np.isclose(
+        float(risk_bridge_certificate.get("central_contract_scale", np.nan)),
+        expected_central_scale,
+        atol=1e-12,
+        rtol=0.0,
+    ):
+        raise RuntimeError("Exp27 risk contract scales are not reproducible from declarations")
+    bridge_days = bridge["day"].to_numpy(dtype=np.int64)
+    if not np.array_equal(bridge_days, risk_days):
+        raise RuntimeError("Exp27 bridge rows are not in the locked chronological day order")
+    for index, day in enumerate(risk_days.tolist()):
+        day_slice = slice(
+            int(day) * int(cfg["project"]["slots_per_day"]),
+            (int(day) + 1) * int(cfg["project"]["slots_per_day"]),
+        )
+        upper_realization = common_risk_aligned[:, day_slice] / dt_h + fixed_load
+        central_realization = common_central_risk_aligned[:, day_slice] / dt_h + fixed_load
+        upper_target = common_risk_contract_upper[index]
+        central_target = common_risk_contract_central[index]
+        expected_upper_nrmse = float(
+            np.sqrt(np.mean((upper_realization - upper_target) ** 2))
+            / max(np.mean(np.abs(upper_target)), 1e-12)
+        )
+        expected_central_nrmse = float(
+            np.sqrt(np.mean((central_realization - central_target) ** 2))
+            / max(np.mean(np.abs(central_target)), 1e-12)
+        )
+        row = bridge.iloc[index]
+        if not np.isclose(
+            float(row["upper_capacity_realization_nrmse"]),
+            expected_upper_nrmse,
+            atol=1e-12,
+            rtol=0.0,
+        ) or not np.isclose(
+            float(row["central_energy_realization_nrmse"]),
+            expected_central_nrmse,
+            atol=1e-12,
+            rtol=0.0,
+        ):
+            raise RuntimeError("Exp27 bridge residuals do not match the saved contract and executable profiles")
     common_summary = pd.read_csv(common_summary_path)
     common_metrics = dict(zip(common_summary["metric"].astype(str), common_summary["value"].astype(float)))
     if abs(common_metrics.get("baseline_energy_residual_mwh", np.inf)) > 1e-9 or abs(common_metrics.get("counterfactual_energy_residual_mwh", np.inf)) > 1e-9:
@@ -360,6 +610,7 @@ def run_exp26_end_to_end_certificate(
         _source_record(root, job_path, "executable submitted-job witness", str(service.shape)),
         _source_record(root, common_witness_path, "runtime-complete common witness used by network settlement", str(common_counterfactual.shape)),
         _source_record(root, common_settlement_path, "N-1 settlement replay of the runtime-complete common witness", str(common_settlement.shape)),
+        _source_record(root, risk_bridge_path, "exact risk-profile to executable-start bridge", str(bridge.shape)),
         _source_record(root, risk_path, "validation-fitted aggregate risk target", str(risk_profile.shape)),
         _source_record(root, payment_profile_path, "payment-certified feasible profile hull", str(payment_profile.shape)),
         _source_record(root, coupling_path, "recomputed job-to-network certificate summary", "metric table"),
@@ -380,6 +631,7 @@ def run_exp26_end_to_end_certificate(
             "executable submitted-job witness",
             "runtime-complete common witness used by network settlement",
             "N-1 settlement replay of the runtime-complete common witness",
+            "exact risk-profile to executable-start bridge",
         ]
     )
     lineage.to_csv(final / "profile_role_lineage.csv", index=False)
@@ -447,7 +699,7 @@ def run_exp26_end_to_end_certificate(
             },
             {
                 "stage": "common executable witness",
-                "certificate": "the same declaration-indexed runtime-complete witness digest and typed job/aggregation certificate are reused by network settlement",
+                "certificate": "the same declaration-indexed runtime-complete witness digest, central-energy certificate, risk bridge, and signed full-day settlement are reused by network valuation",
                 "maximum_residual_or_violation": float(
                     max(
                         abs(common_metrics["baseline_energy_residual_mwh"]),
@@ -456,13 +708,23 @@ def run_exp26_end_to_end_certificate(
                         common_typed_certificate["counterfactual"]["max_job_energy_residual_mwh"],
                         common_typed_certificate["baseline"]["max_aggregation_residual_mwh"],
                         common_typed_certificate["counterfactual"]["max_aggregation_residual_mwh"],
+                        common_typed_certificate["central_baseline"]["max_job_energy_residual_mwh"],
+                        common_typed_certificate["central_counterfactual"]["max_job_energy_residual_mwh"],
+                        common_typed_certificate["risk_aligned"]["max_job_energy_residual_mwh"],
+                        common_typed_certificate["central_risk_aligned"]["max_job_energy_residual_mwh"],
                     )
                 ),
                 "passed": bool(
                     common_meta.get("profile_identity_asserted") is True
                     and common_typed_certificate.get("baseline", {}).get("valid") is True
                     and common_typed_certificate.get("counterfactual", {}).get("valid") is True
+                    and common_typed_certificate.get("central_baseline", {}).get("valid") is True
+                    and common_typed_certificate.get("central_counterfactual", {}).get("valid") is True
+                    and common_typed_certificate.get("risk_aligned", {}).get("valid") is True
+                    and common_typed_certificate.get("central_risk_aligned", {}).get("valid") is True
                     and common_settlement["solver_success"].all()
+                    and len(common_settlement) == risk_day_count * int(cfg["project"]["slots_per_day"])
+                    and np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)
                 ),
             },
             {
@@ -480,7 +742,7 @@ def run_exp26_end_to_end_certificate(
     calibration = manifest.get("submission_calibration", {})
     metadata = {
         "experiment": "end-to-end evidence-chain lineage certificate",
-        "schema_version": 2,
+        "schema_version": 3,
         "locked_days": int(len(risk_days)),
         "upstream_artifact_hashes": {
             record["profile_role"]: record["source_sha256"] for record in source_records
@@ -489,6 +751,7 @@ def run_exp26_end_to_end_certificate(
             "submit-time declarations -> exact indexed job witness",
             "indexed witness -> regional aggregation and nodal mapping",
             "validation-only aggregate risk target -> relative N-1 payment cap",
+            "validation-only aggregate risk target -> fixed-price executable start realization",
             "indexed witness -> RTS-24 N-1 network valuation",
             "runtime-complete common witness -> the same RTS-24 N-1 settlement replay",
             "frozen profiles -> all finite non-islanding outage replay",
@@ -515,11 +778,21 @@ def run_exp26_end_to_end_certificate(
             "runtime_energy_mwh": float(common_runtime_energy.sum()),
             "profile_shape": list(common_counterfactual.shape),
             "settlement_rows": int(len(common_settlement)),
+            "settlement_full_cycle_rows": int(len(common_settlement)),
+            "settlement_signed": bool(np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)),
+            "central_declared_service_energy_mwh": float(common_declared_energy.sum()),
+            "nameplate_upper_energy_mwh": float(common_declared_upper.sum()),
+            "risk_bridge_file": _relative(root, risk_bridge_path),
+            "risk_bridge_certificate_file": _relative(root, risk_bridge_certificate_path),
             "all_settlement_solves_successful": bool(common_settlement["solver_success"].all()),
             "typed_certificate_file": _relative(root, common_typed_certificate_path),
             "typed_certificate_valid": bool(
                 common_typed_certificate.get("baseline", {}).get("valid") is True
                 and common_typed_certificate.get("counterfactual", {}).get("valid") is True
+                and common_typed_certificate.get("central_baseline", {}).get("valid") is True
+                and common_typed_certificate.get("central_counterfactual", {}).get("valid") is True
+                and common_typed_certificate.get("risk_aligned", {}).get("valid") is True
+                and common_typed_certificate.get("central_risk_aligned", {}).get("valid") is True
             ),
             "typed_certificate_max_job_energy_residual_mwh": float(
                 max(

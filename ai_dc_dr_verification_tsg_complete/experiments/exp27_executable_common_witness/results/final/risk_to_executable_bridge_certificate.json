@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "risk_profile_source": "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz::Risk-Constrained Convex Verifier",
+  "risk_profile_digest": "99581e7b603744426086b6b59ed134dd9e8910d468c9ff231d6286837d173127",
+  "submission_digest": "1060e9e1e9334c11f84a9111a4c87ecfdde55ff49812454ac4a2167ad3622832",
+  "mapping": "p_exec_upper=P_fix+gamma_upper*max(p_risk-P_fix,0), gamma_upper=locked_submit_nameplate_energy/sum(max(p_risk-P_fix,0)*dt); pi_{r,t}=p_DR*max(p_exec_upper_{r,t}-P_fix,0)/max_{r,t}max(p_exec_upper-P_fix,0); each job enumerates every contiguous declaration-feasible start under waiting + event + pi costs",
+  "optimization_class": "finite exact start-time enumeration with fixed linear slot prices",
+  "locked_days": 54,
+  "raw_risk_profile_total_energy_mwh": 68855.19574313141,
+  "risk_flexible_target_energy_mwh": 37751.19574313141,
+  "locked_submit_declared_upper_energy_mwh": 624.38225,
+  "locked_submit_declared_central_energy_mwh": 0.1757031949771048,
+  "upper_contract_scale": 0.01653940326151397,
+  "central_contract_scale": 4.654241846341328e-06,
+  "upper_contract_profile_digest": "5bf3759e3cc73262d6e09391e2fa697302cf637d80e7f8bf0e92403961b6f80e",
+  "central_contract_profile_digest": "ea708f0ca7e128dfa6fd935c9143905c23b4ad32cd67592f58def9c3efad2ccc",
+  "upper_capacity_realization_mean_nrmse": 0.04408393096188185,
+  "central_energy_realization_mean_nrmse": 1.3134222096049607e-05,
+  "same_submission_index": true,
+  "future_arrivals_used": false,
+  "execution_telemetry_used": false,
+  "files": {
+    "daily": "risk_to_executable_bridge.csv"
+  }
+}

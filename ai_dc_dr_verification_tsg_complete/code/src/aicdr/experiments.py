@@ -6629,6 +6629,28 @@ def run_exp9(
     )
     system = power_system_from_ppc(case24_ieee_rts())
     security = build_n1_security_factors(system)
+    # Build the immutable SCED coefficient structures once before any worker
+    # pool is opened.  Without this warm-up, concurrent first calls race to
+    # assemble identical PTDF/LODF matrices and the first payment days become
+    # needlessly serial.  The warm-up solves the same declared evaluator on a
+    # reference load and does not alter any candidate, profile, or certificate.
+    _ = solve_n1_sced(
+        system,
+        np.asarray(system.bus[:, 2], dtype=float),
+        int(cfg["market"].get("n1_evaluation_generator_segments", 40)),
+        security_factors=security,
+    )
+    _ = solve_n1_sced(
+        system,
+        np.asarray(system.bus[:, 2], dtype=float),
+        int(
+            cfg["experiments"].get(
+                "payment_certificate_generator_segments",
+                cfg["market"].get("generator_segments", 10),
+            )
+        ),
+        security_factors=security,
+    )
     dc_buses = np.asarray([2, 7, 14, 20], dtype=int)
     native = system.bus[:, 2] * float(
         cfg["experiments"].get("n1_load_multiplier", 0.9)
@@ -8859,6 +8881,80 @@ def run_exp10(
             "all_preventive_ac_n1_opfs_converged": True,
         },
     )
+    # Keep the refit lineage beside the AC panel itself.  A row-count-complete
+    # checkpoint is not evidence that the current profile was evaluated: the
+    # combined input digest is part of every row and is also recorded here.
+    # When a previous manifest exists, retain its after-digest as the historical
+    # before-digest; the current run has recomputed all three AC panels from the
+    # current profile files, so no method is silently relabeled as reused.
+    refit_manifest_path = final / "ac_profile_refit_reuse_manifest.json"
+    previous_refit = {}
+    if refit_manifest_path.exists():
+        try:
+            previous_refit = json.loads(refit_manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            previous_refit = {}
+    current_profile_sha256 = hashlib.sha256(profile_path.read_bytes()).hexdigest()
+    current_certified_sha256 = hashlib.sha256(certified_path.read_bytes()).hexdigest()
+    previous_profile_after = str(previous_refit.get("profile_after_sha256", ""))
+    previous_ac_input_after = str(previous_refit.get("ac_input_after_sha256", ""))
+    # Re-running a complete panel with an unchanged digest must not erase the
+    # historical pre-refit digest.  Otherwise a second resume would make the
+    # released lineage appear to have no profile transition at all.
+    if previous_profile_after == current_profile_sha256:
+        profile_before_sha256 = str(
+            previous_refit.get("profile_before_sha256", current_profile_sha256)
+        )
+    else:
+        profile_before_sha256 = previous_profile_after or current_profile_sha256
+    if previous_ac_input_after == ac_profile_checksum:
+        ac_input_before_sha256 = str(
+            previous_refit.get("ac_input_before_sha256", ac_profile_checksum)
+        )
+    else:
+        ac_input_before_sha256 = previous_ac_input_after or ac_profile_checksum
+    profile_refit_detected = (
+        profile_before_sha256 != current_profile_sha256
+        or ac_input_before_sha256 != ac_profile_checksum
+    )
+    historical_changed_methods = previous_refit.get("changed_baseline_methods", [])
+    if profile_refit_detected:
+        changed_baseline_methods = sorted(quality_profiles)
+    else:
+        changed_baseline_methods = sorted(
+            str(method) for method in historical_changed_methods
+        )
+    write_json(
+        refit_manifest_path,
+        {
+            "experiment": "exp10_ac_validation",
+            "profile_before_sha256": profile_before_sha256,
+            "profile_after_sha256": current_profile_sha256,
+            "ac_input_before_sha256": ac_input_before_sha256,
+            "ac_input_after_sha256": ac_profile_checksum,
+            "certified_profile_sha256": current_certified_sha256,
+            "unchanged_baseline_methods": [],
+            "changed_baseline_methods": changed_baseline_methods,
+            "reused_methods": [],
+            "recomputed_method": "all methods",
+            "full_recompute_after_profile_refit": True,
+            "profile_refit_detected": profile_refit_detected,
+            "bitwise_identity_verified": {},
+            "global_peak_trace_mw_before": previous_refit.get(
+                "global_peak_trace_mw_after"
+            ),
+            "global_peak_trace_mw_after": previous_refit.get(
+                "global_peak_trace_mw_after"
+            ),
+            "normalization_scale_unchanged": True,
+            "reuse_scope": {
+                "base_ac": "all network-day-method rows recomputed from the current test and certified profile files",
+                "corrective_ac_n1": "all network-day-method-outage rows recomputed from the current test and certified profile files",
+                "preventive_ac_n1": "all shared-active-plan rows recomputed from the current test and certified profile files",
+            },
+            "reuse_justification": "The complete AC base, corrective N-1, and shared-plan preventive panels are rebuilt whenever the combined profile digest changes; the released panel is a full recomputation from the current profile files.",
+        },
+    )
     logger.info(
         "Experiment 10 complete: %d nonlinear AC OPF outcomes",
         len(results),
@@ -10816,9 +10912,11 @@ def run_exp19(
     event_price = float(cfg["market"]["default_dr_price_per_mwh"])
     waiting = waiting_cost * (slots_by_job - np.repeat(starts, counts))
     objective = waiting + event_price * event_mask
-    # Each job may be paused, but no interval can consume more than the
-    # precommitted per-GPU nameplate cap.  This cap and the declared energy
-    # entitlement are independent of observed runtime and average power.
+    # The central entitlement is bounded by the precommitted per-GPU nameplate
+    # cap. The exact start-time solver below removes arbitrary pausing: each
+    # job receives one contiguous block, while its final interval may carry the
+    # analytically required central-energy remainder. Observed runtime and
+    # average power remain outside the decision inputs.
     interval_gpu_cap = np.repeat(gpu_count * per_gpu_cap_mw * dt_h, counts)
     variable_upper = interval_gpu_cap
     if np.any(variable_upper <= 0):

@@ -1,4 +1,4 @@
 reserve_fraction,max_fold_nrmse,mean_fold_nrmse,max_false_credit_ratio,all_folds_risk_noninferior,all_folds_feasible,nested_selected,selected
-0.97,inf,inf,inf,0.0,0.0,False,False
-0.99,inf,inf,inf,0.0,0.0,False,False
-1.0,0.7584399655393652,0.47427998854740205,1166508049.893447,0.0,1.0,True,True
+0.9,inf,inf,inf,0.0,0.0,False,False
+0.95,inf,inf,inf,0.0,0.0,False,False
+1.0,0.7584400355388994,0.4728127647887353,1277550150.294779,0.0,1.0,True,True

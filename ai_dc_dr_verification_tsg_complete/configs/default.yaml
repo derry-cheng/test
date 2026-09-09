@@ -163,9 +163,10 @@ experiments:
   payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 12
   # The independent evaluator performs many exact N-1 SCED calls per day;
-  # eight bounded workers saturate this nine-core runner without exceeding the
-  # project-wide 20-core limit.
-  payment_evaluation_parallel_workers: 8
+  # ten bounded workers use the available CPU while remaining below the
+  # project-wide 20-core limit.  The runner pins each BLAS/HiGHS instance to
+  # one thread.
+  payment_evaluation_parallel_workers: 10
   # Experiment 22 replays the exact job witness through the same finite
   # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
   # contractual network value model; bounded threads avoid matrix duplication.

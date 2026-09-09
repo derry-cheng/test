@@ -297,6 +297,9 @@ EXPECTED_FILES = {
         "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv",
         "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
         "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
+        "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv",
+        "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
+        "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json",
         "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json",
         "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.png",
         "experiments/exp27_executable_common_witness/README.md",
@@ -583,7 +586,7 @@ def run_audit(
         "quadratic program (QP)": "QP",
         "mean absolute error (MAE)": "MAE",
         "root-mean-square error (RMSE)": "RMSE",
-        "F1 (harmonic-mean) score": "F1",
+        "F1 score (harmonic mean of precision and recall)": "F1",
     }
     _check(
         all(phrase in manuscript_text for phrase in required_expansions),
@@ -3346,8 +3349,8 @@ def run_audit(
         == current_test_profile_checksum
         and ac_reuse_manifest.get("ac_input_after_sha256") == current_ac_checksum
         and ac_reuse_manifest.get("normalization_scale_unchanged") is True
-        and ac_reuse_manifest.get("recomputed_method")
-        == "Risk-Constrained Convex Verifier",
+        and str(ac_reuse_manifest.get("recomputed_method", ""))
+        in {"Risk-Constrained Convex Verifier", "all methods"},
         "ac_profile_lineage_after_refit",
         (
             "base, corrective N-1, and preventive AC panels carry the current "
@@ -4098,6 +4101,9 @@ def run_audit(
     payment_role = profile_roles.loc[
         profile_roles["profile_role"] == "payment-certified feasible profile hull"
     ]
+    bridge_role = profile_roles.loc[
+        profile_roles["profile_role"] == "exact risk-profile to executable-start bridge"
+    ]
     _check(
         set(certificate_roles)
         == {
@@ -4114,6 +4120,7 @@ def run_audit(
             "executable submitted-job witness",
             "runtime-complete common witness used by network settlement",
             "N-1 settlement replay of the runtime-complete common witness",
+            "exact risk-profile to executable-start bridge",
             "validation-fitted aggregate risk target",
             "payment-certified feasible profile hull",
             "recomputed job-to-network certificate summary",
@@ -4125,6 +4132,8 @@ def run_audit(
         and _all_true(mapping_role["network_mapping_recomputed_from_job_witness"])
         and len(payment_role) == 1
         and _all_true(payment_role["payment_cap_is_relative_n1_cap"])
+        and len(bridge_role) == 1
+        and _all_true(bridge_role["common_witness_identity_asserted"])
         and lineage_metadata.get("profile_roles", {}).get("profile_identity_asserted") is True
         and lineage_metadata.get("network_mapping_certificate", {}).get("valid") is True
         and float(
@@ -4135,7 +4144,7 @@ def run_audit(
         <= 1e-10
         and lineage_metadata.get("network_mapping_one_hot_bus_indices_zero_based")
         == [2, 7, 14, 20]
-        and len(lineage_metadata.get("upstream_artifact_hashes", {})) == 7
+        and len(lineage_metadata.get("upstream_artifact_hashes", {})) == 8
         and lineage_metadata.get("all_outage_replay", {}).get(
             "all_finite_nonislanding_outages_evaluated"
         )
@@ -4166,9 +4175,13 @@ def run_audit(
     runtime_certificate_values = [
         runtime_typed_certificate.get("baseline", {}),
         runtime_typed_certificate.get("counterfactual", {}),
+        runtime_typed_certificate.get("central_baseline", {}),
+        runtime_typed_certificate.get("central_counterfactual", {}),
+        runtime_typed_certificate.get("risk_aligned", {}),
+        runtime_typed_certificate.get("central_risk_aligned", {}),
     ]
     runtime_certificate_valid = bool(
-        runtime_typed_certificate.get("schema_version") == 2
+        runtime_typed_certificate.get("schema_version") == 3
         and runtime_typed_certificate.get("profile_identity_asserted") is True
         and runtime_typed_certificate.get("service_vector_identity_asserted") is True
         and runtime_metadata.get("service_vector_identity_asserted") is True
@@ -4215,6 +4228,8 @@ def run_audit(
             "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
         "N-1 settlement replay of the runtime-complete common witness":
             "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
+        "exact risk-profile to executable-start bridge":
+            "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
         "validation-fitted aggregate risk target":
             "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
         "payment-certified feasible profile hull":

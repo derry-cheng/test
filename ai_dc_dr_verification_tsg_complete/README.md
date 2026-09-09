@@ -54,6 +54,8 @@ four-region placement and trace-to-power conversion are declared benchmark
 scenarios; all 24 region-to-bus permutations plus two predeclared concentration
 controls are evaluated in Experiment 11.
 
+The submit-time calibration label join contains 71,141 positive scheduler/DCGM records; the full execution replay contains 71,128 after applying valid measured start/end intervals. The 13-record difference is label-only and cannot enter the counterfactual or locked eligibility sets.
+
 Calibration labels require a matched positive DCGM energy measurement, but that
 label join is confined to the conversion fit. Within the matched labels, the
 first 40 complete days train the model, the next 16 complete days form the

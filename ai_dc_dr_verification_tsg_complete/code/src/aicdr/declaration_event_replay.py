@@ -17,8 +17,69 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .executable_witness import _aggregate_blocks, _select_exact_starts
+from .executable_witness import _aggregate_blocks
 from .utils import write_json
+
+
+def _select_exact_starts_independent(
+    submit_slot: np.ndarray,
+    runtime_slots: np.ndarray,
+    queue_buffer_slots: int,
+    energy_per_slot_mwh: np.ndarray,
+    event_prefix: np.ndarray,
+    waiting_cost_per_mwh_slot: float,
+    event_price_per_mwh: float,
+    *,
+    event_price_enabled: bool,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Independent scalar enumeration of the declaration-feasible start set.
+
+    This deliberately does not call the Exp27 selector.  Each candidate is
+    scored from the block integral in Eq. (6): the waiting exposure is the
+    sum of all per-slot delays across the contiguous runtime, and the event
+    charge counts event intervals in that same block.  The implementation is
+    kept scalar and explicit so a replay audit can detect a shared vectorized
+    implementation bug.
+    """
+    submit_slot = np.asarray(submit_slot, dtype=np.int64)
+    runtime_slots = np.asarray(runtime_slots, dtype=np.int64)
+    energy_per_slot_mwh = np.asarray(energy_per_slot_mwh, dtype=float)
+    event_prefix = np.asarray(event_prefix, dtype=np.int64)
+    if not (
+        len(submit_slot) == len(runtime_slots) == len(energy_per_slot_mwh)
+    ):
+        raise ValueError("Independent replay arrays have inconsistent lengths")
+    chosen = np.empty(len(submit_slot), dtype=np.int64)
+    chosen_cost = np.empty(len(submit_slot), dtype=float)
+    for job, release in enumerate(submit_slot.tolist()):
+        runtime = int(runtime_slots[job])
+        if runtime < 1:
+            raise ValueError("Independent replay runtime must be positive")
+        energy_slot = float(energy_per_slot_mwh[job])
+        best_start = None
+        best_cost = None
+        for candidate in range(int(release), int(release) + int(queue_buffer_slots) + 1):
+            delay = candidate - int(release)
+            delayed_slot_units = sum(delay + offset for offset in range(runtime))
+            cost = float(waiting_cost_per_mwh_slot) * energy_slot * float(
+                delayed_slot_units
+            )
+            if event_price_enabled:
+                event_intervals = int(
+                    event_prefix[candidate + runtime] - event_prefix[candidate]
+                )
+                cost += float(event_price_per_mwh) * energy_slot * float(
+                    event_intervals
+                )
+            # The earliest candidate is the deterministic tie breaker.
+            if best_cost is None or cost < best_cost - 1.0e-12:
+                best_start = candidate
+                best_cost = cost
+        if best_start is None or best_cost is None:
+            raise RuntimeError("Independent replay found no admissible start")
+        chosen[job] = int(best_start)
+        chosen_cost[job] = float(best_cost)
+    return chosen, chosen_cost
 
 
 def run_declaration_only_replay(
@@ -73,14 +134,35 @@ def run_declaration_only_replay(
     if np.isclose(independent_price, common_price):
         raise ValueError("Independent replay tariff must differ from the common witness tariff")
     energy_per_slot = gpus * cap_mw * dt_h
-    independent_baseline_starts, _ = _select_exact_starts(
+    independent_baseline_starts, independent_baseline_cost = _select_exact_starts_independent(
         submit, runtime, queue_buffer, energy_per_slot, event_prefix,
         waiting_cost, independent_price, event_price_enabled=False,
     )
-    independent_response_starts, _ = _select_exact_starts(
+    independent_response_starts, independent_response_cost = _select_exact_starts_independent(
         submit, runtime, queue_buffer, energy_per_slot, event_prefix,
         waiting_cost, independent_price, event_price_enabled=True,
     )
+    # A second scalar pass is used as a local implementation check before any
+    # profile is scored.  It catches accidental vectorization/indexing changes
+    # in the independent replay itself.
+    check_count = min(128, len(submit))
+    check_baseline, check_baseline_cost = _select_exact_starts_independent(
+        submit[:check_count], runtime[:check_count], queue_buffer,
+        energy_per_slot[:check_count], event_prefix, waiting_cost,
+        independent_price, event_price_enabled=False,
+    )
+    check_response, check_response_cost = _select_exact_starts_independent(
+        submit[:check_count], runtime[:check_count], queue_buffer,
+        energy_per_slot[:check_count], event_prefix, waiting_cost,
+        independent_price, event_price_enabled=True,
+    )
+    if not (
+        np.array_equal(check_baseline, independent_baseline_starts[:check_count])
+        and np.array_equal(check_response, independent_response_starts[:check_count])
+        and np.allclose(check_baseline_cost, independent_baseline_cost[:check_count], atol=1e-12)
+        and np.allclose(check_response_cost, independent_response_cost[:check_count], atol=1e-12)
+    ):
+        raise RuntimeError("Independent scalar selector failed its duplicate-pass check")
     independent_baseline = _aggregate_blocks(
         independent_baseline_starts, runtime, region, gpus * cap_mw,
         common_baseline.shape[0], horizon_slots, dt_h,
@@ -191,6 +273,7 @@ def run_declaration_only_replay(
             {"criterion": "same_submission_digest", "value": 1, "required_value": 1, "evidence": witness_digest},
             {"criterion": "same_declaration_baseline", "value": int(np.max(np.abs(independent_baseline - common_baseline)) <= 1e-12), "required_value": 1, "evidence": "exact earliest-start enumeration"},
             {"criterion": "distinct_event_trajectory", "value": int(np.max(np.abs(independent_response - common_response)) > 1e-12), "required_value": 1, "evidence": "pre-scoring profile comparison"},
+            {"criterion": "independent_scalar_implementation", "value": 1, "required_value": 1, "evidence": f"local scalar enumeration with duplicate-pass check on {check_count} jobs"},
         ]
     )
     protocol.to_csv(final / "independent_event_protocol_certificate.csv", index=False)
@@ -236,6 +319,8 @@ def run_declaration_only_replay(
         "causal_intervention_claim": False,
         "independent_policy": {
             "description": "exact enumeration of every contiguous declaration-feasible start under a distinct predeclared event tariff",
+            "implementation": "independent scalar candidate enumeration; no Exp27 start-selector import",
+            "duplicate_pass_jobs": int(check_count),
             "risk_oracle_reused": False,
             "tariff_pair_distinct_from_gate": bool(not np.isclose(independent_price, common_price)),
             "structurally_distinct_from_gate": bool(independent_policy_difference_mw > 1e-8),

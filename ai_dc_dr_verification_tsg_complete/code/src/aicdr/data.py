@@ -217,6 +217,7 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
             cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
         ),
         training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
+        full_execution_join_jobs=int(batch_stats["full_positive_energy_joined_jobs"]),
         logger=logger,
     )
 
@@ -393,8 +394,10 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "input_records": int(submission_calibration["joined_positive_jobs"]),
                 "retained_records": int(submission_calibration["training_jobs"]),
                 "split_or_join_rule": (
-                "chronological scheduler/DCGM job join inside the declared historical "
-                "information set; telemetry is used only to fit the frozen envelope"
+                "chronological positive scheduler/DCGM label join inside the "
+                "declared historical information set; execution interval validity "
+                "is required by the full replay join but not by this label-only fit; "
+                "telemetry is used only to fit the frozen envelope"
                 ),
                 "downstream_role": (
                     "ex-ante declared service quantity and physical upper bound for Exp19"
@@ -883,6 +886,7 @@ def _fit_submission_energy_calibration(
     unbounded_timelimit_slots: int,
     training_days: int,
     logger: logging.Logger,
+    full_execution_join_jobs: int | None = None,
 ) -> dict[str, Any]:
     """Fit the ex-ante service fraction on the immutable training partition.
 
@@ -1087,6 +1091,21 @@ def _fit_submission_energy_calibration(
     locked_model_diagnostics = model_diagnostics(locked)
     payload = {
         "joined_positive_jobs": int(len(joined)),
+        "join_scope_definition": (
+            "positive scheduler/DCGM energy-label join with valid submit/end, "
+            "timelimit, and requested-GPU fields; a valid execution interval is "
+            "not required because this join is used only for the training label"
+        ),
+        "full_execution_join_comparison": {
+            "full_positive_execution_join_jobs": (
+                int(full_execution_join_jobs) if full_execution_join_jobs is not None else None
+            ),
+            "label_join_excess_jobs": (
+                int(len(joined) - int(full_execution_join_jobs))
+                if full_execution_join_jobs is not None else None
+            ),
+            "execution_interval_filter_applied_to_full_join": True,
+        },
         "training_jobs": int(len(training)),
         "test_jobs": int(len(joined) - len(training)),
         "training_rule": (

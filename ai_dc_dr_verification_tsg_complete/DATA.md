@@ -64,12 +64,20 @@ precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
 MW/GPU nameplate provides the per-slot service bound. The observed scheduler
 completion interval is retained only for the independent native replay and
 never defines the counterfactual deadline or power cap. The indexed model
-enumerates 13,198,247 admissible job--slot starts and is solved as an exact
-contiguous fixed-rate start-time witness: one binary start is selected for
-each submitted job and the terminal slot is fractional only to meet the exact
-declared entitlement. Experiment 25 solves the same start-time model with a
-binding regional capacity row; no preemptive flow or post-event completion time
-is substituted for the executable witness.
+enumerates 13,198,247 admissible job--slot starts. Experiment 19 uses the
+calibrated central entitlement with an analytically determined remainder in its
+final occupied interval; Experiment 27 freezes those starts and certifies the
+runtime-complete GPU-nameplate upper block and the central-energy realization
+on the same blocks. Experiment 25 solves the same declaration-bound start-time
+model with a binding regional capacity row; no arbitrary pausing or post-event
+completion time is substituted for the executable witness.
+
+
+The training-only submit-time energy-label join contains 71,141 positive scheduler/DCGM
+records because it requires valid scheduler submit/end, runtime, and GPU fields but
+not a valid measured execution interval; the full execution replay applies that
+additional interval filter and therefore contains 71,128 jobs. The 13-record
+label-only difference cannot enter any counterfactual or locked eligibility set.
 
 Experiment 23 adds a structurally distinct controlled event: after the same
 slot-60 submission gate, an independently parameterized exact LP applies a

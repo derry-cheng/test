@@ -147,17 +147,33 @@ def test_runtime_witness_digest_binds_saved_indexed_service_vectors() -> None:
         witness["runtime_slots"],
         witness["region"],
         witness["requested_gpus"],
+        witness["declared_job_energy_mwh"],
+        witness["declared_job_energy_upper_mwh"],
         witness["baseline_start_slot"],
         witness["response_start_slot"],
         witness["baseline_service_mwh"],
         witness["counterfactual_service_mwh"],
         witness["baseline_mwh"],
         witness["counterfactual_mwh"],
+        witness["central_baseline_service_mwh"],
+        witness["central_counterfactual_service_mwh"],
+        witness["central_baseline_mwh"],
+        witness["central_counterfactual_mwh"],
+        witness["risk_aligned_start_slot"],
+        witness["risk_aligned_service_mwh"],
+        witness["risk_aligned_mwh"],
+        witness["central_risk_aligned_service_mwh"],
+        witness["central_risk_aligned_mwh"],
+        witness["locked_risk_profile"],
+        witness["risk_contract_profile_upper"],
+        witness["risk_contract_profile_central"],
     )
     assert digest == str(np.asarray(witness["witness_digest"]).reshape(-1)[0])
     assert metadata["service_vector_identity_asserted"] is True
-    assert certificate["schema_version"] == 2
+    assert certificate["schema_version"] == 3
     assert certificate["service_vector_identity_asserted"] is True
+    assert certificate["risk_aligned"]["valid"] is True
+    assert certificate["central_risk_aligned"]["valid"] is True
 
 
 def test_observational_replay_covers_every_locked_day_and_slot() -> None:
@@ -435,7 +451,7 @@ def test_independent_event_and_full_outage_panels_are_locked_and_complete() -> N
     protocol = pd.read_csv(
         event_folder / "independent_event_protocol_certificate.csv"
     )
-    assert len(protocol) == 6
+    assert len(protocol) == 7
     assert np.all(protocol["value"] == protocol["required_value"])
     assert event_metadata["event_intervention"] is True
     assert event_metadata["causal_intervention_claim"] is False

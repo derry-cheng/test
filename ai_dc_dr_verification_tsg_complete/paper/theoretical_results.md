@@ -453,6 +453,10 @@ and records zero residual before either SCED solve. The coupled replay is
 pinned to the public IEEE RTS-24 case and uses a deterministic arithmetic-mean
 event-window representation; it is not evidence from a separately optimized
 aggregate trajectory.
+Experiment 27 applies the same invariant to the runtime-complete nameplate
+profile, the calibrated central-energy profile, and the fixed-price realization
+of the Exp2 risk target on identical contiguous starts; Experiment 26 rechecks
+their digests and daily bridge residuals before accepting settlement lineage.
 
 ## Identification boundary
 

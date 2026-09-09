@@ -260,6 +260,13 @@ before settlement. Thus the calibrated Exp19
 coupling certificate and the runtime-complete Exp27 settlement certificate
 share an immutable submission index while retaining distinct entitlement
 semantics.
+The released Exp27 capacity rows have positive slack, so the per-job minima
+are also the global optimum of the displayed start-time program by separability;
+the predeclared binding-row panel is used whenever that condition is not met.
+The calibrated central entitlement is carried on the same blocks, while the
+Exp2 risk target is scaled once by locked-day submit-time nameplate energy and
+realized with fixed regional slot prices. Daily upper-capacity and central-energy
+residuals are retained in the bridge certificate before any network valuation.
 
 For scale, let \(s_{\rm raw}\) be the source-to-energy normalization and
 \(s_{\rm cap}\) the largest factor that respects the committed network

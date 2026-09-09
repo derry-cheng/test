@@ -1,0 +1,10 @@
+metric,value,unit
+full_cycle_cells,5184.0,day-slots
+event_cells,432.0,day-slots
+locked_days,54.0,days
+finite_n1_contingencies_per_cell,37.0,contingencies
+negative_network_value_cells,582.0,cells
+signed_network_value_usd,-0.686235679899255,USD
+signed_nodal_meter_credit_usd,-0.6862356799855477,USD
+signed_payable_settlement_usd,-0.686235679899255,USD
+signed_value_minus_meter_credit_usd,8.62926397005026e-11,USD

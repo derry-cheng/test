@@ -5,5 +5,5 @@ MIT common trace horizon filter,71128,68664,aligned execution start before the c
 DCGM power calibration,95182,44391,strict chronological train / calibration-validation / locked partition; only the first partition is fit,power-conversion model fitting
 DCGM calibration-validation scenarios,95182,9637,next chronological window after the training cutoff,conversion scenarios and calibration scoring
 DCGM locked calibration audit,95182,41154,strictly later locked observations never used for scenario selection,final conversion generalization audit
-Submit-time energy-envelope calibration,71141,31284,chronological scheduler/DCGM job join inside the declared historical information set; telemetry is used only to fit the frozen envelope,ex-ante declared service quantity and physical upper bound for Exp19
+Submit-time energy-envelope calibration,71141,31284,chronological positive scheduler/DCGM label join inside the declared historical information set; execution interval validity is required by the full replay join but not by this label-only fit; telemetry is used only to fit the frozen envelope,ex-ante declared service quantity and physical upper bound for Exp19
 15-minute joint trace,11616,11616,at least 95% observed intervals per day,validation and locked evaluation

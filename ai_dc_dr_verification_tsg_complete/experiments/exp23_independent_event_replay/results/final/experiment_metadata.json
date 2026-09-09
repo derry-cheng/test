@@ -5,7 +5,7 @@
   "truth_source": "independent declaration-only exact start policy",
   "assessment_source": "Exp27 runtime-complete common witness response",
   "event_intervention": true,
-  "common_witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
+  "common_witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
   "event_slots": [
     64,
     65,
@@ -23,19 +23,21 @@
   "causal_intervention_claim": false,
   "independent_policy": {
     "description": "exact enumeration of every contiguous declaration-feasible start under a distinct predeclared event tariff",
+    "implementation": "independent scalar candidate enumeration; no Exp27 start-selector import",
+    "duplicate_pass_jobs": 128,
     "risk_oracle_reused": false,
     "tariff_pair_distinct_from_gate": true,
     "structurally_distinct_from_gate": true,
     "minimum_participant_event_mwh": 0.00025,
-    "maximum_response_difference_from_gate_mw": 0.04199999999999998
+    "maximum_response_difference_from_gate_mw": 0.08000000000000007
   },
   "protocol_certificate_file": "independent_event_protocol_certificate.csv",
   "profile_identity_asserted": true,
   "replay_metrics": {
-    "mean_nrmse": 0.029150467539919903,
-    "mean_false_response_mwh": 0.010425925925926246,
-    "mean_underpayment_mwh": 0.005041666666666374,
-    "mean_credit_f1": 0.9191679652425526
+    "mean_nrmse": 0.02103996900870972,
+    "mean_false_response_mwh": 0.019388888888889264,
+    "mean_underpayment_mwh": 1.5419764230904951e-18,
+    "mean_credit_f1": 0.5294334576980897
   },
   "files": {
     "daily": "independent_event_replay_daily.csv",
@@ -44,5 +46,5 @@
     "protocol": "independent_event_protocol_certificate.csv",
     "figure": "fig26_independent_event_replay.pdf"
   },
-  "source_code_sha256": "e8aff6f99ed348c044c76689f9455f8d98d2e9f0f468045a346ad40c44ae7c28"
+  "source_code_sha256": "b56e6e24b5cec57eba9070643efa669db5c25f805a6ec0fac98b98b7bc0b8727"
 }

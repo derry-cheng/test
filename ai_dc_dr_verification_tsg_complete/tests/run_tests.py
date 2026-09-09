@@ -10,6 +10,8 @@ import pandas as pd
 
 from aicdr.coupling_invariant import validate_job_network_coupling
 from aicdr.data import _parse_requested_gpu_count, load_mit_submission_ledger
+from aicdr.declaration_event_replay import _select_exact_starts_independent
+from aicdr.executable_witness import _select_exact_starts
 
 
 def main() -> None:
@@ -69,6 +71,68 @@ def main() -> None:
     )
     assert cert.valid
     assert cert.max_job_energy_residual_mwh <= 1e-12
+
+    # C1 regression: the waiting charge integrates every delayed service
+    # slot, and the independent replay must select the same exact start on a
+    # two-event-day horizon.  A start-only charge gives a different objective
+    # and is therefore caught by this one-job certificate.
+    horizon = 320
+    event_mask = np.asarray(
+        [int(slot % 96 in set(range(64, 72))) for slot in range(horizon)],
+        dtype=np.int8,
+    )
+    event_prefix = np.concatenate([[0], np.cumsum(event_mask, dtype=np.int64)])
+    submit = np.asarray([64], dtype=np.int64)
+    runtime = np.asarray([128], dtype=np.int64)
+    energy_slot = np.asarray([0.00025], dtype=float)
+    exact_start, exact_cost = _select_exact_starts(
+        submit,
+        runtime,
+        96,
+        energy_slot,
+        event_prefix,
+        1.5,
+        150.0,
+        event_price_enabled=True,
+    )
+    independent_start, independent_cost = _select_exact_starts_independent(
+        submit,
+        runtime,
+        96,
+        energy_slot,
+        event_prefix,
+        1.5,
+        150.0,
+        event_price_enabled=True,
+    )
+    assert int(exact_start[0]) == 64
+    assert np.isclose(float(exact_cost[0]), 3.648, atol=1e-12)
+    assert np.array_equal(exact_start, independent_start)
+    assert np.allclose(exact_cost, independent_cost, atol=1e-12)
+
+    # C2/C5 regression: the risk bridge and signed complete-cycle ledger are
+    # complete before publication, with the event subset retained as a flag.
+    bridge = pd.read_csv(
+        Path("experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv")
+    )
+    settlement = pd.read_csv(
+        Path("experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv")
+    )
+    settlement_summary = pd.read_csv(
+        Path("experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv")
+    )
+    assert len(bridge) == 54
+    assert np.isfinite(
+        bridge[["upper_capacity_realization_nrmse", "central_energy_realization_nrmse"]]
+        .to_numpy(dtype=float)
+    ).all()
+    assert len(settlement) == 54 * 96
+    assert int(settlement["is_event_slot"].sum()) == 54 * 8
+    assert int(
+        settlement_summary.loc[
+            settlement_summary["metric"] == "full_cycle_cells", "value"
+        ].iloc[0]
+    ) == 54 * 96
     print("all regression tests passed")
 
 

@@ -1,12 +1,13 @@
 {
   "experiment": "end-to-end evidence-chain lineage certificate",
-  "schema_version": 2,
+  "schema_version": 3,
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "runtime-complete common witness used by network settlement": "c0c782f6d2be5bae67c3132892d649238969158874683ecbae6b0cc977ffd9fb",
-    "N-1 settlement replay of the runtime-complete common witness": "2fc3c4e36a3d39ab4557c43c25871be5cb09317ecdf1150c85a597bdf17f29e9",
-    "validation-fitted aggregate risk target": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+    "runtime-complete common witness used by network settlement": "5f4ba0853a21721937b490dfff9cb493871032d9850926dd38c296ca8b85bb46",
+    "N-1 settlement replay of the runtime-complete common witness": "afe8f2e9f7dcb166a5aa3c86bf068a89b212119407d16b800ed1afc867f99718",
+    "exact risk-profile to executable-start bridge": "9363bd53e959a8cc5d78ba77705df3448bb5d1d6d1a1759b46201b56fc2e155f",
+    "validation-fitted aggregate risk target": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
     "payment-certified feasible profile hull": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c",
     "recomputed job-to-network certificate summary": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c",
     "frozen-profile all-outage N-1 replay": "9ff56d6d691f20166007605bdadca89164bf765565b848ffbd358435a46c9d03"
@@ -15,6 +16,7 @@
     "submit-time declarations -> exact indexed job witness",
     "indexed witness -> regional aggregation and nodal mapping",
     "validation-only aggregate risk target -> relative N-1 payment cap",
+    "validation-only aggregate risk target -> fixed-price executable start realization",
     "indexed witness -> RTS-24 N-1 network valuation",
     "runtime-complete common witness -> the same RTS-24 N-1 settlement replay",
     "frozen profiles -> all finite non-islanding outage replay"
@@ -24,7 +26,7 @@
     "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
     "indexed_job_witness": "Exp19 exact submitted-job declaration index",
     "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
-    "network_settlement_witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
+    "network_settlement_witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
     "profile_identity_asserted": true,
     "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness."
   },
@@ -66,14 +68,20 @@
     "valid": true
   },
   "common_witness_certificate": {
-    "witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
+    "witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
     "submitted_jobs": 75326,
     "runtime_energy_mwh": 1972.1150000000002,
     "profile_shape": [
       4,
       12656
     ],
-    "settlement_rows": 432,
+    "settlement_rows": 5184,
+    "settlement_full_cycle_rows": 5184,
+    "settlement_signed": true,
+    "central_declared_service_energy_mwh": 0.570394485428465,
+    "nameplate_upper_energy_mwh": 1972.1150000000002,
+    "risk_bridge_file": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
+    "risk_bridge_certificate_file": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json",
     "all_settlement_solves_successful": true,
     "typed_certificate_file": "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
     "typed_certificate_valid": true,
@@ -95,8 +103,8 @@
     20
   ],
   "payment_certificate_scope": "relative N-1 baseline-cost cap; no absolute no-overpayment, revenue-adequacy, or incentive-compatibility theorem is asserted",
-  "payment_cap_maximum_violation_usd": 8.934875950217247e-09,
-  "payment_cap_minimum_margin_usd": -8.934875950217247e-09,
+  "payment_cap_maximum_violation_usd": 8.92032403498888e-09,
+  "payment_cap_minimum_margin_usd": -8.92032403498888e-09,
   "all_outage_replay": {
     "rows": 864,
     "credible_contingencies_per_cell": 37,

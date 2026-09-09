@@ -25,12 +25,16 @@
   "contractual_cap_profile": "Projection rho=0.03",
   "contractual_cap_selection": "single feasible projection selected by worst contiguous-fold validation nRMSE; its rho is recorded in Experiment 2 and is the sole payment-cap reference",
   "certificate_schema_version": 10,
-  "test_profile_file_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+  "test_profile_file_checksum": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "payment_evaluation_profile_source": "current Experiment-2 locked test_profiles.npz",
+  "payment_evaluation_profile_checksum": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "payment_evaluation_recomputed_after_profile_refit": true,
+  "payment_evaluation_recompute_scope": "the declared payment evaluator is rebuilt from the current Experiment-2 profile cache; byte-identical quality profiles may reuse their numerically identical rows, while any changed profile is re-solved before the panel is finalized",
   "validation_profile_file_checksum": "3c3ac48f99f24022764a4df9528822b3383c1fc06edd186445f8db49272112ef",
-  "data_manifest_checksum": "52b2df94f97c80ef702c6103482027a824574fba787399981d51a841c5f0a1f2",
-  "config_checksum": "d95734d2d265437cc6520d3b379900acf2b9a81a70b53f78849f5424a5e928de",
+  "data_manifest_checksum": "4ea1d2d8f274e2de5d07f773b142626538141a3da49e0326b1bf48427062de44",
+  "config_checksum": "cd100336cc176afaf351a870a2693110d176ad23b90e3e156c69b372e641e8eb",
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
-  "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of held-out per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
+  "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of calibration-validation per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {
     "q01": 0.5826705226086141,
     "q10": 0.6871175459512688,
@@ -67,7 +71,7 @@
   "settlement_generator_segments": 10,
   "payment_certificate_generator_segments": 4,
   "independent_evaluation_generator_segments": 40,
-  "independent_evaluation_parallel_workers": 8,
+  "independent_evaluation_parallel_workers": 10,
   "unseen_transfer_evaluation": {
     "daily_file": "payment_evaluation_unseen_scenarios.csv",
     "summary_file": "payment_evaluation_unseen_summary.csv",
@@ -86,9 +90,5 @@
   "dc_power_scale": 0.12390220330669541,
   "validation_peak_trace_mw": 252.92852185302473,
   "validation_flexible_peak_mw": 228.92852185302473,
-  "test_peak_used_for_scaling": false,
-  "payment_evaluation_profile_source": "current Experiment-2 locked test_profiles.npz",
-  "payment_evaluation_profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
-  "payment_evaluation_recomputed_after_profile_refit": true,
-  "payment_evaluation_recompute_scope": "Risk-Constrained Convex Verifier rows were recomputed from the current test profile cache at the declared settlement/evaluation segment counts; all other payment rows were retained because their profile bytes are unchanged under the current Experiment-2 artifact."
+  "test_peak_used_for_scaling": false
 }

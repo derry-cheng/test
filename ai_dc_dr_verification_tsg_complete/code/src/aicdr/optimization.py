@@ -53,11 +53,13 @@ class NonpreemptiveScheduleResult:
     """Exact start-time witness for a fixed-rate job-indexed schedule.
 
     Each job selects one integer start in its declared release/deadline
-    window.  It then occupies one contiguous block at its requested-GPU
-    nameplate; the final slot may be fractional only to satisfy the exact
-    energy entitlement.  The helper is used when regional capacity rows are
-    inactive.  If a row binds, callers must solve the corresponding binary
-    start-time MILP instead of falling back to a preemptive flow.
+    window.  It then occupies one contiguous block under its requested-GPU
+    nameplate. A calibrated central entitlement can leave an analytically
+    determined remainder in the final occupied interval; the runtime-complete
+    upper-capacity witness uses the full nameplate for every declared runtime
+    interval. The helper is used when regional capacity rows are inactive. If
+    a row binds, callers must solve the corresponding binary start-time MILP
+    instead of falling back to a preemptive flow.
     """
 
     success: bool
