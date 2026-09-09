@@ -66,4 +66,9 @@ figures, manifests, and all 372 audit checks. The canonical all-stage manifest
 now records Exp27 and Exp28 explicitly, and Exp27 exports a typed runtime
 coupling certificate for both the baseline and declaration-only counterfactual
 service vectors; Exp26 verifies that certificate before accepting the settlement
-lineage.
+lineage. The witness digest now covers both saved indexed service vectors,
+their start blocks, and the regional profiles; Exp26 reconstructs those vectors
+from the saved declarations and recomputes the digest before accepting any
+network result. The obsolete alternate Exp23 implementation and its unused
+configuration keys were removed so the released source has one information
+boundary.

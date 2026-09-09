@@ -4,8 +4,8 @@
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "runtime-complete common witness used by network settlement": "e455f1778cb93c7906345c90723001beeafe29bfd9ad51bbe2bb8d9c0f6f7f31",
-    "N-1 settlement replay of the runtime-complete common witness": "6823e98c68bd455310816bc6608d3c4240f2fe4f1521cd13a0af976b01880368",
+    "runtime-complete common witness used by network settlement": "c0c782f6d2be5bae67c3132892d649238969158874683ecbae6b0cc977ffd9fb",
+    "N-1 settlement replay of the runtime-complete common witness": "2fc3c4e36a3d39ab4557c43c25871be5cb09317ecdf1150c85a597bdf17f29e9",
     "validation-fitted aggregate risk target": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
     "payment-certified feasible profile hull": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c",
     "recomputed job-to-network certificate summary": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c",
@@ -24,7 +24,7 @@
     "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
     "indexed_job_witness": "Exp19 exact submitted-job declaration index",
     "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
-    "network_settlement_witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+    "network_settlement_witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
     "profile_identity_asserted": true,
     "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness."
   },
@@ -66,7 +66,7 @@
     "valid": true
   },
   "common_witness_certificate": {
-    "witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+    "witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
     "submitted_jobs": 75326,
     "runtime_energy_mwh": 1972.1150000000002,
     "profile_shape": [
@@ -84,6 +84,8 @@
       "counterfactual": 13198247
     },
     "stored_service_vector_recheck_valid": true,
+    "stored_service_vector_identity_asserted": true,
+    "witness_digest_recomputed_from_saved_arrays": true,
     "finite_n1_contingencies_per_cell": 37
   },
   "network_mapping_one_hot_bus_indices_zero_based": [

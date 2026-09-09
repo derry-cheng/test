@@ -5,7 +5,7 @@
   "truth_source": "independent declaration-only exact start policy",
   "assessment_source": "Exp27 runtime-complete common witness response",
   "event_intervention": true,
-  "common_witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+  "common_witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
   "event_slots": [
     64,
     65,

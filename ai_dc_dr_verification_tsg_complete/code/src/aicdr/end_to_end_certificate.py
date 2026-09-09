@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from .coupling_invariant import validate_job_network_coupling
+from .executable_witness import _array_digest, _service_window_from_runtime_blocks
 from .optimization import power_system_from_ppc
 from .utils import sha256, write_json
 
@@ -139,18 +140,23 @@ def run_exp26_end_to_end_certificate(
     common_counterfactual = np.asarray(common["counterfactual_mwh"], dtype=float)
     common_submit = np.asarray(common["submit_slot"], dtype=np.int64)
     common_deadline = np.asarray(common["deadline_slot"], dtype=np.int64)
+    common_baseline_start = np.asarray(common["baseline_start_slot"], dtype=np.int64)
+    common_counterfactual_start = np.asarray(common["response_start_slot"], dtype=np.int64)
     common_gpus = np.asarray(common["requested_gpus"], dtype=float)
     common_cap = float(np.asarray(common["per_gpu_power_cap_mw"], dtype=float).reshape(-1)[0])
     common_digest = str(np.asarray(common["witness_digest"]).reshape(-1)[0])
     source_digest = str(np.asarray(job["submission_digest"]).reshape(-1)[0])
     if common_meta.get("profile_identity_asserted") is not True:
         raise RuntimeError("Exp27 does not assert identity of its saved workload profiles")
+    if common_meta.get("service_vector_identity_asserted") is not True:
+        raise RuntimeError("Exp27 does not assert identity of its saved indexed service vectors")
     if common_meta.get("source_submission_digest") != source_digest:
         raise RuntimeError("Exp27 and Exp19 do not share the same submission-ledger digest")
     if (
         common_typed_certificate.get("witness_digest") != common_digest
         or common_typed_certificate.get("source_submission_digest") != source_digest
         or common_typed_certificate.get("profile_identity_asserted") is not True
+        or common_typed_certificate.get("service_vector_identity_asserted") is not True
         or common_typed_certificate.get("baseline", {}).get("valid") is not True
         or common_typed_certificate.get("counterfactual", {}).get("valid") is not True
     ):
@@ -168,6 +174,40 @@ def run_exp26_end_to_end_certificate(
         raise RuntimeError("Exp27 runtime/deadline identity check failed")
     if common_baseline.shape != common_counterfactual.shape or common_baseline.ndim != 2:
         raise RuntimeError("Exp27 saved workload profiles have incompatible shapes")
+    energy_per_slot = common_gpus * common_cap * dt_h
+    expected_baseline_service = _service_window_from_runtime_blocks(
+        common_baseline_start,
+        common_runtime,
+        common_submit,
+        common_deadline,
+        energy_per_slot,
+    )
+    expected_counterfactual_service = _service_window_from_runtime_blocks(
+        common_counterfactual_start,
+        common_runtime,
+        common_submit,
+        common_deadline,
+        energy_per_slot,
+    )
+    if not np.array_equal(common_baseline_service, expected_baseline_service):
+        raise RuntimeError("Exp27 baseline indexed service vector is not implied by its saved starts")
+    if not np.array_equal(common_counterfactual_service, expected_counterfactual_service):
+        raise RuntimeError("Exp27 counterfactual indexed service vector is not implied by its saved starts")
+    recomputed_common_digest = _array_digest(
+        common_submit,
+        common_deadline,
+        common_runtime,
+        common_region,
+        common_gpus,
+        common_baseline_start,
+        common_counterfactual_start,
+        common_baseline_service,
+        common_counterfactual_service,
+        common_baseline,
+        common_counterfactual,
+    )
+    if recomputed_common_digest != common_digest:
+        raise RuntimeError("Exp27 witness digest does not bind every saved service/profile array")
     common_baseline_typed_recheck = validate_job_network_coupling(
         service_mwh=common_baseline_service,
         job_energy_mwh=common_runtime_energy,
@@ -501,6 +541,8 @@ def run_exp26_end_to_end_certificate(
                 common_baseline_typed_recheck.valid
                 and common_counterfactual_typed_recheck.valid
             ),
+            "stored_service_vector_identity_asserted": True,
+            "witness_digest_recomputed_from_saved_arrays": True,
             "finite_n1_contingencies_per_cell": int(common_settlement["finite_n1_contingencies"].iloc[0]),
         },
         "network_mapping_one_hot_bus_indices_zero_based": (configured_buses - 1).tolist(),

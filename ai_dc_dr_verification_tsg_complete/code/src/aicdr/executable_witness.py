@@ -280,14 +280,30 @@ def run_exp27_executable_common_witness(
         requested_gpus,
         baseline_starts,
         response_starts,
+        baseline_service_window,
+        response_service_window,
         baseline_profile,
         response_profile,
     )
     typed_certificate = {
-        "schema_version": 1,
+        "schema_version": 2,
         "witness_digest": witness_digest,
         "source_submission_digest": source_submission_digest,
         "profile_identity_asserted": True,
+        "service_vector_identity_asserted": True,
+        "digest_inputs": [
+            "submit_slot",
+            "deadline_slot",
+            "runtime_slots",
+            "region",
+            "requested_gpus",
+            "baseline_start_slot",
+            "response_start_slot",
+            "baseline_service_mwh",
+            "counterfactual_service_mwh",
+            "baseline_mwh",
+            "counterfactual_mwh",
+        ],
         "runtime_definition": (
             "one contiguous block at requested GPU nameplate inside each "
             "submit-to-deadline declaration window"
@@ -459,7 +475,7 @@ def run_exp27_executable_common_witness(
 
     metadata = {
         "experiment": "declaration-only runtime-complete common workload witness",
-        "schema_version": 1,
+        "schema_version": 2,
         "source_exp19": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
         "source_submission_digest": source_submission_digest,
         "source_exp19_metadata_digest": hashlib.sha256(source_meta_path.read_bytes()).hexdigest(),
@@ -483,6 +499,8 @@ def run_exp27_executable_common_witness(
         "event_reduction_mwh": event_reduction_mwh,
         "witness_digest": witness_digest,
         "profile_identity_asserted": True,
+        "service_vector_identity_asserted": True,
+        "digest_inputs": typed_certificate["digest_inputs"],
         "runtime_typed_certificate": {
             "file": "runtime_witness_coupling_certificate.json",
             "baseline_valid": bool(baseline_typed_certificate.valid),

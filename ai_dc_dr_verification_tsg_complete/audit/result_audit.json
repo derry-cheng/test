@@ -2613,7 +2613,7 @@
     {
       "path": "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
       "bytes": 1762,
-      "sha256": "cfded4a89a2337c8bc3722c66abf749dbb4af7072f63b76299989a571af21429"
+      "sha256": "d3301f8543ac1e8e1f8b52083fa77af7e45b374508b7391dfe04ce2b2b74e2db"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
@@ -2623,12 +2623,12 @@
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_protocol_certificate.csv",
       "bytes": 508,
-      "sha256": "db36fd8dcb9513f4cbc9c820a47e8b569e81fae32e1e7e8ef1ddf8f70a329c8c"
+      "sha256": "75e2d1135075c31ddc103e49374850421ef27b55fb9a01104b5831988915849f"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
       "bytes": 17260,
-      "sha256": "b1674c60f549cda7d62d37b83f1dba9f3a2790808a6eeeadbcd82c07bef483cb"
+      "sha256": "54deb4bc5e05d009d0d1a9722d829867ff4b3c42c06b86ad59bceede6c9b1685"
     },
     {
       "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
@@ -2682,8 +2682,8 @@
     },
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
-      "bytes": 5338,
-      "sha256": "5c8c8a840dfa728afaa3d3ca982fdd40c42ef816de3305e1ae26dfb6d35569b1"
+      "bytes": 5448,
+      "sha256": "48fac5b047b9c788d4faf2ca7293dbcd5689928eb941830105f418145854f20f"
     },
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
@@ -2692,8 +2692,8 @@
     },
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
-      "bytes": 5338,
-      "sha256": "5c8c8a840dfa728afaa3d3ca982fdd40c42ef816de3305e1ae26dfb6d35569b1"
+      "bytes": 5448,
+      "sha256": "48fac5b047b9c788d4faf2ca7293dbcd5689928eb941830105f418145854f20f"
     },
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
@@ -2703,7 +2703,7 @@
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
       "bytes": 1829,
-      "sha256": "5d6d8e934ee1779035c6198e4d7eb02adab170d20e2fd7d2eeda2cd2d890948f"
+      "sha256": "db7b13de2484c48aa98534f18c05119afb43a6ecbd35390b6fc0cc303655fd90"
     },
     {
       "path": "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
@@ -2713,7 +2713,7 @@
     {
       "path": "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
       "bytes": 149683,
-      "sha256": "6823e98c68bd455310816bc6608d3c4240f2fe4f1521cd13a0af976b01880368"
+      "sha256": "2fc3c4e36a3d39ab4557c43c25871be5cb09317ecdf1150c85a597bdf17f29e9"
     },
     {
       "path": "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv",
@@ -2722,8 +2722,8 @@
     },
     {
       "path": "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json",
-      "bytes": 3633,
-      "sha256": "a321497f6599b9805334f8dabb95341ef5a41dec53deb0debd9d399b392099ef"
+      "bytes": 3961,
+      "sha256": "6fe067840808396e7cc202f553c882e818142b9d4b5182e8024134b95ae10d84"
     },
     {
       "path": "experiments/exp27_executable_common_witness/results/final/job_level_runtime_summary.csv",
@@ -2732,13 +2732,13 @@
     },
     {
       "path": "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
-      "bytes": 1868702,
-      "sha256": "e455f1778cb93c7906345c90723001beeafe29bfd9ad51bbe2bb8d9c0f6f7f31"
+      "bytes": 1868703,
+      "sha256": "c0c782f6d2be5bae67c3132892d649238969158874683ecbae6b0cc977ffd9fb"
     },
     {
       "path": "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
-      "bytes": 1427,
-      "sha256": "73bbac31067ba876441ee809e49e16369f3b45bf93a94d136de4b73f6a932a89"
+      "bytes": 1755,
+      "sha256": "c04eefa819e15f029d1a5b7ab68615af2c27553174f0747171ab5c4d2857d355"
     },
     {
       "path": "experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json",
@@ -3298,7 +3298,7 @@
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf",
       "bytes": 13451,
-      "sha256": "5122ff7edd81d3a15b82a767ac28b1450f4dd284954c4bf85739d11c9cfa4362"
+      "sha256": "a5a22a83f6b8f8d8ac4ae7ff4d1f2955e1bd2af2625b81300aba4face279a161"
     },
     {
       "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
@@ -3318,7 +3318,7 @@
     {
       "path": "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.pdf",
       "bytes": 16435,
-      "sha256": "1cbaa8b60c224c8bab7353441fc665747ce1dce1bc5bdcfa231a1d0d84b3bd5f"
+      "sha256": "4edb468f4b6830dfd5a31abd925791266840314837fc59c5b696cf121283f107"
     },
     {
       "path": "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.png",

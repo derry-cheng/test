@@ -3919,6 +3919,12 @@ def run_audit(
         / "experiments/exp23_independent_event_replay/results/final/"
         "independent_event_protocol_certificate.csv"
     )
+    common_runtime_metadata = json.loads(
+        (
+            root
+            / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
     gate_row = independent_event_summary[
         independent_event_summary["method"] == "Common runtime-complete witness"
     ]
@@ -3943,6 +3949,8 @@ def run_audit(
         and independent_event_metadata.get("event_intervention") is True
         and independent_event_metadata.get("causal_intervention_claim") is False
         and independent_event_metadata.get("truth_source") == "independent declaration-only exact start policy"
+        and independent_event_metadata.get("common_witness_digest")
+        == common_runtime_metadata.get("witness_digest")
         and independent_event_metadata.get("independent_policy", {}).get("risk_oracle_reused") is False
         and independent_event_metadata.get("independent_policy", {}).get("tariff_pair_distinct_from_gate") is True
         and independent_event_metadata.get("independent_policy", {}).get("structurally_distinct_from_gate") is True
@@ -4149,12 +4157,22 @@ def run_audit(
     runtime_typed_certificate = json.loads(
         runtime_typed_certificate_path.read_text(encoding="utf-8")
     )
+    runtime_metadata = json.loads(
+        (
+            root
+            / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
     runtime_certificate_values = [
         runtime_typed_certificate.get("baseline", {}),
         runtime_typed_certificate.get("counterfactual", {}),
     ]
     runtime_certificate_valid = bool(
-        runtime_typed_certificate.get("profile_identity_asserted") is True
+        runtime_typed_certificate.get("schema_version") == 2
+        and runtime_typed_certificate.get("profile_identity_asserted") is True
+        and runtime_typed_certificate.get("service_vector_identity_asserted") is True
+        and runtime_metadata.get("service_vector_identity_asserted") is True
+        and runtime_metadata.get("digest_inputs") == runtime_typed_certificate.get("digest_inputs")
         and all(item.get("valid") is True for item in runtime_certificate_values)
         and runtime_typed_certificate.get("witness_digest")
         == lineage_metadata.get("common_witness_certificate", {}).get("witness_digest")
@@ -4172,6 +4190,12 @@ def run_audit(
             and float(item.get("minimum_site_capacity_slack_mwh", -np.inf)) >= -1e-12
             for item in runtime_certificate_values
         )
+        and lineage_metadata.get("common_witness_certificate", {}).get(
+            "stored_service_vector_identity_asserted"
+        ) is True
+        and lineage_metadata.get("common_witness_certificate", {}).get(
+            "witness_digest_recomputed_from_saved_arrays"
+        ) is True
     )
     _check(
         runtime_certificate_valid,

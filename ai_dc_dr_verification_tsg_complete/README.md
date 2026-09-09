@@ -73,6 +73,9 @@ the aggregate indexed coupling certificate and checks typed zero residuals
 before dispatch. Experiment 27 then forms the runtime-complete declaration
 witness, exports a typed baseline/counterfactual coupling certificate, and
 reuses its digest for the common RTS-24 N--1 valuation and settlement replay.
+The digest covers both indexed service vectors, their contiguous start blocks,
+and the regional profiles; Experiment 26 reconstructs and re-hashes those
+arrays before accepting the lineage.
 Experiment 28 audits the held-out total-plus-CVaR tail against the
 total-budget-only ablation. Experiment 24 independently freezes its profiles and
 evaluates all 37 finite RTS-24 DC N--1 outages per cell; native-inadmissible

@@ -1,8 +1,22 @@
 {
-  "schema_version": 1,
-  "witness_digest": "dd011a1319e9f4c72cf0c77013e833fa41c10bdcac726a49bbee60cf935775d6",
+  "schema_version": 2,
+  "witness_digest": "73eaeeda41591b812c3228b3de607833d16fbcf5c4c7d9c59c3a3ae629336739",
   "source_submission_digest": "1060e9e1e9334c11f84a9111a4c87ecfdde55ff49812454ac4a2167ad3622832",
   "profile_identity_asserted": true,
+  "service_vector_identity_asserted": true,
+  "digest_inputs": [
+    "submit_slot",
+    "deadline_slot",
+    "runtime_slots",
+    "region",
+    "requested_gpus",
+    "baseline_start_slot",
+    "response_start_slot",
+    "baseline_service_mwh",
+    "counterfactual_service_mwh",
+    "baseline_mwh",
+    "counterfactual_mwh"
+  ],
   "runtime_definition": "one contiguous block at requested GPU nameplate inside each submit-to-deadline declaration window",
   "baseline": {
     "version": "coupling-invariant-v1",

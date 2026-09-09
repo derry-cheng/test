@@ -262,20 +262,6 @@ experiments:
   job_level_stress_panel_day_index: 127
   job_level_stress_panel_minimum_event_service_mwh: 0.0010800000000
   job_level_stress_milp_time_limit_s: 120
-  # Independent controlled-event replay: a separately parameterized exact LP
-  # uses this tariff and no statistical target or verifier candidate as an
-  # input.  Its predeclared service floor makes the event policy structurally
-  # distinct from the gate response LP; it is not selected from locked outcomes.
-  # The controlled-event policy uses a distinct tariff pair from the gate
-  # contract.  This prevents the meter replay from being a copy of the
-  # committed response objective while retaining a predeclared positive-price
-  # intervention.
-  independent_event_response_price_per_mwh: 210.0
-  independent_event_baseline_price_per_mwh: 85.0
-  independent_event_participating_data_center_indices: [0, 1]
-  independent_event_minimum_service_mwh: 7.0
-  independent_gate_baseline_price_per_mwh: 120.0
-  independent_event_workers: 4
   # Independent Exp23 replay tariff. It is fixed before scoring and differs
   # from the 150 USD/MWh common-witness event tariff.
   independent_event_replay_price_per_mwh: 30.0

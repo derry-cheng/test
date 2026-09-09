@@ -11,6 +11,7 @@ import pandas as pd
 
 from aicdr.data import _balanced_trace_region_labels, _validate_declared_raw_sources, load_workload
 from aicdr.coupling_invariant import validate_job_network_coupling
+from aicdr.executable_witness import _array_digest, _service_window_from_runtime_blocks
 from aicdr.baselines import (
     exact_block_sign_test,
     response_delivery_metrics,
@@ -105,6 +106,58 @@ def test_typed_coupling_invariant_checks_job_aggregation_and_network_units() -> 
     )
     assert not invalid.valid
     assert invalid.max_aggregation_residual_mwh > 0.09
+
+
+def test_runtime_witness_digest_binds_saved_indexed_service_vectors() -> None:
+    """The common witness cannot detach service vectors from saved start blocks."""
+
+    folder = ROOT / "experiments/exp27_executable_common_witness/results/final"
+    witness = np.load(folder / "runtime_complete_witness.npz", allow_pickle=False)
+    metadata = json.loads((folder / "experiment_metadata.json").read_text(encoding="utf-8"))
+    certificate = json.loads(
+        (folder / "runtime_witness_coupling_certificate.json").read_text(encoding="utf-8")
+    )
+    baseline_service = np.asarray(witness["baseline_service_mwh"], dtype=float)
+    counterfactual_service = np.asarray(witness["counterfactual_service_mwh"], dtype=float)
+    energy_per_slot = (
+        np.asarray(witness["requested_gpus"], dtype=float)
+        * float(np.asarray(witness["per_gpu_power_cap_mw"]).reshape(-1)[0])
+        * CFG["project"]["interval_minutes"]
+        / 60.0
+    )
+    expected_baseline = _service_window_from_runtime_blocks(
+        witness["baseline_start_slot"],
+        witness["runtime_slots"],
+        witness["submit_slot"],
+        witness["deadline_slot"],
+        energy_per_slot,
+    )
+    expected_counterfactual = _service_window_from_runtime_blocks(
+        witness["response_start_slot"],
+        witness["runtime_slots"],
+        witness["submit_slot"],
+        witness["deadline_slot"],
+        energy_per_slot,
+    )
+    assert np.array_equal(baseline_service, expected_baseline)
+    assert np.array_equal(counterfactual_service, expected_counterfactual)
+    digest = _array_digest(
+        witness["submit_slot"],
+        witness["deadline_slot"],
+        witness["runtime_slots"],
+        witness["region"],
+        witness["requested_gpus"],
+        witness["baseline_start_slot"],
+        witness["response_start_slot"],
+        witness["baseline_service_mwh"],
+        witness["counterfactual_service_mwh"],
+        witness["baseline_mwh"],
+        witness["counterfactual_mwh"],
+    )
+    assert digest == str(np.asarray(witness["witness_digest"]).reshape(-1)[0])
+    assert metadata["service_vector_identity_asserted"] is True
+    assert certificate["schema_version"] == 2
+    assert certificate["service_vector_identity_asserted"] is True
 
 
 def test_observational_replay_covers_every_locked_day_and_slot() -> None:
@@ -366,12 +419,23 @@ def test_independent_event_and_full_outage_panels_are_locked_and_complete() -> N
     event_folder = ROOT / "experiments/exp23_independent_event_replay/results/final"
     event_summary = pd.read_csv(event_folder / "independent_event_replay_summary.csv")
     event_metadata = json.loads((event_folder / "experiment_metadata.json").read_text(encoding="utf-8"))
-    gate = event_summary[event_summary["method"] == "Gate-committed response"].iloc[0]
+    common_metadata = json.loads(
+        (
+            ROOT
+            / "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    gate = event_summary[event_summary["method"] == "Common runtime-complete witness"].iloc[0]
+    independent = event_summary[
+        event_summary["method"] == "Independent declaration-only exact policy"
+    ].iloc[0]
     assert int(gate["locked_days"]) == 54
+    assert float(independent["nrmse"]) == 0.0
+    assert float(independent["credit_f1"]) == 1.0
     protocol = pd.read_csv(
         event_folder / "independent_event_protocol_certificate.csv"
     )
-    assert len(protocol) == 7
+    assert len(protocol) == 6
     assert np.all(protocol["value"] == protocol["required_value"])
     assert event_metadata["event_intervention"] is True
     assert event_metadata["causal_intervention_claim"] is False
@@ -379,6 +443,7 @@ def test_independent_event_and_full_outage_panels_are_locked_and_complete() -> N
     assert event_metadata["independent_policy"]["structurally_distinct_from_gate"] is True
     assert float(event_metadata["independent_policy"]["minimum_participant_event_mwh"]) > 0.0
     assert float(event_metadata["independent_policy"]["maximum_response_difference_from_gate_mw"]) > 1e-8
+    assert event_metadata["common_witness_digest"] == common_metadata["witness_digest"]
     outage_folder = ROOT / "experiments/exp24_all_outage_security_panel/results/final"
     outage = pd.read_csv(outage_folder / "all_outage_security_replay.csv")
     outage_metadata = json.loads((outage_folder / "experiment_metadata.json").read_text(encoding="utf-8"))

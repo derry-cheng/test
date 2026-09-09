@@ -254,8 +254,9 @@ u^{\rm run}_{j\tau}
 where \(\theta_j\) is selected from every declaration-feasible start in the
 precommitted queue allowance. No measured execution field or \(\widehat E_j\)
 enters this witness. Exp27 reconstructs its regional profile from
-\(u^{\rm run}_{j\tau}\), records a separate witness digest, and uses those
-same arrays for the RTS-24 settlement replay. Thus the calibrated Exp19
+\(u^{\rm run}_{j\tau}\); its digest covers both indexed service vectors, their
+start blocks, and the regional profiles, and Exp26 recomputes that digest
+before settlement. Thus the calibrated Exp19
 coupling certificate and the runtime-complete Exp27 settlement certificate
 share an immutable submission index while retaining distinct entitlement
 semantics.
