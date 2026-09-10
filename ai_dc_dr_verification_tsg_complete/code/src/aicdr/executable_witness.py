@@ -656,6 +656,10 @@ def run_exp27_executable_common_witness(
         central_realization = (
             central_risk_aligned_profile[:, day_slice] / dt_h + fixed_load_for_bridge
         )
+        target_flexible_upper = np.maximum(target_total_upper - fixed_load_for_bridge, 0.0)
+        target_flexible_central = np.maximum(target_total_central - fixed_load_for_bridge, 0.0)
+        upper_error = upper_realization - target_total_upper
+        central_error = central_realization - target_total_central
         risk_bridge_rows.append(
             {
                 "day": day,
@@ -670,12 +674,22 @@ def run_exp27_executable_common_witness(
                 "upper_capacity_realization_energy_mwh": float(upper_realization.sum() * dt_h),
                 "central_energy_realization_energy_mwh": float(central_realization.sum() * dt_h),
                 "upper_capacity_realization_nrmse": float(
-                    np.sqrt(np.mean((upper_realization - target_total_upper) ** 2))
+                    np.sqrt(np.mean(upper_error**2))
                     / max(float(np.mean(np.abs(target_total_upper))), 1.0e-12)
                 ),
                 "central_energy_realization_nrmse": float(
-                    np.sqrt(np.mean((central_realization - target_total_central) ** 2))
+                    np.sqrt(np.mean(central_error**2))
                     / max(float(np.mean(np.abs(target_total_central))), 1.0e-12)
+                ),
+                "upper_capacity_realization_rmse_mw": float(np.sqrt(np.mean(upper_error**2))),
+                "central_energy_realization_rmse_mw": float(np.sqrt(np.mean(central_error**2))),
+                "upper_capacity_realization_nrmse_flexible_target": float(
+                    np.sqrt(np.mean(upper_error**2))
+                    / max(float(np.mean(np.abs(target_flexible_upper))), 1.0e-12)
+                ),
+                "central_energy_realization_nrmse_flexible_target": float(
+                    np.sqrt(np.mean(central_error**2))
+                    / max(float(np.mean(np.abs(target_flexible_central))), 1.0e-12)
                 ),
                 "upper_capacity_profile_max_mw": float(np.max(upper_realization)),
                 "central_profile_max_mw": float(np.max(central_realization)),
@@ -695,7 +709,7 @@ def run_exp27_executable_common_witness(
     write_json(
         final / "risk_to_executable_bridge_certificate.json",
         {
-            "schema_version": 1,
+            "schema_version": 2,
             "risk_profile_source": "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz::Risk-Constrained Convex Verifier",
             "risk_profile_digest": risk_profile_digest,
             "submission_digest": source_submission_digest,
@@ -712,9 +726,22 @@ def run_exp27_executable_common_witness(
             "central_contract_profile_digest": _array_digest(risk_days, risk_contract_profile_central),
             "upper_capacity_realization_mean_nrmse": float(risk_bridge["upper_capacity_realization_nrmse"].mean()),
             "central_energy_realization_mean_nrmse": float(risk_bridge["central_energy_realization_nrmse"].mean()),
+            "upper_capacity_realization_mean_nrmse_flexible_target": float(
+                risk_bridge["upper_capacity_realization_nrmse_flexible_target"].mean()
+            ),
+            "central_energy_realization_mean_nrmse_flexible_target": float(
+                risk_bridge["central_energy_realization_nrmse_flexible_target"].mean()
+            ),
             "same_submission_index": True,
             "future_arrivals_used": False,
             "execution_telemetry_used": False,
+            "network_response_profile": "risk_aligned_profile",
+            "settlement_definition": (
+                "payable response is the minimum of the declaration-witnessed "
+                "reduction and the frozen contract-cap reduction on event slots; "
+                "the signed N-1 network value is added and a zero floor is applied "
+                "only to the reported cash settlement"
+            ),
             "files": {"daily": "risk_to_executable_bridge.csv"},
         },
     )
@@ -746,7 +773,7 @@ def run_exp27_executable_common_witness(
         risk_contract_profile_central,
     )
     typed_certificate = {
-        "schema_version": 3,
+        "schema_version": 4,
         "witness_digest": witness_digest,
         "source_submission_digest": source_submission_digest,
         "profile_identity_asserted": True,
@@ -892,6 +919,8 @@ def run_exp27_executable_common_witness(
             {"metric": "risk_contract_scale_central", "value": risk_contract_scale_central, "unit": "ratio"},
             {"metric": "risk_bridge_upper_mean_nrmse", "value": float(risk_bridge["upper_capacity_realization_nrmse"].mean()), "unit": "ratio"},
             {"metric": "risk_bridge_central_mean_nrmse", "value": float(risk_bridge["central_energy_realization_nrmse"].mean()), "unit": "ratio"},
+            {"metric": "risk_bridge_upper_mean_nrmse_flexible_target", "value": float(risk_bridge["upper_capacity_realization_nrmse_flexible_target"].mean()), "unit": "ratio"},
+            {"metric": "risk_bridge_central_mean_nrmse_flexible_target", "value": float(risk_bridge["central_energy_realization_nrmse_flexible_target"].mean()), "unit": "ratio"},
             {"metric": "event_response_delay_mwh", "value": event_response_delay_mwh, "unit": "MWh"},
             {"metric": "baseline_jobs_with_one_contiguous_block", "value": len(baseline_starts), "unit": "jobs"},
             {"metric": "counterfactual_jobs_with_one_contiguous_block", "value": len(response_starts), "unit": "jobs"},
@@ -909,12 +938,12 @@ def run_exp27_executable_common_witness(
     write_json(final / "runtime_witness_coupling_certificate.json", typed_certificate)
     logger.info("Exp27 declaration witness [35%%]: jobs=%d, runtime energy=%.3f MWh", len(submit_slot), runtime_energy_mwh.sum())
 
-    # The network replay is evaluated on exactly the same primary response and
-    # baseline arrays saved above.  The locked-day index is taken from the
-    # locked Exp2 panel so the scope is an identified study cohort rather than
-    # an arbitrary screenshot.  The risk-priced profile is retained as a
-    # separate bridge audit; it is not substituted into this primary network
-    # value calculation.
+    # The network replay is evaluated on the same baseline and risk-aligned
+    # response trajectory that was selected by the declaration witness.  The
+    # locked-day index is taken from the Exp2 panel so the scope is an
+    # identified study cohort.  A separate ordinary event-price response is
+    # retained in the archive as an ablation; it cannot be used to claim a
+    # network value for the risk-priced trajectory.
     test_profile_path = root / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
     if not test_profile_path.exists():
         raise FileNotFoundError(f"Locked day index is missing: {test_profile_path}")
@@ -932,6 +961,7 @@ def run_exp27_executable_common_witness(
     segment_count = int(cfg["experiments"].get("coupled_network_generator_segments", 4))
     settlement_slots = list(range(slots_per_day))
     event_slot_set = set(int(slot) for slot in event_slots.tolist())
+    risk_day_to_index = {int(day): int(index) for index, day in enumerate(risk_days.tolist())}
     network_tasks = [
         (int(day), int(slot)) for day in network_days for slot in settlement_slots
     ]
@@ -940,7 +970,7 @@ def run_exp27_executable_common_witness(
         day, slot = task
         absolute_slot = day * slots_per_day + slot
         baseline_mw = baseline_profile[:, absolute_slot] / dt_h
-        response_mw = response_profile[:, absolute_slot] / dt_h
+        response_mw = risk_aligned_profile[:, absolute_slot] / dt_h
         baseline_load = base_load.copy()
         response_load = base_load.copy()
         baseline_load[buses] += fixed_load_mw + baseline_mw
@@ -950,10 +980,31 @@ def run_exp27_executable_common_witness(
         if not baseline.success or not response.success:
             raise RuntimeError(f"Common witness RTS-24 solve failed at day={day}, slot={slot}")
         # The marginal credit is evaluated at the baseline dispatch endpoint,
-        # matching the signed linearization in Eq. (27).  Response prices
-        # would make the payment depend on the counterfactual being credited.
+        # matching the signed linearization in Eq. (27). Response prices would
+        # make the payment depend on the counterfactual being credited.
         nodal_credit = float(np.dot(baseline_mw - response_mw, baseline.lmp_per_mwh[buses]) * dt_h)
         value = float((baseline.objective - response.objective) * dt_h)
+        risk_index = risk_day_to_index.get(int(day))
+        if risk_index is None:
+            raise RuntimeError(f"Network day {day} is absent from the locked risk profile")
+        contract_target_mw = np.asarray(
+            risk_contract_flexible_upper[risk_index, :, slot], dtype=float
+        )
+        gross_reduction_mw = np.maximum(baseline_mw - response_mw, 0.0)
+        contract_cap_mw = np.maximum(baseline_mw - contract_target_mw, 0.0)
+        metered_reduction_mwh = float(gross_reduction_mw.sum() * dt_h)
+        contract_cap_mwh = float(contract_cap_mw.sum() * dt_h)
+        # Apply the contract cap pointwise before summing across regions. A
+        # minimum of the two aggregate sums could overpay when one region is
+        # above its cap and another is below it.
+        payable_response_mwh = float(
+            np.minimum(gross_reduction_mw, contract_cap_mw).sum() * dt_h
+            if slot in event_slot_set
+            else 0.0
+        )
+        capacity_payment = float(payable_response_mwh * event_price)
+        signed_contract_value = float(capacity_payment + value)
+        payable_settlement = float(max(0.0, signed_contract_value))
         return {
             "day": day,
             "slot": slot,
@@ -962,13 +1013,20 @@ def run_exp27_executable_common_witness(
             "settlement_window": "full_declared_day",
             "baseline_witness_profile_sha256": witness_digest,
             "counterfactual_witness_profile_sha256": witness_digest,
+            "counterfactual_profile_role": "risk_aligned_declaration_witness",
             "baseline_total_flexible_mw": float(baseline_mw.sum()),
             "counterfactual_total_flexible_mw": float(response_mw.sum()),
             "baseline_secure_cost_usd_per_interval": float(baseline.objective * dt_h),
             "counterfactual_secure_cost_usd_per_interval": float(response.objective * dt_h),
             "network_value_usd": value,
             "nodal_meter_credit_usd": nodal_credit,
-            "payable_settlement_usd": value,
+            "gross_declared_reduction_mwh": metered_reduction_mwh,
+            "frozen_contract_cap_mwh": contract_cap_mwh,
+            "payable_response_mwh": payable_response_mwh,
+            "capacity_payment_usd": capacity_payment,
+            "signed_contract_value_usd": signed_contract_value,
+            "payable_settlement_usd": payable_settlement,
+            "settlement_floor_applied": int(signed_contract_value < 0.0),
             "baseline_max_loading_pu": float(baseline.max_loading),
             "counterfactual_max_loading_pu": float(response.max_loading),
             "baseline_max_postcontingency_loading_pu": float(baseline.max_post_contingency_loading),
@@ -1007,6 +1065,9 @@ def run_exp27_executable_common_witness(
             {"metric": "negative_network_value_cells", "value": negative_value_cells, "unit": "cells"},
             {"metric": "signed_network_value_usd", "value": signed_value_total, "unit": "USD"},
             {"metric": "signed_nodal_meter_credit_usd", "value": signed_meter_credit_total, "unit": "USD"},
+            {"metric": "capacity_payment_usd", "value": float(network["capacity_payment_usd"].sum()), "unit": "USD"},
+            {"metric": "payable_response_mwh", "value": float(network["payable_response_mwh"].sum()), "unit": "MWh"},
+            {"metric": "settlement_floor_cells", "value": int(network["settlement_floor_applied"].sum()), "unit": "cells"},
             {"metric": "signed_payable_settlement_usd", "value": signed_settlement_total, "unit": "USD"},
             {"metric": "signed_value_minus_meter_credit_usd", "value": signed_value_total - signed_meter_credit_total, "unit": "USD"},
         ]
@@ -1069,7 +1130,7 @@ def run_exp27_executable_common_witness(
         "telemetry_fields_used_in_decision": [],
         "declaration_fields_used": ["submit_slot", "deadline_slot", "region", "requested_gpus", "per_gpu_power_cap_mw", "declared_job_energy_mwh", "declared_job_energy_upper_mwh", "submission_digest"],
         "baseline_policy": "exact earliest-start member of the declaration-feasible contiguous-block set",
-        "response_policy": "exact enumeration of every declaration-feasible contiguous start with predeclared waiting and event-tariff costs",
+        "response_policy": "exact enumeration of every declaration-feasible contiguous start with predeclared waiting and event-tariff costs; retained as an ordinary-price ablation",
         "risk_aligned_policy": "exact enumeration of every declaration-feasible contiguous start with predeclared waiting, event-tariff, and frozen risk-profile slot prices",
         "risk_bridge": {
             "source": "Exp2 locked Risk-Constrained Convex Verifier profile",
@@ -1085,6 +1146,8 @@ def run_exp27_executable_common_witness(
             "locked_submit_declared_central_energy_mwh": locked_declared_central_energy_mwh,
             "price_formula": "p_exec_upper=P_fix+gamma_upper*max(p_risk-P_fix,0); pi_{r,t}=p_DR*max(p_exec_upper_{r,t}-P_fix,0)/max_{r,t}max(p_exec_upper-P_fix,0)",
             "finite_exact_realization": True,
+            "network_replay_profile": "risk_aligned_profile",
+            "settlement_payment_cap": "min(declaration-witnessed event reduction, frozen contract-cap reduction)",
             "daily_audit_file": "risk_to_executable_bridge.csv",
             "certificate_file": "risk_to_executable_bridge_certificate.json",
         },

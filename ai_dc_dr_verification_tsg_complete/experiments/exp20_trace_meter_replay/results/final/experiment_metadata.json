@@ -73,7 +73,7 @@
   "block_length_days": 3,
   "bootstrap_replications": 5000,
   "profiles_file": "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
-  "profiles_checksum": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "profiles_checksum": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
   "daily_file": "trace_meter_replay_daily.csv",
   "summary_file": "trace_meter_replay_summary.csv",
   "figure": "fig25_trace_meter_replay.pdf"

@@ -1,7 +1,7 @@
 stage,input_records,retained_records,split_or_join_rule,downstream_role
 BurstGPT request ingestion,5188507,5188507,all rows in both no-failure releases,inference arrivals and observed service
-MIT immutable scheduler-DCGM join,287069,71128,last scheduler record per immutable job ID with positive measured energy,full-horizon job-level witness in Experiments 14 and 16
-MIT common trace horizon filter,71128,68664,aligned execution start before the common 121-day tensor horizon,batch arrivals and independent execution for Experiments 1--13
+MIT submit-time declaration ledger,287173,72672,valid submit-time GPU request and allocation runtime; no execution telemetry,causal batch arrivals and declaration witness
+MIT independent execution reference,71128,68662,scheduler/DCGM join clipped after declaration-time alignment,post-event measured execution for scoring and audit
 DCGM power calibration,95182,44391,strict chronological train / calibration-validation / locked partition; only the first partition is fit,power-conversion model fitting
 DCGM calibration-validation scenarios,95182,9637,next chronological window after the training cutoff,conversion scenarios and calibration scoring
 DCGM locked calibration audit,95182,41154,strictly later locked observations never used for scenario selection,final conversion generalization audit

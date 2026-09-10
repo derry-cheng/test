@@ -392,8 +392,60 @@ def run_exp26_end_to_end_certificate(
     expected_full_cycle_rows = risk_day_count * int(cfg["project"]["slots_per_day"])
     if len(common_settlement) != expected_full_cycle_rows or not common_settlement["settlement_window"].eq("full_declared_day").all():
         raise RuntimeError("Exp27 settlement replay does not cover every slot of every locked day")
-    if not np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0):
-        raise RuntimeError("Exp27 settlement applies a hidden nonnegative clipping rule")
+    required_settlement_columns = {
+        "gross_declared_reduction_mwh",
+        "frozen_contract_cap_mwh",
+        "payable_response_mwh",
+        "capacity_payment_usd",
+        "signed_contract_value_usd",
+        "settlement_floor_applied",
+    }
+    if not required_settlement_columns.issubset(common_settlement.columns):
+        raise RuntimeError("Exp27 settlement ledger lacks the explicit payment-cap fields")
+    if not np.allclose(
+        common_settlement["payable_settlement_usd"],
+        np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
+        atol=1e-12,
+        rtol=0.0,
+    ):
+        raise RuntimeError("Exp27 payable settlement is inconsistent with its declared floor")
+    payable_cap = np.minimum(
+        common_settlement["gross_declared_reduction_mwh"].to_numpy(dtype=float),
+        common_settlement["frozen_contract_cap_mwh"].to_numpy(dtype=float),
+    )
+    if np.any(common_settlement["payable_response_mwh"].to_numpy(dtype=float) > payable_cap + 1e-10):
+        raise RuntimeError("Exp27 payable response exceeds the frozen contract cap")
+    # Recompute the pointwise reduction intersection from the saved regional
+    # witness arrays. Checking only the minimum of two aggregate totals would
+    # allow cross-region overpayment to cancel underpayment elsewhere.
+    event_slots = set(int(value) for value in cfg["market"]["event_slots"])
+    risk_contract_flexible = np.maximum(
+        common_risk_contract_upper - float(cfg["project"]["fixed_facility_load_mw"]),
+        0.0,
+    )
+    risk_day_to_index = {int(day): index for index, day in enumerate(risk_days.tolist())}
+    expected_pointwise_payable = []
+    for row in common_settlement.itertuples(index=False):
+        day = int(row.day)
+        slot = int(row.slot)
+        day_index = risk_day_to_index.get(day)
+        if day_index is None:
+            raise RuntimeError(f"Exp27 settlement row day {day} is absent from the risk profile")
+        absolute_slot = day * int(cfg["project"]["slots_per_day"]) + slot
+        baseline_flexible = common_baseline[:, absolute_slot] / dt_h
+        response_flexible = common_risk_aligned[:, absolute_slot] / dt_h
+        gross = np.maximum(baseline_flexible - response_flexible, 0.0)
+        cap = np.maximum(baseline_flexible - risk_contract_flexible[day_index, :, slot], 0.0)
+        expected_pointwise_payable.append(
+            float(np.minimum(gross, cap).sum() * dt_h) if slot in event_slots else 0.0
+        )
+    if not np.allclose(
+        common_settlement["payable_response_mwh"].to_numpy(dtype=float),
+        np.asarray(expected_pointwise_payable),
+        atol=1e-10,
+        rtol=0.0,
+    ):
+        raise RuntimeError("Exp27 pointwise contract-cap intersection is inconsistent with the witness")
     common_settlement_summary = pd.read_csv(common_settlement_summary_path)
     settlement_values = dict(zip(common_settlement_summary["metric"].astype(str), common_settlement_summary["value"].astype(float)))
     if int(settlement_values.get("full_cycle_cells", -1)) != expected_full_cycle_rows or not np.isclose(settlement_values.get("signed_payable_settlement_usd", np.nan), common_settlement["payable_settlement_usd"].sum(), atol=1e-9, rtol=0.0):
@@ -408,6 +460,8 @@ def run_exp26_end_to_end_certificate(
         "central_energy_realization_energy_mwh",
         "upper_capacity_realization_nrmse",
         "central_energy_realization_nrmse",
+        "upper_capacity_realization_nrmse_flexible_target",
+        "central_energy_realization_nrmse_flexible_target",
         "same_declaration_digest",
     }
     if (
@@ -724,7 +778,13 @@ def run_exp26_end_to_end_certificate(
                     and common_typed_certificate.get("central_risk_aligned", {}).get("valid") is True
                     and common_settlement["solver_success"].all()
                     and len(common_settlement) == risk_day_count * int(cfg["project"]["slots_per_day"])
-                    and np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)
+                    and required_settlement_columns.issubset(common_settlement.columns)
+                    and np.allclose(
+                        common_settlement["payable_settlement_usd"],
+                        np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
+                        atol=1e-12,
+                        rtol=0.0,
+                    )
                 ),
             },
             {
@@ -742,7 +802,7 @@ def run_exp26_end_to_end_certificate(
     calibration = manifest.get("submission_calibration", {})
     metadata = {
         "experiment": "end-to-end evidence-chain lineage certificate",
-        "schema_version": 3,
+            "schema_version": 4,
         "locked_days": int(len(risk_days)),
         "upstream_artifact_hashes": {
             record["profile_role"]: record["source_sha256"] for record in source_records
@@ -779,7 +839,15 @@ def run_exp26_end_to_end_certificate(
             "profile_shape": list(common_counterfactual.shape),
             "settlement_rows": int(len(common_settlement)),
             "settlement_full_cycle_rows": int(len(common_settlement)),
-            "settlement_signed": bool(np.allclose(common_settlement["payable_settlement_usd"], common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)),
+            "settlement_signed": bool(np.allclose(common_settlement["signed_contract_value_usd"], common_settlement["capacity_payment_usd"] + common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)),
+            "settlement_payment_cap_verified": bool(
+                np.allclose(
+                    common_settlement["payable_settlement_usd"],
+                    np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
+                    atol=1e-12,
+                    rtol=0.0,
+                )
+            ),
             "central_declared_service_energy_mwh": float(common_declared_energy.sum()),
             "nameplate_upper_energy_mwh": float(common_declared_upper.sum()),
             "risk_bridge_file": _relative(root, risk_bridge_path),

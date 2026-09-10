@@ -1,6 +1,6 @@
 {
-  "schema_version": 3,
-  "witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
+  "schema_version": 4,
+  "witness_digest": "a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6",
   "source_submission_digest": "1060e9e1e9334c11f84a9111a4c87ecfdde55ff49812454ac4a2167ad3622832",
   "profile_identity_asserted": true,
   "service_vector_identity_asserted": true,
@@ -129,15 +129,17 @@
     "valid": true
   },
   "risk_bridge": {
-    "risk_profile_digest": "99581e7b603744426086b6b59ed134dd9e8910d468c9ff231d6286837d173127",
-    "upper_contract_profile_digest": "5bf3759e3cc73262d6e09391e2fa697302cf637d80e7f8bf0e92403961b6f80e",
-    "central_contract_profile_digest": "ea708f0ca7e128dfa6fd935c9143905c23b4ad32cd67592f58def9c3efad2ccc",
-    "price_normalization_mw": 1.9516495848586484,
-    "upper_contract_scale": 0.01653940326151397,
-    "central_contract_scale": 4.654241846341328e-06,
+    "risk_profile_digest": "b035dcf6cd671963cb37285256b8407f79e5dc5797a13191596bef8975a9e9ea",
+    "upper_contract_profile_digest": "59399f652bd6d43b1778b56121a8e7ebab2f7e59d21fa2ea101e74423561b8a9",
+    "central_contract_profile_digest": "d0e6e9965df429e57ac6e5b542e39df23e8d06af2dac0a25b6b8adb578ffebb8",
+    "price_normalization_mw": 2.132773344025644,
+    "upper_contract_scale": 0.0363897044630347,
+    "central_contract_scale": 1.0240181136519826e-05,
     "locked_submit_declared_upper_energy_mwh": 624.38225,
     "locked_submit_declared_central_energy_mwh": 0.1757031949771048,
     "event_tariff_per_mwh": 150.0,
+    "scale_source": "submit-time declaration energy on the locked risk days",
+    "raw_profile_retained": true,
     "locked_days": 54
   }
 }

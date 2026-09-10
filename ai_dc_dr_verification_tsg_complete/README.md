@@ -43,7 +43,7 @@ For manuscript compilation, run LaTeX from `paper/` so the experiment figures re
 
 The complete scheduler population contains 75,326 submissions and the
 post-event scheduler--DCGM join contains 71,128 positive-energy jobs. The
-common 121-day tensor window retains 68,664 jobs for the locked statistical
+common 121-day tensor window retains 68,662 jobs for the locked statistical
 panels; the remaining jobs are retained by the complete ledger stages. Source
 row counts, hashes, joins, temporal coverage, calibration, scaling, and all
 split rules are recorded in `data/processed/data_manifest.json` and
@@ -90,4 +90,4 @@ audit.
 
 ## Reproducibility boundaries
 
-The region labels in the processed traces are feature-stratified scenario labels; they do not claim physical data-center geography. Event-response panels that use an LP-generated intervention are labelled mechanism-isolation analyses. Decision-time and trace-meter panels score predictions against an independently observed execution tensor and do not attach utility-event labels to that observational target.
+The region labels in the processed traces are feature-stratified scenario labels; they do not claim physical data-center geography. Declaration arrivals and regions are fixed before the execution trace is opened. Event-response panels that use an LP-generated intervention are labelled mechanism-isolation analyses. Decision-time and trace-meter panels score predictions against an independently observed execution tensor and do not attach utility-event labels to that observational target.

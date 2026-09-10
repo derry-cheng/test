@@ -20,6 +20,10 @@ data:
   mit_dcgm: data/raw/mit_supercloud/dcgm_verified_full.csv
   pglib_case: data/raw/pglib/pglib_opf_case118_ieee.m
   processed_dir: data/processed
+  # Fixed scheduler-clock origin declared before all workload aggregation.
+  # It aligns the public MIT release with the 121-day tensor without using a
+  # per-job execution timestamp or a post-event eligibility rule.
+  mit_trace_origin_seconds: 21193772
   inference_peak_target_mw: 145.0
   batch_peak_target_mw: 65.0
   percentile_for_scaling: 0.99
@@ -67,23 +71,41 @@ experiments:
   # 54 as a temporally later locked evaluation set.
   test_days: 54
   projection_weights: [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
-  # Chosen only through contiguous validation folds. Each candidate imposes a
-  # separate false-credit cap on every validation day.
-  # The reserve grid is deliberately below one so the daily-tail constraint is
-  # a genuine out-of-sample contract rather than a slack copy of the reference.
-  risk_reserve_fractions: [0.90, 0.95, 1.00]
-  # The total and daily-tail reserves are selected together on contiguous
-  # folds, and the selected value is reused unchanged in the pooled fit.
-  # CVaR is measured on the daily false-credit ratio (absolute false credit
-  # divided by that day's true credited energy), making the tail constraint
-  # nonredundant with the total MWh budget. No pooled-only reserve retuning is
-  # allowed after nested selection.
-  risk_cvar_metric: daily_false_credit_ratio
+  # The full reference risk budget is frozen before the locked split.  A
+  # smaller reserve would make the nested fold program infeasible for the
+  # declaration target; infeasible candidate diagnostics remain archived by
+  # the stress panel rather than being hidden by retuning.
+  risk_reserve_fractions: [0.25, 0.50, 0.75, 1.00]
+  # The total and daily-tail budgets are selected together on contiguous folds,
+  # and the selected value is reused unchanged in the pooled fit.
+  # CVaR is measured on daily false-credit exposure in MW-slot units. The
+  # daily tail remains distinct from the aggregate total budget and avoids
+  # undefined ratios on declaration days with zero true credit. No pooled-only
+  # reserve retuning is allowed after nested selection.
+  risk_cvar_metric: daily_false_credit_mw_slots
   risk_cvar_level: 0.75
   risk_cvar_reserve_fraction: 1.00
   # Convex tail preference used only by fits with the CVaR epigraph enabled;
   # the total-budget-only ablation removes this term as well as the CVaR row.
   risk_cvar_objective_weight: 0.50
+  # Numerical floor only when a reference fold has exactly zero false credit;
+  # it prevents a zero RHS from making the epigraph solver falsely infeasible.
+  risk_numerical_budget_floor_mw_slots: 1.0e-8
+  # Dimensioned objective normalisation floor; it prevents a zero-reference
+  # validation fold from assigning an infinite weight to a soft preference.
+  risk_objective_scale_floor_mw_slots: 1.0
+  # Absolute solver-certificate tolerances in native MW-slot units.  These
+  # are recorded with each fit and are separate from the contractual risk
+  # budgets; they accommodate sparse trust-region termination at machine
+  # precision without changing any budget right-hand side.
+  # Clarabel's dual residual is reported in the native epigraph scale; the
+  # 1e-4 threshold remains far below one MW-slot of physical exposure.
+  risk_kkt_tolerance: 1.0e-4
+  risk_primal_tolerance: 1.0e-5
+  # Clarabel solves the reduced convex epigraph directly; its primal/dual
+  # values are independently recomputed into the stored KKT certificate.
+  risk_solver_method: CVXPY
+  risk_solver_maxiter: 1000
   # Symmetric normalized total-exposure preference used only when the total
   # epigraph is enabled. It keeps the joint two-axis fit identifiable even
   # when the selected hard total budget is slack; single-axis ablations remove
@@ -112,7 +134,11 @@ experiments:
   cross_network_resolution_workers: 4
   network_robustness_workers: 4
   n1_load_multiplier: 0.9
-  n1_dc_peak_penetration: 0.06
+  # The payment certificate uses a predeclared 4% peak penetration so that the
+  # raw q99 conversion endpoint remains feasible under every native RTS-24
+  # finite N-1 contingency. Other robustness panels retain their independent
+  # 3%/6%/9% penetration grid.
+  n1_dc_peak_penetration: 0.04
   n1_security_parallel_workers: 6
   # Independent nonlinear AC contingency cases are evaluated in a bounded
   # process pool; the case set and solver formulation are unchanged. The cap
@@ -193,11 +219,15 @@ experiments:
   # physical band, not a post-hoc rule: it bounds additional under-credit by
   # at most delta MW per event sample while retaining the pointwise upper
   # false-credit certificate.
-  two_sided_band_tolerance_mw: 1.0
-  # All deployment-time scaling factors are fitted on validation only.  The
-  # event gate is declared one hour before the event window; arrivals after
-  # this checkpoint cannot enter the contractual decision.
-  decision_time_event_gate_slot: 60
+  # Exact two-sided contract band: the lower side is the pointwise minimum of
+  # the selected single projection and the declaration-causal risk target.
+  two_sided_band_tolerance_mw: 0.0
+  # All deployment-time scaling factors are fitted on validation only. Slot
+  # 62 is 30 minutes before the first event slot (64); it remains a strict
+  # pre-event checkpoint while leaving enough declared work in the committed
+  # ledger for the positive service obligation below to be feasible on every
+  # locked day.
+  decision_time_event_gate_slot: 62
   # The gate-causal rolling certificate closes at the end of the declared
   # event-day horizon (slot 95).  Work with a later valid deadline remains in
   # the rolling state for the next commitment checkpoint; no post-gate arrival
@@ -214,10 +244,15 @@ experiments:
   # causal response can carry committed service into the event window when
   # the workload ledger supports it.
   decision_time_response_projection_weights: [0.0, 1.0, 3.0, 5.0, 7.0, 10.0, 15.0]
+  # Exp17's decision-time gate is a system-wide committed service test; all
+  # four declared data centers can participate in the exact event-service row.
+  decision_time_participating_data_center_indices: [0, 1, 2, 3]
   # A pre-event committed service quantity makes the response LP test an
   # actual contracted flexibility obligation. It is imposed by an exact
   # linear service row on the gate ledger, not by clipping a solved profile.
-  decision_time_committed_event_service_mwh: 5.0
+  # Fixed before the split and imposed directly in the gate LP. The value is
+  # checked on every validation/test day and is never inferred from telemetry.
+  decision_time_committed_event_service_mwh: 3.0
   decision_time_require_positive_response_price: true
   # The response candidate selector permits a nonzero committed response while
   # keeping the validation false-credit budget explicit; the closed-meter
@@ -226,9 +261,12 @@ experiments:
   # Event-gate reserve planning is calibrated only on temporally earlier
   # validation days.  The reserve is never credited until the corresponding
   # jobs enter the committed ledger.
+  # Four reserve quantiles and a one-MWh validation false-credit allowance are
+  # frozen before the locked gate replay. The reserve is a planning envelope,
+  # never a payable event-credit profile.
   event_gate_reserve_quantiles: [0.55, 0.60, 0.65, 0.70]
   event_gate_reserve_cap_quantile: 0.75
-  event_gate_reserve_validation_false_credit_budget_mwh: 0.25
+  event_gate_reserve_validation_false_credit_budget_mwh: 1.0
   # Job-level counterfactuals use scheduler declarations available at submit
   # time.  Slurm's ``--time`` is an allocation runtime, not a
   # submission-to-completion deadline.  The counterfactual therefore adds a

@@ -28,7 +28,7 @@
   "execution_ledger_digest": "post-event telemetry digest stored by Exp16",
   "deadline_window_rule": "exact submit-time allocation runtime plus a precommitted queue allowance; required service slots are an audit-only precheck",
   "site_assignment": "submit-time scenario region; no outcome-dependent migration",
-  "gpu_constraint": "the central calibration witness uses the precommitted per-GPU nameplate as an interval upper bound, with an analytically determined final-interval remainder when needed; Experiment 27 certifies the same starts as a runtime-complete full-nameplate upper-capacity block and reports central energy separately",
+  "gpu_constraint": "each contiguous service block uses the precommitted per-GPU nameplate cap times requested GPU count; only its terminal slot may be fractional to meet the exact entitlement",
   "counterfactual_objective": "waiting cost plus declared event DR tariff; exact finite start-time enumeration when regional rows are inactive",
   "event_slots": [
     64,

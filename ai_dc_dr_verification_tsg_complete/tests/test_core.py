@@ -170,7 +170,7 @@ def test_runtime_witness_digest_binds_saved_indexed_service_vectors() -> None:
     )
     assert digest == str(np.asarray(witness["witness_digest"]).reshape(-1)[0])
     assert metadata["service_vector_identity_asserted"] is True
-    assert certificate["schema_version"] == 3
+    assert certificate["schema_version"] == 4
     assert certificate["service_vector_identity_asserted"] is True
     assert certificate["risk_aligned"]["valid"] is True
     assert certificate["central_risk_aligned"]["valid"] is True
@@ -238,7 +238,7 @@ def test_decision_time_target_is_gate_causal_and_schema_locked() -> None:
         float(x) for x in CFG["experiments"]["decision_time_response_dr_prices"]
     }
     comparison = pd.read_csv(folder / "decision_time_comparison.csv")
-    assert set(comparison["schema_version"].astype(int)) == {12}
+    assert set(comparison["schema_version"].astype(int)) == {13}
     assert comparison["profile_checksum"].nunique() == 1
     assert metadata["profile_checksum"] == comparison["profile_checksum"].iloc[0]
     assert not comparison.loc[
@@ -681,9 +681,9 @@ def test_data_flow_distinguishes_full_join_from_common_tensor_window() -> None:
             for row in DictReader(handle)
         }
     assert manifest["mit_supercloud"]["full_positive_energy_joined_jobs"] == 71128
-    assert manifest["mit_supercloud"]["valid_joined_jobs"] == 68664
+    assert manifest["mit_supercloud"]["valid_joined_jobs"] == 68662
     assert rows["MIT immutable scheduler-DCGM join"] == 71128
-    assert rows["MIT common trace horizon filter"] == 68664
+    assert rows["MIT common trace horizon filter"] == 68662
 
 
 def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:

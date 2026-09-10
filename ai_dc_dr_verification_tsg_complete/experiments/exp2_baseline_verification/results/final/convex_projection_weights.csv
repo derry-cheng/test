@@ -1,8 +1,7 @@
 candidate,ensemble_weight
-Metadata projection rho=0.03,0.3970797757077056
-Metadata projection rho=0.1,0.39707977081960283
-Metadata projection rho=0.3,0.0477200036224769
-Metadata projection rho=1,3.1367974405670405e-07
-Metadata projection rho=3,2.4894779325064415e-07
-Metadata projection rho=10,1.377588351562996e-07
-Feasible quantile projection,0.158119749463842
+Metadata projection rho=0.03,0.14510963260923385
+Metadata projection rho=0.1,0.14511103125548092
+Metadata projection rho=0.3,1.3427858039824172e-12
+Metadata projection rho=1,0.06580542483771237
+Metadata projection rho=3,0.6439739112887711
+Metadata projection rho=10,7.466963888711702e-12

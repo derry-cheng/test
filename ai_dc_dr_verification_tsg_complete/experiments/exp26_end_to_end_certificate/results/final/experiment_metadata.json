@@ -1,16 +1,16 @@
 {
   "experiment": "end-to-end evidence-chain lineage certificate",
-  "schema_version": 3,
+  "schema_version": 4,
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "runtime-complete common witness used by network settlement": "5f4ba0853a21721937b490dfff9cb493871032d9850926dd38c296ca8b85bb46",
-    "N-1 settlement replay of the runtime-complete common witness": "afe8f2e9f7dcb166a5aa3c86bf068a89b212119407d16b800ed1afc867f99718",
-    "exact risk-profile to executable-start bridge": "9363bd53e959a8cc5d78ba77705df3448bb5d1d6d1a1759b46201b56fc2e155f",
-    "validation-fitted aggregate risk target": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
-    "payment-certified feasible profile hull": "235da876b9de09a5587d7a191c3ef11291ac06159efc4c47df160b897a1e2e5c",
+    "runtime-complete common witness used by network settlement": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488",
+    "N-1 settlement replay of the runtime-complete common witness": "c5f6c65956b7abfc098e34ef362aa9176d64865d3e4fa33cdf96f43858bbf404",
+    "exact risk-profile to executable-start bridge": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8",
+    "validation-fitted aggregate risk target": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
+    "payment-certified feasible profile hull": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
     "recomputed job-to-network certificate summary": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c",
-    "frozen-profile all-outage N-1 replay": "9ff56d6d691f20166007605bdadca89164bf765565b848ffbd358435a46c9d03"
+    "frozen-profile all-outage N-1 replay": "a26d3e5e65eab6a12b68f728c7e78c67c7c4e60e7d2dc34ea369ae490549c537"
   },
   "chain": [
     "submit-time declarations -> exact indexed job witness",
@@ -26,7 +26,7 @@
     "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
     "indexed_job_witness": "Exp19 exact submitted-job declaration index",
     "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
-    "network_settlement_witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
+    "network_settlement_witness_digest": "a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6",
     "profile_identity_asserted": true,
     "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness."
   },
@@ -68,7 +68,7 @@
     "valid": true
   },
   "common_witness_certificate": {
-    "witness_digest": "b64e86dcfdd48a460981128283726dfeb56c157dbd648d612910e0be019a8859",
+    "witness_digest": "a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6",
     "submitted_jobs": 75326,
     "runtime_energy_mwh": 1972.1150000000002,
     "profile_shape": [
@@ -78,6 +78,7 @@
     "settlement_rows": 5184,
     "settlement_full_cycle_rows": 5184,
     "settlement_signed": true,
+    "settlement_payment_cap_verified": true,
     "central_declared_service_energy_mwh": 0.570394485428465,
     "nameplate_upper_energy_mwh": 1972.1150000000002,
     "risk_bridge_file": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
@@ -103,8 +104,8 @@
     20
   ],
   "payment_certificate_scope": "relative N-1 baseline-cost cap; no absolute no-overpayment, revenue-adequacy, or incentive-compatibility theorem is asserted",
-  "payment_cap_maximum_violation_usd": 8.92032403498888e-09,
-  "payment_cap_minimum_margin_usd": -8.92032403498888e-09,
+  "payment_cap_maximum_violation_usd": 2.9103830456733704e-11,
+  "payment_cap_minimum_margin_usd": -2.9103830456733704e-11,
   "all_outage_replay": {
     "rows": 864,
     "credible_contingencies_per_cell": 37,

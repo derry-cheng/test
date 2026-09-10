@@ -12,8 +12,8 @@ The expected raw-data sizes and SHA-256 hashes are retained in
 `data/processed/data_manifest.json`; the checked-in manifests and processed
 arrays match those hashes. The
 complete positive-energy scheduler--DCGM join contains 71,128 jobs, while the
-common 121-day tensor window used by Experiments 1--13 contains 68,664. The
-remaining 2,464 jobs are retained by the full-horizon Experiments 14 and 16.
+common 121-day tensor window used by Experiments 1--13 contains 68,662. The
+remaining 2,466 jobs are retained by the full-horizon Experiments 14 and 16.
 The repository should also be treated as
 a trace-driven benchmark, not as evidence from a co-located utility event. The
 network placement and workload-to-power scaling are declared scenario

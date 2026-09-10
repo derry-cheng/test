@@ -66,21 +66,20 @@ data-center scheduling foundations in \cite{cao2022flexibility}.
 The four-region topology, three service classes, and numerical capacities are
 declared scenario parameters, not facts inferred from those papers.
 
-For an event window, \(\widetilde p\) is the baseline fitted from the declared
-information set, \(p^0\) is the trace-anchored no-event counterfactual, and
-\(p^{1,\mathrm{sim}}\) is the declared workload-feasible event trajectory used
-only in mechanism-isolation replays. The measured execution meter
-\(p^{\mathrm{obs}}\) is an independent observational target for locked trace
-alignment. In the implementation the trace-anchored diagnostic uses that same
-measured no-event tensor, so \(p^{\mathrm{obs}}=p^0\) only for the observational
-replay; the simulated source remains \(p^{1,\mathrm{sim}}\). The public releases
-contain no utility event label. For each source
-\(z\in\{\mathrm{obs},\mathrm{sim}\}\), define submitted and true credit by
+For an event window, \(\widetilde p\) is a baseline fitted from the information
+available at the declared gate. In the mechanism-isolation experiment,
+\(p^{0,\mathrm{decl}}\) is the declaration-only no-event profile and
+\(p^{1,\mathrm{sim}}\) is the declaration-only workload-feasible event profile.
+The independently observed execution meter \(p^{\mathrm{obs}}\) is opened only
+for the locked replay. It is never used to construct a submitted profile,
+choose a risk weight, or form a contract. The public releases contain no utility
+event label. For either audit source \(z\in\{\mathrm{sim},\mathrm{obs}\}\),
+submitted and true credit are defined by
 
 \[
 \widehat r^{(z)}_{dt}=\left[\widetilde p_{dt}-p^{(z)}_{dt}\right]_+,
 \qquad
-r^{(z)}_{dt}=\left[p^0_{dt}-p^{(z)}_{dt}\right]_+.
+r^{(z)}_{dt}=\left[p^{0,\mathrm{decl}}_{dt}-p^{(z)}_{dt}\right]_+.
 \]
 
 The source-specific false-credit exposure is the excess of submitted credit
@@ -94,21 +93,26 @@ F^{(z)}=\Delta t\sum_{d,t\in\mathcal E}
 
 The simulated source is used for the validation risk epigraph and the observed
 source is recomputed only in the locked replay; neither is a utility-event
-label. This distinction prevents a post-event oracle from entering a deployed
-payment rule. The settlement rule is separate from both diagnostic exposures.
-After the event meter closes, the payable response is
+label. This information boundary prevents a post-event oracle from entering a
+deployed payment rule. The settlement rule is separate from both diagnostic
+exposures. After the event meter closes, the payable response is the pointwise
+intersection of the gross reduction and the frozen contractual cap:
 
 \[
-Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}
-\min\left\{[\widetilde p_{dt}-p^{\mathrm{obs}}_{dt}]_+,
-[p^{\mathrm{con}}_{dt}-p^{\mathrm{obs}}_{dt}]_+\right\}.
+q^{\mathrm{gross}}_{dt}=[\widetilde p_{dt}-p^{\mathrm{obs}}_{dt}]_+,
+\qquad
+q^{\mathrm{cap}}_{dt}=[p^{\mathrm{con}}_{dt}-p^{\mathrm{obs}}_{dt}]_+,
+\qquad
+q^{\mathrm{pay}}_{dt}=\min\{q^{\mathrm{gross}}_{dt},q^{\mathrm{cap}}_{dt}\},
+\quad
+Q^{\mathrm{pay}}=\Delta t\sum_{d,t\in\mathcal E}q^{\mathrm{pay}}_{dt}.
 \]
 
-In mechanism-isolation evaluation, \(p^0\) is the trace-anchored no-event
-profile and \(p^{1,\mathrm{sim}}\) is the solved operating response. The
-deployable quantity \(p^{\rm con}\) is frozen before the event and is the only
-baseline used in payment formation. In the payment-band panel it is the
-separately solved \(p^{\rm safe}\); in the decision-time panel it is the
+In mechanism-isolation evaluation, \(p^{0,\mathrm{decl}}\) and
+\(p^{1,\mathrm{sim}}\) are both generated from the submit-time declaration
+ledger. The deployable quantity \(p^{\rm con}\) is frozen before the event and
+is the only baseline used in payment formation. In the payment-band panel it is
+the separately solved \(p^{\rm safe}\); in the decision-time panel it is the
 no-tariff committed-ledger profile. These are instantiations of one frozen
 contract role, not interchangeable statistical estimates. The measured meter
 enters only after the decision as an observational replay. No causal
@@ -121,7 +125,7 @@ oracle reduction are respectively
 \[
 q^{\rm plan}_{dt}=[p^{\rm con}_{dt}-p^{\rm plan}_{dt}]_+,\quad
 q^{\rm meter}_{dt}=[p^{\rm con}_{dt}-p^{\rm obs}_{dt}]_+,\quad
-q^{\rm true}_{dt}=[p^0_{dt}-p^{\rm obs}_{dt}]_+.
+q^{\rm true}_{dt}=[p^{0,\mathrm{decl}}_{dt}-p^{\rm obs}_{dt}]_+.
 \]
 
 The closed-meter transfer is the pointwise intersection
@@ -363,18 +367,15 @@ worst contiguous-fold error,
 \max_{b\in\mathcal B}\operatorname{nRMSE}_{b,\ell}.
 \]
 
-The risk fit below uses a separate coefficient vector over the six schedules
-and the matched-information feasible-quantile projection; the selected single
-reference is used only to define its risk budgets and contractual cap.
-
-Let \(\ell^\star\) denote the single feasible candidate that minimizes the
-worst contiguous-fold validation nRMSE. The six metadata projections and the
-matched-information feasible-quantile projection form a seven-profile
-validation hull; the latter remains an external transfer comparator. For
+The risk fit below uses a separate coefficient vector over the six declaration-
+causal projections. The matched-information feasible-quantile projection is
+computed independently after the contract fit and is retained only as an
+external transfer comparator. Let \(\ell^\star\) denote the single feasible
+candidate that minimizes the worst contiguous-fold validation nRMSE. For
 validation sample \(n\), define the maximum non-false-credit baseline
 
 \[
-c_n=\max\{p_n^{\mathrm{obs}},p_n^{1,\mathrm{sim}}\}
+c_n=\max\{p_n^{0,\mathrm{decl}},p_n^{1,\mathrm{sim}}\}
 \]
 
 and the day-specific reference false-credit exposure
@@ -386,27 +387,30 @@ B_j^{\mathrm{ref}}
 \]
 
 For a reserve fraction \(\beta\in(0,1]\), the proposed
-risk-constrained ensemble solves
+risk-constrained ensemble uses the six declaration-causal projections as its
+candidate set. The matched-information feasible-quantile projection is retained
+as an external transfer comparator and is excluded from the contract fit. The
+ensemble solves
 
 \[
 \begin{aligned}
 \min_{\alpha,u,\nu,\zeta}\quad&
 \frac{1}{|\mathcal V|}\sum_n
-\left(\sum_{\ell=1}^{7}\alpha_\ell p_n^{(\ell)}
--p_n^{\mathrm{obs}}\right)^2
+\left(\sum_{\ell=1}^{6}\alpha_\ell p_n^{(\ell)}
+-p_n^{0,\mathrm{decl}}\right)^2
 +\epsilon\lVert\alpha\rVert_2^2\\
 &+\omega_T\frac{\sum_n u_n}{\sum_j B_j^{\mathrm{ref}}}
 +\omega_C\frac{\nu+\frac{1}{(1-\gamma)J}\sum_j\zeta_j}
-{\operatorname{CVaR}_{\gamma}(\widetilde B^{\mathrm{ref}})} .
+{\operatorname{CVaR}_{\gamma}(B^{\mathrm{ref}})} .
 \end{aligned}
 \]
 
-Here \(\gamma=0.75\), and the normalized exposure preferences use the
-predeclared equal weights \(\omega_T=\omega_C=0.50\) whenever the corresponding
-axis is retained. The total-budget-only and CVaR-only ablations remove the
-omitted axis's preference together with its constraint. These dimensionless
-weights are fixed before the train/validation/test split and are not tuned on
-locked outcomes.
+Here \(\gamma=0.75\), and the equal objective weights
+\(\omega_T=\omega_C=0.50\) are fixed before the train/validation/test split.
+The implementation uses the absolute MW-slot quantities below throughout; no
+day-specific energy denominator is introduced. The total-budget-only and
+CVaR-only ablations remove the omitted axis's objective term and constraint
+together. No locked outcome is used in any of these choices.
 
 subject to
 
@@ -427,45 +431,36 @@ u_n\geq0,
 F_j(\alpha)=\sum_{n\in\mathcal V_j}u_n,
 \]
 
-For the daily-tail constraint, the validation mechanism supplies a fixed
-credited-energy denominator
+For the daily-tail constraint, let
 \[
-E_j=\max\left\{\sum_{n\in\mathcal V_j}r_n^{(\mathrm{sim})},\epsilon_E\right\},
-\qquad
-\widetilde F_j(\alpha)=F_j(\alpha)/E_j,
-\qquad
-\widetilde B_j^{\mathrm{ref}}=B_j^{\mathrm{ref}}/E_j,
+F_j(\alpha)=\sum_{n\in\mathcal V_j}u_n
 \]
-where \(\epsilon_E\) is a predeclared numerical floor. The denominators are
-computed before the locked split and are not estimated from test outcomes.
-
+be the daily false-credit exposure in MW-slot units. The epigraph variables
+\(\nu\) and \(\zeta_j\) satisfy
 \[
-\widetilde F_j(\alpha)-\nu-\zeta_j\leq0,\qquad
-\nu\geq0,\quad \zeta_j\geq0.
+F_j(\alpha)-\nu-\zeta_j\leq0,\qquad
+\nu\geq0,\quad \zeta_j\geq0,
 \]
-
+and the absolute daily-tail budget is
 \[
-\operatorname{CVaR}_{0.75}\!\left(\widetilde F_j(\alpha)\right)
-\leq
-\beta\operatorname{CVaR}_{0.75}\!\left(\widetilde B_j^{\mathrm{ref}}\right).
+\nu+\frac{1}{(1-\gamma)J}\sum_j\zeta_j
+\leq \beta\operatorname{CVaR}_{\gamma}(B^{\mathrm{ref}}).
 \]
-
-Thus total exposure is bounded in absolute MW-slot units, whereas CVaR is the
-daily false-credit ratio; the two constraints are dimensionally distinct.
+Consequently both the aggregate budget and the CVaR budget have the same
+MW-slot unit. The selected release uses four reserve fractions
+\(\{0.25,0.50,0.75,1.00\}\); nested contiguous validation chooses among feasible
+fractions, and the final fit is refitted once at that declared fraction.
 
 The empirical conditional-value-at-risk representation and its convexity follow
 \cite{rockafellar2000cvar}; positive-part epigraphs follow
-\cite{boyd2004convex}. Three pre-declared total-reserve fractions and a separate
-four-point tail-reserve sensitivity are evaluated without locked-test outcomes.
-An admissible total reserve must satisfy the declared total and daily-tail
-constraints on each contiguous training fold; the admissible reserve with the
-smallest worst-fold normalized error is then refitted on all validation days,
-with any pooled feasibility adjustment restricted to the predeclared grid.
-An infeasible reserve is recorded and cannot be selected. Convex-set closure
+\cite{boyd2004convex}. The release uses CVXPY with Clarabel for this convex
+quadratic program and records primal, epigraph, and KKT residuals. An infeasible
+reserve is recorded and cannot be selected. Convex-set closure
 \cite{boyd2004convex} proves that
 \(\bar x=\sum_\ell\alpha_\ell x^{(\ell)}\) preserves every workload constraint.
-The final numerical certificate separately verifies total exposure, daily-tail
-CVaR, and validation squared-error noninferiority.
+The final certificate checks both absolute risk budgets independently; its
+prediction error is reported as a trade-off outcome rather than imposed as an
+unstated non-inferiority condition.
 
 Finally, a second exact workload program targets \(\bar p\) while imposing
 
@@ -484,11 +479,13 @@ gives samplewise and daily
 \leq[p_{dt}^{(\ell^\star)}-c_{dt}]_+.
 \]
 
-Thus the final schedule is both workload feasible and deterministically
-noninferior in false-credit MWh to the independent single projection, relative
-to that selected workload-feasible reference. The six-point penalty grid, the
-matched quantile comparator, and the reserve grids are pre-declared
-experimental design choices, not externally sourced physical laws.
+Thus the final schedule is workload feasible and its risk exposure is bounded by
+the selected single projection's validation budgets. The separate pointwise
+safe-envelope schedule provides a deterministic false-credit upper bound when
+that property is desired; it is not conflated with the risk ensemble's
+prediction-error metric. The six-point penalty grid, the matched quantile
+comparator, and the four reserve fractions are pre-declared experimental design
+choices, not externally sourced physical laws.
 
 ## E. DC and complete N--1 security-constrained economic dispatch
 
@@ -661,6 +658,12 @@ epigraph construction \cite{boyd2004convex} using the standard SCED model
 cost is subtracted from both payments, the cap proves daily payment
 noninferiority for every realized trajectory in every declared conversion
 scenario without execution truth.
+
+The fixed/flexible network conversion is calibrated at a predeclared 4\% peak
+penetration for the payment certificate. This value is chosen before locked
+evaluation so that the complete finite N--1 evaluator remains feasible at the
+raw \(q_{99}\) endpoint; the independent 3\%/6\%/9\% penetration panel is not
+used to alter this contract scale.
 
 Experiment 10 separately solves the nonlinear AC optimal power flow model of
 \cite{zimmerman2011matpower} on four public networks. It additionally solves

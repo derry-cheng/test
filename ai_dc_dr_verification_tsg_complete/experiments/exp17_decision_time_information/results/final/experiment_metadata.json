@@ -1,9 +1,9 @@
 {
   "experiment": "event-gate information-boundary verification",
   "locked_days": 54,
-  "profile_checksum": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "profile_checksum": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
   "profile_source": "Experiment-2 locked test_profiles.npz",
-  "event_gate_slot": 60,
+  "event_gate_slot": 62,
   "terminal_completion_index": 95,
   "future_arrivals_removed_from_decision": true,
   "target_source": "interval-online metadata gradient boosting refit with the current-day post-gate arrivals masked before feature construction",
@@ -17,9 +17,9 @@
       0.65,
       0.7
     ],
-    "selected_quantile": 0.6,
+    "selected_quantile": 0.55,
     "cap_quantile": 0.75,
-    "validation_false_credit_budget_mwh": 0.25,
+    "validation_false_credit_budget_mwh": 1.0,
     "future_arrivals_used_for_payment": false,
     "interpretation": "The empirical reserve is a pre-gate planning envelope. It can reserve capacity for future arrivals, but the event-gate payment profile is solved on the committed ledger and cannot credit the reserved jobs before a later commitment checkpoint."
   },
@@ -44,9 +44,15 @@
       15.0
     ],
     "validation_false_credit_budget_mwh": 20.0,
-    "selected_dr_price_per_mwh": 100.0,
-    "selected_projection_weight": 15.0,
-    "committed_event_service_mwh": 5.0,
+    "selected_dr_price_per_mwh": 10.0,
+    "selected_projection_weight": 1.0,
+    "committed_event_service_mwh": 3.0,
+    "participating_data_center_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
     "selection_rule": "among candidates satisfying the validation false-credit budget, maximize credit F1, then recall, then minimize nRMSE and false credit",
     "submitted_profile": "causal committed-ledger baseline LP with no event tariff; the same-ledger DR response LP is retained as a post-event operating replay",
     "response_scoring": "baseline error is computed on the submitted contract; response delivery is computed from planned reduction relative to that contract and the closed meter",
@@ -75,9 +81,15 @@
     "rolling_commitment": true,
     "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
     "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
-    "selected_dr_price_per_mwh": 100.0,
-    "selected_projection_weight": 15.0,
-    "committed_event_service_mwh": 5.0,
+    "selected_dr_price_per_mwh": 10.0,
+    "selected_projection_weight": 1.0,
+    "committed_event_service_mwh": 3.0,
+    "participating_data_center_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
     "settlement_rule": "contract-capped-after-event; gross forecast credit is not paid above the frozen contract credit or the pointwise metered response",
     "profile_semantics": {
       "contract_profile": "no-tariff committed-ledger LP frozen at the event gate",

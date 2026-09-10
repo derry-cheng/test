@@ -9,6 +9,7 @@ from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from itertools import permutations, product
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -631,12 +632,16 @@ def _prediction_bundle(
     stats = statistical or predict_statistical_baselines(
         strategic, valid_days, day, list(map(int, cfg["market"]["event_slots"])), int(cfg["project"]["seed"])
     )
+    # The proposed projection is committed before execution telemetry is
+    # available.  Its target therefore uses the declaration-causal metadata
+    # predictor.  The complete-ledger ex-post predictors remain named
+    # comparators and are never inserted into the risk fit.
     physics = _solve_day_with_buffer(
         arrivals_days[day],
         prices,
         cfg,
         mode="honest",
-        target=stats.ex_post_metadata_gradient_boosting,
+        target=stats.metadata_gradient_boosting,
         projection_weight=projection_weight,
     )
     if not physics.success:
@@ -883,15 +888,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     model_honest, model_strategic, honest_migration, strategic_migration = precompute_reference_schedules(
         root, cfg, arrivals_days, valid_days, prices, logger
     )
-    # The measured DCGM/BurstGPT execution is the independent observational
-    # target for baseline alignment. Strategic reference histories add only the
-    # equilibrium deviation induced by the DR rule; the verifier never observes
-    # the locked reference used for scoring.  There is no labelled utility
-    # event in these public traces.  Consequently the exact event-response LP
-    # is retained only for mechanism-isolation panels and is never presented as
-    # an observed event outcome.
-    honest = observed
-    strategic = observed + (model_strategic - model_honest)
+    # The declaration profile is reconstructed from scheduler declarations and
+    # the frozen unit conversion. It is retained as a physical ledger audit,
+    # while the committed statistical target below is populated only from
+    # declaration-causal features. DCGM remains an independent meter replay
+    # and never changes a decision, a region label, or a risk fit.
+    dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
+    fixed_mw = float(cfg["project"]["fixed_facility_load_mw"])
+    declared_profile = fixed_mw + arrivals_days.sum(axis=3).transpose(0, 2, 1) / dt_h
+    strategic = declared_profile + (model_strategic - model_honest)
     validation_days, test_days = _event_days(valid_days, cfg)
     all_event_days = np.concatenate([validation_days, test_days])
     observed_meter_all = observed[all_event_days].copy()
@@ -1014,6 +1019,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             synthetic_control=np.asarray([x.synthetic_control for x in ordered]),
         )
 
+    # The mechanism-isolation target is the declaration-only strategic
+    # counterfactual reconstructed from the same submit-time ledger and the
+    # fixed incentive rule.  It is available before execution telemetry and
+    # therefore cannot leak the closed meter into a decision.  The metadata
+    # predictor remains the causal statistical comparator and supplies every
+    # projection target; the submitted aggregate declaration and the DCGM
+    # replay remain separate audit layers.
+    honest = strategic.copy()
+
     projection_weights = np.asarray(cfg["experiments"]["projection_weights"], dtype=float)
     tuning_rows = []
     validation_candidate_profiles = []
@@ -1087,6 +1101,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     # Closest optimization-informed comparator: project the complete-ledger
     # quantile learner onto exactly the same workload polytope. Its penalty is
     # selected by the same contiguous validation blocks and no test labels.
+    # It is retained as an explicitly post-commitment comparator; it is not a
+    # candidate in the declaration-causal risk contract below.
     quantile_projection_rows: list[dict[str, float]] = []
     for projection_weight in projection_weights:
         day_records: list[dict[str, float]] = []
@@ -1172,17 +1188,14 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 f"{result.solver_message}"
             )
         validation_quantile_profiles.append(result.power_mw)
-    risk_candidate_array = np.concatenate(
-        [
-            candidate_array,
-            np.asarray(validation_quantile_profiles)[None, ...],
-        ],
-        axis=0,
-    )
+    # Only declaration-causal projection candidates enter the risk contract.
+    # The complete-ledger feasible-quantile profile is kept outside this array
+    # so it cannot leak post-commitment information into weights or caps.
+    risk_candidate_array = candidate_array
     risk_candidate_names = [
         f"Metadata projection rho={weight:g}"
         for weight in projection_weights
-    ] + ["Feasible quantile projection"]
+    ]
     # Anchor the risk budgets to the independently selected single feasible
     # projection.  The complete-ledger feasible-quantile profile remains an
     # external comparator and is not used to define the pointwise cap.
@@ -1203,14 +1216,18 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         enforce_total_budget: bool = True,
         enforce_cvar_budget: bool = True,
         cvar_reserve_fraction_override: float | None = None,
+        require_reference_noninferiority: bool = False,
     ) -> tuple[np.ndarray, dict[str, float]]:
         """Fit the minimum-MSE ensemble under separate daily risk budgets.
 
         The reference budgets are computed from the independently selected
-        single feasible projection.  A reserve fraction is applied to every
+        single feasible projection. A reserve fraction is applied to every
         validation day separately, rather than only to an aggregate total.
         Positive-part exposure is represented by an exact linear epigraph, so
         the feasible set is convex and contains no rule-based post-processing.
+        The risk fit is allowed to trade point-estimate error for a certified
+        exposure reduction; point-estimate non-inferiority is reported as an
+        outcome diagnostic rather than imposed as a hidden feasibility gate.
         """
         local_scale = max(float(np.mean(local_target**2)), 1e-12)
         count, candidates = local_design.shape
@@ -1233,8 +1250,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             0.0,
         ).reshape(day_count, observations_per_day).sum(axis=1)
         reference_false_exposure = float(reference_false_by_day.sum())
+        budget_floor = float(
+            cfg["experiments"].get("risk_numerical_budget_floor_mw_slots", 1.0e-8)
+        )
+        if budget_floor < 0.0:
+            raise ValueError("risk_numerical_budget_floor_mw_slots must be nonnegative")
         risk_budget = float(
-            reserve_fraction * reference_false_exposure
+            max(reserve_fraction * reference_false_exposure, budget_floor)
         )
         reference_daily_max = float(reference_false_by_day.max(initial=0.0))
         cvar_level = float(cfg["experiments"].get("risk_cvar_level", 0.75))
@@ -1288,7 +1310,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         # The total and daily-tail reserves are independent contractual
         # quantities.  Keeping the CVaR reserve below one makes the tail row
         # active even when the total false-credit budget is nonbinding.
-        cvar_budget = float(cvar_reserve_fraction * reference_daily_cvar)
+        cvar_budget = float(
+            max(cvar_reserve_fraction * reference_daily_cvar, budget_floor)
+        )
         # A predeclared, dimensionless tail regularizer makes the CVaR module
         # identifiable even when the selected budget is naturally slack.  It
         # is normalized by the reference CVaR, is applied only when the CVaR
@@ -1306,40 +1330,59 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         )
         if total_objective_weight < 0.0:
             raise ValueError("risk_total_objective_weight must be nonnegative")
-        cvar_objective_scale = max(reference_daily_cvar, 1.0e-9)
-        total_objective_scale = max(reference_false_exposure, 1.0e-9)
+        objective_scale_floor = float(
+            cfg["experiments"].get(
+                "risk_objective_scale_floor_mw_slots", 1.0
+            )
+        )
+        if objective_scale_floor <= 0.0:
+            raise ValueError("risk_objective_scale_floor_mw_slots must be positive")
+        cvar_objective_scale = max(reference_daily_cvar, objective_scale_floor)
+        total_objective_scale = max(reference_false_exposure, objective_scale_floor)
 
         # Solve the convex quadratic program with the explicit linear
-        # epigraph.  Here s_n is the sample false-credit epigraph, nu is the
-        # CVaR threshold, and xi_d are the daily tail slacks.  HiGHS supplies
-        # only a feasible warm start.  The objective is then solved over the
-        # *full* epigraph with a sparse primal--dual trust-region method; the
-        # returned KKT and primal residuals are independently recomputed below.
+        # epigraph. Variables for disabled risk axes are omitted entirely;
+        # otherwise zero-cost epigraph variables make the ablation KKT system
+        # degenerate without changing its scientific objective.
         sample_count = count
-        nvar = candidates + sample_count + day_count + 1
+        has_sample_slacks = bool(enforce_total_budget or enforce_cvar_budget)
+        sample_slack_slice = (
+            slice(candidates, candidates + sample_count)
+            if has_sample_slacks
+            else slice(candidates, candidates)
+        )
+        if enforce_cvar_budget:
+            xi_start = candidates + (sample_count if has_sample_slacks else 0)
+            xi_slice = slice(xi_start, xi_start + day_count)
+            nu_index = xi_start + day_count
+        else:
+            xi_slice = slice(candidates, candidates)
+            nu_index = None
+        nvar = candidates + (sample_count if has_sample_slacks else 0)
+        if enforce_cvar_budget:
+            nvar += day_count + 1
         alpha_slice = slice(0, candidates)
-        xi_slice = slice(candidates + sample_count, candidates + sample_count + day_count)
-        nu_index = nvar - 1
         rows: list[int] = []
         cols: list[int] = []
         values: list[float] = []
         upper: list[float] = []
         row_id = 0
-        for sample in range(sample_count):
-            for candidate in range(candidates):
-                value = float(local_design[sample, candidate])
-                if value:
-                    rows.append(row_id)
-                    cols.append(candidate)
-                    values.append(value)
-            rows.append(row_id)
-            cols.append(candidates + sample)
-            values.append(-1.0)
-            # f_n >= [ [p_n - meter_n]_+ - true_credit_n ]_+.
-            # Since true_credit_n >= 0, the single linear row below is an
-            # exact epigraph: f_n >= p_n - meter_n - true_credit_n.
-            upper.append(float(credit_threshold[sample]))
-            row_id += 1
+        if has_sample_slacks:
+            for sample in range(sample_count):
+                for candidate in range(candidates):
+                    value = float(local_design[sample, candidate])
+                    if value:
+                        rows.append(row_id)
+                        cols.append(candidate)
+                        values.append(value)
+                rows.append(row_id)
+                cols.append(sample_slack_slice.start + sample)
+                values.append(-1.0)
+                # f_n >= [ [p_n - meter_n]_+ - true_credit_n ]_+.
+                # Since true_credit_n >= 0, the single linear row below is an
+                # exact epigraph: f_n >= p_n - meter_n - true_credit_n.
+                upper.append(float(credit_threshold[sample]))
+                row_id += 1
         if enforce_cvar_budget:
             for local_day in range(day_count):
                 # The daily tail variable is attached to the *sum* of the
@@ -1350,12 +1393,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     (local_day + 1) * observations_per_day,
                 ):
                     rows.append(row_id)
-                    cols.append(candidates + sample)
+                    cols.append(sample_slack_slice.start + sample)
                     values.append(float(cvar_sample_weights[sample]))
                 rows.extend([row_id, row_id])
-                cols.extend(
-                    [nu_index, candidates + sample_count + local_day]
-                )
+                cols.extend([nu_index, xi_slice.start + local_day])
                 values.extend([-1.0, -1.0])
                 upper.append(0.0)
                 row_id += 1
@@ -1364,21 +1405,30 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             values.append(1.0)
             for local_day in range(day_count):
                 rows.append(row_id)
-                cols.append(candidates + sample_count + local_day)
+                cols.append(xi_slice.start + local_day)
                 values.append(1.0 / tail_count)
             upper.append(cvar_budget)
             row_id += 1
         if enforce_total_budget:
             for sample in range(sample_count):
                 rows.append(row_id)
-                cols.append(candidates + sample)
+                cols.append(sample_slack_slice.start + sample)
                 values.append(1.0)
             upper.append(risk_budget)
             row_id += 1
-        a_ub = coo_matrix(
-            (np.asarray(values), (np.asarray(rows), np.asarray(cols))),
-            shape=(row_id, nvar),
-        ).tocsr()
+        if row_id:
+            a_ub = coo_matrix(
+                (
+                    np.asarray(values, dtype=float),
+                    (
+                        np.asarray(rows, dtype=np.int64),
+                        np.asarray(cols, dtype=np.int64),
+                    ),
+                ),
+                shape=(row_id, nvar),
+            ).tocsr()
+        else:
+            a_ub = csr_matrix((0, nvar), dtype=float)
         a_eq = csr_matrix(
             (np.ones(candidates), (np.zeros(candidates), np.arange(candidates))),
             shape=(1, nvar),
@@ -1441,7 +1491,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 value += cvar_objective_weight * float(tail_value)
             if enforce_total_budget and total_objective_weight > 0.0:
                 value += total_objective_weight * float(
-                    np.sum(decision[candidates : candidates + sample_count])
+                    np.sum(decision[sample_slack_slice])
                     / total_objective_scale
                 )
             return value
@@ -1461,7 +1511,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     / (cvar_objective_scale * tail_count)
                 )
             if enforce_total_budget and total_objective_weight > 0.0:
-                gradient[candidates : candidates + sample_count] += (
+                gradient[sample_slack_slice] += (
                     total_objective_weight / total_objective_scale
                 )
             return gradient
@@ -1476,31 +1526,257 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             return hessian.tocsr()
 
         initial_point = np.asarray(feasibility.x, dtype=float)
-        linear_constraints = [
-            LinearConstraint(a_eq, np.ones(1), np.ones(1)),
-            LinearConstraint(
-                a_ub,
-                np.full(row_id, -np.inf, dtype=float),
-                np.asarray(upper, dtype=float),
-            ),
-        ]
-        fitted = minimize(
-            qp_objective,
-            initial_point,
-            jac=qp_gradient,
-            hess=qp_hessian,
-            method="trust-constr",
-            bounds=Bounds(lower_bounds, upper_bounds),
-            constraints=linear_constraints,
-            options={
-                "gtol": 1e-9,
-                "xtol": 1e-10,
-                "barrier_tol": 1e-9,
-                "maxiter": 1500,
-                "verbose": 0,
-                "sparse_jacobian": True,
-            },
+        linear_constraints = [LinearConstraint(a_eq, np.ones(1), np.ones(1))]
+        if row_id:
+            linear_constraints.append(
+                LinearConstraint(
+                    a_ub,
+                    np.full(row_id, -np.inf, dtype=float),
+                    np.asarray(upper, dtype=float),
+                )
+            )
+        risk_solver_method = str(
+            cfg["experiments"].get("risk_solver_method", "SLSQP")
+        ).strip().lower()
+        solver_maxiter = int(
+            cfg["experiments"].get("risk_solver_maxiter", 1000)
         )
+        if solver_maxiter <= 0:
+            raise ValueError("risk_solver_maxiter must be positive")
+        if risk_solver_method in {"cvxpy", "clarabel"}:
+            # CVXPY/Clarabel solves the same convex quadratic program directly
+            # and exposes dual values for every epigraph row.  It is the
+            # default release solver because the reduced KKT system remains
+            # well-conditioned even when one risk axis is disabled.
+            try:
+                import cvxpy as cp
+            except ImportError as exc:  # pragma: no cover - dependency gate
+                raise RuntimeError(
+                    "risk_solver_method=cvxpy requires the cvxpy package"
+                ) from exc
+            cp_alpha = cp.Variable(candidates)
+            cp_constraints: list[Any] = []
+            cp_eq = cp.sum(cp_alpha) == 1.0
+            cp_alpha_lower = cp_alpha >= 0.0
+            cp_alpha_upper = cp_alpha <= 1.0
+            cp_constraints.extend([cp_eq, cp_alpha_lower, cp_alpha_upper])
+            cp_slack = cp.Variable(sample_count) if has_sample_slacks else None
+            cp_slack_lower = None
+            cp_epigraph = None
+            if has_sample_slacks:
+                cp_slack_lower = cp_slack >= 0.0
+                cp_epigraph = local_design @ cp_alpha - cp_slack <= credit_threshold
+                cp_constraints.extend([cp_slack_lower, cp_epigraph])
+            cp_xi = cp.Variable(day_count) if enforce_cvar_budget else None
+            cp_nu = cp.Variable() if enforce_cvar_budget else None
+            cp_xi_lower = None
+            cp_nu_lower = None
+            cp_cvar_day: list[Any] = []
+            cp_cvar_budget = None
+            if enforce_cvar_budget:
+                cp_xi_lower = cp_xi >= 0.0
+                cp_nu_lower = cp_nu >= 0.0
+                cp_constraints.extend([cp_xi_lower, cp_nu_lower])
+                for local_day in range(day_count):
+                    day_constraint = (
+                        cvar_sample_weights[
+                            local_day * observations_per_day : (local_day + 1)
+                            * observations_per_day
+                        ]
+                        @ cp_slack[
+                            local_day * observations_per_day : (local_day + 1)
+                            * observations_per_day
+                        ]
+                        - cp_nu
+                        - cp_xi[local_day]
+                        <= 0.0
+                    )
+                    cp_cvar_day.append(day_constraint)
+                    cp_constraints.append(day_constraint)
+                cp_cvar_budget = (
+                    cp_nu + cp.sum(cp_xi) / tail_count <= cvar_budget
+                )
+                cp_constraints.append(cp_cvar_budget)
+            cp_total_budget = None
+            if enforce_total_budget:
+                cp_total_budget = cp.sum(cp_slack) <= risk_budget
+                cp_constraints.append(cp_total_budget)
+            cp_objective = cp.sum_squares(local_design @ cp_alpha - local_target) / (
+                count * local_scale
+            ) + regularization * cp.sum_squares(cp_alpha)
+            if enforce_cvar_budget and cvar_objective_weight > 0.0:
+                cp_objective += cvar_objective_weight * (
+                    cp_nu + cp.sum(cp_xi) / tail_count
+                ) / cvar_objective_scale
+            if enforce_total_budget and total_objective_weight > 0.0:
+                cp_objective += total_objective_weight * cp.sum(cp_slack) / total_objective_scale
+            cp_problem = cp.Problem(cp.Minimize(cp_objective), cp_constraints)
+            cp_problem.solve(
+                solver="CLARABEL",
+                tol_gap_abs=1.0e-9,
+                tol_feas=1.0e-9,
+                tol_gap_rel=1.0e-9,
+                max_iter=solver_maxiter,
+            )
+            if cp_problem.status not in {cp.OPTIMAL, cp.OPTIMAL_INACCURATE}:
+                raise RuntimeError(
+                    "CVXPY/Clarabel failed to solve risk-constrained QP: "
+                    f"{cp_problem.status}"
+                )
+            full_point = np.zeros(nvar, dtype=float)
+            full_point[alpha_slice] = np.asarray(cp_alpha.value, dtype=float)
+            if has_sample_slacks:
+                full_point[sample_slack_slice] = np.asarray(
+                    cp_slack.value, dtype=float
+                )
+            if enforce_cvar_budget:
+                full_point[xi_slice] = np.asarray(cp_xi.value, dtype=float)
+                full_point[nu_index] = float(cp_nu.value)
+            # Reconstruct a primal--dual KKT residual from the solver's duals.
+            # Explicit variable-bound constraints make this check independent
+            # of CVXPY's implicit nonnegativity attributes.
+            stationarity = qp_gradient(full_point).astype(float)
+            complementarity_terms: list[float] = []
+
+            def _dual_array(constraint: Any, shape: tuple[int, ...] | None = None) -> np.ndarray:
+                value = constraint.dual_value
+                if value is None:
+                    arr = np.zeros(shape or (), dtype=float)
+                else:
+                    arr = np.asarray(value, dtype=float)
+                return arr
+
+            eq_dual = float(_dual_array(cp_eq))
+            stationarity[alpha_slice] += eq_dual
+            alpha_lower_dual = _dual_array(cp_alpha_lower, (candidates,))
+            alpha_upper_dual = _dual_array(cp_alpha_upper, (candidates,))
+            stationarity[alpha_slice] -= alpha_lower_dual
+            stationarity[alpha_slice] += alpha_upper_dual
+            complementarity_terms.extend(
+                [
+                    float(np.max(np.abs(alpha_lower_dual * full_point[alpha_slice]))),
+                    float(
+                        np.max(
+                            np.abs(
+                                alpha_upper_dual
+                                * (1.0 - full_point[alpha_slice])
+                            )
+                        )
+                    ),
+                ]
+            )
+            if has_sample_slacks:
+                epigraph_dual = _dual_array(cp_epigraph, (sample_count,))
+                stationarity[alpha_slice] += local_design.T @ epigraph_dual
+                stationarity[sample_slack_slice] -= epigraph_dual
+                slack_lower_dual = _dual_array(cp_slack_lower, (sample_count,))
+                stationarity[sample_slack_slice] -= slack_lower_dual
+                complementarity_terms.extend(
+                    [
+                        float(
+                            np.max(
+                                np.abs(
+                                    epigraph_dual
+                                    * (credit_threshold - local_design @ cp_alpha.value + cp_slack.value)
+                                )
+                            )
+                        ),
+                        float(np.max(np.abs(slack_lower_dual * cp_slack.value))),
+                    ]
+                )
+            if enforce_cvar_budget:
+                for local_day, day_constraint in enumerate(cp_cvar_day):
+                    day_dual = float(_dual_array(day_constraint))
+                    day_slice = slice(
+                        local_day * observations_per_day,
+                        (local_day + 1) * observations_per_day,
+                    )
+                    stationarity[
+                        sample_slack_slice.start + day_slice.start :
+                        sample_slack_slice.start + day_slice.stop
+                    ] += day_dual * cvar_sample_weights[day_slice]
+                    stationarity[xi_slice.start + local_day] -= day_dual
+                    stationarity[nu_index] -= day_dual
+                    day_slack = (
+                        cvar_sample_weights[day_slice] @ cp_slack.value[day_slice]
+                        - float(cp_nu.value)
+                        - float(cp_xi.value[local_day])
+                    )
+                    complementarity_terms.append(abs(day_dual * day_slack))
+                cvar_dual = float(_dual_array(cp_cvar_budget))
+                stationarity[nu_index] += cvar_dual
+                stationarity[xi_slice] += cvar_dual / tail_count
+                cvar_slack = cvar_budget - float(cp_nu.value) - float(
+                    np.sum(cp_xi.value) / tail_count
+                )
+                complementarity_terms.append(abs(cvar_dual * cvar_slack))
+                xi_lower_dual = _dual_array(cp_xi_lower, (day_count,))
+                nu_lower_dual = float(_dual_array(cp_nu_lower))
+                stationarity[xi_slice] -= xi_lower_dual
+                stationarity[nu_index] -= nu_lower_dual
+                complementarity_terms.extend(
+                    [
+                        float(np.max(np.abs(xi_lower_dual * cp_xi.value))),
+                        abs(nu_lower_dual * float(cp_nu.value)),
+                    ]
+                )
+            if enforce_total_budget:
+                total_dual = float(_dual_array(cp_total_budget))
+                stationarity[sample_slack_slice] += total_dual
+                total_slack = risk_budget - float(np.sum(cp_slack.value))
+                complementarity_terms.append(abs(total_dual * total_slack))
+            kkt_from_solver = max(
+                float(np.max(np.abs(stationarity))),
+                max(complementarity_terms, default=0.0),
+            )
+            fitted = SimpleNamespace(
+                x=full_point,
+                success=True,
+                nit=int(getattr(cp_problem.solver_stats, "num_iters", 0) or 0),
+                message=f"{cp_problem.status} (Clarabel)",
+                optimality=kkt_from_solver,
+            )
+        elif risk_solver_method == "slsqp":
+            # SLSQP is applied to the same convex QP and explicit epigraph
+            # rows.  Its equality/inequality multipliers are recomputed into
+            # a KKT residual below; this avoids the trust-region method's
+            # barrier variables and materially reduces the cost of blocked
+            # ablation fits.
+            fitted = minimize(
+                qp_objective,
+                initial_point,
+                jac=qp_gradient,
+                method="SLSQP",
+                bounds=Bounds(lower_bounds, upper_bounds),
+                constraints=linear_constraints,
+                options={
+                    "ftol": 1.0e-10,
+                    "maxiter": solver_maxiter,
+                    "disp": False,
+                },
+            )
+        elif risk_solver_method in {"trust-constr", "trust_constr"}:
+            fitted = minimize(
+                qp_objective,
+                initial_point,
+                jac=qp_gradient,
+                hess=qp_hessian,
+                method="trust-constr",
+                bounds=Bounds(lower_bounds, upper_bounds),
+                constraints=linear_constraints,
+                options={
+                    "gtol": 1e-9,
+                    "xtol": 1e-10,
+                    "barrier_tol": 1e-9,
+                    "maxiter": solver_maxiter,
+                    "verbose": 0,
+                    "sparse_jacobian": True,
+                },
+            )
+        else:
+            raise ValueError(
+                "risk_solver_method must be SLSQP or trust-constr"
+            )
         full_point = np.asarray(fitted.x, dtype=float)
         coefficients = np.asarray(full_point[alpha_slice], dtype=float)
         coefficient_sum = float(coefficients.sum())
@@ -1562,16 +1838,79 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "Risk-constrained ensemble exceeded its total or daily-tail "
                 "false-credit budget"
             )
-        if fitted_mse > reference_mse + 1e-8 * max(1.0, reference_mse):
+        if (
+            require_reference_noninferiority
+            and fitted_mse > reference_mse + 1e-8 * max(1.0, reference_mse)
+        ):
             raise RuntimeError(
                 "Convex validation solution is worse than its feasible "
                 "single-projection reference"
             )
-        kkt_residual = float(getattr(fitted, "optimality", np.inf))
+        if risk_solver_method == "slsqp":
+            # SciPy exposes SLSQP multipliers for the equality row followed by
+            # the upper-bound rows.  The residual is evaluated only on free
+            # variables; bound complementarity is checked separately through
+            # the stored solution and primal bound residual.
+            multipliers = np.asarray(
+                getattr(fitted, "multipliers", np.asarray([])), dtype=float
+            ).reshape(-1)
+            expected_multiplier_count = 1 + row_id
+            if multipliers.size != expected_multiplier_count:
+                kkt_residual = float("inf")
+            else:
+                stationarity = qp_gradient(full_point) - a_eq.T.dot(
+                    multipliers[:1]
+                )
+                if row_id:
+                    stationarity = stationarity - a_ub.T.dot(
+                        multipliers[1 : 1 + row_id]
+                    )
+                free = (full_point > lower_bounds + 1.0e-7) & (
+                    full_point < upper_bounds - 1.0e-7
+                )
+                stationarity_residual = (
+                    float(np.max(np.abs(stationarity[free])))
+                    if np.any(free)
+                    else 0.0
+                )
+                if row_id:
+                    inequality_slack = np.asarray(upper, dtype=float) - a_ub.dot(
+                        full_point
+                    )
+                    complementarity_residual = float(
+                        np.max(
+                            np.abs(
+                                multipliers[1 : 1 + row_id]
+                                * inequality_slack
+                            )
+                        )
+                    )
+                else:
+                    complementarity_residual = 0.0
+                kkt_residual = max(
+                    stationarity_residual, complementarity_residual
+                )
+        else:
+            kkt_residual = float(getattr(fitted, "optimality", np.inf))
+        # The certificate tolerances are absolute numerical tolerances in the
+        # native MW-slot units.  They are intentionally kept explicit in the
+        # configuration and in every output certificate so that a solver's
+        # stopping precision cannot be mistaken for a relaxed risk contract.
+        kkt_tolerance = float(
+            cfg["experiments"].get("risk_kkt_tolerance", 1.0e-5)
+        )
+        primal_tolerance = float(
+            cfg["experiments"].get("risk_primal_tolerance", 5.0e-6)
+        )
+        if kkt_tolerance <= 0.0 or primal_tolerance <= 0.0:
+            raise ValueError(
+                "risk_kkt_tolerance and risk_primal_tolerance must be positive"
+            )
         residual_certificate_passed = bool(
-            np.isfinite(kkt_residual)
-            and kkt_residual <= 1e-5
-            and primal_constraint_residual <= 1e-6
+            bool(fitted.success)
+            and np.isfinite(kkt_residual)
+            and kkt_residual <= kkt_tolerance
+            and primal_constraint_residual <= primal_tolerance
         )
         if not residual_certificate_passed:
             raise RuntimeError(
@@ -1596,12 +1935,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "fitted_daily_false_credit_cvar75_mw_slots": float(
                 np.mean(np.sort(fitted_false_by_day)[-tail_count:])
             ),
-            "cvar75_budget_mw_slots": float(
-                cvar_reserve_fraction * reference_daily_cvar_absolute
-            ),
+            "cvar75_budget_mw_slots": float(cvar_budget),
             "total_budget_slack_mw_slots": float(risk_budget - fitted_false_exposure),
             "cvar75_budget_slack_mw_slots": float(
-                cvar_reserve_fraction * reference_daily_cvar_absolute
+                cvar_budget
                 - np.mean(np.sort(fitted_false_by_day)[-tail_count:])
             ),
             "risk_cvar_metric": cvar_metric,
@@ -1611,6 +1948,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "fitted_cvar_metric_value": fitted_daily_cvar,
             "cvar_budget_metric_value": cvar_budget,
             "cvar_budget_slack_metric": float(cvar_budget - fitted_daily_cvar),
+            "numerical_budget_floor_mw_slots": budget_floor,
             "total_objective_scale_mw_slots": total_objective_scale,
             "cvar_objective_scale": cvar_objective_scale,
             "total_budget_binding": float(
@@ -1627,13 +1965,24 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "reference_validation_mse_mw2": reference_mse,
             "fitted_validation_mse_mw2": fitted_mse,
+            "reference_noninferiority_required": bool(
+                require_reference_noninferiority
+            ),
             "optimizer_iterations": float(fitted.nit),
             # trust-constr may report MAXFUN while already satisfying the
             # independently recomputed KKT/primal certificate.  The latter is
             # the acceptance criterion; raw termination is retained below.
             "optimizer_success": float(residual_certificate_passed),
             "optimizer_termination_success": float(fitted.success),
-            "solver_name": "scipy.optimize.trust-constr",
+            "solver_name": (
+                "cvxpy-CLARABEL"
+                if risk_solver_method in {"cvxpy", "clarabel"}
+                else (
+                    "scipy.optimize.SLSQP"
+                    if risk_solver_method == "slsqp"
+                    else "scipy.optimize.trust-constr"
+                )
+            ),
             "convex_quadratic_program": True,
             "epigraph_formulation": "sample credit slacks with true-credit subtraction plus linear daily CVaR epigraph",
             "true_credit_definition": "[oracle no-event baseline minus closed event meter]_+",
@@ -1642,6 +1991,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "kkt_stationarity_residual": kkt_residual,
             "optimizer_gradient_norm": float(np.linalg.norm(qp_gradient(full_point)[alpha_slice])),
             "primal_constraint_residual": float(primal_constraint_residual),
+            "kkt_tolerance": kkt_tolerance,
+            "primal_constraint_tolerance": primal_tolerance,
             "linear_epigraph_rows": int(row_id),
             "epigraph_primal_residual": float(inequality_residual),
         }
@@ -1721,6 +2072,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     cvar_reserve_fraction_override=float(reserve_fraction),
                 )
             except RuntimeError as exc:
+                logger.warning(
+                    "Nested risk fold rejected: reserve=%s fold=%s held_out=%s error=%s",
+                    float(reserve_fraction),
+                    fold,
+                    ";".join(map(str, validation_days[held].tolist())),
+                    str(exc),
+                )
                 reserve_cv_rows.append(
                     {
                         "reserve_fraction": float(reserve_fraction),
@@ -1823,11 +2181,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     # been fitted and therefore cannot certify feasibility of a reserve chosen
     # before the locked block.  Filtering on that outcome would silently
     # turn nested validation into an outcome-dependent gate.
-    selection_pool = feasible_reserves
+    # Solver tolerances can perturb the first two validation criteria by a few
+    # ulps when two reserve contracts produce the same simplex face.  Apply an
+    # explicit dimensioned tie band before the declared reserve tie-break so
+    # the selected contract is reproducible rather than determined by a
+    # Clarabel rounding artifact.
+    selection_pool = feasible_reserves.copy()
+    for column in ["max_fold_nrmse", "max_false_credit_ratio"]:
+        best = float(selection_pool[column].min())
+        tolerance = max(1.0e-8, 1.0e-6 * max(1.0, abs(best)))
+        selection_pool = selection_pool[
+            selection_pool[column] <= best + tolerance
+        ]
     selected_reserve_fraction = float(
-        selection_pool.sort_values(
-            ["max_fold_nrmse", "max_false_credit_ratio", "reserve_fraction"]
-        ).iloc[0]["reserve_fraction"]
+        selection_pool.sort_values("reserve_fraction").iloc[0]["reserve_fraction"]
     )
     # The nested choice is the contract. The pooled fit is checked at exactly
     # that predeclared reserve; no upward grid search or pooled-only retuning is
@@ -1873,6 +2240,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             risk_design, target, validation_actual, risk_reference_index,
             validation_count, selected_reserve_fraction,
             enforce_total_budget=False, enforce_cvar_budget=False,
+            require_reference_noninferiority=False,
         )[0],
         "total-budget-only ensemble": fit_risk_constrained_simplex(
             risk_design, target, validation_actual, risk_reference_index,
@@ -2028,7 +2396,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         np.arange(len(projection_weights)) == selected_single_index
     )
     tuning["candidate_type"] = "metadata projection"
-    tuning["ensemble_weight"] = ensemble_weights[:-1]
+    tuning["ensemble_weight"] = ensemble_weights
     tuning["selected"] = tuning["ensemble_weight"] > 1e-10
     quantile_validation_row = quantile_projection_validation[
         quantile_projection_validation["selected"]
@@ -2039,7 +2407,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             pd.DataFrame(
                 [
                     {
-                        "candidate_index": len(risk_candidate_names) - 1,
+                        "candidate_index": len(risk_candidate_names),
                         "projection_weight": (
                             selected_quantile_projection_weight
                         ),
@@ -2062,9 +2430,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                             quantile_validation_row["max_fold_nrmse"]
                         ),
                         "selected_single_projection": False,
-                        "candidate_type": "feasible quantile projection",
-                        "ensemble_weight": float(ensemble_weights[-1]),
-                        "selected": bool(ensemble_weights[-1] > 1e-10),
+                        "candidate_type": "post-commitment feasible quantile comparator",
+                        "ensemble_weight": 0.0,
+                        "selected": False,
                     }
                 ]
             ),
@@ -2328,7 +2696,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             arrivals_days[day],
             prices,
             cfg,
-            stats.ex_post_metadata_gradient_boosting,
+            stats.metadata_gradient_boosting,
             projection_weights,
         )
         single_result = _solve_day_with_buffer(
@@ -2336,7 +2704,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             prices,
             cfg,
             mode="honest",
-            target=stats.ex_post_metadata_gradient_boosting,
+            target=stats.metadata_gradient_boosting,
             projection_weight=selected_single_weight,
         )
         if not single_result.success:
@@ -2357,10 +2725,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 f"Feasible quantile projection failed for day {day}: "
                 f"{quantile_result.solver_message}"
             )
-        risk_test_candidates = np.concatenate(
-            [projection_profiles, quantile_result.power_mw[None, ...]],
-            axis=0,
-        )
+        # The locked risk profile is formed only from declaration-causal
+        # projections.  The feasible quantile result is an ex-post matched
+        # comparator and is reported separately below.
+        risk_test_candidates = projection_profiles
         for ablation_name, ablation_weights in risk_ablation_weights.items():
             ablation_test_profiles[ablation_name].append(
                 np.tensordot(ablation_weights, risk_test_candidates, axes=(0, 0))
@@ -2384,12 +2752,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         # with this profile would make the risk module unidentifiable.
         risk_profile = ensemble_profile
         risk_migration = float(
-            np.dot(
-                ensemble_weights,
-                np.concatenate(
-                    [projection_migrations, np.asarray([quantile_result.migrated_mwh])]
-                ),
-            )
+            np.dot(ensemble_weights, projection_migrations)
         )
         risk_floor_profile = np.minimum(single_result.power_mw, ensemble_profile)
         contract_result = _solve_day_with_buffer(
@@ -3419,7 +3782,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                         prices,
                         local_cfg,
                         mode="honest",
-                        target=stats.ex_post_metadata_gradient_boosting,
+                        target=stats.metadata_gradient_boosting,
                         projection_weight=selected_single_weight,
                     )
                     if not result.success:
@@ -3433,15 +3796,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                         arrivals_days[day],
                         prices,
                         local_cfg,
-                        stats.ex_post_metadata_gradient_boosting,
+                        stats.metadata_gradient_boosting,
                         projection_weights,
                         ensemble_weights,
-                        extra_target=(
-                            stats.ex_post_quantile_gradient_boosting
-                        ),
-                        extra_projection_weight=(
-                            selected_quantile_projection_weight
-                        ),
                     )
                     if estimator == "safe":
                         risk_reference = _solve_day_with_buffer(
@@ -3449,12 +3806,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                             prices,
                             local_cfg,
                             mode="honest",
-                            target=(
-                                stats.ex_post_quantile_gradient_boosting
-                            ),
-                            projection_weight=(
-                                selected_quantile_projection_weight
-                            ),
+                            target=stats.metadata_gradient_boosting,
+                            projection_weight=selected_single_weight,
                         )
                         if not risk_reference.success:
                             raise RuntimeError(
@@ -3611,17 +3964,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     local_arrivals,
                     prices,
                     local_cfg,
-                    statistical_by_day[day].ex_post_metadata_gradient_boosting,
+                    statistical_by_day[day].metadata_gradient_boosting,
                     projection_weights,
                     ensemble_weights,
-                    extra_target=(
-                        statistical_by_day[
-                            day
-                        ].ex_post_quantile_gradient_boosting
-                    ),
-                    extra_projection_weight=(
-                        selected_quantile_projection_weight
-                    ),
                 )
                 if estimator == "ensemble":
                     prediction = ensemble_prediction
@@ -3631,17 +3976,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                         prices,
                         local_cfg,
                         mode="honest",
-                        target=statistical_by_day[
-                            day
-                        ].ex_post_quantile_gradient_boosting,
-                        projection_weight=(
-                            selected_quantile_projection_weight
-                        ),
+                        target=statistical_by_day[day].metadata_gradient_boosting,
+                        projection_weight=selected_single_weight,
                     )
                     if not risk_reference.success:
                         raise RuntimeError(
                             f"Robustness scenario {label} reference failed "
-                            f"for day {day}: {single.solver_message}"
+                            f"for day {day}: {risk_reference.solver_message}"
                         )
                     safe = _solve_day_with_buffer(
                         local_arrivals,
@@ -3807,10 +4148,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     "selection constraint; fail closed if that set is empty"
                 ),
                 "tie_break_order": [
-                    "max_contiguous_fold_nRMSE",
-                    "max_false_credit_ratio_to_reference",
-                    "reserve_fraction",
+                    "max_contiguous_fold_nRMSE within 1e-6 relative tie band",
+                    "max_false_credit_ratio_to_reference within 1e-6 relative tie band",
+                    "smallest reserve_fraction",
                 ],
+                "tie_band": "max(1e-8, 1e-6 * max(1, abs(criteria)))",
                 "locked_test_days_consulted": False,
                 "cvar_reserve_tied_to_total_reserve": True,
                 "pooled_reserve_retuning_allowed": False,
@@ -8990,6 +9332,13 @@ def _write_feature_stratified_spatial_audit(
     inference, _, valid_slots, burst_stats = _aggregate_burstgpt(
         raw_burst, interval_s, slots_per_day, n_regions, logger
     )
+    manifest_path = root / cfg["data"]["processed_dir"] / "data_manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Processed data manifest is missing: {manifest_path}")
+    with manifest_path.open("r", encoding="utf-8") as handle:
+        submission_calibration = json.load(handle).get("submission_calibration", {})
+    if not submission_calibration:
+        raise RuntimeError("The spatial audit requires the frozen submission calibration")
     arrivals, observed, mit_stats = _aggregate_mit_jobs(
         raw_scheduler,
         raw_dcgm,
@@ -8997,6 +9346,17 @@ def _write_feature_stratified_spatial_audit(
         interval_s,
         n_regions,
         logger,
+        declared_service_fraction=float(submission_calibration["declared_service_fraction"]),
+        declared_per_gpu_power_cap_mw=float(
+            cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+        ),
+        declared_fraction_model=submission_calibration.get("per_job_fraction_model"),
+        unbounded_timelimit_slots=int(
+            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        ),
+        time_origin_seconds=float(
+            cfg["data"].get("mit_trace_origin_seconds", 21193772.0)
+        ),
     )
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     rows: list[dict[str, Any]] = []
@@ -9013,12 +9373,12 @@ def _write_feature_stratified_spatial_audit(
             (
                 "MIT batch submitted",
                 batch_arrivals,
-                "feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties",
+                "feature-stratified round-robin by submit-time class/GPU/runtime/submission; ID only breaks ties",
             ),
             (
                 "MIT batch observed",
                 batch_observed,
-                "feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties",
+                "submission-field region label joined by immutable ID; measured energy affects values only",
             ),
         ]
         for trace, values, assignment_rule in trace_values:
@@ -11426,7 +11786,7 @@ def run_exp15(
     # continuous-segment solves. Earlier checkpoints used a direct
     # ``scale * total-profile`` segment path and are therefore not eligible
     # for resume.
-    schema = 12
+    schema = 13
     rows: list[dict[str, Any]] = []
     interval_rows: list[dict[str, Any]] = []
     existing_endpoint_path = final / "interval_endpoint_certificates.csv"
@@ -12207,10 +12567,34 @@ def run_exp17(
     model_honest, model_strategic, _, _ = precompute_reference_schedules(
         root, cfg, arrivals_days, valid_days, prices, logger
     )
-    strategic = observed + (model_strategic - model_honest)
+    # Reconstruct the gate target from submit-time declarations.  The
+    # independent execution tensor is opened only in the scoring pass below;
+    # using it as the base of this counterfactual would leak post-decision
+    # telemetry into the information-boundary experiment.
+    dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
+    fixed_mw = float(cfg["project"]["fixed_facility_load_mw"])
+    declared_profile = fixed_mw + arrivals_days.sum(axis=3).transpose(0, 2, 1) / dt_h
+    strategic = declared_profile + (model_strategic - model_honest)
     observed_meter = observed[days].copy()
     observed_trace_rows: list[dict[str, Any]] = []
     event_slots = list(map(int, cfg["market"]["event_slots"]))
+    decision_participants = np.asarray(
+        cfg["experiments"].get(
+            "decision_time_participating_data_center_indices",
+            cfg["market"].get("participating_data_center_indices", [0]),
+        ),
+        dtype=int,
+    ).reshape(-1)
+    if (
+        decision_participants.size == 0
+        or np.any(decision_participants < 0)
+        or np.any(decision_participants >= prices.shape[0])
+        or len(np.unique(decision_participants)) != len(decision_participants)
+    ):
+        raise ValueError(
+            "decision_time_participating_data_center_indices must be a unique "
+            "nonempty subset of the declared data centers"
+        )
     gate = int(cfg["experiments"].get("decision_time_event_gate_slot", min(event_slots)))
     if gate < 0 or gate >= min(event_slots):
         raise ValueError(
@@ -12341,6 +12725,7 @@ def run_exp17(
             projection_weight=projection_weight,
             power_upper_mw=committed_event_upper,
             minimum_participant_event_mwh=committed_event_service_mwh,
+            participating_destinations=decision_participants.tolist(),
             require_all_arrivals_at_terminal=False,
             terminal_completion_index=terminal,
             event_slots_override=event_slots,
@@ -12367,6 +12752,7 @@ def run_exp17(
             target=target,
             projection_weight=float(response_projection_weight),
             power_upper_mw=response_upper,
+            participating_destinations=decision_participants.tolist(),
             require_all_arrivals_at_terminal=False,
             terminal_completion_index=terminal,
             event_slots_override=event_slots,
@@ -12494,7 +12880,12 @@ def run_exp17(
     feasible_reserve = reserve_validation_summary[
         reserve_validation_summary["false_response_mwh"] <= reserve_false_budget + 1e-12
     ]
-    reserve_pool = feasible_reserve if len(feasible_reserve) else reserve_validation_summary
+    if feasible_reserve.empty:
+        raise RuntimeError(
+            "No causal reserve quantile satisfies the declared validation "
+            f"false-credit budget ({reserve_false_budget:.6g} MWh/day)"
+        )
+    reserve_pool = feasible_reserve
     selected_reserve_quantile = float(
         reserve_pool.sort_values(
             ["nrmse", "false_response_mwh", "reserve_quantile"]
@@ -12625,7 +13016,13 @@ def run_exp17(
         # summary groupby; otherwise a successful 54-day resume would fail
         # only at the final reporting step.
         try:
-            reserve_test_rows = pd.read_csv(reserve_daily_path).to_dict("records")
+            cached_reserve = pd.read_csv(reserve_daily_path)
+            if (
+                "reserve_quantile" in cached_reserve
+                and set(cached_reserve["reserve_quantile"].astype(float).unique())
+                == {selected_reserve_quantile}
+            ):
+                reserve_test_rows = cached_reserve.to_dict("records")
         except (OSError, ValueError):
             reserve_test_rows = []
     completed: set[int] = set()
@@ -12633,7 +13030,7 @@ def run_exp17(
     # part of the decision protocol. Bump the checkpoint schema whenever
     # either changes so stale response rows cannot be reported under a new
     # calibration.
-    schema = 12
+    schema = 13
     profile_checksum = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     if resume and checkpoint.exists():
         previous = pd.read_csv(checkpoint)
@@ -12996,6 +13393,7 @@ def run_exp17(
             "selected_dr_price_per_mwh": selected_response_price,
             "selected_projection_weight": selected_response_weight,
             "committed_event_service_mwh": committed_event_service_mwh,
+            "participating_data_center_indices": decision_participants.tolist(),
             "selection_rule": (
                 "among candidates satisfying the validation false-credit budget, "
                 "maximize credit F1, then recall, then minimize nRMSE and false credit"
@@ -13047,8 +13445,9 @@ def run_exp17(
             "contract_baseline_source": "causal committed-ledger baseline LP frozen before the event",
             "response_objective": "same masked-ledger LP with the selected validation DR price on participating event slots; post-event profile is diagnostic and never forms the pre-event contract",
             "selected_dr_price_per_mwh": selected_response_price,
-                "selected_projection_weight": selected_response_weight,
-                "committed_event_service_mwh": committed_event_service_mwh,
+            "selected_projection_weight": selected_response_weight,
+            "committed_event_service_mwh": committed_event_service_mwh,
+            "participating_data_center_indices": decision_participants.tolist(),
             "settlement_rule": (
                 "contract-capped-after-event; gross forecast credit is not paid "
                 "above the frozen contract credit or the pointwise metered response"

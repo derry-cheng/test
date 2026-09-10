@@ -18,9 +18,9 @@
   },
   "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The raw MIT execution peak is reported separately from the scaled benchmark envelope used for the declared study scale; neither is used to tune a locked-day schedule.",
   "configured_capacity_mw": 118.0,
-  "maximum_raw_execution_peak_mw": 0.00863653603302321,
-  "maximum_scaled_benchmark_peak_mw": 132.57144147254564,
-  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 1.1234867921402174,
+  "maximum_raw_execution_peak_mw": 0.00864130002449679,
+  "maximum_scaled_benchmark_peak_mw": 101.58317983233215,
+  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.860874405358747,
   "physical_calibration_summary": {
     "file": "physical_calibration_summary.csv",
     "train_observations": 44391,
@@ -53,7 +53,7 @@
     "capacity_sensitivity_scope": "flexible workload batch only; this diagnostic does not gate network activation",
     "capacity_clip_is_batch_only_diagnostic": true,
     "network_activation_scale_source": "Experiment 9 q99-calibrated fixed/flexible conversion with the fixed facility component carried separately",
-    "interpretation": "The power conversion is a declared held-out uncertainty interval. The q99 capacity-safe factor is a flexible-batch diagnostic; network activation uses the separate fixed/flexible conversion certificate in Experiment 9. These results are not treated as geography-free evidence."
+    "interpretation": "The power conversion is a declared calibration-validation uncertainty interval. The q99 capacity-safe factor is a flexible-batch diagnostic; network activation uses the separate fixed/flexible conversion certificate in Experiment 9. These results are not treated as geography-free evidence."
   },
   "submission_energy_calibration": {
     "file": "submission_calibration_summary.csv",

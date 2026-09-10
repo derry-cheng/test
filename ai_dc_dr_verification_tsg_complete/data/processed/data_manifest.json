@@ -55,25 +55,32 @@
     "valid_intervals": 11616
   },
   "mit_supercloud": {
-    "scheduler_rows": 287069,
+    "scheduler_rows": 287173,
+    "valid_scheduler_declarations": 72672,
     "dcgm_rows": 96893,
     "measured_unique_jobs": 74849,
     "full_positive_energy_joined_jobs": 71128,
-    "valid_joined_jobs": 68664,
-    "jobs_excluded_by_common_trace_horizon": 2464,
-    "common_trace_horizon_definition": "jobs whose aligned execution start is before the common BurstGPT/MIT tensor horizon; the full immutable join is retained separately by Experiments 14 and 16",
+    "valid_joined_jobs": 68662,
+    "jobs_excluded_by_common_trace_horizon": 2466,
+    "common_trace_horizon_definition": "submission origin is the earliest valid scheduler GPU declaration; execution rows are clipped only after this declaration-time alignment",
     "time_origin_seconds": 21193772.0,
-    "clipped_at_trace_horizon": 112,
-    "measured_energy_mwh_within_horizon": 2.4663307480062056,
-    "submitted_energy_mwh": 2.4696712925,
+    "arrival_origin_source": "precommitted scheduler-clock origin",
+    "clipped_at_trace_horizon": 110,
+    "measured_energy_mwh_within_horizon": 2.4662721370840552,
+    "submitted_energy_mwh": 0.5615147165874301,
+    "declared_energy_source": "submit-time requested_gpus x declared_per_gpu_power_cap_mw x declared_runtime_slots x frozen q50 service fraction",
+    "declared_service_fraction": 0.0011383333333333334,
+    "declared_per_gpu_power_cap_mw": 0.001,
+    "declared_fraction_model_version": "three conditional QuantileRegressor models on log utilization fraction",
     "jobs_already_queued_at_origin": 0,
     "completion_delay_slots_quantiles": {
       "0.5": 3.0766666666666667,
-      "0.9": 54.75088888888901,
-      "0.95": 102.67727777777765,
-      "0.99": 411.62799999999606
+      "0.9": 54.72322222222227,
+      "0.95": 102.55327777777765,
+      "0.99": 411.21117777777766
     },
-    "temporalization": "queue arrivals use scheduler submission time; independent counterfactual truth uses DCGM energy allocated over measured execution intervals"
+    "temporalization": "causal arrivals use scheduler submission declarations; measured DCGM energy is an independent execution reference and post-event audit",
+    "region_assignment": "balanced submission-field round robin; no outcome fields"
   },
   "power_calibration": {
     "observations": 95182,
@@ -192,6 +199,12 @@
   },
   "submission_calibration": {
     "joined_positive_jobs": 71141,
+    "join_scope_definition": "positive scheduler/DCGM energy-label join with valid submit/end, timelimit, and requested-GPU fields; a valid execution interval is not required because this join is used only for the training label",
+    "full_execution_join_comparison": {
+      "full_positive_execution_join_jobs": 71128,
+      "label_join_excess_jobs": 13,
+      "execution_interval_filter_applied_to_full_join": true
+    },
     "training_jobs": 31284,
     "test_jobs": 39857,
     "training_rule": "chronological historical information set: time_submit and time_end < 40 days after the earliest joined submission",
@@ -295,20 +308,15 @@
         "q10_q90_interval_coverage": 0.5913892164488045
       }
     },
-    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound",
-    "join_scope_definition": "positive scheduler/DCGM energy-label join with valid submit/end, timelimit, and requested-GPU fields; a valid execution interval is not required because this join is used only for the training label",
-    "full_execution_join_comparison": {
-      "full_positive_execution_join_jobs": 71128,
-      "label_join_excess_jobs": 13,
-      "execution_interval_filter_applied_to_full_join": true
-    }
+    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound"
   },
   "processing": {
     "interval_seconds": 900,
     "regions": 4,
-    "spatial_mapping": "feature-stratified round-robin workload scenario over immutable request/job records; no physical geography is inferred",
+    "spatial_mapping": "feature-stratified round-robin workload scenario over immutable submit-time request records; no physical geography is inferred",
     "inference_scale_mwh_per_token": 1.4126396590124032e-05,
-    "batch_hyperscale_multiplier": 15350.07101986688,
+    "batch_hyperscale_multiplier": 11755.543673331451,
+    "batch_scaling_basis": "q99 of declaration-time batch nameplate/service arrivals on the precommitted scaling fit days",
     "scaling_quantile": 0.99,
     "scaling_fit_days": 40,
     "scaling_fit_day_ids": [
@@ -478,12 +486,12 @@
       120
     ],
     "missing_trace_days": [],
-    "total_arrival_mwh": 68641.93421041212,
-    "total_observed_execution_mwh": 68590.65661516429,
+    "total_arrival_mwh": 37333.215248872555,
+    "total_observed_execution_mwh": 59724.67429260579,
     "counterfactual_reference": "trace-anchored no-event execution reference; the demand-response intervention is generated separately by the declared event scheduling optimization",
-    "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
-    "maximum_initial_batch_backlog_mwh": 115.70546058698775,
+    "initial_backlog_state": "cumulative declaration-time batch arrivals minus cumulative independent execution reference at each day boundary",
+    "maximum_initial_batch_backlog_mwh": 0.0,
     "submission_energy_fraction": 0.0011383333333333334,
-    "submission_energy_fraction_source": "chronological scheduler/DCGM calibration using only jobs submitted and completed inside the declared historical information set"
+    "submission_energy_fraction_source": "chronological scheduler/DCGM conditional q10/q50/q90 calibration using only jobs submitted and completed inside the declared historical information set; q50 is evaluated from submit-time features and q10/q90 remain calibration bands"
   }
 }

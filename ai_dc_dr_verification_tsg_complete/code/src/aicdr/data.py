@@ -189,10 +189,53 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
         raw_paths, interval_s, slots_per_day, n_regions, logger
     )
     n_slots = inference.shape[0]
-    logger.info("Aggregating measured MIT SuperCloud GPU energy for %d slots", n_slots)
-    batch_arrivals, batch_observed, batch_stats = _aggregate_mit_jobs(
-        scheduler_path, dcgm_path, n_slots, interval_s, n_regions, logger
+    # Fit the submit-time entitlement before constructing arrivals.  This
+    # ordering makes the deployment-time path explicit: DCGM labels can inform
+    # a frozen historical model, but no measured energy is available when the
+    # submission ledger is built.
+    submission_calibration = _fit_submission_energy_calibration(
+        scheduler_path=scheduler_path,
+        dcgm_path=dcgm_path,
+        interval_s=interval_s,
+        declared_per_gpu_power_cap_mw=float(
+            cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+        ),
+        unbounded_timelimit_slots=int(
+            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        ),
+        training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
+        logger=logger,
     )
+    logger.info("Aggregating declaration-time MIT arrivals and measured execution for %d slots", n_slots)
+    batch_arrivals, batch_observed, batch_stats = _aggregate_mit_jobs(
+        scheduler_path,
+        dcgm_path,
+        n_slots,
+        interval_s,
+        n_regions,
+        logger,
+        declared_service_fraction=float(submission_calibration["declared_service_fraction"]),
+        declared_per_gpu_power_cap_mw=float(
+            cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
+        ),
+        declared_fraction_model=submission_calibration.get("per_job_fraction_model"),
+        unbounded_timelimit_slots=int(
+            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
+        ),
+        time_origin_seconds=float(
+            cfg["data"].get("mit_trace_origin_seconds", 21193772.0)
+        ),
+    )
+    submission_calibration["full_execution_join_comparison"] = {
+        "full_positive_execution_join_jobs": int(
+            batch_stats["full_positive_energy_joined_jobs"]
+        ),
+        "label_join_excess_jobs": int(
+            submission_calibration["joined_positive_jobs"]
+            - batch_stats["full_positive_energy_joined_jobs"]
+        ),
+        "execution_interval_filter_applied_to_full_join": True,
+    }
     calibration = _fit_dcgm_power_calibration(
         dcgm_path,
         int(cfg["project"]["seed"]),
@@ -206,24 +249,16 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
             )
         ),
     )
-    submission_calibration = _fit_submission_energy_calibration(
-        scheduler_path=scheduler_path,
-        dcgm_path=dcgm_path,
-        interval_s=interval_s,
-        declared_per_gpu_power_cap_mw=float(
-            cfg["experiments"].get("job_level_declared_per_gpu_power_cap_mw", 1.0e-3)
-        ),
-        unbounded_timelimit_slots=int(
-            cfg["experiments"].get("job_level_unbounded_timelimit_slots", 128)
-        ),
-        training_days=int(cfg["data"].get("submission_calibration_training_days", 40)),
-        full_execution_join_jobs=int(batch_stats["full_positive_energy_joined_jobs"]),
-        logger=logger,
-    )
 
     dt_h = cfg["project"]["interval_minutes"] / 60.0
     q = float(cfg["data"]["percentile_for_scaling"])
     inf_raw_power = inference.sum(axis=(1, 2)) / dt_h
+    # The batch conversion factor is fixed from the declaration stream.  A
+    # percentile of measured execution cannot set the scale of a quantity
+    # that is supposed to be committed before the event.  The same frozen
+    # factor maps the independent execution reference into the declared study
+    # unit and its residual is reported downstream.
+    batch_declared_power = batch_arrivals.sum(axis=1) / dt_h
     batch_raw_power = batch_observed.sum(axis=1) / dt_h
     day_index = np.arange(n_slots) // slots_per_day
     slot_index = np.arange(n_slots) % slots_per_day
@@ -238,7 +273,7 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
     fit_days = valid_days[:scaling_fit_days]
     fit_mask = np.isin(day_index, fit_days)
     positive_inf = inf_raw_power[fit_mask & (inf_raw_power > 0)]
-    positive_batch = batch_raw_power[fit_mask & (batch_raw_power > 0)]
+    positive_batch = batch_declared_power[fit_mask & (batch_declared_power > 0)]
     if len(positive_inf) == 0 or len(positive_batch) == 0:
         raise RuntimeError("Real workload aggregation produced no positive observations")
     inf_scale = float(cfg["data"]["inference_peak_target_mw"] / np.quantile(positive_inf, q))
@@ -311,10 +346,14 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
             "regions": n_regions,
             "spatial_mapping": (
                 "feature-stratified round-robin workload scenario over immutable "
-                "request/job records; no physical geography is inferred"
+                "submit-time request records; no physical geography is inferred"
             ),
             "inference_scale_mwh_per_token": inf_scale,
             "batch_hyperscale_multiplier": batch_scale,
+            "batch_scaling_basis": (
+                "q99 of declaration-time batch nameplate/service arrivals on the "
+                "precommitted scaling fit days"
+            ),
             "scaling_quantile": q,
             "scaling_fit_days": scaling_fit_days,
             "scaling_fit_day_ids": fit_days.tolist(),
@@ -328,7 +367,7 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "intervention is generated separately by the declared event "
                 "scheduling optimization"
             ),
-            "initial_backlog_state": "cumulative submitted job energy minus cumulative measured execution energy at each day boundary",
+            "initial_backlog_state": "cumulative declaration-time batch arrivals minus cumulative independent execution reference at each day boundary",
             "maximum_initial_batch_backlog_mwh": float(initial_batch_backlog.max()),
             "submission_energy_fraction": float(
                 submission_calibration["declared_service_fraction"]
@@ -352,18 +391,18 @@ def preprocess_all(root: Path, cfg: dict[str, Any], force: bool, logger: logging
                 "downstream_role": "inference arrivals and observed service",
             },
             {
-                "stage": "MIT immutable scheduler-DCGM join",
+                "stage": "MIT submit-time declaration ledger",
                 "input_records": int(batch_stats["scheduler_rows"]),
-                "retained_records": int(batch_stats["full_positive_energy_joined_jobs"]),
-                "split_or_join_rule": "last scheduler record per immutable job ID with positive measured energy",
-                "downstream_role": "full-horizon job-level witness in Experiments 14 and 16",
+                "retained_records": int(batch_stats["valid_scheduler_declarations"]),
+                "split_or_join_rule": "valid submit-time GPU request and allocation runtime; no execution telemetry",
+                "downstream_role": "causal batch arrivals and declaration witness",
             },
             {
-                "stage": "MIT common trace horizon filter",
+                "stage": "MIT independent execution reference",
                 "input_records": int(batch_stats["full_positive_energy_joined_jobs"]),
                 "retained_records": int(batch_stats["valid_joined_jobs"]),
-                "split_or_join_rule": "aligned execution start before the common 121-day tensor horizon",
-                "downstream_role": "batch arrivals and independent execution for Experiments 1--13",
+                "split_or_join_rule": "scheduler/DCGM join clipped after declaration-time alignment",
+                "downstream_role": "post-event measured execution for scoring and audit",
             },
             {
                 "stage": "DCGM power calibration",
@@ -556,12 +595,101 @@ def _aggregate_mit_jobs(
     interval_s: int,
     n_regions: int,
     logger: logging.Logger,
+    *,
+    declared_service_fraction: float,
+    declared_per_gpu_power_cap_mw: float,
+    declared_fraction_model: dict[str, Any] | None = None,
+    unbounded_timelimit_slots: int = 128,
+    time_origin_seconds: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    """Aggregate a causal submission stream and an independent execution stream.
+
+    The two arrays intentionally have different provenance.  ``arrivals`` is
+    reconstructed from fields visible when a Slurm request is submitted
+    (requested GPUs, allocation runtime, job class and submit time), using the
+    frozen training-only utilization model.  DCGM energy is used exclusively
+    for ``observed`` and for post-event reconciliation.  In particular, a
+    measured energy value cannot change the arrival quantity, region label,
+    horizon origin, or population of the causal stream.
+    """
+    if float(declared_service_fraction) <= 0.0 or float(declared_service_fraction) > 1.0:
+        raise ValueError("declared_service_fraction must lie in (0, 1]")
+    if float(declared_per_gpu_power_cap_mw) <= 0.0:
+        raise ValueError("declared_per_gpu_power_cap_mw must be positive")
+
+    # First build the complete submit-time ledger.  Its origin is the earliest
+    # valid scheduler submission, so no execution timestamp determines the
+    # alignment of the deployment-time information set.
+    scheduler_probe = pd.read_csv(
+        scheduler_path,
+        usecols=["id_job", "time_submit", "timelimit", "gres_req", "job_type", "state"],
+    )
+    scheduler_probe["id_job"] = pd.to_numeric(scheduler_probe["id_job"], errors="coerce")
+    scheduler_probe["time_submit"] = pd.to_numeric(
+        scheduler_probe["time_submit"], errors="coerce"
+    )
+    scheduler_probe["timelimit"] = pd.to_numeric(
+        scheduler_probe["timelimit"], errors="coerce"
+    )
+    scheduler_probe["requested_gpus"] = scheduler_probe["gres_req"].map(
+        _parse_requested_gpu_count
+    )
+    valid_probe = scheduler_probe[
+        scheduler_probe["id_job"].notna()
+        & scheduler_probe["time_submit"].notna()
+        & scheduler_probe["timelimit"].notna()
+        & (scheduler_probe["timelimit"] > 0)
+        & scheduler_probe["requested_gpus"].notna()
+        & (scheduler_probe["requested_gpus"] > 0)
+    ].copy()
+    if valid_probe.empty:
+        raise RuntimeError("No valid submit-time MIT GPU declarations are available")
+    if time_origin_seconds is None:
+        time_origin_s = float(valid_probe["time_submit"].min())
+        origin_source = "earliest valid scheduler time_submit"
+    else:
+        time_origin_s = float(time_origin_seconds)
+        if not np.isfinite(time_origin_s):
+            raise ValueError("time_origin_seconds must be finite when supplied")
+        origin_source = "precommitted scheduler-clock origin"
+    submission = load_mit_submission_ledger(
+        scheduler_path,
+        interval_s,
+        int(n_slots),
+        n_regions,
+        float(declared_service_fraction),
+        float(declared_per_gpu_power_cap_mw),
+        declared_fraction_model=declared_fraction_model,
+        unbounded_timelimit_slots=int(unbounded_timelimit_slots),
+        time_origin_seconds=time_origin_s,
+    )
+    arrivals = np.zeros((n_slots, n_regions), dtype=np.float64)
+    submit_slots = np.floor(
+        (submission["time_submit"].to_numpy(dtype=float) - time_origin_s)
+        / float(interval_s)
+    ).astype(np.int64)
+    valid_arrival = (submit_slots >= 0) & (submit_slots < n_slots)
+    np.add.at(
+        arrivals,
+        (submit_slots[valid_arrival], submission.loc[valid_arrival, "region"].to_numpy(dtype=np.int64)),
+        submission.loc[valid_arrival, "declared_energy_mwh"].to_numpy(dtype=float),
+    )
+
+    # Independently aggregate measured execution.  The region assignment is
+    # joined from the submit ledger by immutable job ID, never recomputed from
+    # measured runtime, energy, or GPU telemetry.
     dcgm = pd.read_csv(
         dcgm_path,
-        usecols=["id_job", "energyconsumed_joules", "powerusage_watts_avg", "totalexecutiontime_sec"],
+        usecols=[
+            "id_job",
+            "energyconsumed_joules",
+            "powerusage_watts_avg",
+            "totalexecutiontime_sec",
+        ],
     )
-    dcgm = dcgm.replace([np.inf, -np.inf], np.nan).dropna(subset=["id_job", "energyconsumed_joules"])
+    dcgm = dcgm.replace([np.inf, -np.inf], np.nan).dropna(
+        subset=["id_job", "energyconsumed_joules"]
+    )
     measured = dcgm.groupby("id_job", as_index=False).agg(
         energy_j=("energyconsumed_joules", "sum"),
         gpu_power_w=("powerusage_watts_avg", "sum"),
@@ -570,9 +698,20 @@ def _aggregate_mit_jobs(
     )
     scheduler = pd.read_csv(
         scheduler_path,
-        usecols=["id_job", "time_start", "time_end", "time_submit", "gres_req", "job_type", "state"],
+        usecols=[
+            "id_job",
+            "time_start",
+            "time_end",
+            "time_submit",
+            "timelimit",
+            "gres_req",
+            "job_type",
+            "state",
+        ],
     )
-    scheduler = scheduler.sort_values(["id_job", "time_end"]).drop_duplicates("id_job", keep="last")
+    scheduler = scheduler.sort_values(
+        ["id_job", "time_end"], kind="mergesort", na_position="first"
+    ).drop_duplicates("id_job", keep="last")
     jobs = scheduler.merge(measured, on="id_job", how="inner", validate="one_to_one")
     jobs = jobs[
         (jobs["time_start"] >= 0)
@@ -580,16 +719,14 @@ def _aggregate_mit_jobs(
         & (jobs["energy_j"] > 0)
     ].copy()
     full_positive_energy_joined_jobs = int(len(jobs))
-    # The MIT and BurstGPT releases each use their own relative clock. Preserve every
-    # observed inter-arrival time while aligning the first eligible measured MIT job
-    # with the beginning of the common counterfactual horizon.
-    time_origin_s = float(jobs["time_start"].min())
+    region_by_job = submission.set_index("id_job")["region"]
+    jobs["region"] = jobs["id_job"].map(region_by_job)
+    jobs = jobs[jobs["region"].notna()].copy()
+    jobs["region"] = jobs["region"].astype(np.int64)
     jobs["time_submit_aligned"] = jobs["time_submit"] - time_origin_s
     jobs["time_start_aligned"] = jobs["time_start"] - time_origin_s
     jobs["time_end_aligned"] = jobs["time_end"] - time_origin_s
     jobs = jobs[jobs["time_start_aligned"] < n_slots * interval_s].copy()
-    jobs["region"] = _balanced_trace_region_labels(jobs, n_regions)
-    arrivals = np.zeros((n_slots, n_regions), dtype=np.float64)
     observed = np.zeros((n_slots, n_regions), dtype=np.float64)
     used_energy = 0.0
     clipped_jobs = 0
@@ -600,16 +737,14 @@ def _aggregate_mit_jobs(
             continue
         duration = float(row.time_end_aligned - row.time_start_aligned)
         region = int(row.region)
-        first = int(start // interval_s)
+        first = max(0, int(start // interval_s))
         last = int(np.ceil(end / interval_s)) - 1
         energy_mwh = float(row.energy_j) / 3.6e9
-        # Work enters the controllable queue at submission, not when it happened
-        # to execute. Jobs already queued at the common origin form initial backlog.
-        submit_slot = int(max(0.0, float(row.time_submit_aligned)) // interval_s)
-        if submit_slot < n_slots:
-            arrivals[submit_slot, region] += energy_mwh
         for slot in range(first, min(last + 1, n_slots)):
-            overlap = max(0.0, min(end, (slot + 1) * interval_s) - max(start, slot * interval_s))
+            overlap = max(
+                0.0,
+                min(end, (slot + 1) * interval_s) - max(start, slot * interval_s),
+            )
             if overlap > 0:
                 allocated = energy_mwh * overlap / duration
                 observed[slot, region] += allocated
@@ -617,7 +752,8 @@ def _aggregate_mit_jobs(
         if row.time_end_aligned > n_slots * interval_s:
             clipped_jobs += 1
     stats = {
-        "scheduler_rows": int(len(scheduler)),
+        "scheduler_rows": int(len(scheduler_probe)),
+        "valid_scheduler_declarations": int(len(submission)),
         "dcgm_rows": int(len(dcgm)),
         "measured_unique_jobs": int(measured["id_job"].nunique()),
         "full_positive_energy_joined_jobs": full_positive_energy_joined_jobs,
@@ -626,22 +762,47 @@ def _aggregate_mit_jobs(
             full_positive_energy_joined_jobs - len(jobs)
         ),
         "common_trace_horizon_definition": (
-            "jobs whose aligned execution start is before the common BurstGPT/MIT "
-            "tensor horizon; the full immutable join is retained separately by "
-            "Experiments 14 and 16"
+            "submission origin is a precommitted scheduler-clock origin recorded in "
+            "the manifest before execution telemetry is joined; execution rows are "
+            "clipped only after this declaration-time alignment"
         ),
         "time_origin_seconds": time_origin_s,
+        "arrival_origin_source": origin_source,
         "clipped_at_trace_horizon": int(clipped_jobs),
         "measured_energy_mwh_within_horizon": used_energy,
         "submitted_energy_mwh": float(arrivals.sum()),
-        "jobs_already_queued_at_origin": int((jobs["time_submit_aligned"] < 0).sum()),
+        "declared_energy_source": (
+            "submit-time requested_gpus x declared_per_gpu_power_cap_mw x "
+            "declared_runtime_slots x frozen q50 service fraction"
+        ),
+        "declared_service_fraction": float(declared_service_fraction),
+        "declared_per_gpu_power_cap_mw": float(declared_per_gpu_power_cap_mw),
+        "declared_fraction_model_version": (
+            str(declared_fraction_model.get("model_type", "conditional_quantile"))
+            if declared_fraction_model is not None
+            else "scalar"
+        ),
+        "jobs_already_queued_at_origin": int((submission["time_submit"] < time_origin_s).sum()),
         "completion_delay_slots_quantiles": {
-            str(q): float(np.quantile((jobs["time_end"] - jobs["time_submit"]) / interval_s, q))
+            str(q): float(
+                np.quantile(
+                    (jobs["time_end"] - jobs["time_submit"]) / interval_s, q
+                )
+            )
             for q in [0.5, 0.9, 0.95, 0.99]
         },
-        "temporalization": "queue arrivals use scheduler submission time; independent counterfactual truth uses DCGM energy allocated over measured execution intervals",
+        "temporalization": (
+            "causal arrivals use scheduler submission declarations; measured DCGM "
+            "energy is an independent execution reference and post-event audit"
+        ),
+        "region_assignment": "balanced submission-field round robin; no outcome fields",
     }
-    logger.info("MIT aggregation complete: %s measured jobs, %.4f raw MWh", f"{len(jobs):,}", used_energy)
+    logger.info(
+        "MIT aggregation complete: %s declared jobs, %s measured executions, %.4f raw MWh",
+        f"{len(submission):,}",
+        f"{len(jobs):,}",
+        used_energy,
+    )
     return arrivals, observed, stats
 
 

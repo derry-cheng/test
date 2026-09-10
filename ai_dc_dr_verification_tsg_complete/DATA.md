@@ -10,11 +10,11 @@
    measurements by immutable job ID. Measured joules are allocated to 15-minute
    intervals in exact proportion to temporal overlap. No average-power proxy replaces
    a job when measured energy is available. Because the two releases use independent
- relative clocks, the earliest eligible measured MIT job is shifted to time zero;
- every observed inter-arrival time and duration is preserved without repetition.
+ relative clocks, a precommitted scheduler-clock origin is fixed before any execution
+ join; execution timestamps do not define the causal arrival origin or membership.
 The complete positive-energy join contains 71,128 jobs. For the common 121-day
-tensor used by Experiments 1--13, 68,664 jobs whose aligned execution starts
-before the common horizon are retained; 2,464 later-starting jobs remain in the
+tensor used by Experiments 1--13, 68,662 jobs with valid intervals
+in the common horizon are retained; 2,466 jobs outside that horizon remain in the
 full-horizon job-level witness of Experiments 14 and 16. The two counts are not
 alternative versions of the same sample and are reported separately in the
 manifest and data-flow audit.
@@ -80,8 +80,8 @@ additional interval filter and therefore contains 71,128 jobs. The 13-record
 label-only difference cannot enter any counterfactual or locked eligibility set.
 
 Experiment 23 adds a structurally distinct controlled event: after the same
-slot-60 submission gate, an independently parameterized exact LP applies a
-predeclared event tariff and a 5-MWh service floor without receiving any
+slot-62 submission gate, an independently parameterized exact LP applies a
+predeclared event tariff and a 3-MWh service floor without receiving any
 verifier target, risk envelope, or locked outcome. It is a mechanism-isolation
 certificate, not a field treatment estimate.
 
@@ -134,7 +134,7 @@ workload shapes and an auditable network benchmark; external validity to a parti
 operator requires confidential co-located telemetry.
 
 The deployment information boundary is explicit: Experiment 17 removes all
-arrivals after the pre-event commitment gate (slot 60, one hour before the
+arrivals after the pre-event commitment gate (slot 62, 30 minutes before the
 event window) before solving and uses the locked execution trace only for
 scoring. Experiment 18 fixes three locked days crossed with the first and last
 event slots (six snapshots), the native-case connected/finite-AC outage rule,

@@ -1,7 +1,7 @@
 baseline,citation_key,implementation,n_days,nrmse,false_response_mwh,credit_f1,net_system_response_mwh
-All-site coupled event-response control,internal_event_response_control,all_site_event_response_lp,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
-Batch-flexibility ledger translation,cao2022flexibility,batch_flexibility_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
-Coupled multi-service regulation translation,chen2021idccoupling,coupled_service_ledger_lp,54,0.3255882021212649,3.289549702593056e-16,0.28538538623558807,-23.46398450698467
-Cross-regional dispatchable-capacity translation,han2026dispatchable,dispatchable_capacity_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
-Event-reward ledger translation,chen2021incentive,event_reward_ledger_lp,54,3.067921248926727,114.7758144245452,0.13700975234122167,85.95843230019311
-Rolling-horizon ledger translation,zhang2023receding,rolling_horizon_ledger_lp,54,0.3392691716572267,1.8234111693639639,0.41844273434833357,0.19945585388837295
+All-site coupled event-response control,internal_event_response_control,all_site_event_response_lp,54,1.3761366631358884,0.0,0.11131239924536188,-14.742014040767287
+Batch-flexibility ledger translation,cao2022flexibility,batch_flexibility_ledger_lp,54,1.3574837307800762,0.0,0.18333891491214474,0.00573932997891597
+Coupled multi-service regulation translation,chen2021idccoupling,coupled_service_ledger_lp,54,1.3761366631358884,0.0,0.11131239924536188,-14.742014040767287
+Cross-regional dispatchable-capacity translation,han2026dispatchable,dispatchable_capacity_ledger_lp,54,1.3574837307800762,0.0,0.18333891491214474,0.00573932997891597
+Event-reward ledger translation,chen2021incentive,event_reward_ledger_lp,54,4.890614105847596e-16,6.266592183439772e-15,0.9999999999999999,30.004512641999924
+Rolling-horizon ledger translation,zhang2023receding,rolling_horizon_ledger_lp,54,0.9433757479691501,2.469607400903191,0.4630428327216649,12.025642353641093
