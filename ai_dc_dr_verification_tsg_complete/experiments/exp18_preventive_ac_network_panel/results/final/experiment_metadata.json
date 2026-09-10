@@ -1,0 +1,124 @@
+{
+  "experiment": "cross-network AC N-1 physical admissibility audit",
+  "networks": [
+    "IEEE RTS 24-bus",
+    "IEEE 30-bus",
+    "IEEE 39-bus",
+    "IEEE 118-bus"
+  ],
+  "pre_registered_dc_bus_mapping_one_based": {
+    "IEEE RTS 24-bus": [
+      1,
+      2,
+      7,
+      13
+    ],
+    "IEEE 30-bus": [
+      1,
+      2,
+      13,
+      22
+    ],
+    "IEEE 39-bus": [
+      30,
+      31,
+      32,
+      33
+    ],
+    "IEEE 118-bus": [
+      1,
+      4,
+      6,
+      8
+    ]
+  },
+  "bus_mapping_basis": "pre-registered generator-bus electrical-role strata selected before the locked panel; no outcome screening or loading-based placement",
+  "spatial_identification": "synthetic trace-to-bus benchmark because the public traces contain no utility geography; Experiment 11 supplies the 24-permutation and penetration sensitivity panel",
+  "locked_snapshots": [
+    {
+      "locked_day_index": 0,
+      "day": 61,
+      "event_slot": 64
+    },
+    {
+      "locked_day_index": 0,
+      "day": 61,
+      "event_slot": 71
+    },
+    {
+      "locked_day_index": 27,
+      "day": 88,
+      "event_slot": 64
+    },
+    {
+      "locked_day_index": 27,
+      "day": 88,
+      "event_slot": 71
+    },
+    {
+      "locked_day_index": 53,
+      "day": 114,
+      "event_slot": 64
+    },
+    {
+      "locked_day_index": 53,
+      "day": 114,
+      "event_slot": 71
+    }
+  ],
+  "locked_snapshot_count": 6,
+  "locked_snapshot_rule": "predeclared day indices and event-window endpoint slots; no snapshot is selected from an outage result",
+  "penetrations": [
+    0.03,
+    0.06,
+    0.09
+  ],
+  "methods": [
+    "Payment-Certified N-1 Verifier",
+    "Trace-Anchored Reference"
+  ],
+  "outages_by_network": {
+    "IEEE RTS 24-bus": 32,
+    "IEEE 30-bus": 35,
+    "IEEE 39-bus": 24,
+    "IEEE 118-bus": 177
+  },
+  "topology_connected_outages_by_network": {
+    "IEEE RTS 24-bus": 37,
+    "IEEE 30-bus": 38,
+    "IEEE 39-bus": 35,
+    "IEEE 118-bus": 177
+  },
+  "native_ac_inadmissible_connected_outages_by_network": {
+    "IEEE RTS 24-bus": 5,
+    "IEEE 30-bus": 3,
+    "IEEE 39-bus": 11,
+    "IEEE 118-bus": 0
+  },
+  "validation_trace_peak_mw": 252.92852185302473,
+  "load_multiplier": 0.9,
+  "fixed_active_plan_tolerance_mw": 1e-08,
+  "power_factor": 0.95,
+  "all_declared_ac_admissible_nonislanding_outages_evaluated": true,
+  "ac_admissibility_rule": "connected topology plus a native-case fixed-active-plan AC-OPF with apparent-power and voltage limits; the rule is evaluated before workload profiles and is independent of locked outcomes",
+  "shared_active_plan": true,
+  "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
+  "test_outcomes_used_for_scaling": false,
+  "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
+  "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
+  "solver_fallback_calls": 20,
+  "isolated_solver_calls": 19,
+  "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",
+  "ac_limits_enforced": true,
+  "diagnostics_reported": [
+    "apparent line loading",
+    "voltage-limit deviation",
+    "non-reference active-generation recourse"
+  ],
+  "model": "AC OPF with fixed non-reference active plan and reference-generator recourse",
+  "network_count": 4,
+  "optimization_calls": 9792,
+  "contingency_evaluations": 9648,
+  "intact_reference_dispatches": 144,
+  "native_inadmissible_outages_excluded_before_workload": true
+}

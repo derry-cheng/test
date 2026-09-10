@@ -1,0 +1,4 @@
+role,candidate_index,candidate_name,selection_split,selection_metric,payment_mae_on_selection_split_usd,test_days_used_for_selection
+contractual payment cap,5,Projection rho=10,validation,worst contiguous-fold nRMSE (Experiment 2),8.762289141159584,False
+payment target,4,Projection rho=3,validation,independent high-resolution N-1 payment MAE,8.673758557844957,False
+role separation,-1,cap and target are distinct candidates,validation only,cap nRMSE and target payment MAE are not the same criterion,,False

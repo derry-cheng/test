@@ -1,0 +1,9 @@
+{
+  "assignment": "feature-stratified deterministic round-robin",
+  "physical_geography_available": false,
+  "all_region_to_bus_permutations_evaluated": true,
+  "burstgpt_rows": 5188507,
+  "mit_joined_jobs": 68664,
+  "valid_intervals": 11616,
+  "correlation_file": "spatial_trace_pairwise_correlation.csv"
+}

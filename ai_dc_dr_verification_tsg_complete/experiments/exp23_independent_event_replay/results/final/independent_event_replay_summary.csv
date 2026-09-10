@@ -1,0 +1,3 @@
+method,locked_days,nrmse,false_response_mwh,underpayment_mwh,credit_precision,credit_recall,credit_f1,truth_source
+Common runtime-complete witness,54,0.02103996900870972,0.019388888888889264,1.5419764230904951e-18,0.5021286248915159,0.7594689680527992,0.5294334576980897,independent declaration-only exact start policy
+Independent declaration-only exact policy,54,0.0,0.0,0.0,1.0,1.0,1.0,independent declaration-only exact start policy

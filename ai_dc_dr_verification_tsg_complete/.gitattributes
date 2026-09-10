@@ -1,0 +1,6 @@
+# Raw CSV releases remain outside the Git repository and are reconstructed
+# from the verified publication archive. Compressed processed arrays and
+# experiment checkpoints are deliberately stored as ordinary repository
+# artifacts so a clean checkout retains the locked tests without requiring an
+# external LFS smudge step.
+data/raw/pglib/*.m whitespace=-trailing-space

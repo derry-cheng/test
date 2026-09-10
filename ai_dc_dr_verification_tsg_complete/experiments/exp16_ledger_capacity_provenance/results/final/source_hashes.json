@@ -1,0 +1,16 @@
+{
+  "scheduler": {
+    "path": "data/raw/mit_supercloud/scheduler_data.csv",
+    "sha256": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092",
+    "bytes": 73081826
+  },
+  "dcgm": {
+    "path": "data/raw/mit_supercloud/dcgm_verified_full.csv",
+    "sha256": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4",
+    "bytes": 14496062
+  },
+  "processed_workload": {
+    "path": "data/processed/workload_15min.npz",
+    "sha256": "fd2cfee08fc752bc9b2b9b002a198ae6ef8a3c1410ceafe19cd51b90b7b74bd5"
+  }
+}

@@ -1,0 +1,14 @@
+metric,value,unit
+stress_day_index,127.0,day
+cohort_jobs,79.0,jobs
+service_variables,53720.0,variables
+capacity_mw_per_region,0.0001603677778,MW
+minimum_event_capacity_slack_mwh,5.555553575769395e-15,MWh
+active_event_capacity_slot_fraction,0.6875,fraction
+event_service_floor_mwh,0.00108,MWh
+event_service_delivered_mwh,0.0010832855767037468,MWh
+maximum_job_energy_residual_mwh,0.0,MWh
+solver_success,1.0,boolean
+binary_start_variables,679.0,variables
+selected_start_variables,79.0,variables
+solver_time_limit_seconds,120.0,seconds

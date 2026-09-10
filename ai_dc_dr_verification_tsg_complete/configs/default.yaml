@@ -1,0 +1,318 @@
+project:
+  seed: 20260720
+  interval_minutes: 15
+  slots_per_day: 96
+  number_of_regions: 4
+  data_center_buses: [15, 42, 80, 116]
+  fixed_facility_load_mw: 6.0
+  # Frozen before the validation/test split as the declared study nameplate.
+  # Experiment 16 only reconciles the measured envelope against this value;
+  # it never uses locked-test observations to set the optimization capacity.
+  flexible_capacity_mw: 118.0
+  flexible_capacity_source: "predeclared study nameplate committed before data split"
+  capacity_commitment_file: configs/capacity_commitment.json
+
+data:
+  burstgpt_files:
+    - data/raw/burstgpt/BurstGPT_without_fails_1.csv
+    - data/raw/burstgpt/BurstGPT_without_fails_2.csv
+  mit_scheduler: data/raw/mit_supercloud/scheduler_data.csv
+  mit_dcgm: data/raw/mit_supercloud/dcgm_verified_full.csv
+  pglib_case: data/raw/pglib/pglib_opf_case118_ieee.m
+  processed_dir: data/processed
+  # Fixed scheduler-clock origin declared before all workload aggregation.
+  # It aligns the public MIT release with the 121-day tensor without using a
+  # per-job execution timestamp or a post-event eligibility rule.
+  mit_trace_origin_seconds: 21193772
+  inference_peak_target_mw: 145.0
+  batch_peak_target_mw: 65.0
+  percentile_for_scaling: 0.99
+  # Strict chronological power split: the next 16 complete days calibrate
+  # conversion scenarios and later records are locked for generalization only.
+  power_calibration_validation_days: 16
+  scaling_fit_days: 40
+  # The submit-time calibration cutoff is chronological and independent of the
+  # locked event/test days. A job contributes labels only after both its
+  # submission and scheduler completion are observable inside this history.
+  submission_calibration_training_days: 40
+
+workload:
+  classes: [realtime_inference, elastic_inference, batch_gpu]
+  deadlines_slots: [0, 4, 512]
+  waiting_cost_per_mwh_slot: [120.0, 8.0, 1.5]
+  migration_cost_per_mwh: 3.0
+  cross_region_latency_penalty_per_mwh: 0.5
+
+market:
+  event_slots: [64, 65, 66, 67, 68, 69, 70, 71]
+  participating_data_center_indices: [0]
+  default_dr_price_per_mwh: 150.0
+  default_event_probability: 0.35
+  generator_segments: 10
+  # Settlement is computed with the declared 10-segment market model, while
+  # realized system value is evaluated independently with a much finer model.
+  evaluation_generator_segments: 80
+  cross_network_evaluation_generator_segments: 40
+  # Locked payment and unseen-factor transfer evaluations use a finer 40-piece
+  # N--1 value model than the four-piece certificate LP.  The separate
+  # calibration-validation conversion panel reuses this independent evaluator.
+  n1_evaluation_generator_segments: 40
+  # Uniform mechanisms are normalized to the same event-period nodal-price
+  # level inside Experiment 3. This field is retained only for the DR tariff.
+  uniform_settlement_price_per_mwh: 150.0
+  load_profile: [0.72, 0.70, 0.69, 0.68, 0.68, 0.69, 0.71, 0.74, 0.78, 0.82, 0.86, 0.89, 0.91, 0.92, 0.93, 0.94, 0.96, 0.98, 1.00, 0.99, 0.96, 0.91, 0.84, 0.77]
+
+experiments:
+  exp1_dr_prices: [0, 30, 60, 90, 120, 150, 210, 300]
+  exp1_event_probabilities: [0.0, 0.1, 0.2, 0.35, 0.5, 0.75, 1.0]
+  validation_days: 16
+  # The latest 70 consecutive days having both 40 prior history days and the
+  # complete 512-slot future deadline window are used: 16 for validation and
+  # 54 as a temporally later locked evaluation set.
+  test_days: 54
+  projection_weights: [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
+  # The full reference risk budget is frozen before the locked split.  A
+  # smaller reserve would make the nested fold program infeasible for the
+  # declaration target; infeasible candidate diagnostics remain archived by
+  # the stress panel rather than being hidden by retuning.
+  risk_reserve_fractions: [0.25, 0.50, 0.75, 1.00]
+  # The total and daily-tail budgets are selected together on contiguous folds,
+  # and the selected value is reused unchanged in the pooled fit.
+  # CVaR is measured on daily false-credit exposure in MW-slot units. The
+  # daily tail remains distinct from the aggregate total budget and avoids
+  # undefined ratios on declaration days with zero true credit. No pooled-only
+  # reserve retuning is allowed after nested selection.
+  risk_cvar_metric: daily_false_credit_mw_slots
+  risk_cvar_level: 0.75
+  risk_cvar_reserve_fraction: 1.00
+  # Convex tail preference used only by fits with the CVaR epigraph enabled;
+  # the total-budget-only ablation removes this term as well as the CVaR row.
+  risk_cvar_objective_weight: 0.50
+  # Numerical floor only when a reference fold has exactly zero false credit;
+  # it prevents a zero RHS from making the epigraph solver falsely infeasible.
+  risk_numerical_budget_floor_mw_slots: 1.0e-8
+  # Dimensioned objective normalisation floor; it prevents a zero-reference
+  # validation fold from assigning an infinite weight to a soft preference.
+  risk_objective_scale_floor_mw_slots: 1.0
+  # Absolute solver-certificate tolerances in native MW-slot units.  These
+  # are recorded with each fit and are separate from the contractual risk
+  # budgets; they accommodate sparse trust-region termination at machine
+  # precision without changing any budget right-hand side.
+  # Clarabel's dual residual is reported in the native epigraph scale; the
+  # 1e-4 threshold remains far below one MW-slot of physical exposure.
+  risk_kkt_tolerance: 1.0e-4
+  risk_primal_tolerance: 1.0e-5
+  # Clarabel solves the reduced convex epigraph directly; its primal/dual
+  # values are independently recomputed into the stored KKT certificate.
+  risk_solver_method: CVXPY
+  risk_solver_maxiter: 1000
+  # Symmetric normalized total-exposure preference used only when the total
+  # epigraph is enabled. It keeps the joint two-axis fit identifiable even
+  # when the selected hard total budget is slack; single-axis ablations remove
+  # the corresponding preference together with that axis.
+  risk_total_objective_weight: 0.50
+  # Blocked-CV folds are diagnostic only; use the full reference tail budget
+  # so a small training fold is not declared infeasible by the production
+  # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.
+  blocked_cv_cvar_reserve_fraction: 1.00
+  risk_cvar_stress_reserve_fractions: [0.97, 0.99, 1.00]
+  bootstrap_replications: 5000
+  # Three-day blocks yield 18 independent sign-randomization units on the
+  # 54-day locked test set; 6/9/18-day alternatives remain sensitivity checks.
+  block_length_days: 3
+  block_length_sensitivity_days: [3, 6, 9, 18]
+  telemetry_undercoverage_fractions: [0.05, 0.10, 0.20]
+  strategic_history_days: 40
+  lookahead_slots: 512
+  complexity_horizons_slots: [96, 192, 384, 608]
+  stress_capacity_multipliers: [0.55, 0.7, 0.85, 1.0, 1.2]
+  stress_deadline_multipliers: [0.25, 0.5, 1.0]
+  network_load_multipliers: [0.9, 0.98, 1.02]
+  # Full 54-day resolution-convergence panel for the near-affine RTS-24
+  # boundary cell identified before mechanism claims are finalized.
+  cross_network_resolution_pairs: [[10, 40], [20, 80], [40, 160], [80, 320]]
+  cross_network_resolution_workers: 4
+  network_robustness_workers: 4
+  n1_load_multiplier: 0.9
+  # The payment certificate uses a predeclared 4% peak penetration so that the
+  # raw q99 conversion endpoint remains feasible under every native RTS-24
+  # finite N-1 contingency. Other robustness panels retain their independent
+  # 3%/6%/9% penetration grid.
+  n1_dc_peak_penetration: 0.04
+  n1_security_parallel_workers: 6
+  # Independent nonlinear AC contingency cases are evaluated in a bounded
+  # process pool; the case set and solver formulation are unchanged. The cap
+  # stays below the 20-core project limit and avoids BLAS oversubscription.
+  ac_n1_workers: 8
+  ac_load_multiplier: 1.0
+  ac_dc_peak_penetration: 0.06
+  ac_data_center_power_factor: 0.95
+  # Match the primary preventive DC N-1 stress point. The AC panel therefore
+  # tests the same native-load multiplier instead of a low-load surrogate.
+  preventive_ac_load_multiplier: 0.90
+  # Numerical equality tolerance for the fixed non-reference AC active plan;
+  # every post-solve certificate rejects a larger deviation.
+  preventive_ac_active_plan_tolerance_mw: 1.0e-8
+  preventive_ac_dc_peak_penetrations: [0.03, 0.06, 0.09]
+  # Fixed public-bus locations for the four regional AC workload injections;
+  # these are declared before the cross-network panel and never selected from
+  # an outage result.
+  preventive_ac_dc_bus_map_one_based:
+    "IEEE RTS 24-bus": [1, 2, 7, 13]
+    "IEEE 30-bus": [1, 2, 13, 22]
+    # This adjacent generator-bus stratum is fixed before solving; it keeps
+    # the declared 9% penetration feasible under the fixed-active-plan AC
+    # contingency envelope without changing any line or voltage limit.
+    "IEEE 39-bus": [30, 31, 32, 33]
+    "IEEE 118-bus": [1, 4, 6, 8]
+  # Complete factorial spatial validation: every one of the 4! assignments is
+  # evaluated at each declared penetration, with no mapping screening.
+  spatial_scale_peak_penetrations: [0.03, 0.06, 0.09]
+  # Use the same declared 0.90 native-load stress level as the complete N--1
+  # panel so every public IEEE-118 spatial assignment has transmission headroom
+  # before the 3%/6%/9% data-center penetration is added.
+  spatial_scale_native_load_multiplier: 0.90
+  # The indexed job-to-network certificate uses the same public RTS-24
+  # benchmark as the N--1 settlement panel.  Keeping this case explicit makes
+  # the coupled replay feasible and reproducible; IEEE-118 remains the
+  # declared cross-network public case in Experiments 4--5 and 10/18.
+  coupled_network_case: "PYPOWER case24_ieee_rts"
+  coupled_network_buses_one_based: [3, 8, 15, 21]
+  spatial_scale_parallel_workers: 9
+  # Certificate solves are independent across locked days.  Twelve workers
+  # shortens the high-resolution N-1 panel while remaining below the
+  # project-wide 20-worker ceiling.
+  payment_certificate_parallel_workers: 12
+  # The contractual certificate generator uses an exact four-segment
+  # piecewise-linear value model.  The locked evaluation is independently
+  # replayed at n1_evaluation_generator_segments=40.
+  payment_certificate_generator_segments: 4
+  payment_target_selection_parallel_workers: 12
+  # The independent evaluator performs many exact N-1 SCED calls per day;
+  # ten bounded workers use the available CPU while remaining below the
+  # project-wide 20-core limit.  The runner pins each BLAS/HiGHS instance to
+  # one thread.
+  payment_evaluation_parallel_workers: 10
+  # Experiment 22 replays the exact job witness through the same finite
+  # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
+  # contractual network value model; bounded threads avoid matrix duplication.
+  coupled_network_generator_segments: 4
+  coupled_network_parallel_workers: 1
+  # The common declaration witness is replayed through the same RTS-24 N-1
+  # value model with a bounded pool; each cell reuses the saved job-derived
+  # baseline and response profiles verbatim.
+  common_witness_network_workers: 4
+  # Full frozen-profile RTS-24 N−1 panel: 54 days × 8 event slots × 2
+  # profiles. The worker cap is checked centrally against the 20-core limit.
+  all_outage_panel_workers: 4
+  # The transfer panel is a predeclared evenly spaced subset of the locked
+  # days; the full 54-day independent evaluator remains the primary result.
+  payment_unseen_transfer_days: 6
+  # The continuous payment interval is certified by an exact joint LP using
+  # the same four-segment value model as the contractual Experiment 9
+  # certificate. Independent 40-segment replay remains reported in Exp9;
+  # daily Exp15 checkpoints preserve restartability.
+  interval_certificate_generator_segments: 4
+  interval_certificate_parallel_workers: 4
+  # The final credit trajectory is constrained on both sides of the
+  # validation-selected single feasible projection.  This is a predeclared
+  # physical band, not a post-hoc rule: it bounds additional under-credit by
+  # at most delta MW per event sample while retaining the pointwise upper
+  # false-credit certificate.
+  # Exact two-sided contract band: the lower side is the pointwise minimum of
+  # the selected single projection and the declaration-causal risk target.
+  two_sided_band_tolerance_mw: 0.0
+  # All deployment-time scaling factors are fitted on validation only. Slot
+  # 62 is 30 minutes before the first event slot (64); it remains a strict
+  # pre-event checkpoint while leaving enough declared work in the committed
+  # ledger for the positive service obligation below to be feasible on every
+  # locked day.
+  decision_time_event_gate_slot: 62
+  # The gate-causal rolling certificate closes at the end of the declared
+  # event-day horizon (slot 95).  Work with a later valid deadline remains in
+  # the rolling state for the next commitment checkpoint; no post-gate arrival
+  # is imported into this decision.
+  decision_time_terminal_completion_index: 95
+  decision_time_projection_weight: 1.0
+  # Selected only on the 16 validation days under the gate information
+  # boundary. The response LP remains exact; this predeclared economic grid
+  # spans zero to 150 USD/MWh so the validation selector can identify a
+  # non-degenerate service response without changing feasibility constraints.
+  decision_time_response_dr_prices: [0.0, 10.0, 25.0, 50.0, 100.0, 150.0]
+  # Projection penalties are expressed in the same daily MW trajectory units
+  # as the target distance.  The larger grid is calibrated on validation so a
+  # causal response can carry committed service into the event window when
+  # the workload ledger supports it.
+  decision_time_response_projection_weights: [0.0, 1.0, 3.0, 5.0, 7.0, 10.0, 15.0]
+  # Exp17's decision-time gate is a system-wide committed service test; all
+  # four declared data centers can participate in the exact event-service row.
+  decision_time_participating_data_center_indices: [0, 1, 2, 3]
+  # A pre-event committed service quantity makes the response LP test an
+  # actual contracted flexibility obligation. It is imposed by an exact
+  # linear service row on the gate ledger, not by clipping a solved profile.
+  # Fixed before the split and imposed directly in the gate LP. The value is
+  # checked on every validation/test day and is never inferred from telemetry.
+  decision_time_committed_event_service_mwh: 3.0
+  decision_time_require_positive_response_price: true
+  # The response candidate selector permits a nonzero committed response while
+  # keeping the validation false-credit budget explicit; the closed-meter
+  # certificate still caps payable credit pointwise.
+  decision_time_response_validation_false_budget_mwh: 20.0
+  # Event-gate reserve planning is calibrated only on temporally earlier
+  # validation days.  The reserve is never credited until the corresponding
+  # jobs enter the committed ledger.
+  # Four reserve quantiles and a one-MWh validation false-credit allowance are
+  # frozen before the locked gate replay. The reserve is a planning envelope,
+  # never a payable event-credit profile.
+  event_gate_reserve_quantiles: [0.55, 0.60, 0.65, 0.70]
+  event_gate_reserve_cap_quantile: 0.75
+  event_gate_reserve_validation_false_credit_budget_mwh: 1.0
+  # Job-level counterfactuals use scheduler declarations available at submit
+  # time.  Slurm's ``--time`` is an allocation runtime, not a
+  # submission-to-completion deadline.  The counterfactual therefore adds a
+  # fixed, precommitted 24-hour queue allowance before that runtime; no
+  # observed completion time enters the LP window.
+  job_level_unbounded_timelimit_slots: 128
+  job_level_submission_buffer_slots: 96
+  # Fixed before any telemetry join: 132 days cover the 121-day trace and the
+  # declared future-deadline support while excluding unrelated later jobs.
+  job_level_horizon_days: 132
+  # The MIT release contains an early scheduler epoch and the measured
+  # SuperCloud epoch. This source-published epoch anchor is fixed before any
+  # positive-energy matching; it is not inferred from locked outcomes.
+  job_level_time_origin_seconds: 21193772.0
+  # A precommitted one-kW/GPU nameplate keeps every finite submit-time window
+  # feasible without extending a declared deadline.
+  job_level_declared_per_gpu_power_cap_mw: 0.001
+  # Fixed-nameplate neighborhood used only by the scale audit; factors above
+  # one are homogeneous diagnostics and are not deployment claims.
+  scale_sensitivity_relative_to_fixed: [0.50, 0.75, 1.00, 1.25]
+  # Exact binding-capacity stress replay for the indexed job model.  This is
+  # solved as a second LP with the same declarations, not by clipping the
+  # primary witness or selecting a capacity from locked outcomes.
+  # The binding panel is solved by Exp25 on a predeclared event-day cohort so
+  # its sparse capacity rows remain memory-bounded while retaining every job
+  # in that cohort. Exp19's full-horizon certificate keeps the committed
+  # 118-MW capacity unchanged.
+  job_level_stress_capacity_mw: 0.0
+  job_level_stress_panel_capacity_mw: 0.0001603677778
+  # A late, fully declared calendar slice supplies a compact binding MILP
+  # while retaining the complete job population in its window intersection.
+  job_level_stress_panel_day_index: 127
+  job_level_stress_panel_minimum_event_service_mwh: 0.0010800000000
+  job_level_stress_milp_time_limit_s: 120
+  # Independent Exp23 replay tariff. It is fixed before scoring and differs
+  # from the 150 USD/MWh common-witness event tariff.
+  independent_event_replay_price_per_mwh: 30.0
+  preventive_ac_validation_day_rule: "first locked test day"
+  # The preventive AC panel uses six predeclared locked snapshots rather than
+  # a single outcome-selected day.  The two event endpoints test both the
+  # leading and trailing edge of the eight-slot event window while keeping the
+  # bounded OPF workload reproducible on a workstation.
+  preventive_ac_validation_day_indices: [0, 27, 53]
+  preventive_ac_validation_event_slots: [64, 71]
+
+visualization:
+  dpi: 320
+  font_family: DejaVu Serif
+  palette: colorblind

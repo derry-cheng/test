@@ -1,0 +1,28 @@
+{
+  "experiment": "exact homogeneous scale-consistency certificate",
+  "source": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+  "proof_basis": "fixed-nameplate scaling preserves release/deadline support, job-energy equalities, nonnegativity, and the declared GPU upper bounds; the larger network-capacity profile is a proportional stress scenario",
+  "source_scale": 1.0,
+  "declared_scale": 15350.07101986688,
+  "capacity_safe_scale": 6838.672329621412,
+  "capacity_proportional_network_scale": 6838.672329621412,
+  "fixed_gpu_nameplate_scale": 3.033184773956104,
+  "fixed_nameplate_certified_scale": 3.033184773956104,
+  "certified_scale": 3.033184773956104,
+  "capacity_proportional_profile_is_stress_scenario": true,
+  "capacity_proportional_profile_is_not_external_validity": true,
+  "cross_network_claim_is_conditional_on_declared_trace_to_bus_scenario": true,
+  "scale_sensitivity_file": "scale_sensitivity.csv",
+  "scale_sensitivity_relative_to_fixed_nameplate": [
+    0.5,
+    0.75,
+    1.0,
+    1.25
+  ],
+  "homogeneous_scale_replay_scales_all_resource_caps": true,
+  "deployable_profile_respects_fixed_gpu_nameplate": true,
+  "scale_semantics": "The scale factors are reference transforms. Exp22 scales the job service, declared job energy, GPU cap, site capacity, and network load together before rechecking the typed coupling invariant.",
+  "resource_count_source": "submit-time requested_gpus",
+  "capacity_mw": 118.0,
+  "re_solved": false
+}

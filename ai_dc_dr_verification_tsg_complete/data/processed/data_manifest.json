@@ -1,0 +1,497 @@
+{
+  "sources": [
+    {
+      "path": "data/raw/burstgpt/BurstGPT_without_fails_1.csv",
+      "bytes": 51429517,
+      "sha256": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+    },
+    {
+      "path": "data/raw/burstgpt/BurstGPT_without_fails_2.csv",
+      "bytes": 142376815,
+      "sha256": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
+    },
+    {
+      "path": "data/raw/mit_supercloud/scheduler_data.csv",
+      "bytes": 73081826,
+      "sha256": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
+    },
+    {
+      "path": "data/raw/mit_supercloud/dcgm_verified_full.csv",
+      "bytes": 14496062,
+      "sha256": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+    },
+    {
+      "path": "data/raw/pglib/pglib_opf_case118_ieee.m",
+      "bytes": 80336,
+      "sha256": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78"
+    }
+  ],
+  "burstgpt": {
+    "rows": 5188507,
+    "files": {
+      "BurstGPT_without_fails_1.csv": 1404294,
+      "BurstGPT_without_fails_2.csv": 3784213
+    },
+    "file_timestamp_ranges_seconds": {
+      "BurstGPT_without_fails_1.csv": [
+        5,
+        5269973
+      ],
+      "BurstGPT_without_fails_2.csv": [
+        5270414,
+        10454395
+      ]
+    },
+    "max_timestamp_seconds": 10454395,
+    "model_counts": {
+      "ChatGPT": 4886031,
+      "GPT-4": 302476
+    },
+    "log_type_counts": {
+      "API log": 4963355,
+      "Conversation log": 225152
+    },
+    "total_tokens": 2175523268.0,
+    "valid_intervals": 11616
+  },
+  "mit_supercloud": {
+    "scheduler_rows": 287173,
+    "valid_scheduler_declarations": 72672,
+    "dcgm_rows": 96893,
+    "measured_unique_jobs": 74849,
+    "full_positive_energy_joined_jobs": 71128,
+    "valid_joined_jobs": 68662,
+    "jobs_excluded_by_common_trace_horizon": 2466,
+    "common_trace_horizon_definition": "submission origin is the earliest valid scheduler GPU declaration; execution rows are clipped only after this declaration-time alignment",
+    "time_origin_seconds": 21193772.0,
+    "arrival_origin_source": "precommitted scheduler-clock origin",
+    "clipped_at_trace_horizon": 110,
+    "measured_energy_mwh_within_horizon": 2.4662721370840552,
+    "submitted_energy_mwh": 0.5615147165874301,
+    "declared_energy_source": "submit-time requested_gpus x declared_per_gpu_power_cap_mw x declared_runtime_slots x frozen q50 service fraction",
+    "declared_service_fraction": 0.0011383333333333334,
+    "declared_per_gpu_power_cap_mw": 0.001,
+    "declared_fraction_model_version": "three conditional QuantileRegressor models on log utilization fraction",
+    "jobs_already_queued_at_origin": 0,
+    "completion_delay_slots_quantiles": {
+      "0.5": 3.0766666666666667,
+      "0.9": 54.72322222222227,
+      "0.95": 102.55327777777765,
+      "0.99": 411.21117777777766
+    },
+    "temporalization": "causal arrivals use scheduler submission declarations; measured DCGM energy is an independent execution reference and post-event audit",
+    "region_assignment": "balanced submission-field round robin; no outcome fields"
+  },
+  "power_calibration": {
+    "observations": 95182,
+    "train_observations": 44391,
+    "test_observations": 50791,
+    "validation_observations": 9637,
+    "locked_observations": 41154,
+    "features": [
+      "smutilization_pct_avg",
+      "memoryutilization_pct_avg",
+      "log_gpu_memory",
+      "log_runtime"
+    ],
+    "coefficients": [
+      0.5702768916219333,
+      2.405865513808421,
+      1.0279497383034137,
+      -3.4674011210557047
+    ],
+    "intercept_watts": 38.005219397675695,
+    "test_mae_watts": 13.023402021609703,
+    "test_rmse_watts": 19.13740569626384,
+    "test_r2": 0.8330765371943397,
+    "training_rule": "strict chronological three-way split: train jobs submit and end within the first 40 days; calibration-validation jobs occupy the next 16 days; all remaining matched jobs are locked evaluation records",
+    "calibration_origin_submit_seconds": 21193772.0,
+    "calibration_cutoff_seconds": 24649772.0,
+    "validation_cutoff_seconds": 26032172.0,
+    "calibration_cutoff_days": 40,
+    "validation_window_days": 16,
+    "partition_rule": "train < train cutoff; calibration validation occupies the next fixed chronological window; locked evaluation is strictly later or has a completion crossing the validation cutoff",
+    "measured_power_quantiles_watts": {
+      "0.01": 24.198324,
+      "0.1": 25.51212,
+      "0.5": 42.70525,
+      "0.9": 143.3819,
+      "0.99": 209.17238
+    },
+    "heldout_residual_quantiles_watts": {
+      "0.01": -63.950292229593934,
+      "0.1": -23.011559607200063,
+      "0.5": -3.4911149969082373,
+      "0.9": 15.561569565862115,
+      "0.99": 39.7626613134574
+    },
+    "heldout_jobs_with_positive_prediction": 40768,
+    "heldout_job_energy_measured_to_predicted_quantiles": {
+      "0.01": 0.5826705226086141,
+      "0.1": 0.6871175459512688,
+      "0.5": 0.9698487058668352,
+      "0.9": 1.3490609178395556,
+      "0.99": 5.320912625466783
+    },
+    "heldout_aggregate_measured_to_predicted_energy_ratio": 1.065490531017384,
+    "validation_metrics": {
+      "observations": 9637,
+      "mae_watts": 10.802814349335655,
+      "rmse_watts": 14.462716124248539,
+      "r2": 0.8956169366942799,
+      "residual_quantiles_watts": {
+        "0.01": -42.966101194662805,
+        "0.1": -19.374019018292444,
+        "0.5": -1.3524198081346128,
+        "0.9": 15.083607198454986,
+        "0.99": 31.692042147978455
+      },
+      "jobs_with_positive_prediction": 6540,
+      "job_energy_measured_to_predicted_quantiles": {
+        "0.01": 0.5826705226086141,
+        "0.1": 0.6871175459512688,
+        "0.5": 0.9698487058668352,
+        "0.9": 1.3490609178395556,
+        "0.99": 5.320912625466783
+      },
+      "aggregate_measured_to_predicted_energy_ratio": 1.063099456331828
+    },
+    "locked_metrics": {
+      "observations": 41154,
+      "mae_watts": 13.543395300457567,
+      "rmse_watts": 20.075390119127675,
+      "r2": 0.8196163656296094,
+      "residual_quantiles_watts": {
+        "0.01": -71.22736724865717,
+        "0.1": -23.640990192337963,
+        "0.5": -4.032620578384925,
+        "0.9": 15.697520988752515,
+        "0.99": 41.66522454042691
+      },
+      "jobs_with_positive_prediction": 34228,
+      "job_energy_measured_to_predicted_quantiles": {
+        "0.01": 0.4975440578358102,
+        "0.1": 0.6642687087116257,
+        "0.5": 0.917827339015977,
+        "0.9": 1.4269018669282831,
+        "0.99": 4.688897534544586
+      },
+      "aggregate_measured_to_predicted_energy_ratio": 1.06588950949852
+    },
+    "calibration_validation_job_energy_measured_to_predicted_quantiles": {
+      "0.01": 0.5826705226086141,
+      "0.1": 0.6871175459512688,
+      "0.5": 0.9698487058668352,
+      "0.9": 1.3490609178395556,
+      "0.99": 5.320912625466783
+    },
+    "locked_job_energy_measured_to_predicted_quantiles": {
+      "0.01": 0.4975440578358102,
+      "0.1": 0.6642687087116257,
+      "0.5": 0.917827339015977,
+      "0.9": 1.4269018669282831,
+      "0.99": 4.688897534544586
+    },
+    "calibration_validation_jobs_with_positive_prediction": 6540,
+    "locked_jobs_with_positive_prediction": 34228,
+    "calibration_validation_aggregate_measured_to_predicted_energy_ratio": 1.063099456331828,
+    "locked_aggregate_measured_to_predicted_energy_ratio": 1.06588950949852
+  },
+  "submission_calibration": {
+    "joined_positive_jobs": 71141,
+    "join_scope_definition": "positive scheduler/DCGM energy-label join with valid submit/end, timelimit, and requested-GPU fields; a valid execution interval is not required because this join is used only for the training label",
+    "full_execution_join_comparison": {
+      "full_positive_execution_join_jobs": 71128,
+      "label_join_excess_jobs": 13,
+      "execution_interval_filter_applied_to_full_join": true
+    },
+    "training_jobs": 31284,
+    "test_jobs": 39857,
+    "training_rule": "chronological historical information set: time_submit and time_end < 40 days after the earliest joined submission",
+    "calibration_origin_submit_seconds": 21193772.0,
+    "calibration_cutoff_seconds": 24649772.0,
+    "calibration_cutoff_days": 40,
+    "declared_per_gpu_power_cap_mw": 0.001,
+    "interval_seconds": 900,
+    "unbounded_timelimit_slots": 128,
+    "fraction_quantiles": {
+      "0.01": 2.1701388888888887e-07,
+      "0.1": 5.7238037480974145e-06,
+      "0.5": 0.0011383333333333334,
+      "0.9": 0.01107004166666669,
+      "0.99": 0.16613738055555555
+    },
+    "declared_service_fraction": 0.0011383333333333334,
+    "physical_upper_service_fraction": 1.0,
+    "training_fraction_above_physical_upper": 0,
+    "all_joined_fraction_quantiles": {
+      "0.01": 2.1701388888888887e-07,
+      "0.1": 4.101027397260274e-06,
+      "0.5": 0.0011577777777777778,
+      "0.9": 0.04257166666666666,
+      "0.99": 0.21914422222222316
+    },
+    "central_estimate_is_not_observed_energy": true,
+    "telemetry_role": "training-only calibration; excluded from submit ledger digest and Exp19 constraints",
+    "calibration_label_rule": "matched positive DCGM energy is a label requirement for the training-only calibration sample; it never filters Exp19 submissions",
+    "membership_rule_excludes_outcome_filtered_job_ids": true,
+    "per_job_fraction_model": {
+      "model_type": "three conditional QuantileRegressor models on log utilization fraction",
+      "fit_scope": "chronological submit/end-time calibration jobs only",
+      "features": [
+        "log_requested_gpus",
+        "log_declared_runtime_slots",
+        "unlimited_timelimit",
+        "job_type::LLSUB:BATCH",
+        "job_type::LLSUB:INTERACTIVE",
+        "job_type::OTHER"
+      ],
+      "job_type_categories": [
+        "LLMAPREDUCE:MAP",
+        "LLSUB:BATCH",
+        "LLSUB:INTERACTIVE",
+        "OTHER"
+      ],
+      "reference_job_type": "LLMAPREDUCE:MAP",
+      "quantile_levels": [
+        0.1,
+        0.5,
+        0.9
+      ],
+      "target": "log(measured_energy / requested_GPU_nameplate_energy)",
+      "physical_clip": "[1e-12, 1] applied only to the declared fraction at reconstruction",
+      "quantile_models": {
+        "0.1": {
+          "coefficients": [
+            -1.8151359497413262,
+            -1.5693096989601771,
+            -0.18535774558182228,
+            -2.520678878639112,
+            -1.0458311201777768,
+            -1.7958778851443546
+          ],
+          "intercept": -2.0661617963787533
+        },
+        "0.5": {
+          "coefficients": [
+            0.5406120127487081,
+            -0.626042058567498,
+            -0.6097873944843581,
+            -0.8914280595683102,
+            -0.10769971167098191,
+            -2.5723568977765185
+          ],
+          "intercept": -3.8653408260442244
+        },
+        "0.9": {
+          "coefficients": [
+            0.7088484823840485,
+            -0.7063977096444233,
+            -0.4407076262286816,
+            -0.28943854395207586,
+            -0.0035708383236290886,
+            -0.757728210714097
+          ],
+          "intercept": -2.2886937635040483
+        }
+      },
+      "validation_diagnostics": {
+        "jobs": 31284,
+        "median_observed_to_predicted_q50": 1.0,
+        "q90_observed_to_predicted_q50": 17.578254185490433,
+        "q10_q90_interval_coverage": 0.800025572177471
+      },
+      "locked_diagnostics": {
+        "jobs": 39857,
+        "median_observed_to_predicted_q50": 4.4390306710020475,
+        "q90_observed_to_predicted_q50": 78.64692411927138,
+        "q10_q90_interval_coverage": 0.5913892164488045
+      }
+    },
+    "declared_energy_rule": "each submission receives its model-predicted q50 utilization fraction; q10 and q90 are stored as calibration bands and the full requested nameplate remains the physical upper bound"
+  },
+  "processing": {
+    "interval_seconds": 900,
+    "regions": 4,
+    "spatial_mapping": "feature-stratified round-robin workload scenario over immutable submit-time request records; no physical geography is inferred",
+    "inference_scale_mwh_per_token": 1.4126396590124032e-05,
+    "batch_hyperscale_multiplier": 11755.543673331451,
+    "batch_scaling_basis": "q99 of declaration-time batch nameplate/service arrivals on the precommitted scaling fit days",
+    "scaling_quantile": 0.99,
+    "scaling_fit_days": 40,
+    "scaling_fit_day_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "scaling_scope": "first complete days before validation/test split; frozen before all downstream experiments",
+    "valid_days": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120
+    ],
+    "missing_trace_days": [],
+    "total_arrival_mwh": 37333.215248872555,
+    "total_observed_execution_mwh": 59724.67429260579,
+    "counterfactual_reference": "trace-anchored no-event execution reference; the demand-response intervention is generated separately by the declared event scheduling optimization",
+    "initial_backlog_state": "cumulative declaration-time batch arrivals minus cumulative independent execution reference at each day boundary",
+    "maximum_initial_batch_backlog_mwh": 0.0,
+    "submission_energy_fraction": 0.0011383333333333334,
+    "submission_energy_fraction_source": "chronological scheduler/DCGM conditional q10/q50/q90 calibration using only jobs submitted and completed inside the declared historical information set; q50 is evaluated from submit-time features and q10/q90 remain calibration bands"
+  }
+}

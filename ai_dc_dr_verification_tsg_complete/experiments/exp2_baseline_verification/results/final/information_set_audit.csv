@@ -1,0 +1,11 @@
+method,decision_time,historical_meter,current_arrivals,complete_submitted_job_ledger,execution_truth,workload_contract
+High-5-of-10,event gate,True,False,False,False,False
+Metadata Gradient Boosting,interval online,True,True,False,False,False
+Ex-post Metadata Gradient Boosting,post-event audit,True,True,True,False,False
+Ex-post Quantile Gradient Boosting,post-event audit,True,True,True,False,False
+Synthetic Control,event gate,True,False,False,False,False
+Feasible Quantile Projection,post-event audit,True,True,True,False,True
+Tail-Risk Feasible Counterfactual,post-event audit,True,True,True,False,True
+Single Feasible Projection,post-event audit,True,True,True,False,True
+Risk-Constrained Convex Verifier,post-event audit,True,True,True,False,True
+Trace-Anchored Reference,scoring only,True,True,True,True,True

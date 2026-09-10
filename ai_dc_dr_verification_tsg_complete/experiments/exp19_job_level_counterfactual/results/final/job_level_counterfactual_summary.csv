@@ -1,0 +1,21 @@
+metric,value,unit
+submitted_jobs,75326,jobs
+execution_matched_jobs,71128,jobs
+service_variables,13198247,variables
+solver_status,exact enumeration of all admissible contiguous fixed-rate starts; regional capacity rows verified inactive,text
+event_energy_native_mwh,0.1944259689471752,MWh
+event_energy_counterfactual_mwh,0.0,MWh
+event_reduction_mwh,0.1944259689471752,MWh
+event_gross_reduction_mwh,0.1944259689471752,MWh
+event_net_reduction_mwh,0.1944259689471752,MWh
+event_rebound_mwh,0.0,MWh
+declared_energy_conservation_residual_mwh,1.1102230246251565e-16,MWh
+observed_execution_energy_mwh,2.6573461425,MWh
+declared_service_energy_mwh,0.570394485428465,MWh
+execution_match_fraction,0.9442689111329421,fraction
+observed_within_physical_nameplate_fraction,1.0,fraction
+median_observed_to_declared_energy_ratio,1.1188854937499744,ratio
+maximum_job_energy_residual_mwh,0.0,MWh
+minimum_site_slot_capacity_slack_mwh,29.495686297196574,MWh
+maximum_gpu_count,64.0,GPUs
+per_gpu_power_cap_mw,0.001,MW/GPU

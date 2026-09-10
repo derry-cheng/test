@@ -1,0 +1,47 @@
+{
+  "audit_type": "independent continuous-segment audit of the locked payment-certified profile",
+  "interval": {
+    "lower_endpoint": 0.5826705226086141,
+    "upper_endpoint": 5.320912625466783,
+    "unclipped_upper_endpoint": 5.320912625466783,
+    "source": "complete calibration-validation per-job measured-to-predicted energy-ratio q01 and q99 endpoints",
+    "upper_endpoint_policy": "retain raw q99 and apply it only to the flexible workload component; fixed facility demand is carried separately and the benchmark scale is calibrated on the q99 envelope",
+    "q99_capacity_safe_upper": 1.1616096305979453,
+    "q99_capacity_activation_eligible": true,
+    "fixed_load_separated": true
+  },
+  "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
+  "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
+  "external_transfer_comparator": "Feasible Quantile Projection",
+  "certificate_generator_segments": 4,
+  "locked_days": 54,
+  "event_slots": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71
+  ],
+  "parallel_workers": 4,
+  "interval_certificate_valid": true,
+  "certificate_scope": "continuous-segment interval from raw q01 to raw q99 with fixed/flexible load separation, exact joint-LP lower bound, and convex endpoint upper bound; both endpoints are activation-eligible under the q99-calibrated benchmark scale",
+  "maximum_payment_cap_violation_usd": 0.0,
+  "payment_value_interval": {
+    "endpoint_file": "payment_value_interval_certificates.csv",
+    "candidate_hull": "continuous affine segment between validation-frozen reference and payment-certified profiles",
+    "unclipped_upper_endpoint": 5.320912625466783,
+    "capacity_safe_upper_endpoint": 1.1616096305979453,
+    "raw_upper_endpoint": 5.320912625466783,
+    "q99_capacity_activation_eligible": true,
+    "counterfactual_source": "trace-observed event load, used only for independent settlement scoring",
+    "oracle_used_only_for_coverage_audit": true,
+    "mean_oracle_coverage": 0.018518518518518517,
+    "intervals_are_contractual": true,
+    "capacity_eligible_endpoints_only": true,
+    "raw_q99_is_stress_only": false,
+    "fixed_load_separated": true
+  }
+}

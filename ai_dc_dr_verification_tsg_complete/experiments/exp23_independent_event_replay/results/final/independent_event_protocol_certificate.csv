@@ -1,0 +1,8 @@
+criterion,value,required_value,evidence
+post_gate_or_future_arrivals_used,0,0,all starts use the frozen submission index
+execution_telemetry_used,0,0,Exp23 reads only declaration fields and the common witness
+independent_tariff_distinct,1,1,"independent tariff=30, common tariff=150 USD/MWh"
+same_submission_digest,1,1,a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6
+same_declaration_baseline,1,1,exact earliest-start enumeration
+distinct_event_trajectory,1,1,pre-scoring profile comparison
+independent_scalar_implementation,1,1,local scalar enumeration with duplicate-pass check on 128 jobs

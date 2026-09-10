@@ -1,0 +1,13 @@
+metric,value,unit
+submitted_jobs,75326.0,jobs
+execution_matched_jobs,71128.0,jobs
+execution_match_fraction,0.9442689111329421,fraction
+declared_service_fraction,0.0011383333333333334,fraction
+observed_to_declared_energy_median,1.1188854937499744,ratio
+observed_to_declared_energy_q10,0.01839994977754389,ratio
+observed_to_declared_energy_q90,56.20493773113247,ratio
+physical_nameplate_energy_coverage,1.0,fraction
+observed_completion_inside_declared_window,0.9673827465976831,fraction
+maximum_declared_window_infeasible_jobs,0.0,jobs
+stress_cohort_jobs,79.0,jobs
+stress_active_capacity_slot_fraction,0.6875,fraction

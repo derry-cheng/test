@@ -1,0 +1,13 @@
+trace,region,total_mwh_or_token_units,p50_interval_power_mw_or_units,p99_interval_power_mw_or_units,peak_interval_power_mw_or_units,active_intervals,assignment_rule
+BurstGPT inference,0,543993763.0,35026.0,1599909.2000000023,4968548.0,9484,feature-stratified round-robin by model/log type/timestamp; ID only breaks ties
+MIT batch submitted,0,0.6139297325,0.0,0.0036222105,0.026102771111111103,3958,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+MIT batch observed,0,0.6131682154259117,0.00015534983221401715,0.0009829181646460324,0.002853903074430586,11404,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+BurstGPT inference,1,543446237.0,34944.0,1629261.400000006,4956708.0,9495,feature-stratified round-robin by model/log type/timestamp; ID only breaks ties
+MIT batch submitted,1,0.6198409616666667,0.0,0.0035012813333333372,0.03240646777777778,3951,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+MIT batch observed,1,0.6190615790099856,0.00015512352715797703,0.0009870430862249531,0.00407406774823651,11405,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+BurstGPT inference,2,544251598.0,34472.0,1603055.0000000007,4914364.0,9509,feature-stratified round-robin by model/log type/timestamp; ID only breaks ties
+MIT batch submitted,2,0.6141096027777777,0.0,0.0034342196666666833,0.02618711888888888,3949,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+MIT batch observed,2,0.6130810387905181,0.00015335100862284265,0.0010270954060342696,0.006722911657086712,11399,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+BurstGPT inference,3,543831670.0,34728.0,1601864.6000000008,4922508.0,9495,feature-stratified round-robin by model/log type/timestamp; ID only breaks ties
+MIT batch submitted,3,0.6217909955555556,0.0,0.003615057944444444,0.025862974444444457,3950,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties
+MIT batch observed,3,0.6210199147782876,0.00015274534945250353,0.0010093697342423687,0.00863653603302321,11415,feature-stratified round-robin by class/GPU/runtime/submission/energy; ID only breaks ties

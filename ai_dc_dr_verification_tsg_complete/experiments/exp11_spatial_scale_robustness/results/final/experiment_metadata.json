@@ -1,0 +1,46 @@
+{
+  "network": "PGLib IEEE 118-bus",
+  "locked_days": 54,
+  "regional_traces": 4,
+  "declared_connection_buses_one_based": [
+    15,
+    42,
+    80,
+    116
+  ],
+  "complete_spatial_assignments": 24,
+  "concentration_control_assignments": 2,
+  "concentration_control_mappings_one_based": [
+    [
+      80,
+      80,
+      80,
+      80
+    ],
+    [
+      80,
+      80,
+      116,
+      116
+    ]
+  ],
+  "total_assignment_cases": 26,
+  "peak_data_center_penetrations": [
+    0.03,
+    0.06,
+    0.09
+  ],
+  "native_load_multiplier": 0.9,
+  "counterfactual_methods": [
+    "Feasible Quantile Projection",
+    "Single Feasible Projection",
+    "Risk-Constrained Convex Verifier",
+    "Trace-Anchored Reference"
+  ],
+  "settlement_generator_segments": 10,
+  "independent_evaluation_generator_segments": 80,
+  "enumeration": "all 4! one-to-one mappings plus deterministic co-location and two-bus concentration controls crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
+  "profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+  "expected_rows": 16848,
+  "parallel_workers": 9
+}

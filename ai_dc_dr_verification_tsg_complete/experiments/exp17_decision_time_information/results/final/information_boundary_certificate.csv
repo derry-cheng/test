@@ -1,0 +1,7 @@
+criterion,value,required_value,units,evidence
+post_gate_arrivals_in_decision,0,0,boolean,all committed-ledger LP inputs set arrivals[gate:] to zero
+execution_truth_available_to_decision,0,0,boolean,DCGM/BurstGPT execution tensor is opened only in the scoring pass
+locked_truth_used_for_selection,0,0,boolean,response and reserve candidates are selected on validation days only
+utility_event_label_available,0,0,boolean,public traces have no exogenous utility event label
+submitted_contract_frozen_before_event,1,1,boolean,no-tariff committed-ledger LP is the submitted baseline
+future_arrivals_excluded_from_payment,1,1,boolean,reserved and post-gate jobs cannot enter the gate contract

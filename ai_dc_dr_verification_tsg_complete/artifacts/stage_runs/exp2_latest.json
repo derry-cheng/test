@@ -1,0 +1,25 @@
+{
+  "started_utc": "2026-09-10T07:57:13.065921+00:00",
+  "stage_requested": "exp2",
+  "resume": false,
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
+    "processor_count": 9,
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scipy": "1.17.0",
+    "scikit_learn": "1.8.0",
+    "git_commit": "7191387e5ca976355104c14168b7042e2e1012ba"
+  },
+  "stages": {
+    "exp2": {
+      "started_utc": "2026-09-10T07:57:13.069410+00:00",
+      "status": "completed",
+      "finished_utc": "2026-09-10T08:02:36.741204+00:00",
+      "elapsed_seconds": 323.671794
+    }
+  },
+  "finished_utc": "2026-09-10T08:02:36.741722+00:00",
+  "status": "completed"
+}

@@ -1,0 +1,10 @@
+split,comparison,nrmse_change,false_response_change_mwh,credit_f1_change,interpretation
+validation,unconstrained convex ensemble vs single reference,1.39114275654606e-10,-4.142827969566554e-09,-6.22929485771806e-11,convex risk fit before pointwise event envelope
+validation,total-budget-only ensemble vs single reference,0.11372043723551717,-0.8306755690614778,-0.07644041017008207,convex risk fit before pointwise event envelope
+validation,CVaR-only ensemble vs single reference,0.1051897594849227,-0.814195861154947,-0.06447045124253575,convex risk fit before pointwise event envelope
+validation,total+CVaR ensemble vs single reference,0.12261853562844727,-0.8374624648008367,-0.088491925445569,convex risk fit before pointwise event envelope
+test,unconstrained convex ensemble vs single reference,3.1170743763908604e-10,-1.0209733503074858e-08,-9.990586136154889e-11,convex risk fit before pointwise event envelope
+test,total-budget-only ensemble vs single reference,0.178170085414611,-2.1864738271010453,-0.08455978619500737,convex risk fit before pointwise event envelope
+test,CVaR-only ensemble vs single reference,0.1781004705739998,-2.2060926019743587,-0.07931893689679431,convex risk fit before pointwise event envelope
+test,total+CVaR ensemble vs single reference,0.179266099684796,-2.166810671947132,-0.08985279973083576,convex risk fit before pointwise event envelope
+test,risk-constrained convex verifier vs single reference,0.179266099684796,-2.166810671947132,-0.08985279973083593,locked risk-constrained convex ensemble; payment-contract envelope is audited separately

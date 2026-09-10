@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+*.swp
+paper/build_revision/
+paper/build_*_tmp/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+tmp/
+logs/*.log
+
+# The raw public releases are restored locally for reproduction but are not
+# committed to the source package.  Their sizes and SHA-256 digests are pinned
+# in data/processed/data_manifest.json and DATA.md.
+data/raw/**/*.csv
+
+# Atomic figure writers may leave a temporary file after an interrupted run.
+**/.[!.]*.tmp
+**/*.tmp.npz

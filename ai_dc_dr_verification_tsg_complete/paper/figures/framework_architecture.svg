@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#334155"/></marker>
+    <style>
+      .title{font:700 27px Arial,sans-serif;fill:#0f172a}.head{font:700 18px Arial,sans-serif;fill:#0f172a}
+      .body{font:400 16px Arial,sans-serif;fill:#334155}.small{font:400 14px Arial,sans-serif;fill:#475569}
+      .box{stroke:#cbd5e1;stroke-width:2;rx:18} .arrow{stroke:#334155;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .tag{font:700 13px Arial,sans-serif;fill:#fff;letter-spacing:.5px}
+    </style>
+  </defs>
+  <rect width="1400" height="620" fill="#f8fafc"/>
+  <text x="700" y="42" text-anchor="middle" class="title">Auditable workload-to-grid verification and settlement</text>
+  <text x="700" y="70" text-anchor="middle" class="small">Information boundaries are explicit: execution telemetry is a scoring truth, not an estimator input.</text>
+
+  <rect x="35" y="115" width="245" height="190" fill="#e0f2fe" class="box"/>
+  <rect x="55" y="132" width="125" height="26" rx="13" fill="#0284c7"/><text x="117" y="151" text-anchor="middle" class="tag">OBSERVED DATA</text>
+  <circle cx="92" cy="203" r="28" fill="#fff" stroke="#0284c7" stroke-width="3"/>
+  <path d="M74 203h36M80 190l24 26M104 190l-24 26" stroke="#0284c7" stroke-width="3" fill="none"/>
+  <text x="130" y="194" class="head">Workload ledger</text><text x="130" y="219" class="body">arrivals, classes, deadlines</text>
+  <text x="130" y="243" class="body">spatial identity + energy</text>
+  <path d="M78 272h124" stroke="#7dd3fc" stroke-width="3"/><text x="55" y="292" class="small">BurstGPT + MIT scheduler/DCGM</text>
+
+  <rect x="35" y="350" width="245" height="190" fill="#f1f5f9" class="box"/>
+  <rect x="55" y="367" width="86" height="26" rx="13" fill="#64748b"/><text x="98" y="386" text-anchor="middle" class="tag">SCORING</text>
+  <path d="M72 444v-42h52v42M67 444h62M79 411h38" fill="none" stroke="#64748b" stroke-width="3"/>
+  <text x="130" y="429" class="head">Execution replay</text><text x="130" y="454" class="body">15-min meter trace</text>
+  <text x="130" y="478" class="body">locked from fitting</text>
+  <text x="55" y="516" class="small">observational replay only; no causal label</text>
+
+  <rect x="360" y="115" width="270" height="190" fill="#dcfce7" class="box"/>
+  <rect x="380" y="132" width="111" height="26" rx="13" fill="#16a34a"/><text x="435" y="151" text-anchor="middle" class="tag">STATE MODEL</text>
+  <path d="M408 191h150M408 221h150M408 251h150M408 181v80M458 181v80M508 181v80" stroke="#16a34a" stroke-width="2" fill="none"/>
+  <text x="382" y="286" class="small">release • conservation • deadline • capacity</text>
+
+  <rect x="690" y="115" width="295" height="190" fill="#fef3c7" class="box"/>
+  <rect x="710" y="132" width="122" height="26" rx="13" fill="#d97706"/><text x="771" y="151" text-anchor="middle" class="tag">VERIFICATION</text>
+  <path d="M733 204l17 17 38-43" stroke="#d97706" stroke-width="7" fill="none"/>
+  <text x="800" y="193" class="head">Feasible</text><text x="800" y="215" class="head">counterfactual</text>
+  <text x="790" y="242" class="body">sparse cumulative LP</text>
+  <text x="790" y="266" class="body">validation-only risk selector</text>
+  <text x="790" y="290" class="body">pointwise credit cap</text>
+
+  <rect x="1045" y="115" width="320" height="190" fill="#ede9fe" class="box"/>
+  <rect x="1065" y="132" width="119" height="26" rx="13" fill="#7c3aed"/><text x="1124" y="151" text-anchor="middle" class="tag">GRID VALUE</text>
+  <path d="M1090 248h224M1112 248v-55M1150 248v-82M1188 248v-35M1226 248v-101M1264 248v-68" stroke="#7c3aed" stroke-width="5"/>
+  <text x="1065" y="281" class="body">signed nodal value + N–1</text>
+
+  <path d="M280 205H350" class="arrow"/><path d="M630 205H680" class="arrow"/><path d="M985 205H1035" class="arrow"/>
+  <path d="M157 305V340" class="arrow"/><path d="M280 445H338V260H350" class="arrow"/>
+  <text x="315" y="178" text-anchor="middle" class="small">immutable IDs</text>
+  <text x="656" y="178" text-anchor="middle" class="small">ledger → load</text>
+  <text x="1010" y="178" text-anchor="middle" class="small">verified state</text>
+
+  <rect x="360" y="390" width="1005" height="150" fill="#fff" stroke="#cbd5e1" stroke-width="2" rx="18"/>
+  <rect x="380" y="407" width="151" height="26" rx="13" fill="#475569"/><text x="455" y="426" text-anchor="middle" class="tag">CONTRACT LAYER</text>
+  <text x="565" y="429" class="head">Telemetry-calibrated payment certificate</text>
+  <text x="565" y="459" class="body">finite q01/q10/q50/q90/q99 samplewise guarantee  •  fixed/flexible activation audit</text>
+  <text x="565" y="487" class="body">bilateral net-value transfer  •  exact Shapley allocation  •  numerical residual audit</text>
+  <path d="M1205 305V368" class="arrow"/><path d="M630 305V368H840" class="arrow"/>
+  <text x="1215" y="343" class="small">prices + contingencies</text><text x="650" y="343" class="small">state certificate</text>
+</svg>

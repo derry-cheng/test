@@ -1,0 +1,67 @@
+{
+  "experiment": "immutable ledger provenance and real execution capacity reconciliation",
+  "evidence_tier": "same-source MIT scheduler/DCGM observational evidence",
+  "source_rows_are_unchanged": true,
+  "synthetic_rows": 0,
+  "imputed_deadlines": 0,
+  "canonical_joined_ledger_sha256": "fdf49ad75d301580595cabc24656db9d20da9f27ca33249b49095197246ce950",
+  "canonical_submission_ledger_sha256": "122179c57225f383322b073c3d6f5d6a8f62c75293ca172e234bc2c1ee0666bc",
+  "submission_ledger_row_count": 216572,
+  "submission_digest_excludes_execution_telemetry": true,
+  "integrity_passed": true,
+  "capacity_commitment": {
+    "path": "configs/capacity_commitment.json",
+    "source": "predeclared study nameplate committed before data split",
+    "configured_capacity_mw": 118.0,
+    "locked_test_observations_used_for_selection": false,
+    "measured_envelope_is_reconciliation_only": true
+  },
+  "capacity_interpretation": "The 118-MW nameplate is committed before validation/test selection. The raw MIT execution peak is reported separately from the scaled benchmark envelope used for the declared study scale; neither is used to tune a locked-day schedule.",
+  "configured_capacity_mw": 118.0,
+  "maximum_raw_execution_peak_mw": 0.00864130002449679,
+  "maximum_scaled_benchmark_peak_mw": 101.58317983233215,
+  "maximum_scaled_benchmark_peak_to_configured_capacity_ratio": 0.860874405358747,
+  "physical_calibration_summary": {
+    "file": "physical_calibration_summary.csv",
+    "train_observations": 44391,
+    "calibration_validation_observations": 9637,
+    "locked_observations": 41154,
+    "calibration_validation_mae_watts": 10.802814349335655,
+    "calibration_validation_rmse_watts": 14.462716124248539,
+    "calibration_validation_r2": 0.8956169366942799,
+    "locked_mae_watts": 13.543395300457567,
+    "locked_rmse_watts": 20.075390119127675,
+    "locked_r2": 0.8196163656296094,
+    "test_mae_watts": 13.023402021609703,
+    "test_rmse_watts": 19.13740569626384,
+    "test_r2": 0.8330765371943397,
+    "aggregate_measured_to_predicted_energy_ratio": 1.063099456331828,
+    "locked_aggregate_measured_to_predicted_energy_ratio": 1.06588950949852,
+    "interpretation": "The job-level model calibrates GPU energy only. Conversion scenarios use the calibration-validation partition; the locked partition is reported solely as a generalization audit. The network profile remains a declared four-region scenario and is not a co-located utility measurement."
+  },
+  "power_calibration_sensitivity": {
+    "file": "workload_power_calibration_sensitivity.csv",
+    "ratios": [
+      "0.01",
+      "0.1",
+      "0.5",
+      "0.9",
+      "0.99"
+    ],
+    "calibration_split": "calibration-validation",
+    "locked_test_observations_used_for_scaling": false,
+    "capacity_sensitivity_scope": "flexible workload batch only; this diagnostic does not gate network activation",
+    "capacity_clip_is_batch_only_diagnostic": true,
+    "network_activation_scale_source": "Experiment 9 q99-calibrated fixed/flexible conversion with the fixed facility component carried separately",
+    "interpretation": "The power conversion is a declared calibration-validation uncertainty interval. The q99 capacity-safe factor is a flexible-batch diagnostic; network activation uses the separate fixed/flexible conversion certificate in Experiment 9. These results are not treated as geography-free evidence."
+  },
+  "submission_energy_calibration": {
+    "file": "submission_calibration_summary.csv",
+    "training_rule": "chronological historical information set: time_submit and time_end < 40 days after the earliest joined submission",
+    "declared_service_fraction": 0.0011383333333333334,
+    "declared_fraction_model_type": "three conditional QuantileRegressor models on log utilization fraction",
+    "conditional_q10_q50_q90_at_submit_time": true,
+    "physical_upper_service_fraction": 1.0,
+    "telemetry_used_in_exp19_decision": false
+  }
+}

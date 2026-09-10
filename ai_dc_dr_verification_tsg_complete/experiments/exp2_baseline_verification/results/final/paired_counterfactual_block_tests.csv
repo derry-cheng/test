@@ -1,0 +1,7 @@
+target,comparator,metric,effect_direction,paired_days,block_length_days,blocks,observed_mean_difference,extreme_assignments,total_sign_assignments,minimum_attainable_two_sided_p,two_sided_exact_p_value,block_sum_lag1_autocorrelation,holm_adjusted_p_value
+Tail-Risk Feasible Counterfactual,Ex-post Metadata Gradient Boosting,nrmse,comparator_minus_target,54,3,18,-0.3715273407884749,2,262144,7.62939453125e-06,7.62939453125e-06,0.23191917294229417,2.288818359375e-05
+Tail-Risk Feasible Counterfactual,Ex-post Metadata Gradient Boosting,credit_f1,target_minus_comparator,54,3,18,-0.2594588398238304,2,262144,7.62939453125e-06,7.62939453125e-06,0.28866812833192224,2.288818359375e-05
+Tail-Risk Feasible Counterfactual,Ex-post Quantile Gradient Boosting,nrmse,comparator_minus_target,54,3,18,0.21581683066971927,208,262144,7.62939453125e-06,0.00079345703125,0.5717071476463761,0.00079345703125
+Tail-Risk Feasible Counterfactual,Ex-post Quantile Gradient Boosting,credit_f1,target_minus_comparator,54,3,18,0.14651939996646773,6420,262144,7.62939453125e-06,0.0244903564453125,0.6000256575008506,0.0244903564453125
+Tail-Risk Feasible Counterfactual,Single Feasible Projection,nrmse,comparator_minus_target,54,3,18,-0.17810047057399978,8,262144,7.62939453125e-06,3.0517578125e-05,0.5530290213366069,6.103515625e-05
+Tail-Risk Feasible Counterfactual,Single Feasible Projection,credit_f1,target_minus_comparator,54,3,18,-0.07931893689679426,16,262144,7.62939453125e-06,6.103515625e-05,0.5475076605140188,0.0001220703125

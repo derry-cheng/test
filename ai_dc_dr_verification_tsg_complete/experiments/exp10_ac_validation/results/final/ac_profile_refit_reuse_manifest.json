@@ -1,0 +1,29 @@
+{
+  "experiment": "exp10_ac_validation",
+  "profile_before_sha256": "a84f58ea8646a0db59d5c41127c2e26d6ae175a808b130a699f774426c1539c7",
+  "profile_after_sha256": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
+  "ac_input_before_sha256": "364af830bdfa687614209678203dfacb51f8204b59ca7737e7426ff4161b4831",
+  "ac_input_after_sha256": "9693feb662c88f5333b0dcceb2246b5092663c8bb9e41cf1bb5ead794451520e",
+  "certified_profile_sha256": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
+  "unchanged_baseline_methods": [],
+  "changed_baseline_methods": [
+    "Feasible Quantile Projection",
+    "Payment-Certified N-1 Verifier",
+    "Risk-Constrained Convex Verifier",
+    "Single Feasible Projection"
+  ],
+  "reused_methods": [],
+  "recomputed_method": "all methods",
+  "full_recompute_after_profile_refit": true,
+  "profile_refit_detected": true,
+  "bitwise_identity_verified": {},
+  "global_peak_trace_mw_before": 283.54205703703445,
+  "global_peak_trace_mw_after": 283.54205703703445,
+  "normalization_scale_unchanged": true,
+  "reuse_scope": {
+    "base_ac": "all network-day-method rows recomputed from the current test and certified profile files",
+    "corrective_ac_n1": "all network-day-method-outage rows recomputed from the current test and certified profile files",
+    "preventive_ac_n1": "all shared-active-plan rows recomputed from the current test and certified profile files"
+  },
+  "reuse_justification": "The complete AC base, corrective N-1, and shared-plan preventive panels are rebuilt whenever the combined profile digest changes; the released panel is a full recomputation from the current profile files."
+}

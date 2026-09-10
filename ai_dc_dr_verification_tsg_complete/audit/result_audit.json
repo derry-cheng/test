@@ -1,0 +1,3530 @@
+{
+  "all_checks_passed": true,
+  "checks": [
+    {
+      "name": "data:data/processed/workload_15min.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/workload_daily_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/data_manifest.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:data/processed/data_flow_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "data:configs/capacity_commitment.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/results/final/manipulation_grid.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_1:experiments/exp1_manipulation/figures/fig2_response_and_migration.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/structural_literature_baselines.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_effect_decomposition.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_cvar_stress_sensitivity.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_2:experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/mean_line_loading.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_3:experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/intermediate/case_selection_candidates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/spatial_case_timeseries.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/case_summary_by_data_center.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/results/final/case_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/figures/fig7_spatial_response_case.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_4:experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/network_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/network_robustness_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/resolution_convergence_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/resolution_convergence_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_5:experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/physical_stress.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/physical_stress_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_6:experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/value_allocation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/value_allocation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_7:experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_interval_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_daily_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/n1_security_paired_tests.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_8:experiments/exp8_n1_security/figures/fig13_n1_security_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/payment_pareto_paired_ci.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_9:experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/results/final/ac_profile_refit_reuse_manifest.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_10:experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_mapping_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_pairwise_correlation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_mapping_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_11:experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_market_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/settlement_chain_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/rolling_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_12:experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_trace.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/real_trace_replay_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_13:experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_flow_solution.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_slot_profile.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_level_fidelity_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/job_interval_witness_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_14:experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_15:experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/workload_power_calibration_sensitivity.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/physical_calibration_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_16:experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_reserve_validation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/information_boundary_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_17:experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_19:experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_20:experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_20:experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_20:experiments/exp20_trace_meter_replay/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_20:experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_21:experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_21:experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_21:experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_21:experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_21:experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_scale_replay.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_22:experiments/exp22_coupled_job_network_certificate/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/independent_event_protocol_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_23:experiments/exp23_independent_event_replay/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_24:experiments/exp24_all_outage_security_panel/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/exante_job_validation_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/exante_job_validation_by_type.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_solution.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_event_slots.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_25:experiments/exp25_exante_job_validation/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_26:experiments/exp26_end_to_end_certificate/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/job_level_runtime_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_27:experiments/exp27_executable_common_witness/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_28:experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_28:experiments/exp28_risk_tail_audit/results/final/risk_tail_paired_bootstrap.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_28:experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_28:experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_28:experiments/exp28_risk_tail_audit/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/main.tex",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/main.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/IEEEtran.cls",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/references.bib",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/formula_source_matrix.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/model_formulation.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/paper_outline_zh.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/theoretical_results.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/framework_architecture.drawio",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/framework_architecture.svg",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/method_detail.drawio",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/method_detail.svg",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig0_framework.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig0_framework.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig_method_detail.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig_method_detail.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig17_cross_layer_robustness.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "manuscript_sources:paper/figures/fig17_cross_layer_robustness.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "canonical_unified_manifest_preserved",
+      "passed": true,
+      "detail": "30/30 stages recorded; canonical request=all; audit status=completed (running is expected during the self-check)"
+    },
+    {
+      "name": "all_png_figures_decodable_and_high_resolution",
+      "passed": true,
+      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2309x1141; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643"
+    },
+    {
+      "name": "ieeetran_pdf_length_and_geometry",
+      "passed": true,
+      "detail": "10 pages; boxes=[(612.0, 792.0), (612.0, 792.0)]..."
+    },
+    {
+      "name": "model_formula_citation_traceability",
+      "passed": true,
+      "detail": "27/27 required source keys in bibliography, formula-source matrix, and complete formulation"
+    },
+    {
+      "name": "official_ieee_journal_template",
+      "passed": true,
+      "detail": "manuscript uses the vendored official IEEEtran journal class"
+    },
+    {
+      "name": "maximum_two_sources_per_citation_group",
+      "passed": true,
+      "detail": "39 in-text citation groups checked"
+    },
+    {
+      "name": "complete_manuscript_bibliography",
+      "passed": true,
+      "detail": "30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]"
+    },
+    {
+      "name": "every_labeled_equation_figure_table_is_referenced",
+      "passed": true,
+      "detail": "46 labels; unreferenced=[]; missing=[]"
+    },
+    {
+      "name": "required_abbreviation_expansions_present",
+      "passed": true,
+      "detail": "MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok"
+    },
+    {
+      "name": "sha256_symbol_is_hyphenated",
+      "passed": true,
+      "detail": "SHA-256 is written consistently in prose and equations"
+    },
+    {
+      "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv",
+      "passed": true,
+      "detail": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+    },
+    {
+      "name": "sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv",
+      "passed": true,
+      "detail": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
+    },
+    {
+      "name": "sha256:data/raw/mit_supercloud/scheduler_data.csv",
+      "passed": true,
+      "detail": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
+    },
+    {
+      "name": "sha256:data/raw/mit_supercloud/dcgm_verified_full.csv",
+      "passed": true,
+      "detail": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+    },
+    {
+      "name": "sha256:data/raw/pglib/pglib_opf_case118_ieee.m",
+      "passed": true,
+      "detail": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78"
+    },
+    {
+      "name": "full_burstgpt_rows",
+      "passed": true,
+      "detail": "5188507"
+    },
+    {
+      "name": "full_measured_gpu_jobs",
+      "passed": true,
+      "detail": "68662"
+    },
+    {
+      "name": "full_join_vs_common_trace_horizon_counts",
+      "passed": true,
+      "detail": "full immutable join=71128, common tensor window=68662, excluded by horizon=2466"
+    },
+    {
+      "name": "chronological_submit_time_calibration_boundary",
+      "passed": true,
+      "detail": "submit-time entitlement uses frozen conditional q10/q50/q90 models fit chronologically and kept separate from the complete scheduler population; execution matching is not an Exp19 eligibility filter"
+    },
+    {
+      "name": "calibration_validation_power_conversion_scenarios_complete",
+      "passed": true,
+      "detail": "6540 calibration-validation jobs; q01/q10/q50/q90/q99 measured-to-predicted energy factors=0.582671, 0.687118, 0.969849, 1.349061, 5.320913"
+    },
+    {
+      "name": "three_way_power_calibration_partition_and_locked_audit",
+      "passed": true,
+      "detail": "train/validation/locked=44391/9637/41154 observations; conversion scenarios use calibration-validation ratios and the locked split is scoring-only"
+    },
+    {
+      "name": "complete_source_to_evaluation_data_flow",
+      "passed": true,
+      "detail": "8 source/join/window/split stages; full immutable join 71128 -> 68662 common-window jobs; calibration 44391 train + 9637 calibration-validation + 41154 locked"
+    },
+    {
+      "name": "processed_data_finite_nonnegative",
+      "passed": true,
+      "detail": "(11616, 4, 3)"
+    },
+    {
+      "name": "processed_data_nonempty",
+      "passed": true,
+      "detail": "37333.215 MWh"
+    },
+    {
+      "name": "trace_observed_counterfactual_complete",
+      "passed": true,
+      "detail": "(11616, 4)"
+    },
+    {
+      "name": "locked_days_have_complete_history_and_future_coverage",
+      "passed": true,
+      "detail": "days 45--114; 6 future days available for the 512-slot deadline"
+    },
+    {
+      "name": "workload_conservation",
+      "passed": true,
+      "detail": "max gap=8.882e-16 MWh"
+    },
+    {
+      "name": "data_center_capacity",
+      "passed": true,
+      "detail": "violation=0.000e+00 MW"
+    },
+    {
+      "name": "deadline_feasibility",
+      "passed": true,
+      "detail": "violation=0.000e+00 MWh"
+    },
+    {
+      "name": "sced_power_balance",
+      "passed": true,
+      "detail": "gap=0.000e+00 MW"
+    },
+    {
+      "name": "sced_line_limits",
+      "passed": true,
+      "detail": "max loading=1.000000 pu"
+    },
+    {
+      "name": "complete_exp1_grid",
+      "passed": true,
+      "detail": "56/56"
+    },
+    {
+      "name": "strategic_threshold_theory_matches_optimizer",
+      "passed": true,
+      "detail": "56/56 price-probability cells"
+    },
+    {
+      "name": "locked_test_set_complete",
+      "passed": true,
+      "detail": "648/648 outcomes"
+    },
+    {
+      "name": "two_sided_credit_band_certificate",
+      "passed": true,
+      "detail": "54/54 locked days satisfy the predeclared lower and upper physical credit band"
+    },
+    {
+      "name": "decision_time_information_boundary_panel",
+      "passed": true,
+      "detail": "216/216 rows; post-gate arrivals are excluded from all committed deployment-time decisions; positive committed response is settled only after the observable contract-capped rule, while the complete-ledger row remains an explicit post-event information comparator"
+    },
+    {
+      "name": "decision_time_independent_trace_replay",
+      "passed": true,
+      "detail": "216 event-gate profiles are scored against the independent meter tensor in a separate observational panel"
+    },
+    {
+      "name": "decision_time_committed_response_protocol",
+      "passed": true,
+      "detail": "committed-ledger response is a second masked-ledger LP with the declared DR-price objective, rolling state, and explicit contract cap"
+    },
+    {
+      "name": "decision_time_protocol_role_separation",
+      "passed": true,
+      "detail": "gate diagnostic, deployable response, and complete-ledger comparator are separately named"
+    },
+    {
+      "name": "explicit_decision_information_boundary_certificate",
+      "passed": true,
+      "detail": "the gate certificate records zero post-gate arrivals, execution truth, locked-outcome selection, and utility event labels at decision time, while requiring a frozen submitted contract and payment exclusion of future jobs"
+    },
+    {
+      "name": "causal_response_grid_selection",
+      "passed": true,
+      "detail": "42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget"
+    },
+    {
+      "name": "causal_reserve_is_validation_selected_and_payment_ineligible",
+      "passed": true,
+      "detail": "4 validation candidates select the recorded eta=0.55 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate"
+    },
+    {
+      "name": "cross_network_ac_n1_admissibility_panel",
+      "passed": true,
+      "detail": "9648 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded"
+    },
+    {
+      "name": "homogeneous_scale_has_fixed_nameplate_bound",
+      "passed": true,
+      "detail": "capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP"
+    },
+    {
+      "name": "declared_homogeneous_scale_sensitivity_panel",
+      "passed": true,
+      "detail": "4 predeclared homogeneous transforms replay the same witness and resource caps; the panel records where the fixed-GPU nameplate stops being respected"
+    },
+    {
+      "name": "closest_literature_baseline_panel",
+      "passed": true,
+      "detail": "324/324 same-ledger published-equation translations; each implementation is identified as a transparent translation rather than a software reimplementation"
+    },
+    {
+      "name": "exact_structural_dc_t_dc_st_baseline_panel",
+      "passed": true,
+      "detail": "108/108 same-ledger DC-T/DC-ST outcomes retain native-site and migration assignment as explicit structural controls"
+    },
+    {
+      "name": "independent_trace_meter_replay_panel",
+      "passed": true,
+      "detail": "648 locked-day method scores against the measured DCGM execution tensor; no event intervention or simulated response is used as scoring truth"
+    },
+    {
+      "name": "literature_baseline_fairness_contract",
+      "passed": true,
+      "detail": "8 controls use the same ledger, deadlines, capacities, event slots, and locked days; structural translations are not labelled as software reimplementations"
+    },
+    {
+      "name": "risk_effect_decomposition_separates_envelope_and_fit",
+      "passed": true,
+      "detail": "9 validation/test ablations separate total-risk, CVaR, combined convex fitting, and the final pointwise envelope"
+    },
+    {
+      "name": "cross_experiment_locked_day_identity",
+      "passed": true,
+      "detail": "10/10 main panels use the identical locked days 61--114; mismatches=[]"
+    },
+    {
+      "name": "dependence_robust_exact_block_tests",
+      "passed": true,
+      "detail": "18 pre-declared 3-day blocks, exact sign randomization, attainable-p audit, and Holm family-wise correction"
+    },
+    {
+      "name": "tail_risk_counterfactual_estimator_comparison",
+      "passed": true,
+      "detail": "the tail-risk and single projections are compared with a signed, dependence-aware block test; the reported effects reproduce the two locked-set means over 18 exact temporal blocks without asserting dominance on either metric"
+    },
+    {
+      "name": "closest_feasible_baseline_comparison",
+      "passed": true,
+      "detail": "the risk verifier trades a lower nRMSE and higher F1 for greater false-credit exposure than the feasible-quantile comparator; the paired false-credit interval remains strictly signed (1.122642 versus 1.343958 nRMSE)"
+    },
+    {
+      "name": "active_cvar_frontier_certificate",
+      "passed": true,
+      "detail": "the predeclared validation-only CVaR frontier is feasible at every declared reserve and records the nonnegative distance between its budget and the attainable minimum; the pooled contract uses the separately recorded 1.00 tail reserve"
+    },
+    {
+      "name": "matched_effect_sizes_with_dependence_robust_intervals",
+      "passed": true,
+      "detail": "the risk-versus-feasible-quantile false-credit difference has a strictly signed three-day moving-block 95% interval, while the single-projection effects remain contained in their dependence-aware intervals"
+    },
+    {
+      "name": "complete_independent_intervention_panel",
+      "passed": true,
+      "detail": "864/864 rows; all matched interventions are evaluated without a comparator-derived cap"
+    },
+    {
+      "name": "independent_pointwise_risk_envelope",
+      "passed": true,
+      "detail": "locked test false-credit is compared to the feasible-quantile reference, while the LP cap and risk budget are anchored to the independent Metadata projection rho=10 candidate"
+    },
+    {
+      "name": "independent_observed_scoring_truth",
+      "passed": true,
+      "detail": "locked response scores use the observed DCGM/BurstGPT meter; any event-response LP is restricted to mechanism-isolation panels"
+    },
+    {
+      "name": "source_separated_false_credit_certificate",
+      "passed": true,
+      "detail": "locked-test false-credit diagnostics are recomputed separately for the observed meter and the mechanism-isolation trajectory; neither row is labelled as a causal utility-event outcome"
+    },
+    {
+      "name": "risk_ceiling_truth_sources_explicit",
+      "passed": true,
+      "detail": "the pointwise risk-fit ceiling is labelled as an offline union of the observational and mechanism-isolation trajectories; settlement scores retain the two truth sources separately and do not assert a causal event effect"
+    },
+    {
+      "name": "nondegenerate_risk_verifier_output",
+      "passed": true,
+      "detail": "the risk-fit profile differs from the single reference; the separately stored payment-contract profile retains the independently checked two-sided band"
+    },
+    {
+      "name": "risk_constrained_validation_certificate",
+      "passed": true,
+      "detail": "the convex verifier satisfies both absolute total and daily-tail CVaR budgets, reports KKT/primal residuals, and remains distinct from the CVaR-only ablation; validation MSE is retained as a separate accuracy-risk tradeoff"
+    },
+    {
+      "name": "nested_daily_risk_reserve_selection",
+      "passed": true,
+      "detail": "16 reserve-fold cells; selected reserve=0.25"
+    },
+    {
+      "name": "exact_pointwise_risk_envelope_selection",
+      "passed": true,
+      "detail": "6 globally solved envelope projections; selected weight=0.03"
+    },
+    {
+      "name": "matched_post_event_information_protocol",
+      "passed": true,
+      "detail": "statistical, single-projection, and convex verifiers share the full ledger and never observe execution truth"
+    },
+    {
+      "name": "complete_predeclared_projection_validation",
+      "passed": true,
+      "detail": "7 pre-declared validation candidates"
+    },
+    {
+      "name": "convex_projection_simplex",
+      "passed": true,
+      "detail": "6 coefficients; sum=1.000000000000"
+    },
+    {
+      "name": "contiguous_blocked_validation",
+      "passed": true,
+      "detail": "4 locked temporal folds"
+    },
+    {
+      "name": "independent_full_constraint_certificates",
+      "passed": true,
+      "detail": "162 day-variant schedules certified"
+    },
+    {
+      "name": "exact_sparse_complexity_scaling",
+      "passed": true,
+      "detail": "log-log nonzero slope=1.0025"
+    },
+    {
+      "name": "complete_settlement_factorial_panel",
+      "passed": true,
+      "detail": "3510/3510 rows; 65/65 complete cells"
+    },
+    {
+      "name": "paired_settlement_factor_decomposition",
+      "passed": true,
+      "detail": "702 locked day-baseline rows and 52 one-factor paired summaries separate signed netting, locational pricing, and exact valuation"
+    },
+    {
+      "name": "independent_high_resolution_value_evaluator",
+      "passed": true,
+      "detail": "10-segment settlement versus 80-segment evaluation; trace-reference max non-circular error=719.813176 USD/day"
+    },
+    {
+      "name": "complete_settlement_mechanism_block_tests",
+      "passed": true,
+      "detail": "52 paired mechanism tests; Holm correction within each baseline-method family"
+    },
+    {
+      "name": "global_polyhedral_value_certificate",
+      "passed": true,
+      "detail": "5616 interval-baseline certificates; maximum subgradient-inequality violation 1.447e-11 USD"
+    },
+    {
+      "name": "complete_cross_network_panel",
+      "passed": true,
+      "detail": "6480/6480 rows; 120/120 complete cells across 4 networks"
+    },
+    {
+      "name": "cross_network_paired_mechanism_inference",
+      "passed": true,
+      "detail": "24 paired exact block tests; positive estimated-baseline linear-minus-exact effect in 4/12 cells; minimum effect -0.012257 USD/day; no materially negative estimated-baseline effect survives Holm correction, while the trace-anchored reference remains nonnegative in every cell"
+    },
+    {
+      "name": "complete_cross_network_resolution_convergence",
+      "passed": true,
+      "detail": "4 complete 54-day resolution levels; highest two mean effects=-0.002333, -0.002067 USD/day; final step=0.000266 versus initial step=0.003003 USD/day, and every 95% interval contains zero"
+    },
+    {
+      "name": "native_rating_congestion_identification",
+      "passed": true,
+      "detail": "3/12 network-loading cells exhibit endogenous congestion"
+    },
+    {
+      "name": "native_ratings_and_predeclared_sites",
+      "passed": true,
+      "detail": "all thermal-rating factors equal 1.0; fixed-site specifications invariant in 4 networks"
+    },
+    {
+      "name": "nodal_price_effect_identified",
+      "passed": true,
+      "detail": "at least one cross-network cell has a nonzero uniform-versus-nodal error contrast"
+    },
+    {
+      "name": "complete_exact_value_allocation_panel",
+      "passed": true,
+      "detail": "1728/1728 participant-day outcomes"
+    },
+    {
+      "name": "exact_shapley_budget_balance",
+      "passed": true,
+      "detail": "maximum absolute participant-sum minus grand-coalition value=2.558e-13 USD"
+    },
+    {
+      "name": "complete_exact_eight_participant_scaling",
+      "passed": true,
+      "detail": "3456/3456 participant-interval outcomes; all 256 coalitions enumerated per interval"
+    },
+    {
+      "name": "exact_group_symmetric_20_participant_scaling",
+      "passed": true,
+      "detail": "1080/1080 site-day-size outcomes; exact count-state summation through 20 participants"
+    },
+    {
+      "name": "allocation_mechanism_identification",
+      "passed": true,
+      "detail": "non-efficient marginal allocation rules exhibit a nonzero budget residual"
+    },
+    {
+      "name": "complete_binding_constraint_panel",
+      "passed": true,
+      "detail": "810/810 rows; 15/15 complete cells; max capacity binding=0.094"
+    },
+    {
+      "name": "complete_n1_security_panel",
+      "passed": true,
+      "detail": "2592/2592 interval-mechanism outcomes; all 37 non-islanding line outages enforced"
+    },
+    {
+      "name": "n1_mechanism_identification",
+      "passed": true,
+      "detail": "trace-reference N-1 exact MAE=0.990 USD versus base-case exact MAE=139.221 USD and N-1 linear MAE=2.208 USD"
+    },
+    {
+      "name": "scenario_robust_exact_n1_payment_noninferiority_certificate",
+      "passed": true,
+      "detail": "54/54 lexicographically solved daily certificates across five calibration-validation conversion scenarios; formal four-segment maximum cap violation=2.910e-11 USD; the independent 40-segment transfer comparison is evaluated by its paired mean"
+    },
+    {
+      "name": "payment_panel_lineage_matches_current_profiles_and_manifest",
+      "passed": true,
+      "detail": "the payment evaluator records the current Experiment-2 test and validation profile digests, data-manifest digest, configuration digest, and certified-profile byte digest; stale row-count-complete panels are rejected"
+    },
+    {
+      "name": "payment_cap_and_target_are_not_a_fixed_plan_identity",
+      "passed": true,
+      "detail": "the contractual cap is frozen by Experiment-2 nRMSE, while the payment target is selected by an independent high-resolution N-1 payment MAE on validation days; locked test days are excluded"
+    },
+    {
+      "name": "complete_independent_payment_model_transfer_evaluation",
+      "passed": true,
+      "detail": "1080 method-day-scenario outcomes scored across five calibration-validation conversion factors with the independent 40-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4"
+    },
+    {
+      "name": "paired_payment_accuracy_and_overpayment_pareto",
+      "passed": true,
+      "detail": "15 comparator-scenario rows use paired moving-block intervals for both absolute error and overpayment; the payment-cap guarantee is kept separate from any universal MAE claim"
+    },
+    {
+      "name": "unseen_conversion_factor_transfer_panel",
+      "passed": true,
+      "detail": "8 frozen-profile outcomes across two interior conversion factors absent from the certificate and target selection; the finer N-1 replay is independent of the contractual RHS"
+    },
+    {
+      "name": "independent_endpoint_certificate_uses_selected_single_reference",
+      "passed": true,
+      "detail": "216/216 endpoint rows compare the payment-certified profile with the preselected single feasible reference; the quantile profile remains external"
+    },
+    {
+      "name": "payment_uncertainty_interval_has_posthoc_oracle_audit_only",
+      "passed": true,
+      "detail": "108/108 endpoint rows retain the raw q01/q99 interval; fixed and flexible demand are separated and both endpoints are solved under the q99-calibrated scale, while oracle values remain post-hoc coverage diagnostics (2/108 inside)"
+    },
+    {
+      "name": "independent_nondegenerate_payment_candidate_hull",
+      "passed": true,
+      "detail": "six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 25 distinct daily optimal weight vectors"
+    },
+    {
+      "name": "validation_only_payment_target_selection",
+      "passed": true,
+      "detail": "seven workload-feasible candidates ranked on 384 independent validation N-1 payment cells; the selected target and DC scale are frozen before locked test evaluation"
+    },
+    {
+      "name": "complete_nonlinear_ac_opf_panel",
+      "passed": true,
+      "detail": "864/864 converged network-day-method outcomes with AC voltage and apparent-power limits enforced"
+    },
+    {
+      "name": "complete_nonlinear_ac_n1_panel",
+      "passed": true,
+      "detail": "5400/5400 converged method-day-outage AC OPFs across all 6 IEEE-9 and 19 IEEE-14 non-islanding line outages"
+    },
+    {
+      "name": "complete_shared_active_plan_preventive_ac_n1_panel",
+      "passed": true,
+      "detail": "3888/3888 converged penetration-method-day-outage cells across four matched counterfactuals; all six IEEE-9 outages share the intact-state non-reference active dispatch exactly"
+    },
+    {
+      "name": "ac_profile_lineage_after_refit",
+      "passed": true,
+      "detail": "base, corrective N-1, and preventive AC panels carry the current test/certified profile digest; exact-input row reuse is documented by an explicit refit manifest"
+    },
+    {
+      "name": "complete_spatial_scale_factorial_panel",
+      "passed": true,
+      "detail": "16848/16848 outcomes cover all 24 regional permutations plus two concentration controls, 3 penetrations, 54 locked days, and 4 methods"
+    },
+    {
+      "name": "feature_stratified_trace_mapping_audit",
+      "passed": true,
+      "detail": "12 trace-region panels; feature-stratified scenario is separated from physical geography and paired with the complete 24-assignment network panel"
+    },
+    {
+      "name": "complete_continuous_horizon_market_validation",
+      "passed": true,
+      "detail": "216/216 method-day outcomes use real future arrivals, lexicographic projection, complete-cycle energy accounting, exact site budget balance, and an individually rational bilateral outside option"
+    },
+    {
+      "name": "typed_end_to_end_settlement_chain_certificate",
+      "passed": true,
+      "detail": "216 method-day chains bind submitted, capped, and metered service before capacity value; space-time decomposition and bilateral budget residuals are zero"
+    },
+    {
+      "name": "immutable_ledger_provenance_and_capacity_reconciliation",
+      "passed": true,
+      "detail": "216,572 submit-time rows and 71,128 matched execution rows; submission digest 122179c57225..., execution telemetry is excluded from decision provenance, and raw-to-join energy is conserved for the post-event reconciliation"
+    },
+    {
+      "name": "measured_contiguous_job_interval_witness",
+      "passed": true,
+      "detail": "all 71,128 immutable joined jobs retain measured contiguous intervals, runtime/GPU/native-power fields, and zero release/deadline violations; the witness is separate from the aggregate flow LP"
+    },
+    {
+      "name": "exact_job_indexed_counterfactual_certificate",
+      "passed": true,
+      "detail": "all valid scheduler submissions enter an exact submit-time contiguous start-time model; execution matching is reported separately and declared-energy/job residuals are zero"
+    },
+    {
+      "name": "declared_timelimit_counterfactual_boundary",
+      "passed": true,
+      "detail": "submit-time runtime declarations plus the precommitted queue allowance are used (window slots 97--680), observed completion is excluded, and net/gross/rebound arithmetic is explicit"
+    },
+    {
+      "name": "calibration_validation_power_conversion_capacity_safe_sensitivity",
+      "passed": true,
+      "detail": "5 calibration-validation ratio endpoints are explicit; capacity-safe clipping remains below the precommitted nameplate"
+    },
+    {
+      "name": "physical_calibration_is_separate_from_utility_scale",
+      "passed": true,
+      "detail": "44391/9637/41154 chronological train/validation/locked GPU-power observations are reconciled with finite metrics while raw measurement and declared spatial mapping remain explicitly separated from utility-scale claims"
+    },
+    {
+      "name": "exact_job_to_network_coupling_certificate",
+      "passed": true,
+      "detail": "the submitted-job indexed witness is aggregated before secure N-1 settlement; residual is zero and no second profile optimization is used"
+    },
+    {
+      "name": "coupled_replay_covers_all_rts24_n1_contingencies",
+      "passed": true,
+      "detail": "the raw indexed witness and two homogeneous scale transforms solve the public RTS-24 native/counterfactual cases with all 37 finite outages"
+    },
+    {
+      "name": "independent_job_primal_recheck_before_network_value",
+      "passed": true,
+      "detail": "the stored indexed service vector independently satisfies every job-energy equality, committed GPU nameplate bound, and regional capacity row before the network replay"
+    },
+    {
+      "name": "typed_dimension_preserving_coupling_certificate",
+      "passed": true,
+      "detail": "one typed certificate checks job equalities, GPU/capacity bounds, job-to-region aggregation, and MWh-to-MW network mapping before settlement"
+    },
+    {
+      "name": "independent_controlled_event_replay",
+      "passed": true,
+      "detail": "54 locked days are replayed under a predeclared tariff intervention; the independently parameterized meter policy differs from the gate policy, is scored without verifier outputs, and makes no field-causal claim"
+    },
+    {
+      "name": "independent_event_information_and_policy_certificate",
+      "passed": true,
+      "detail": "the independent event uses only the gate-masked ledger, has no verifier or locked-outcome input, differs by predeclared tariff/participants, and separates its policy trajectory before scoring"
+    },
+    {
+      "name": "ex_ante_submission_job_validation_and_binding_capacity_panel",
+      "passed": true,
+      "detail": "the declaration-only job validation covers the complete submitted population, while a compact 79-job stress cohort binds regional capacity and satisfies its service floor with numerical residuals below 1e-8"
+    },
+    {
+      "name": "full_finite_n1_frozen_profile_panel",
+      "passed": true,
+      "detail": "864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment"
+    },
+    {
+      "name": "end_to_end_declaration_to_settlement_lineage_certificate",
+      "passed": true,
+      "detail": "Exp26 recomputes the indexed coupling, verifies risk/payment/outage certificates, records the common witness and settlement hashes, and preserves explicit role separation"
+    },
+    {
+      "name": "runtime_complete_witness_typed_coupling_certificate",
+      "passed": true,
+      "detail": "Exp27 baseline and counterfactual service vectors independently satisfy job-energy, regional aggregation, GPU-nameplate, and site-capacity residual bounds and remain attached to the settlement witness digest"
+    },
+    {
+      "name": "end_to_end_upstream_hashes_match_current_artifacts",
+      "passed": true,
+      "detail": "executable submitted-job witness=ok; runtime-complete common witness used by network settlement=ok; N-1 settlement replay of the runtime-complete common witness=ok; exact risk-profile to executable-start bridge=ok; validation-fitted aggregate risk target=ok; payment-certified feasible profile hull=ok; recomputed job-to-network certificate summary=ok; frozen-profile all-outage N-1 replay=ok"
+    },
+    {
+      "name": "no_stale_atomic_temporary_artifacts",
+      "passed": true,
+      "detail": "no hidden atomic-writer temporary files remain"
+    }
+  ],
+  "statistical_tests": {
+    "High-5-of-10 | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.4633065212429457,
+      "extreme_assignments": 12580,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0479888916015625,
+      "block_sum_lag1_autocorrelation": 0.2312292001578358,
+      "holm_adjusted_p_value": 0.0479888916015625
+    },
+    "High-5-of-10 | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.3932107283287362,
+      "extreme_assignments": 4,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 1.52587890625e-05,
+      "block_sum_lag1_autocorrelation": 0.0871486638694078,
+      "holm_adjusted_p_value": 7.62939453125e-05
+    },
+    "High-5-of-10 | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.1983524794689805,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.0667081263113728,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Metadata Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.3485010467315659,
+      "extreme_assignments": 6,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 2.288818359375e-05,
+      "block_sum_lag1_autocorrelation": 0.2457331867742438,
+      "holm_adjusted_p_value": 0.0001373291015625
+    },
+    "Metadata Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2299856277478628,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.3528103936275388,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Metadata Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.2668007019383626,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.2601642370067645,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Metadata Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.372692969899271,
+      "extreme_assignments": 4,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 1.52587890625e-05,
+      "block_sum_lag1_autocorrelation": 0.2938013219793932,
+      "holm_adjusted_p_value": 0.0001068115234375
+    },
+    "Ex-post Metadata Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2298214612500398,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.3289286867097375,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Metadata Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.2699927026578719,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.3050799439718147,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Ex-post Quantile Gradient Boosting | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2146512015589231,
+      "extreme_assignments": 172,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0006561279296875,
+      "block_sum_lag1_autocorrelation": 0.6130107747418019,
+      "holm_adjusted_p_value": 0.001312255859375
+    },
+    "Ex-post Quantile Gradient Boosting | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.1036788343286448,
+      "extreme_assignments": 8472,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.032318115234375,
+      "block_sum_lag1_autocorrelation": 0.4896505628165447,
+      "holm_adjusted_p_value": 0.06463623046875
+    },
+    "Ex-post Quantile Gradient Boosting | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.1359855371324262,
+      "extreme_assignments": 7106,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.0271072387695312,
+      "block_sum_lag1_autocorrelation": 0.5961179519037819,
+      "holm_adjusted_p_value": 0.0271072387695312
+    },
+    "Synthetic Control | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.3405307378696396,
+      "extreme_assignments": 14,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 5.340576171875e-05,
+      "block_sum_lag1_autocorrelation": 0.2757749059349316,
+      "holm_adjusted_p_value": 0.000213623046875
+    },
+    "Synthetic Control | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.137798731926922,
+      "extreme_assignments": 22,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 8.392333984375e-05,
+      "block_sum_lag1_autocorrelation": -0.0085474819568635,
+      "holm_adjusted_p_value": 0.0002517700195312
+    },
+    "Synthetic Control | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.3029736232748552,
+      "extreme_assignments": 2,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 7.62939453125e-06,
+      "block_sum_lag1_autocorrelation": 0.3885212230707357,
+      "holm_adjusted_p_value": 5.340576171875e-05
+    },
+    "Feasible Quantile Projection | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.2213156829816089,
+      "extreme_assignments": 24,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 9.1552734375e-05,
+      "block_sum_lag1_autocorrelation": 0.6332406465493937,
+      "holm_adjusted_p_value": 0.000274658203125
+    },
+    "Feasible Quantile Projection | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.0044758766332231,
+      "extreme_assignments": 221382,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.8445053100585938,
+      "block_sum_lag1_autocorrelation": -0.4150647759282164,
+      "holm_adjusted_p_value": 0.8445053100585938
+    },
+    "Feasible Quantile Projection | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.1477343457987963,
+      "extreme_assignments": 280,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 0.001068115234375,
+      "block_sum_lag1_autocorrelation": 0.582124229456931,
+      "holm_adjusted_p_value": 0.00213623046875
+    },
+    "Single Feasible Projection | nrmse": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.1792660996847958,
+      "extreme_assignments": 8,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 3.0517578125e-05,
+      "block_sum_lag1_autocorrelation": 0.6421586987658705,
+      "holm_adjusted_p_value": 0.000152587890625
+    },
+    "Single Feasible Projection | false_response_ratio": {
+      "effect_direction": "comparator_minus_proposed",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": 0.0298525715119326,
+      "extreme_assignments": 8,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 3.0517578125e-05,
+      "block_sum_lag1_autocorrelation": 0.1355540938962014,
+      "holm_adjusted_p_value": 0.0001220703125
+    },
+    "Single Feasible Projection | credit_f1": {
+      "effect_direction": "proposed_minus_comparator",
+      "paired_days": 54,
+      "block_length_days": 3,
+      "blocks": 18,
+      "observed_mean_difference": -0.0898527997308357,
+      "extreme_assignments": 16,
+      "total_sign_assignments": 262144,
+      "minimum_attainable_two_sided_p": 7.62939453125e-06,
+      "two_sided_exact_p_value": 6.103515625e-05,
+      "block_sum_lag1_autocorrelation": 0.7401722102349161,
+      "holm_adjusted_p_value": 0.00018310546875
+    }
+  },
+  "settlement_absolute_error_usd": {
+    "Ex-post Metadata Gradient Boosting | Nodal exact net value": 1841.1563176824375,
+    "Ex-post Metadata Gradient Boosting | Nodal gross": 2555.1914311896753,
+    "Ex-post Metadata Gradient Boosting | Nodal signed linear": 1874.654402645808,
+    "Ex-post Metadata Gradient Boosting | Uniform gross": 2547.316139409849,
+    "Ex-post Metadata Gradient Boosting | Uniform signed net": 1870.601844605257,
+    "Ex-post Quantile Gradient Boosting | Nodal exact net value": 967.0381524401382,
+    "Ex-post Quantile Gradient Boosting | Nodal gross": 774.6548373102532,
+    "Ex-post Quantile Gradient Boosting | Nodal signed linear": 962.8650490408392,
+    "Ex-post Quantile Gradient Boosting | Uniform gross": 774.1067083252324,
+    "Ex-post Quantile Gradient Boosting | Uniform signed net": 961.2741824450534,
+    "Extra Trees | Nodal exact net value": 2879.6717351573793,
+    "Extra Trees | Nodal gross": 6027.729909915006,
+    "Extra Trees | Nodal signed linear": 4985.077190250186,
+    "Extra Trees | Uniform gross": 4405.569525857507,
+    "Extra Trees | Uniform signed net": 3272.243260958432,
+    "Feasible Quantile Projection | Nodal exact net value": 449.51637448460144,
+    "Feasible Quantile Projection | Nodal gross": 433.17295214877873,
+    "Feasible Quantile Projection | Nodal signed linear": 449.5450377555309,
+    "Feasible Quantile Projection | Uniform gross": 432.7481946112971,
+    "Feasible Quantile Projection | Uniform signed net": 448.1321623356976,
+    "Gradient Boosting | Nodal exact net value": 1872.3529476250142,
+    "Gradient Boosting | Nodal gross": 2674.033401737799,
+    "Gradient Boosting | Nodal signed linear": 1903.4543475410933,
+    "Gradient Boosting | Uniform gross": 2666.4280232081433,
+    "Gradient Boosting | Uniform signed net": 1899.8763160571632,
+    "High-5-of-10 | Nodal exact net value": 4406.149471766289,
+    "High-5-of-10 | Nodal gross": 10370.749359888183,
+    "High-5-of-10 | Nodal signed linear": 9259.894576209264,
+    "High-5-of-10 | Uniform gross": 6561.942884061272,
+    "High-5-of-10 | Uniform signed net": 5255.4715512992825,
+    "Metadata Gradient Boosting | Nodal exact net value": 1873.731480315297,
+    "Metadata Gradient Boosting | Nodal gross": 2608.6640613596715,
+    "Metadata Gradient Boosting | Nodal signed linear": 1907.9982815684477,
+    "Metadata Gradient Boosting | Uniform gross": 2600.811895017856,
+    "Metadata Gradient Boosting | Uniform signed net": 1903.9436030164052,
+    "Ridge | Nodal exact net value": 2369.068895611686,
+    "Ridge | Nodal gross": 4045.6624998866114,
+    "Ridge | Nodal signed linear": 3345.0024628645715,
+    "Ridge | Uniform gross": 3351.2283876636066,
+    "Ridge | Uniform signed net": 2636.2537635272133,
+    "Risk-Constrained Convex Verifier | Nodal exact net value": 455.86513193752495,
+    "Risk-Constrained Convex Verifier | Nodal gross": 421.6769276857289,
+    "Risk-Constrained Convex Verifier | Nodal signed linear": 455.8418751100551,
+    "Risk-Constrained Convex Verifier | Uniform gross": 421.2301830742069,
+    "Risk-Constrained Convex Verifier | Uniform signed net": 454.65115761134336,
+    "Single Feasible Projection | Nodal exact net value": 455.8651319383141,
+    "Single Feasible Projection | Nodal gross": 421.67692752685366,
+    "Single Feasible Projection | Nodal signed linear": 455.8418751108442,
+    "Single Feasible Projection | Uniform gross": 421.23018291447124,
+    "Single Feasible Projection | Uniform signed net": 454.65115761134336,
+    "Synthetic Control | Nodal exact net value": 2026.0371723338378,
+    "Synthetic Control | Nodal gross": 4644.08582413208,
+    "Synthetic Control | Nodal signed linear": 3627.0137722585864,
+    "Synthetic Control | Uniform gross": 3416.819560422225,
+    "Synthetic Control | Uniform signed net": 2311.197670749174,
+    "Tail-Risk Feasible Counterfactual | Nodal exact net value": 453.8792982285754,
+    "Tail-Risk Feasible Counterfactual | Nodal gross": 419.4511560082221,
+    "Tail-Risk Feasible Counterfactual | Nodal signed linear": 453.2481723838005,
+    "Tail-Risk Feasible Counterfactual | Uniform gross": 419.0534557889467,
+    "Tail-Risk Feasible Counterfactual | Uniform signed net": 452.18633877823123,
+    "Trace-Anchored Reference | Nodal exact net value": 151.71918319903057,
+    "Trace-Anchored Reference | Nodal gross": 360.5804428420108,
+    "Trace-Anchored Reference | Nodal signed linear": 152.39046797332728,
+    "Trace-Anchored Reference | Uniform gross": 360.5277386854655,
+    "Trace-Anchored Reference | Uniform signed net": 150.92766134909053
+  },
+  "generated_artifacts": [
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_results.csv",
+      "bytes": 1259097,
+      "sha256": "73037b2892f93f126b1a0d078eed7779c996de9466b6842ff0253355ab28679b"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_n1_contingency_summary.csv",
+      "bytes": 1020,
+      "sha256": "f54265fb77bc8fb89ea7eb2f447b776366c3d73069d2f5e14395e45c8bd69af7"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_opf_locked_day_results.csv",
+      "bytes": 237974,
+      "sha256": "2f67a9831d2163430d44fd4cb14f2463a31996b0f6f201f82d88104ba9097175"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_opf_summary.csv",
+      "bytes": 1805,
+      "sha256": "7a804abaa3832e5949202f2979f0a986408cbc44bb363be45bae37feb74a4d07"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/ac_profile_refit_reuse_manifest.json",
+      "bytes": 1664,
+      "sha256": "3ecd430dbcf89a76fe8857571824a9280dac696c038289bcf13609778f05a7fb"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/experiment_metadata.json",
+      "bytes": 2016,
+      "sha256": "2a5d113b6fa148dc2057d5043f1848472a69b28ebfe21df013566c25199ca4ee"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_results.csv",
+      "bytes": 1195923,
+      "sha256": "43d4cddd8a6d962ef36ac95895ef2d3ce9ab07f8df42a0c5a65a0e14582eebd5"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/results/final/preventive_ac_n1_summary.csv",
+      "bytes": 1239,
+      "sha256": "ccaae7f7265148b879f16a48d3bf3b0781ce712e9492659274bcf3eb92a53b86"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/experiment_metadata.json",
+      "bytes": 1187,
+      "sha256": "a344e8d6d3b55d4e3f4c179efb2e0ac9b25746489a281a02e480058d96c160f6"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/mapping_level_summary.csv",
+      "bytes": 45742,
+      "sha256": "63ce16f6a6796210042cfb477d68b4d35b458dc447e5086d340df3884a1767eb"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_robustness.csv",
+      "bytes": 4527063,
+      "sha256": "355727ed5868b5446631f4212570c3d4b0e3847ff10d53f22988741113294451"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_scale_summary.csv",
+      "bytes": 2016,
+      "sha256": "202d06be5e0b2c6d79ec21c2d5a32e27190520336cd1e66640b1de97ec2a2680"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_mapping_audit.csv",
+      "bytes": 2312,
+      "sha256": "cd60ab18d5e11c3517ebc542d5d68e93a8fe0323f22514d77765b68c57b14771"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_mapping_metadata.json",
+      "bytes": 307,
+      "sha256": "54656f9bf732bd4c48baf5d905129119f9a1b360be9a96d996e5d78606e81743"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/results/final/spatial_trace_pairwise_correlation.csv",
+      "bytes": 176,
+      "sha256": "17b690fb06123c34153b4a83ebe5f7c3612d343ee1d581add475ecb813afeddc"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/experiment_metadata.json",
+      "bytes": 2677,
+      "sha256": "621078194c68b397cb124b69ed2d0fadb13cf31ecd614eeba094dc106b183c63"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/paired_payment_comparisons.csv",
+      "bytes": 680,
+      "sha256": "1ff8c4a4d22288db5a9ffaeebeeb211ca4217c6a0e7cff85fe47f047009e136c"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_counterfactual_profiles.npz",
+      "bytes": 187899,
+      "sha256": "40472de3a8b0b75eee45f6aae78223918ae1b15a9164e38dcacf4c264f52d32d"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_market_summary.csv",
+      "bytes": 1472,
+      "sha256": "fb4dfaae889d1238046f06f08e53b19b3f514bd629e85f659883ae2f350d7226"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/rolling_market_validation.csv",
+      "bytes": 104736,
+      "sha256": "3f4afc2391fe6dcfaa25b36bba9e28c883693e19933204150d9b6cd19d357a17"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/settlement_chain_certificate.csv",
+      "bytes": 58612,
+      "sha256": "eaa424e7d1621824f8911f2b25c17982bc41cfdbffc313bc4567fb1cb1c036c7"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/results/final/site_space_time_allocations.csv",
+      "bytes": 44193,
+      "sha256": "13d4d28f9423c2f25fb174ad5aa29170213e6ba7516ae55e4d4255e9240efb75"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/experiment_metadata.json",
+      "bytes": 986,
+      "sha256": "a26d333e89957e6210d0e36d1738d2abdd9096ecf1fedccb4fc7d66893dbd943"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_daily.csv",
+      "bytes": 21503,
+      "sha256": "c95cb5ef5d02cddc5c184d87ba9d7be1ed01842519f42448bc15cbaad900c066"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_summary.csv",
+      "bytes": 373,
+      "sha256": "ebc10950bc355f491a1374abddd8819143e7dd66a607c6c41b2acf9fdf020a8e"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/results/final/real_trace_replay_trace.csv",
+      "bytes": 359371,
+      "sha256": "cf679e56c0a21f315c4e343759b1b7395582d8debae2f06afa838e0fb39de4f0"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json",
+      "bytes": 1871,
+      "sha256": "e49d2e90b5e70524d40b4299a8e7c1549de56857a7165451693bae90733903f2"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_interval_witness_summary.csv",
+      "bytes": 409,
+      "sha256": "3fddbb0b1fa3a9b7c9812f9fb108612582f24f63bf5240d004371bd2349114e1"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_fidelity_summary.csv",
+      "bytes": 395,
+      "sha256": "e97907f9b29b3a225d3f493eb9ee90b9bb1f8823b84ae552e222023e81c1bc6e"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_flow_solution.npz",
+      "bytes": 2414050,
+      "sha256": "0614f4fe8016012a68498b922923a5565ca1c61594fbcebe442e9732a7ec5a4c"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/results/final/job_level_slot_profile.csv",
+      "bytes": 3853851,
+      "sha256": "68cb856ec3d77f2d02350cc47bc4425c42d1684b8abff2ea49dcf38f50cd7a9f"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/experiment_metadata.json",
+      "bytes": 2681,
+      "sha256": "bf44cf749eaaf25524680fe276e8dae5cebfe93ccd42cd92eab104cd2254c403"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
+      "bytes": 438,
+      "sha256": "235861e1a6dc2220eeb9ade8066e546bbd1570baa1accdc4e45147cd69ae47f4"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_certified_counterfactual_profiles.npz",
+      "bytes": 123446,
+      "sha256": "3a088189842f67277352be9b37e61d58110787870a088ed00a59641cd4a6c013"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+      "bytes": 46323,
+      "sha256": "96e81d07116f02eef913f53901c16611bde902fb734e6f3d4ec783de365c9ee8"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
+      "bytes": 47830,
+      "sha256": "787c7a5ffc5ff9b79ade05143e355122e6c6c4f178f9e2a78a4f765e66cf3473"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
+      "bytes": 282,
+      "sha256": "4fe166253ac8f84d90f748d4609638275e00a54865201caec85a34951cb5cf0e"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/capacity_reconciliation.csv",
+      "bytes": 1013,
+      "sha256": "9e840b25170242cd41d754d3f839c269d27f806756eb48d71938cc6e73a409f6"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/experiment_metadata.json",
+      "bytes": 3938,
+      "sha256": "72629b89a34e9fd4cf3592f04f7ab260269639179a225faa139632b7c48d4a88"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_certificate.json",
+      "bytes": 2092,
+      "sha256": "f58e96c05c4b9a4a402c73f3001cc06ab14a4a34cc10f50ee35e4460b591adac"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/ledger_provenance_summary.csv",
+      "bytes": 1295,
+      "sha256": "b49c9fa3052294b623a5c25d4361bc3c0dfc488304743394b42ee3b6fa71a187"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/physical_calibration_summary.csv",
+      "bytes": 834,
+      "sha256": "3d5f9fe689969dd9c42012692a0b51b50eb411f6dda068833271fd995e303099"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/source_hashes.json",
+      "bytes": 530,
+      "sha256": "0255080055214956b20df5d139065798a6f1a36ffef543a684975af0f7e8cfc5"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/submission_calibration_summary.csv",
+      "bytes": 846,
+      "sha256": "301fb78aa119a1cfad613ba1dde751f694837e7116b5fa59a168dfaefbd1a2d6"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/results/final/workload_power_calibration_sensitivity.csv",
+      "bytes": 1814,
+      "sha256": "0d8ba92cc9edf2f8212467950089c3f276d436c1c34fda6388c9a857eb132a74"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
+      "bytes": 23295,
+      "sha256": "ab6e3cb8f73c5c06209807f527d549e7d5e97ddc0b51a810caf2182a147c2ee1"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
+      "bytes": 204,
+      "sha256": "5ae706c14aacc441e1282acb7975e28805d8a1216e6657a178cd3ba6e0a47f15"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
+      "bytes": 28407,
+      "sha256": "745c2e380c9f354a8dc6e175296223ef43938153287948afc4b56933dd0217c6"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_summary.csv",
+      "bytes": 544,
+      "sha256": "3d0f8366adf939915e98c81243c46745353e6120df60ee96f44bafcfbe125883"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation.csv",
+      "bytes": 5066,
+      "sha256": "5c249139944ceae7e36b4e8a64cd1453ae96d92fbb94d1ab9bc7ed1f8116ebe6"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/causal_response_candidate_validation_daily.csv",
+      "bytes": 295559,
+      "sha256": "8098de83759d9a33996cb202d91fdc0b9f2c53f82f43ae0f0d2e461f66223de9"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
+      "bytes": 202592,
+      "sha256": "04cd2c8a39004fc1d341336c5857fe59b930e906613381bfc7883ac0493d579e"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
+      "bytes": 1094,
+      "sha256": "644bb1b39042688c4568dae38d4ad8208a4be098f710b8e09a7395dd4883edda"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
+      "bytes": 46434,
+      "sha256": "170a8d31805188b6f79f3d136d9f4dfb2911107b98c273c666e58941d79ad1ae"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
+      "bytes": 5518,
+      "sha256": "eb89a91614c1c8a2da9dcc8baa3f8636851257b32fe2c8c03f85a179c808e9d3"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/results/final/information_boundary_certificate.csv",
+      "bytes": 687,
+      "sha256": "4f922ac2c9a55f2860ab1385875c47addb6bc42e37c5ecfc67d71bf1f2a2b854"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
+      "bytes": 3770,
+      "sha256": "b7c8b99806d1393a11e9153b880e78cbcada4032e16b998137035f99665d61b1"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+      "bytes": 1842362,
+      "sha256": "559955e17af7d7733afa28c26b2dcd6692622898e6fd9ea04e49a0ef2bcfc1f3"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
+      "bytes": 2502,
+      "sha256": "56229fb897d3ccfd77134e19338d27a4a64546ca509422b42e4fe11bac83d854"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
+      "bytes": 4080,
+      "sha256": "1c29c2277e8800d68cdbf1be27f570384eb62942a32d087802c314fdff88cbf6"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_capacity_stress_daily.csv",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_capacity_stress_solution.npz",
+      "bytes": 769066,
+      "sha256": "53632b6e943e53547d3a3a15df1c0d2d2bdd5365c7756e7fce0b9ce6b2e08eda"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_capacity_stress_summary.csv",
+      "bytes": 80,
+      "sha256": "975dcd2ab8fd09ea48d4cacdf906f9bd9afb6964d5d3851ccac6c26a94926cdb"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv",
+      "bytes": 3502795,
+      "sha256": "d071e78e1f36ea58fb3aac45f4520bdbea007023687c8c82fc1cd4ef205ee98f"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
+      "bytes": 1843731,
+      "sha256": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081"
+    },
+    {
+      "path": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
+      "bytes": 997,
+      "sha256": "384e6a2360cced624176e626cd272d45877f387f05444625df1dcb5c124010ce"
+    },
+    {
+      "path": "experiments/exp1_manipulation/results/final/experiment_metadata.json",
+      "bytes": 1214,
+      "sha256": "6fbb47dc42cb9f3b5463a7425942ddbad126b7d60b6e5ed9ea79eca91e907905"
+    },
+    {
+      "path": "experiments/exp1_manipulation/results/final/manipulation_grid.csv",
+      "bytes": 13189,
+      "sha256": "feeb93bbc56ec2a2ab4ac401372b985d3e3d45d64e7c866ff99c42ef86754a7b"
+    },
+    {
+      "path": "experiments/exp20_trace_meter_replay/results/final/experiment_metadata.json",
+      "bytes": 1318,
+      "sha256": "4278aa9242a19f5c0330794527ca43d8644d062d133d8ced99db877d8e71c84d"
+    },
+    {
+      "path": "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_daily.csv",
+      "bytes": 103629,
+      "sha256": "6fef40fa64638af8a6a895f4bb74d1a902d8c8b44a9abc3f7f3a969d1585dbe9"
+    },
+    {
+      "path": "experiments/exp20_trace_meter_replay/results/final/trace_meter_replay_summary.csv",
+      "bytes": 2715,
+      "sha256": "7aa0258a945d8790fa8d0621a37f24c9e2707902d92d2164f485528bceee0b93"
+    },
+    {
+      "path": "experiments/exp21_scale_consistency/results/final/capacity_proportional_profile.csv",
+      "bytes": 2227546,
+      "sha256": "87354bd4c401ff55ea5cea56afbb0a2b181060387428f8257f8d986b065ee5d5"
+    },
+    {
+      "path": "experiments/exp21_scale_consistency/results/final/experiment_metadata.json",
+      "bytes": 1508,
+      "sha256": "8f4de1d1e7347680cd72ee7e91653a6a1f9d647d837402725c3d64a58e12147c"
+    },
+    {
+      "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_profile.csv",
+      "bytes": 2406768,
+      "sha256": "bbb5cf4a1bcedc23e560f7db5ff749c9db5ea234c7e9a4c9030b388a56ba0fd3"
+    },
+    {
+      "path": "experiments/exp21_scale_consistency/results/final/scale_consistency_summary.csv",
+      "bytes": 992,
+      "sha256": "a9d7c9d1b018976a6efca75314f13537b5bb2866aa1f838fca9c7fc7248cbe41"
+    },
+    {
+      "path": "experiments/exp21_scale_consistency/results/final/scale_sensitivity.csv",
+      "bytes": 899,
+      "sha256": "fed719676592010961d1432d6ebaaa424aacbece5d14c7d95760660a3368769b"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_event_replay.csv",
+      "bytes": 1522,
+      "sha256": "75c699b6ef09a097c945f6fb5e026e36bac79860995619e81817ffa51fe44657"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_scale_replay.csv",
+      "bytes": 1241,
+      "sha256": "ea1ba0364da10b2e16b01f713b88a8111b1608e34319f359aedf57c32c79674d"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupled_network_summary.csv",
+      "bytes": 906,
+      "sha256": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/coupling_invariant_certificate.json",
+      "bytes": 1120,
+      "sha256": "36f4044a53fb95ecf660d0d521498df0f89c3b0dc0a422bff232d06999f1a362"
+    },
+    {
+      "path": "experiments/exp22_coupled_job_network_certificate/results/final/experiment_metadata.json",
+      "bytes": 3225,
+      "sha256": "a1a4df5226657cd656bde1a5b5f4601905722e2e9beef98ee3fdb14ee7d88f3a"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/experiment_metadata.json",
+      "bytes": 1893,
+      "sha256": "dcf684d92cb69f9f50e9442ccbc722490850d85185ed9a037c79583c962ef9c5"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_profiles.npz",
+      "bytes": 11899,
+      "sha256": "4aa90a3e16194782af6184ac00729a315f5697af0216607e8e527b0212833cd4"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_protocol_certificate.csv",
+      "bytes": 609,
+      "sha256": "c5f73663986fd631ed4c5832edb70b33d68704aae69b6b3c9e558c435ccdf920"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_daily.csv",
+      "bytes": 17202,
+      "sha256": "76e99edcdfc9f76929163e7e5e6aaa690718d6f6b4d9d514a22c9b3971c13153"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/results/final/independent_event_replay_summary.csv",
+      "bytes": 436,
+      "sha256": "42f6e48323a8c98b4e76be6afb5528d464c39b116c832dda072c68f2510dc114"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_replay.csv",
+      "bytes": 110600,
+      "sha256": "a26d3e5e65eab6a12b68f728c7e78c67c7c4e60e7d2dc34ea369ae490549c537"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/all_outage_security_summary.csv",
+      "bytes": 381,
+      "sha256": "600421c143bbe7fa371f1a6537bc4828c07fb301d2d6a318db929cf21562e6c5"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json",
+      "bytes": 1073,
+      "sha256": "64354683fbdeda004d984f03678af1abde3d9555f1145c186128f5db7a6af254"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/exante_job_validation_by_type.csv",
+      "bytes": 755,
+      "sha256": "28615408806add06ee0cc8883a2749eb8a29e1cc7511bb2436cb667b69beb107"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/exante_job_validation_summary.csv",
+      "bytes": 616,
+      "sha256": "38d58c42280148d609c5dc401a067afac9c6d58b38f895702e923413f03a8a75"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/experiment_metadata.json",
+      "bytes": 4504,
+      "sha256": "163ff34d3e89a32d6aa8fc59dfc1e147bbe3af0c257acf83308052fcd25a2ec1"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_event_slots.csv",
+      "bytes": 622,
+      "sha256": "950cb6b73fee0754382a4f43cfe6a9c671de2a18634247f3c646a819db8f2863"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_solution.npz",
+      "bytes": 3469,
+      "sha256": "dca7346f3ad50c74fd327a940df5d4fc076e862b3902234de60f4dc7114d5005"
+    },
+    {
+      "path": "experiments/exp25_exante_job_validation/results/final/job_level_capacity_stress_summary.csv",
+      "bytes": 532,
+      "sha256": "1c05036e59be9b45d18af52b20abd90f71e5eb9c1379f2fd4ea684e9a7d24992"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_certificate.json",
+      "bytes": 6148,
+      "sha256": "b9d33bb1051774711c8e326722a274dcdc6ba9e7e12614a32bef7dc62284b1ea"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/end_to_end_lineage.csv",
+      "bytes": 816,
+      "sha256": "68ca6d297b2300daece75192dd1127c4af42c48548b51b37b15dfd790b304609"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/experiment_metadata.json",
+      "bytes": 6148,
+      "sha256": "b9d33bb1051774711c8e326722a274dcdc6ba9e7e12614a32bef7dc62284b1ea"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/payment_relative_cap_audit.csv",
+      "bytes": 373,
+      "sha256": "405efedc1ad9b647f5be8c55b25e21a4fe876ba1b56230f503d657301b44cb84"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/profile_role_lineage.csv",
+      "bytes": 2063,
+      "sha256": "1f8ee4bd34a7cc72dfd697101ba8a24276c5bd40ee8061b0cb353ba6e2f557bf"
+    },
+    {
+      "path": "experiments/exp26_end_to_end_certificate/results/final/realized_payment_audit.csv",
+      "bytes": 407,
+      "sha256": "e11b2316bf45e7e55ad2cd905d82f54772b57ec095b524911c80e805bc6518a1"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/common_witness_settlement.csv",
+      "bytes": 2317604,
+      "sha256": "c5f6c65956b7abfc098e34ef362aa9176d64865d3e4fa33cdf96f43858bbf404"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv",
+      "bytes": 542,
+      "sha256": "60da7bddeb54c68ad82176e4bea77e76d14021f038c14e6a1878f427b110db8e"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv",
+      "bytes": 2986,
+      "sha256": "a0096b65f0842cc9e36197f68c7c42aa86953063e7c05d50619bdcdc43dccdb6"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/experiment_metadata.json",
+      "bytes": 9296,
+      "sha256": "7393c2cd86d60ddb4c12673ad51d5b4d68a55e3b8992e2eea60dfb4e1f76d074"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/job_level_runtime_summary.csv",
+      "bytes": 7863301,
+      "sha256": "152419396bd1f910d66e53b755a276e1729c3f15c1e536ef11125a9c8560d0c4"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",
+      "bytes": 21278,
+      "sha256": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json",
+      "bytes": 2091,
+      "sha256": "f7170c45b9a2e7aa3981e1e77f0dbc9a02d01322fa318610124ed1b0881a32bf"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
+      "bytes": 5608285,
+      "sha256": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/results/final/runtime_witness_coupling_certificate.json",
+      "bytes": 5314,
+      "sha256": "c2344ba41ba28276d0cfd8bf4aaa32fb994e93d61bdb407d5bf0eb8a40d82596"
+    },
+    {
+      "path": "experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json",
+      "bytes": 890,
+      "sha256": "ee19893b160b537fb7f227005c7731018ea0bec6ba1c670be44ef8a7a6497f80"
+    },
+    {
+      "path": "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv",
+      "bytes": 415,
+      "sha256": "43f996e7e265ae64df9910d583eadda703972006f98c070f680662169bcef578"
+    },
+    {
+      "path": "experiments/exp28_risk_tail_audit/results/final/risk_tail_paired_bootstrap.csv",
+      "bytes": 464,
+      "sha256": "28b3c6a8f06838c41c7badb58fabb30bab63f5ab2132bcfef8c4ee99b8201496"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
+      "bytes": 1209,
+      "sha256": "94c59612254c10a48d15b94203fbd3c4bd4c2cc83c6dd10e7849f414e5553585"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/block_length_sensitivity.csv",
+      "bytes": 13878,
+      "sha256": "cdf2cac85b7ded092bb5122dd6d5b8b9ec96f74e31cd3bf2be10b7a81f9a3dc8"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/blocked_validation_cv.csv",
+      "bytes": 1333,
+      "sha256": "45c3a54c8e7a5c964046245358c343fd8a1a728d123f47776b235bdff98a1082"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
+      "bytes": 8001,
+      "sha256": "963f4beab47f0bf49d9254dbddcc2a3a44e3aacc3dd4713dd924d2704d1e7216"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
+      "bytes": 201896,
+      "sha256": "a31fc15e6651c46b729cff38210a3768a694bb01b73351b53278e3b8ee704347"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+      "bytes": 1057,
+      "sha256": "02b13371d1fd302af0642b30bbde72eb38e826861031d15978ea847ed529168b"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/complexity_scaling.csv",
+      "bytes": 302,
+      "sha256": "c1dfcaaff9b72ba8a8d105b3aa5df94246641ebd7f9e75c969dbe429529f7506"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
+      "bytes": 1802,
+      "sha256": "291413e7e92ab2b1ce9aa660c30a4d9cac34772ebbd49549d80c57b1be2c7f55"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
+      "bytes": 163246,
+      "sha256": "661813560d1527a50d6ebec125ede247b74efac3eed58b51272c8e0fd41d340e"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
+      "bytes": 314,
+      "sha256": "67d8325f5af75bb558a7e7016600e95d39cc9494ba63f42bddd3eb618051edcb"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/experiment_metadata.json",
+      "bytes": 10514,
+      "sha256": "46fa08d66c150a97620b7645f23e337a83b730db2832bbe2d45c249c0a87b960"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/final_risk_contract_audit.csv",
+      "bytes": 17525,
+      "sha256": "0b0d286325015afacafff963796f99010b48fda38f6dbd2dc229097e037ce5a6"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/information_set_audit.csv",
+      "bytes": 817,
+      "sha256": "84ba0aea2fafebd80d80b466ed0555a79dcc8eda767d8a2e02f7af42ce052c31"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/intervention_robustness.csv",
+      "bytes": 278900,
+      "sha256": "fb636081b8b940c4731450e2ae155fc07cf910f4c9773e834ae6df5055626086"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/matched_comparator_effects.csv",
+      "bytes": 6495,
+      "sha256": "2a442d1ed7cb7bb4c51674f86e317389a7e07868f58e77b48d32ab1af595bfe6"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/paired_block_randomization_tests.csv",
+      "bytes": 3968,
+      "sha256": "3dcc9c63761242fdb014a7eb26c742fbefc61987438c16ae9127b7900dbdcf12"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/paired_counterfactual_block_tests.csv",
+      "bytes": 1510,
+      "sha256": "0e576e896a94bca45c89d1cb5a85597d28d4eb08bd4034604dc7fc887e07e2da"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
+      "bytes": 274457,
+      "sha256": "3c355ae8cb4d028dbbc37a0f7d1532d1e5a1402c1dd610a57b2ee3d983a21e2d"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
+      "bytes": 1669,
+      "sha256": "cbd5309da834956e8e868df339917a32c138731398e5ea527f89be899016b234"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/quantile_feasible_validation.csv",
+      "bytes": 594,
+      "sha256": "9ba5c1da21bb1e3e5e928748f6115663d17b7857c56fcd6cc24c459cad5770a5"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+      "bytes": 1916,
+      "sha256": "b3842348c858d6a97c0dc0c4c8bcf1dc81fc51619ade97ced9058dc7e70b3eea"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_cvar_stress_sensitivity.csv",
+      "bytes": 681,
+      "sha256": "26d0229afa8dfc9cd6e4f2bee45ce16462b786fac5501bceb754797eb7fb3101"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_effect_decomposition.csv",
+      "bytes": 1585,
+      "sha256": "7fa3f5092e7437496964d16cc4342c52c1cf1951eda80abbc982428f855eebbf"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_envelope_validation.csv",
+      "bytes": 1006,
+      "sha256": "397daf7475252f1b87b7fa8860f5ae110591209660fa21a18dc9d2d9fdc25273"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation.csv",
+      "bytes": 1374,
+      "sha256": "b4be7f892d2d2a9bbcd69d76e86b75aea5e1c6c77c41333dd74457c828688c3c"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation_daily.csv",
+      "bytes": 144709,
+      "sha256": "8ad844f0fb1aad4cb8d5c614e8fa7d8bc2403e2511b63adeb784c8a9ebcea181"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation_weights.csv",
+      "bytes": 916,
+      "sha256": "a18103cad645254ae3422d8ed35ca8450923d794a8fd77d6e9e60d00e75df0f5"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
+      "bytes": 2146,
+      "sha256": "0ab4f9b1fe1347705bd43e3b30c4009792340905213ce9052d77004ead3a2c04"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
+      "bytes": 464,
+      "sha256": "50fb72b5df8baff7feb34a00accd8046c5e816f29f41e948532da7a4925d1bb0"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
+      "bytes": 14774,
+      "sha256": "e3809f4d48e43c5f1d983784caf763cdc83c066231b38bcd3d308c0c2ebd992c"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/specification_robustness.csv",
+      "bytes": 174738,
+      "sha256": "1c037992ffcfe4d56945091ca0a7a892712af00add2eb70c0b2f4793f561e8a7"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/structural_literature_baselines.csv",
+      "bytes": 53661,
+      "sha256": "3b1f4c81cabffcd7d45f5d5e7d831a77ef08e80a69be782193e71505e3911059"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv",
+      "bytes": 347,
+      "sha256": "fc755a064520d2a11e9e68afc680c1f8a3d82dc3116e6aedf4cfe1f0911a7508"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/trace_meter_replay.csv",
+      "bytes": 127986,
+      "sha256": "10013e79836e6ab0888a782b2f89a7245826da6a413cb7453c930f83361f37be"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/results/final/two_sided_credit_certificate.csv",
+      "bytes": 6999,
+      "sha256": "6408cfd498b651ceb6997dcb44bf7e0bea856f61682eaa4b40493f827621f29e"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
+      "bytes": 1987,
+      "sha256": "e6a63a947cb1b7159532a98a7e66d235455a5f654449df55aa6e120069240359"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/interval_grid_value.csv",
+      "bytes": 37840,
+      "sha256": "78c1fe940d7cf5e9edc361e5bd3f115640f2d2e089cde735371039111a8d3e71"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/mean_line_loading.csv",
+      "bytes": 35478,
+      "sha256": "66623854531c31454040d4491650d2851cf55e00ec092392a0493852cc365551"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/paired_settlement_block_tests.csv",
+      "bytes": 9098,
+      "sha256": "b81fb59aa89d4e9214e275d236bb4c9125691239feb0b39407c3536f6f4efd4d"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/polyhedral_value_certificates.csv",
+      "bytes": 549931,
+      "sha256": "ce383b984b123b9ed814684f3d5b32d684a441304cb309c1fe15fc569188890a"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition.csv",
+      "bytes": 72696,
+      "sha256": "1a60b0a73ff6fdc16aff22da7e2d93ae7c6783ee398ca64c5440552d14fc5510"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_factor_decomposition_summary.csv",
+      "bytes": 10378,
+      "sha256": "8214342d00e9be6964e0650c1babb865f8de8bf318b87625cb84e705a39d3934"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/results/final/settlement_metrics.csv",
+      "bytes": 545325,
+      "sha256": "c8d2d051704cb2b0f516508dff06f3a73352c87e33231c7cc68bb89df0350055"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/case_metadata.json",
+      "bytes": 257,
+      "sha256": "8dfb12bba3a22c7fe5a05baad86b927b5bfa657749d4690adfbb73210eca4a42"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/case_summary_by_data_center.csv",
+      "bytes": 314,
+      "sha256": "259d796e4147ef2ea355471f20881408f5b0acdf2852fed670d9f0bddf96503a"
+    },
+    {
+      "path": "experiments/exp4_case_study/results/final/spatial_case_timeseries.csv",
+      "bytes": 28111,
+      "sha256": "0e732faf51698a2a686be8234cb29bdf453a918bbc12a852399e7d1f06498a3e"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/experiment_metadata.json",
+      "bytes": 1662,
+      "sha256": "af54d34ff0c3eda89cd0c30f00d26fa665a03f3268267f89db626d26207155ad"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/network_robustness.csv",
+      "bytes": 2216839,
+      "sha256": "293b09021c8d01c6c360e413ef0207088080fbfa7529ce2f628b2e43451ff8e2"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/network_robustness_summary.csv",
+      "bytes": 15153,
+      "sha256": "fbc2f72ea4dcfc3b32c0b274c729f1627e90ff160e1a52335cfd22bd28c2d0f9"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/paired_network_block_tests.csv",
+      "bytes": 5093,
+      "sha256": "22b0ad1eded1e08e15b24118eabaeb63cf8e868c3ddd3971f18dba9176fd4041"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/resolution_convergence_daily.csv",
+      "bytes": 33619,
+      "sha256": "76e86f9b57ad07828cabf07fff4a7b91b87b6569b9a8160d0e3d7578962de101"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/results/final/resolution_convergence_summary.csv",
+      "bytes": 758,
+      "sha256": "40d42410c37d1bb734147fcf6ced855cce6b6fb271b50a311ec8d28dc6baf68a"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/experiment_metadata.json",
+      "bytes": 1204,
+      "sha256": "edeeb36f54bba8a510589aa961bbaf90bd24ae051f4b84a1f7964824fecf8e56"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/physical_stress.csv",
+      "bytes": 402676,
+      "sha256": "a712df1b907ff4e95a1a417d714aee16afac7ee962db447ab2333c898b2da3b9"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/results/final/physical_stress_summary.csv",
+      "bytes": 7364,
+      "sha256": "752995fd9e58489c13e2dd9378d17b74a405f20446346b49fd82d835ceeb8a73"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling.csv",
+      "bytes": 669588,
+      "sha256": "351de526bbe5334f9304c5a2d7ea82f47ed00ad7f05131b78ad7c2a1f775f942"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/eight_participant_exact_scaling_summary.csv",
+      "bytes": 886,
+      "sha256": "d05ca96f05d7c86d913074ff85a9ec2f56e11c8d08fe8f2d6bcafa9c891b4e2f"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/experiment_metadata.json",
+      "bytes": 1085,
+      "sha256": "ffc5350d4250425142bd3bd35f2bbbb42cb210c3fcced1f93aa4cdbc1f27dcef"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling.csv",
+      "bytes": 186822,
+      "sha256": "f7d1d38b9ad8d107202ce52c798fcc3cfb765f9bae86b3275a6b8eaf72718a41"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/group_symmetric_exact_scaling_summary.csv",
+      "bytes": 374,
+      "sha256": "e4e07a74ed4d8c9caa24dd6d3bb7a1fd22694dab3622faf1f8cbe4438409443c"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/value_allocation.csv",
+      "bytes": 471570,
+      "sha256": "6719674cd9cc5208fe36b63432c7a8912e9340b18d8d2fe867d139dece8600b7"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/results/final/value_allocation_summary.csv",
+      "bytes": 1183,
+      "sha256": "b7eafab87a0b53a9d78c857f8a495dc5e55fadc555b048bc3962d3e7bbc6e244"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/experiment_metadata.json",
+      "bytes": 822,
+      "sha256": "7daabf3a0d56da10abec1b84799b6887f25c3bc518e8fccb0478b24db1dea21c"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_daily_results.csv",
+      "bytes": 51411,
+      "sha256": "893b8b558548fbd822b3436ae3ab468076f2c59959a9179ba0a4e334454dac0b"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_interval_results.csv",
+      "bytes": 733011,
+      "sha256": "78213eadc47418e5b23825db99cad2a7034b5ba9dd7b609f6253277bb94c4dbc"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_paired_tests.csv",
+      "bytes": 994,
+      "sha256": "d4f9dcbb78313413c40fd7317bd6d168723a6c05a98f126bbd8297ce65ebcf48"
+    },
+    {
+      "path": "experiments/exp8_n1_security/results/final/n1_security_summary.csv",
+      "bytes": 1163,
+      "sha256": "ac155f5824a121a7b7ec4d88dd33f4de6e73a72c6d3f509df8f6e2f4b9792dce"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+      "bytes": 124516,
+      "sha256": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
+      "bytes": 23511,
+      "sha256": "be64f2fac63c92d070726d20066272b0222d6124b70d121abf343053e3df4a1f"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+      "bytes": 31304,
+      "sha256": "e21ad58e00762a8e738ff01d00f92d71dc10be77fc09c4e98b6c0d857644b7ac"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
+      "bytes": 5854,
+      "sha256": "5dd56738a92e201dad12b25c7410198d14fc9234518e4ef6e94f8b42bd894f7d"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
+      "bytes": 22344,
+      "sha256": "7f5812d007761f2dd3cfadd2be4873b79fe208be932261c1259e6b332326b42a"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
+      "bytes": 147075,
+      "sha256": "52adce8d2315d922f352c9340b1c0dd18ae09e3e69013576de81f14dbb67371e"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
+      "bytes": 2434817,
+      "sha256": "ff7188922b40c708441d3ba98646bfbee6cd4946656a099efbcc312885697c84"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
+      "bytes": 3140,
+      "sha256": "a5553944d4712362576c7b878667086ca284601861a66c65976bb39495f5ccb6"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
+      "bytes": 106634,
+      "sha256": "4399fddd993efe742fae3c29cd0f8da802cc432da16d0ba4afe6892171fc9006"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
+      "bytes": 918,
+      "sha256": "34885bb5fda9e7aee69c51ef31a4c213d52d8d2496517d1b698df41b22a35852"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_non_tautology_audit.csv",
+      "bytes": 509,
+      "sha256": "0537b84827422514dc249419e3344ec874e42873a89eb6678a8acdeb5b81c404"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_pareto_paired_ci.csv",
+      "bytes": 2722,
+      "sha256": "183507b491af6a9a980fdc55666a08463f96d0f455b366fda7361bd570d498d0"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
+      "bytes": 915,
+      "sha256": "b9af58371dc007f6622ca1cac738a76084461741dd6c0c73ddcfed8f445ef648"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.pdf",
+      "bytes": 20329,
+      "sha256": "3f5c1239ba15413d8e9d656389f25886834fb264d6b9685e4adf2d9ae2604584"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15_ac_opf_validation.png",
+      "bytes": 288554,
+      "sha256": "fb0dd58841c4e2a689dedcec66c5d7efbee7738e7b1dfe9740490062bed1f24c"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.pdf",
+      "bytes": 19319,
+      "sha256": "f68938b764a2ae69814569cf535589ae78eb8e7a3513a541509dab1f585c0aa9"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15b_ac_n1_contingency_validation.png",
+      "bytes": 282468,
+      "sha256": "766586e7bd9fe10c44bd462713c6b866735f19816d4459d43b639351896cf188"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.pdf",
+      "bytes": 22028,
+      "sha256": "160d31488f40351fc9675e7c194959a48bacd3449c29cb28decf232c537bf1b0"
+    },
+    {
+      "path": "experiments/exp10_ac_validation/figures/fig15c_preventive_ac_n1_validation.png",
+      "bytes": 327765,
+      "sha256": "abdc1864c570aa0d30c31be2ee8f9a0e76e3011be1929be949ca7c1c0b87849b"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.pdf",
+      "bytes": 53122,
+      "sha256": "d3ec4ce28243bd7dac413302007f2890b2e8535ca3594b6de3705d5a074977a6"
+    },
+    {
+      "path": "experiments/exp11_spatial_scale_robustness/figures/fig16_spatial_scale_robustness.png",
+      "bytes": 313288,
+      "sha256": "f3d4966dbadd657e7d6fb791ec57828e569da6958d596a5c8aa9073b78160cd1"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.pdf",
+      "bytes": 24955,
+      "sha256": "5497b75486fed19440caecb8d93ea51fc58a3980d0f609ae234b250077fe4df8"
+    },
+    {
+      "path": "experiments/exp12_rolling_market_validation/figures/fig18_rolling_market_validation.png",
+      "bytes": 430619,
+      "sha256": "6c8a391cbeac1ddd4ac1b82e63a391583673f71322d8f65a1a9188fbcb26332a"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.pdf",
+      "bytes": 19635,
+      "sha256": "a887ddfa5ba0f3dd8b1aafa23b428492a027ac0a98e871d5851663d100a1367f"
+    },
+    {
+      "path": "experiments/exp13_real_trace_replay/figures/fig19_real_trace_replay.png",
+      "bytes": 367444,
+      "sha256": "c00cef201c00c417f92649c8dfb6721009c006281b51b0b988a7f3e6092c604f"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.pdf",
+      "bytes": 169755,
+      "sha256": "7a9c6c4947ff42d19a22dcf5b17d737ab92a7c7073ca566a39a9d5a8de3611ab"
+    },
+    {
+      "path": "experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png",
+      "bytes": 338384,
+      "sha256": "d5b4a1a68ada17cfbf6e0a0547d00743020ba0fd7f3666069ac647d5d274d802"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.pdf",
+      "bytes": 44510,
+      "sha256": "3ef83f8a428c3795911149d0626e69b8585e406025bb211fe3f66f975b7adf73"
+    },
+    {
+      "path": "experiments/exp15_interval_certificate/figures/fig21_interval_payment_certificate.png",
+      "bytes": 357982,
+      "sha256": "19dae469026d1ac80efacfacf0a0226fecdc797ac1817685a9d878e61da1a1f2"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
+      "bytes": 19027,
+      "sha256": "5d48dc543716a9dc48d150043d099abefcd8718620c71ca473d1bd572a3e3122"
+    },
+    {
+      "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
+      "bytes": 282410,
+      "sha256": "b030d6f9956c8034f455975e98da337a5b3116fa1db2f47c9a0e261cbb0b9c9c"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
+      "bytes": 17034,
+      "sha256": "0f24f8b902b8b12a8d6bf6bdbf735b365a38b4d1825cfed53bdcc15f51af86af"
+    },
+    {
+      "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
+      "bytes": 301017,
+      "sha256": "fccf7db8dae1a8dd96ffa7f0c27b07508abb7f61594f39178cec1889ae504b16"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
+      "bytes": 25589,
+      "sha256": "7a42ba2a87c4c7d28ba144a44da319b9aa87ea2a02507868c611374d5e3c2850"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+      "bytes": 276478,
+      "sha256": "4f9d2fbf35e02a182fceebda9e73975bbddabb0d9739c58aeca57204d5437754"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.pdf",
+      "bytes": 24062,
+      "sha256": "b43ac000641680797ec7d96b55221a932a0121c43ea76cbe8c31cf574c8bebe0"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig1_manipulation_phase_diagram.png",
+      "bytes": 216320,
+      "sha256": "cae05d44db8018e8fa3b82b762f46211f24b4e243b70065828da3651db48ff07"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig2_response_and_migration.pdf",
+      "bytes": 18623,
+      "sha256": "591faa0eab05a51c6c1995e3634eb59a3b345432dd9121109ffabe27d4fc0bb1"
+    },
+    {
+      "path": "experiments/exp1_manipulation/figures/fig2_response_and_migration.png",
+      "bytes": 262639,
+      "sha256": "8cbd2de3d34cbee1d30a445a205171b9c8dc91640508d3bfb585e3384017ef40"
+    },
+    {
+      "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.pdf",
+      "bytes": 20808,
+      "sha256": "d0df38474f5002222560c48342b8f743f000c99d7801db7510b325298853fd4e"
+    },
+    {
+      "path": "experiments/exp20_trace_meter_replay/figures/fig25_trace_meter_replay.png",
+      "bytes": 192520,
+      "sha256": "40935e77d65b0bb2b6e0bec3927df47b537532a0747995999ca76e15b28214bb"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.pdf",
+      "bytes": 13986,
+      "sha256": "54285eebc2b0791348e9dce3ab304c2d1cbe15f821230aa34d3c08ea311b62b5"
+    },
+    {
+      "path": "experiments/exp23_independent_event_replay/figures/fig26_independent_event_replay.png",
+      "bytes": 103915,
+      "sha256": "58e7496b3c890091fd19e4955f7899068af14a5c086a7eb7496450fe0febbeb7"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.pdf",
+      "bytes": 16478,
+      "sha256": "c71aa23d984fd22417036f235857de2b6bbd8dc8a745ed16c2b1c096e5d93bd8"
+    },
+    {
+      "path": "experiments/exp24_all_outage_security_panel/figures/fig27_all_outage_security.png",
+      "bytes": 104824,
+      "sha256": "faf3f1ba657bd61e9899896b53ffbb7ea449014bc3aa7010b507c493253133c8"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.pdf",
+      "bytes": 15952,
+      "sha256": "543b8c57c78bcea32d07ca96c8266ef9be974e12acdd1745d151960a2b2ec253"
+    },
+    {
+      "path": "experiments/exp27_executable_common_witness/figures/fig28_common_executable_witness.png",
+      "bytes": 157345,
+      "sha256": "2a7b2627b313882196e54efd1fd5958721253073b41470d0c16db298c55b7c08"
+    },
+    {
+      "path": "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.pdf",
+      "bytes": 14177,
+      "sha256": "44b3e86a791b7a507ee97dca42e1c488e93ff9ca400d38406ee7b73a9772ec2e"
+    },
+    {
+      "path": "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png",
+      "bytes": 96756,
+      "sha256": "f37f9ec5fa6224f84bcc95ca791f05cdf96f2e701d0512b4cce60f49fd6a1b66"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
+      "bytes": 50053,
+      "sha256": "f3499ae424ba474d2ef28ea33e3aba977dbcf5649f70dfb39dd64d03a5b33431"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
+      "bytes": 465086,
+      "sha256": "e245521742ec461476c833fa6e17288ff3a1abe000dedb7e0722121520818680"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.pdf",
+      "bytes": 27697,
+      "sha256": "f2352ac5933e0deb46df8b3c1a67d1f0dda9f6ac44bc9bf01ed370480a5a3206"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
+      "bytes": 456019,
+      "sha256": "478472bafabd62ce008747211ff8b8e4c69c5c303d0f09829d08f5a2f5de65f2"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.pdf",
+      "bytes": 16614,
+      "sha256": "c10f650c02e4743c023056411c060da395d36b35fccb89ea9a7fd31821da2ad5"
+    },
+    {
+      "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
+      "bytes": 205878,
+      "sha256": "3fa19a4e9edaf78d3a9934e05a07faf234fb18a57153a9780faa225b21b528ef"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.pdf",
+      "bytes": 42430,
+      "sha256": "f7c1c76bf2a0fa30c042df386cd632fa970df6c5dcc5ebb8e3fc482476b77cc7"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.png",
+      "bytes": 475819,
+      "sha256": "192641bb8e9efc09de33427700469cf0effad6261c72fdfcf4429eea0617fa43"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.pdf",
+      "bytes": 18876,
+      "sha256": "68b6ae42cb7bccb799d137eefc60bc0c184209adccc87587fc043a924454f0d2"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6_network_loading_heatmap.png",
+      "bytes": 146972,
+      "sha256": "01ec5993a56e76ab11438908cd9544315233d45a559a9199d4e64a64b7c5fa65"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.pdf",
+      "bytes": 18200,
+      "sha256": "5438563165747c58b8b331a576fef57258f2fb449471fe2b8fed7861eae49d6b"
+    },
+    {
+      "path": "experiments/exp3_nodal_settlement/figures/fig6b_settlement_factor_decomposition.png",
+      "bytes": 266792,
+      "sha256": "b83fdcc2f1a5d7aa056119512bd7939dc7871e957fd4f1273bb2e0d027b737ca"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig7_spatial_response_case.pdf",
+      "bytes": 23154,
+      "sha256": "b687776f8df73356d1d28da679280770c3b3be8245e069100f8a153d23c5df83"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig7_spatial_response_case.png",
+      "bytes": 583759,
+      "sha256": "fecc6a9fc4d172ba1e61a3a97f6f2cdb949065ab8d6f3709b5761c5f160d4711"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.pdf",
+      "bytes": 20981,
+      "sha256": "7ef14969ac83eb239e1f69bba3f38acbae8a6f1a46781735cd64a5557e5f89fb"
+    },
+    {
+      "path": "experiments/exp4_case_study/figures/fig8_ieee118_data_center_topology.png",
+      "bytes": 329466,
+      "sha256": "314606f524d7410f4e1f4e093eeef68b307d66d552fc4311b88cf6c047bcf406"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.pdf",
+      "bytes": 22361,
+      "sha256": "03a0780a6c3d2989df80a962bd9309557e15fcd90f98d84e165b4c2d5e9a8836"
+    },
+    {
+      "path": "experiments/exp5_network_robustness/figures/fig9_cross_network_robustness.png",
+      "bytes": 495822,
+      "sha256": "121454462c51d383175a85514185357a367a2985e94866dcbec36fcd4e1d5a87"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.pdf",
+      "bytes": 21876,
+      "sha256": "8ff820d4a9675f8503e70b8ace06e285e145328cedbf006e9f905cd6107d7f04"
+    },
+    {
+      "path": "experiments/exp6_physical_stress/figures/fig10_binding_constraint_stress.png",
+      "bytes": 322945,
+      "sha256": "f60c1e9e47ae2cb4fa4158a529286c450b8ab3d4c49db4016dc00dcef2b14fca"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.pdf",
+      "bytes": 20973,
+      "sha256": "7c4ce0a536bd950657424c33b230dd3766b056428c7b970f189a05135113e967"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig11_exact_value_allocation.png",
+      "bytes": 442603,
+      "sha256": "8d11601c904a83d5685935a19b3a40f93b5b696c72b4074cfb7cc060ae3221f8"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.pdf",
+      "bytes": 18704,
+      "sha256": "8bca02ca803a9356862d84f21b4371ba854d50e950ea10e7c6291fa077d7dc26"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12_eight_participant_scaling.png",
+      "bytes": 362100,
+      "sha256": "ebb91e5ab5587082c9715713205293db29abe1f7d479087146a52d92543719f2"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.pdf",
+      "bytes": 17796,
+      "sha256": "587b167bb87b8629e76d00d34f4b3954b9d6330e8e9440d1640794d3b1e241e5"
+    },
+    {
+      "path": "experiments/exp7_value_allocation/figures/fig12b_exact_20_participant_scaling.png",
+      "bytes": 266585,
+      "sha256": "a8a4e4af5a4d424a8bd53201e132fa31beb5622fdd1301a75685970321cea1d0"
+    },
+    {
+      "path": "experiments/exp8_n1_security/figures/fig13_n1_security_validation.pdf",
+      "bytes": 20495,
+      "sha256": "ebb3f7b0004de2718e22d08a351fe3691692c8a1a1fd39346eddcaa6632d66c1"
+    },
+    {
+      "path": "experiments/exp8_n1_security/figures/fig13_n1_security_validation.png",
+      "bytes": 330395,
+      "sha256": "9769225c15d5393a950916f8c3a66001cddca4e98e93428631749daca0d3565b"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
+      "bytes": 22896,
+      "sha256": "38d4fa6a92df7c5d399391c0e2b5a3097c9880d1d0245bc4346be8463f5fc92b"
+    },
+    {
+      "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
+      "bytes": 346479,
+      "sha256": "7ee0e8ad25882a5229a73b49bb44b7e0f49d77b2391f3fc1a3e4e587ad70f5f0"
+    }
+  ],
+  "limitations": [
+    "BurstGPT exposes workload tokens but not facility power; token traces are scaled to an explicitly documented hyperscale capacity target.",
+    "MIT SuperCloud provides measured GPU energy for its own workload, which is independently aggregated and scaled; it is not claimed to be a co-located trace from the same operator.",
+    "All 24 mappings of the four measured regional traces to the four declared IEEE-118 connection buses and three predeclared power penetrations are evaluated, but these public traces are not claimed to be co-located utility and facility measurements.",
+    "The final workload credit is constrained by a predeclared two-sided band around the selected single feasible projection; the upper side certifies false-credit noninferiority and the lower side bounds additional under-credit by the declared tolerance.",
+    "The complete N-1 panel certifies preventive feasibility for every finite non-islanding line outage in the lossless continuous DC model; it is not an AC voltage, transient-stability, or island-balancing certificate.",
+    "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
+    "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
+    "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
+    "The cross-network AC panel is a fixed-active-plan preventive AC-OPF certificate over every native-case admissible non-islanding outage in four public networks; it is a steady-state feasibility result and not a transient-stability or intertemporal unit-commitment certificate."
+  ]
+}

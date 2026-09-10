@@ -1,0 +1,13 @@
+metric,value,unit
+full_cycle_cells,5184.0,day-slots
+event_cells,432.0,day-slots
+locked_days,54.0,days
+finite_n1_contingencies_per_cell,37.0,contingencies
+negative_network_value_cells,1168.0,cells
+signed_network_value_usd,1.4733814168721437e-10,USD
+signed_nodal_meter_credit_usd,1.2695400286588665e-11,USD
+capacity_payment_usd,161.0362972085452,USD
+payable_response_mwh,1.0735753147236347,MWh
+settlement_floor_cells,1168.0,cells
+signed_payable_settlement_usd,277.8063757461034,USD
+signed_value_minus_meter_credit_usd,1.346427414006257e-10,USD

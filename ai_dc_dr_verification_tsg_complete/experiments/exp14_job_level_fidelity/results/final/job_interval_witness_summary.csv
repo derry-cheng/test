@@ -1,0 +1,9 @@
+metric,value,unit
+nonpreemptive_joined_jobs,71128.0,jobs
+positive_measured_gpu_count_fraction,1.0,fraction
+minimum_measured_runtime_seconds,1.0,seconds
+maximum_measured_runtime_seconds,2895388.0,seconds
+maximum_observed_nonpreemptive_site_power_mw_native,0.008688826622332809,MW
+release_violation_seconds,0.0,seconds
+completion_deadline_violation_seconds,0.0,seconds
+minimum_native_capacity_slack_mwh,0.0,MWh

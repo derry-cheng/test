@@ -1,0 +1,5 @@
+counterfactual_method,evaluated_cells,mean_realized_payment_overpayment_usd,maximum_realized_payment_overpayment_usd
+Feasible Quantile Projection,2160,4.146546762191539,101.72858452120636
+Payment-Certified N-1 Verifier,2160,1.5452471012741305,120.70720731244546
+Risk-Constrained Convex Verifier,2160,2.252699397862665,113.44468920889268
+Single Feasible Projection,2160,3.1288445204208672,156.81231304609173
