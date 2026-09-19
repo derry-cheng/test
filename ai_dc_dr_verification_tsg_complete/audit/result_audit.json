@@ -2447,8 +2447,8 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 23013,
-      "sha256": "e0cc01bd5a1f09a5e5332911503d5606e8a5d686520340d5ebfa23da3d99e7aa"
+      "bytes": 23003,
+      "sha256": "08e1d6d1ad7535c7206f456521454fa3e555168785afe12cd10cf902504efc05"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
@@ -2487,8 +2487,8 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
-      "bytes": 46128,
-      "sha256": "3f5b8708a7c29a31bca964d5762f668cc48a720ec5995fb9d70700192cc78b4e"
+      "bytes": 46115,
+      "sha256": "9fcd89c1423d99b2ad53a528adbf2b637045605b35221ebe9fea5e14a6a483b1"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
@@ -3278,7 +3278,7 @@
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
       "bytes": 17034,
-      "sha256": "dd850073325b09d7f5c552b68622171f6ee7bb7a16453873f7ba46691b0e2c86"
+      "sha256": "da10a0bc7864528ca4e1a9c6b9addeba2db7caa985d3bf0cb5e330c35279287b"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
