@@ -398,17 +398,26 @@ def run_exp26_end_to_end_certificate(
         "payable_response_mwh",
         "capacity_payment_usd",
         "signed_contract_value_usd",
+        "signed_settlement_usd",
+        "cash_settlement_usd",
         "settlement_floor_applied",
     }
     if not required_settlement_columns.issubset(common_settlement.columns):
         raise RuntimeError("Exp27 settlement ledger lacks the explicit payment-cap fields")
     if not np.allclose(
-        common_settlement["payable_settlement_usd"],
+        common_settlement["signed_settlement_usd"],
+        common_settlement["signed_contract_value_usd"],
+        atol=1e-12,
+        rtol=0.0,
+    ):
+        raise RuntimeError("Exp27 signed settlement is inconsistent with its signed contract value")
+    if not np.allclose(
+        common_settlement["cash_settlement_usd"],
         np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
         atol=1e-12,
         rtol=0.0,
     ):
-        raise RuntimeError("Exp27 payable settlement is inconsistent with its declared floor")
+        raise RuntimeError("Exp27 cash-floor settlement is inconsistent with its declared floor")
     payable_cap = np.minimum(
         common_settlement["gross_declared_reduction_mwh"].to_numpy(dtype=float),
         common_settlement["frozen_contract_cap_mwh"].to_numpy(dtype=float),
@@ -448,7 +457,7 @@ def run_exp26_end_to_end_certificate(
         raise RuntimeError("Exp27 pointwise contract-cap intersection is inconsistent with the witness")
     common_settlement_summary = pd.read_csv(common_settlement_summary_path)
     settlement_values = dict(zip(common_settlement_summary["metric"].astype(str), common_settlement_summary["value"].astype(float)))
-    if int(settlement_values.get("full_cycle_cells", -1)) != expected_full_cycle_rows or not np.isclose(settlement_values.get("signed_payable_settlement_usd", np.nan), common_settlement["payable_settlement_usd"].sum(), atol=1e-9, rtol=0.0):
+    if int(settlement_values.get("full_cycle_cells", -1)) != expected_full_cycle_rows or not np.isclose(settlement_values.get("signed_cycle_settlement_usd", np.nan), common_settlement["signed_settlement_usd"].sum(), atol=1e-9, rtol=0.0):
         raise RuntimeError("Exp27 signed settlement summary is inconsistent with its ledger")
     bridge = pd.read_csv(risk_bridge_path)
     required_bridge_columns = {
@@ -780,8 +789,8 @@ def run_exp26_end_to_end_certificate(
                     and len(common_settlement) == risk_day_count * int(cfg["project"]["slots_per_day"])
                     and required_settlement_columns.issubset(common_settlement.columns)
                     and np.allclose(
-                        common_settlement["payable_settlement_usd"],
-                        np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
+                        common_settlement["signed_settlement_usd"],
+                        common_settlement["signed_contract_value_usd"],
                         atol=1e-12,
                         rtol=0.0,
                     )
@@ -840,10 +849,10 @@ def run_exp26_end_to_end_certificate(
             "settlement_rows": int(len(common_settlement)),
             "settlement_full_cycle_rows": int(len(common_settlement)),
             "settlement_signed": bool(np.allclose(common_settlement["signed_contract_value_usd"], common_settlement["capacity_payment_usd"] + common_settlement["network_value_usd"], atol=1e-12, rtol=0.0)),
-            "settlement_payment_cap_verified": bool(
+            "settlement_signed_value_verified": bool(
                 np.allclose(
-                    common_settlement["payable_settlement_usd"],
-                    np.maximum(common_settlement["signed_contract_value_usd"], 0.0),
+                    common_settlement["signed_settlement_usd"],
+                    common_settlement["signed_contract_value_usd"],
                     atol=1e-12,
                     rtol=0.0,
                 )

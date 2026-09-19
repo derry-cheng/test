@@ -18,4 +18,6 @@ declarations and binding capacity. Exp. 26 rechecks the complete declaration-
 to-settlement lineage from the immutable upstream artifacts without refitting
 or re-optimizing any profile. Exp. 27 provides the declaration-only
 runtime-complete common witness and its typed coupling certificate before
-RTS-24 settlement; Exp. 28 supplies the held-out tail-risk audit.
+RTS-24 settlement; Exp. 28 supplies the held-out tail-risk audit and Exp. 29
+independently recomputes every executable start objective and its target
+residual.

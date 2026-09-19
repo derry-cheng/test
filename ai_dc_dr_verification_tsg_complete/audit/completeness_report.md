@@ -235,6 +235,11 @@ Overall status: **PASS**.
 - [x] experiment_28:experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_28:experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png: exists and non-empty
 - [x] experiment_28:experiments/exp28_risk_tail_audit/README.md: exists and non-empty
+- [x] experiment_29:experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv: exists and non-empty
+- [x] experiment_29:experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_daily.csv: exists and non-empty
+- [x] experiment_29:experiments/exp29_executable_target_bridge/results/final/experiment_metadata.json: exists and non-empty
+- [x] experiment_29:experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.png: exists and non-empty
+- [x] experiment_29:experiments/exp29_executable_target_bridge/README.md: exists and non-empty
 - [x] manuscript_sources:paper/main.tex: exists and non-empty
 - [x] manuscript_sources:paper/main.pdf: exists and non-empty
 - [x] manuscript_sources:paper/IEEEtran.cls: exists and non-empty
@@ -253,20 +258,24 @@ Overall status: **PASS**.
 - [x] manuscript_sources:paper/figures/fig_method_detail.png: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig17_cross_layer_robustness.png: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig17_cross_layer_robustness.pdf: exists and non-empty
-- [x] canonical_unified_manifest_preserved: 30/30 stages recorded; canonical request=all; audit status=completed (running is expected during the self-check)
-- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2309x1141; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig_method_detail.png=1800x643
+- [x] manuscript_sources:paper/figures/fig_risk_tail_tradeoff.png: exists and non-empty
+- [x] manuscript_sources:paper/figures/fig_risk_tail_tradeoff.pdf: exists and non-empty
+- [x] manuscript_sources:paper/figures/fig29_target_tracking.png: exists and non-empty
+- [x] manuscript_sources:paper/figures/fig29_target_tracking.pdf: exists and non-empty
+- [x] canonical_unified_manifest_preserved: 31/31 stages recorded; canonical request=all; audit status=running (running is expected during the self-check)
+- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2307x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=2309x1077; fig_method_detail.png=1800x643; fig_risk_tail_tradeoff.png=2307x1045
 - [x] ieeetran_pdf_length_and_geometry: 10 pages; boxes=[(612.0, 792.0), (612.0, 792.0)]...
 - [x] model_formula_citation_traceability: 27/27 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
-- [x] maximum_two_sources_per_citation_group: 39 in-text citation groups checked
-- [x] complete_manuscript_bibliography: 30 verified bibliography entries; 30 unique in-text citations; uncited=[]; missing=[]
-- [x] every_labeled_equation_figure_table_is_referenced: 46 labels; unreferenced=[]; missing=[]
+- [x] maximum_two_sources_per_citation_group: 40 in-text citation groups checked
+- [x] complete_manuscript_bibliography: 31 verified bibliography entries; 31 unique in-text citations; uncited=[]; missing=[]
+- [x] every_labeled_equation_figure_table_is_referenced: 47 labels; unreferenced=[]; missing=[]
 - [x] required_abbreviation_expansions_present: MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok
 - [x] sha256_symbol_is_hyphenated: SHA-256 is written consistently in prose and equations
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68662
@@ -377,6 +386,7 @@ Overall status: **PASS**.
 - [x] full_finite_n1_frozen_profile_panel: 864 frozen-profile cells evaluate all 37 finite RTS-24 non-islanding outages without AC screening or post-solution workload adjustment
 - [x] end_to_end_declaration_to_settlement_lineage_certificate: Exp26 recomputes the indexed coupling, verifies risk/payment/outage certificates, records the common witness and settlement hashes, and preserves explicit role separation
 - [x] runtime_complete_witness_typed_coupling_certificate: Exp27 baseline and counterfactual service vectors independently satisfy job-energy, regional aggregation, GPU-nameplate, and site-capacity residual bounds and remain attached to the settlement witness digest
+- [x] exact_target_bridge_residual_audit: Exp29 recomputes all 7,306,622 declaration-feasible starts, verifies the stored finite-policy minimizers, and reports total/flexible target residuals without a heuristic profile correction
 - [x] end_to_end_upstream_hashes_match_current_artifacts: executable submitted-job witness=ok; runtime-complete common witness used by network settlement=ok; N-1 settlement replay of the runtime-complete common witness=ok; exact risk-profile to executable-start bridge=ok; validation-fitted aggregate risk target=ok; payment-certified feasible profile hull=ok; recomputed job-to-network certificate summary=ok; frozen-profile all-outage N-1 replay=ok
 - [x] no_stale_atomic_temporary_artifacts: no hidden atomic-writer temporary files remain
 

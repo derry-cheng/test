@@ -1004,7 +1004,12 @@ def run_exp27_executable_common_witness(
         )
         capacity_payment = float(payable_response_mwh * event_price)
         signed_contract_value = float(capacity_payment + value)
-        payable_settlement = float(max(0.0, signed_contract_value))
+        # Keep the economic ledger signed across the complete declared cycle.
+        # A non-negative cash floor is a separate contractual presentation
+        # rule; applying it before aggregation would silently erase negative
+        # network-value intervals and overstate the cycle settlement.
+        signed_settlement = signed_contract_value
+        cash_settlement = float(max(0.0, signed_contract_value))
         return {
             "day": day,
             "slot": slot,
@@ -1025,7 +1030,8 @@ def run_exp27_executable_common_witness(
             "payable_response_mwh": payable_response_mwh,
             "capacity_payment_usd": capacity_payment,
             "signed_contract_value_usd": signed_contract_value,
-            "payable_settlement_usd": payable_settlement,
+            "signed_settlement_usd": signed_settlement,
+            "cash_settlement_usd": cash_settlement,
             "settlement_floor_applied": int(signed_contract_value < 0.0),
             "baseline_max_loading_pu": float(baseline.max_loading),
             "counterfactual_max_loading_pu": float(response.max_loading),
@@ -1053,7 +1059,8 @@ def run_exp27_executable_common_witness(
         raise RuntimeError("Common witness settlement contains a non-finite signed value")
     signed_value_total = float(network["network_value_usd"].sum())
     signed_meter_credit_total = float(network["nodal_meter_credit_usd"].sum())
-    signed_settlement_total = float(network["payable_settlement_usd"].sum())
+    signed_settlement_total = float(network["signed_settlement_usd"].sum())
+    cash_settlement_total = float(network["cash_settlement_usd"].sum())
     negative_value_cells = int((network["network_value_usd"] < -1.0e-12).sum())
     event_network = network.loc[network["is_event_slot"].astype(bool)]
     settlement_summary = pd.DataFrame(
@@ -1068,7 +1075,9 @@ def run_exp27_executable_common_witness(
             {"metric": "capacity_payment_usd", "value": float(network["capacity_payment_usd"].sum()), "unit": "USD"},
             {"metric": "payable_response_mwh", "value": float(network["payable_response_mwh"].sum()), "unit": "MWh"},
             {"metric": "settlement_floor_cells", "value": int(network["settlement_floor_applied"].sum()), "unit": "cells"},
-            {"metric": "signed_payable_settlement_usd", "value": signed_settlement_total, "unit": "USD"},
+            {"metric": "signed_cycle_settlement_usd", "value": signed_settlement_total, "unit": "USD"},
+            {"metric": "cash_floor_settlement_usd", "value": cash_settlement_total, "unit": "USD"},
+            {"metric": "negative_settlement_debit_usd", "value": float(network.loc[network["signed_settlement_usd"] < 0.0, "signed_settlement_usd"].sum()), "unit": "USD"},
             {"metric": "signed_value_minus_meter_credit_usd", "value": signed_value_total - signed_meter_credit_total, "unit": "USD"},
         ]
     )
@@ -1275,7 +1284,8 @@ def run_exp27_executable_common_witness(
             "negative_network_value_cells": negative_value_cells,
             "signed_network_value_usd": signed_value_total,
             "signed_nodal_meter_credit_usd": signed_meter_credit_total,
-            "signed_payable_settlement_usd": signed_settlement_total,
+            "signed_cycle_settlement_usd": signed_settlement_total,
+            "cash_floor_settlement_usd": cash_settlement_total,
             "all_solver_cells_successful": bool(network["solver_success"].all()),
         },
         "files": {

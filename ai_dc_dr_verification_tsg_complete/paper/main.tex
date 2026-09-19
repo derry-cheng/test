@@ -34,19 +34,20 @@ positive network value. This paper develops a declaration-indexed verifier and
 settlement chain for spatially coupled data centers. Submit-time scheduler
 records define releases, runtimes, requested graphics processing units (GPUs),
 classes, and regions. A cumulative workload linear program (LP), a
-validation-fitted convex simplex, and an exact contiguous start-time witness
+validation-fitted convex simplex, and a contiguous start-time witness
 share that ledger and its digest; execution telemetry is opened only for an
 independent replay. The simplex enforces total and daily conditional value at
 risk (CVaR) limits on absolute false-credit exposure and reports independent
 Karush--Kuhn--Tucker and primal residuals. On 54 locked days, the joint fit has
 normalized root-mean-square error (nRMSE) 1.123, false credit 0.303 MWh/day,
-and F1 score (harmonic mean of precision and recall) 0.373; the single feasible projection has 0.943, 2.470 MWh/day,
-and 0.463, respectively. On the independent meter replay, the joint fit has
-nRMSE 0.455 versus 0.716 for that projection. Its validation certificate
-reduces false exposure from 58.104 to 4.507 MW-slots under a 14.526 MW-slot
-total budget and reduces the 75th-percentile daily tail from 12.993 to 0.966
-under a 3.248 budget. A separate gate experiment removes post-gate arrivals,
+and F1 score (harmonic mean of precision and recall) 0.373. The held-out
+total-budget-only and CVaR-only controls give 0.283 and 0.264 MWh/day,
+respectively; the joint fit is retained because it satisfies both validation
+budgets simultaneously. A separate gate experiment removes post-gate arrivals,
 requires 3 MWh of committed event service, and verifies all 54 locked days.
+The executable policy enumerates 7,306,622 declaration-feasible starts and
+reproduces the stored optimum to below $2.3\times10^{-13}$ USD; its mean
+flexible-target residual is reported explicitly rather than treated as zero.
 The resulting evidence distinguishes declaration feasibility, simulated
 mechanism isolation, and observational scoring; it does not identify a causal
 utility treatment effect.
@@ -119,8 +120,9 @@ rechecked at regional aggregation and reused verbatim by the RTS-24 N--1 value
 and full-day settlement replay; execution telemetry is retained for post-event
 scoring only. 2) It formulates a workload-state verifier with an explicit
 information boundary and a validation-fitted total-plus-daily-CVaR risk fit,
-then gives that aggregate target an exact fixed-price contiguous-block
-realization under the same declaration digest. The central calibrated
+then gives that aggregate target an exact fixed-price contiguous-block policy
+realization under the same declaration digest, with a separately certified
+target-tracking residual. The central calibrated
 entitlement and the nameplate-capacity upper commitment are both certified
 instead of being conflated. 3) It develops signed
 space--time nodal remuneration and a payment-activation rule over
@@ -128,10 +130,12 @@ calibration-validation power-conversion factors: the raw $q_{99}$ endpoint is re
 declared fixed/flexible payment-network scale, while the independently
 reconciled flexible-only capacity factor is reported as a planning diagnostic
 and never used to clip that endpoint. The central result is a
-dimension-preserving coupling invariant that carries one declared workload
-state into physical verification, network valuation, and settlement; the
-linear-program (LP), dispatch, and allocation primitives retain their established
-power-system semantics. Because public traces do not identify utility
+dimension-preserving coupling invariant and signed ledger that carry one
+declared workload state into physical verification, network valuation, and
+settlement; the linear-program (LP), dispatch, and allocation primitives retain
+their established power-system semantics. Recent computation--power coupling
+models optimize data-center operation but do not provide this
+declaration-indexed settlement certificate \cite{li2024computation}. Because public traces do not identify utility
 geography, spatial conclusions are conditional on the declared feature-
 stratified trace scenario and the complete permutation/penetration panel.
 The certificate assumes trusted scheduler and telemetry provenance: a digest
@@ -248,10 +252,23 @@ region $d$, and interval $t$, define
 \widetilde\Pi_{\max}\), where \(\widetilde\Pi_{\max}=\max_{d,h,t}[
 \widetilde p^{\rm risk}_{dht}-P_d^{\rm fix}]_+\). Re-enumerating every
 declaration-feasible block with the waiting, event-tariff, and \(\pi_{dht}\)
-terms produces the exact risk-priced realization. The bridge stores raw/scaled
-profiles, the common digest, daily residuals, and the central-energy check; it
-is a deterministic realization of the fitted target, not a second aggregate
-optimization.
+terms produces the exact minimizer of the finite start-time objective. This
+optimality statement concerns the declaration-feasible policy, not equality to
+the aggregate target. The bridge therefore records, for every locked day,
+\begin{equation}
+ \begin{aligned}
+ e^{\rm br}_{dht}&=p^{\rm exec}_{dht}-\widetilde p^{\rm risk}_{dht},\\
+ \mathrm{nRMSE}_{\rm flex}&=
+ \frac{\|e^{\rm br}\|_2}{\max\{\|\widetilde p^{\rm risk}-P^{\rm fix}\|_2,\epsilon\}}.
+ \end{aligned}
+ \label{eq:bridge_residual}
+\end{equation}
+along with the total-load normalization. Experiment~29 independently
+re-enumerates 7,306,622 candidate starts, verifies the stored minimizer, and
+reports these residuals. The bridge stores raw/scaled profiles, the common
+digest, daily residuals, and the central-energy check; it is a deterministic
+realization of the fitted target, not a second aggregate optimization or a
+hidden profile-fitting step.
 For the job-to-network certificate, the indexed witness is mapped without a
 second optimization. To avoid overloading the deadline endpoint $d_j$, let
 $\mathcal J_{sk\delta}$ be the ledger partition whose source, class, and
@@ -633,6 +650,11 @@ Equation~(\ref{eq:operatorvalue}) combines the capacity payment and signed
 space--time value. Equation~(\ref{eq:nashcontract}) uses nonactivation as the outside option,
 keeps both utilities nonnegative, and is budget balanced. It is separate from
 ISO nodal remuneration and the exact dispatch-value benchmark.
+For the executable full-day ledger, each interval first retains the signed
+contract value $s_{dt}=r^{\rm DR}q^{\rm pay}_{dt}+\Delta V_{dt}$. The reported
+economic settlement is $S^{\rm signed}=\sum_{d,t}s_{dt}$; a cash presentation
+$S^{\rm cash}=\sum_{d,t}\max\{s_{dt},0\}$ is stored separately. The cash floor
+therefore cannot erase negative network-value debits before cycle aggregation.
 The complete-cycle ledger $\mathcal W$ includes pre-event increases and rebound,
 so workload conservation gives $\sum_{d,t\in\mathcal W}(p^0_{dt}-p^1_{dt})\dt=0$
 within solver tolerance.
@@ -733,8 +755,9 @@ $p_\theta=(1-\theta)p^{\rm cap}+\theta p^{\rm cert}$, the interval is
   \max\{\Delta V_\xi(p^{\rm cap}),\Delta V_\xi(p^{\rm cert})\}\right].
   \label{eq:paymentinterval}
  \end{equation}
-The lower endpoint is one joint N--1 SCED LP with a shared segment parameter;
-convexity gives the endpoint maximum and the cap belongs to $\mathcal I_\xi$.
+The lower endpoint in (\ref{eq:paymentinterval}) is one joint N--1 SCED LP with
+a shared segment parameter; convexity gives the endpoint maximum and the cap
+belongs to $\mathcal I_\xi$.
 Validation-frozen profiles and the realized counterfactual determine both
 endpoints; the interval width is uncertainty cost, while (\ref{eq:paymentcert})
 remains the finite-scenario certificate.
@@ -772,10 +795,13 @@ Summation gives the false-credit and under-credit bounds without locked outcomes
 Base-case and stacked N--1 values are convex piecewise-affine functions of nodal
 demand; (\ref{eq:bregman}) gives the linear-value bound. Each dispatch embedded
 in (\ref{eq:paymentcert}) is feasible, so (\ref{eq:paymentdominance}) holds for
-all $\xi\in\Xi_5$. Convexity in the continuous conversion factor puts the
-worst case on $[\xi_{\rm L},\xi_{\rm U}]$ at an endpoint; (\ref{eq:paymentinterval})
-has the exact joint-LP lower endpoint. Experiments~9 and 15 use independent
-40- and four-segment models.
+the five frozen conversion scenarios $\Xi_5$. For the continuous audit in
+Experiment~15, the realized counterfactual is held fixed while the affine
+segment between the two frozen contract profiles is varied; the joint LP gives
+the exact segment minimum and convexity puts its maximum at an endpoint. No
+endpoint assertion is made for a simultaneously conversion-scaled realized
+counterfactual. Experiments~9 and 15 use independent 40- and four-segment
+models.
 
 The digest detects post-commit scheduler-tuple changes, while the execution join
 audits ordering and energy conservation. An optimum of (\ref{eq:jobindexed})
@@ -791,6 +817,16 @@ The first residual uses the same $E_j^{\rm run}$ as (\ref{eq:jobindexed});
 $\widehat E_j$ remains diagnostic. Residuals at most $\varepsilon$ identify the
 witness, checked in Experiments~22 and~27 before N--1 valuation; allocation
 checks $\sum_i\phi_i=v(N)$ separately.
+Moreover, if the feasible SCED value is $L_V$-Lipschitz on the committed
+polytope, the mapped-value error is bounded by
+\begin{equation}
+ |V(p^{\rm map})-V(p^{\rm job})|
+ \leq L_V\|r^{\rm map}\|_1 .
+ \label{eq:typedbound}
+\end{equation}
+Equation~(\ref{eq:typedbound}) makes the zero-residual certificate explicit: the network solver receives
+the same nodal profile implied by the indexed jobs, rather than an independently
+refitted aggregate trace.
 
 \section{Experimental Design}\label{sec:design}
 
@@ -871,8 +907,10 @@ continuous-cycle remuneration; 13--16 provide measured replay, indexed witness,
 conversion intervals, and reconciliation. Experiments~17--25 freeze the gate,
 verify shared-plan AC feasibility, audit scale/coupling, replay an independent
 event, and enumerate all RTS-24 outages. Experiment~27 adds the runtime-complete
-common witness, and Experiment~28 audits the held-out risk tail with a fixed
-block bootstrap. Comparisons use the same 54 locked days unless a deterministic
+common witness; Experiment~28 audits the held-out risk tail with absolute-MWh
+and normalized-ratio metrics under a fixed block bootstrap; Experiment~29
+recomputes the finite risk-to-executable enumeration and its target residual.
+Comparisons use the same 54 locked days unless a deterministic
 network or ledger rule is stated. Experiment~26 independently recomputes the
 declaration-to-network residuals and checks the common witness digest, source
 hashes, and role labels of the risk, payment, and outage artifacts.
@@ -900,9 +938,14 @@ validation certificate, fixed before the locked split, reduces total false
 exposure from 58.104 to 4.507 MW-slots under a 14.526 MW-slot budget and reduces
 its absolute daily CVaR$_{0.75}$ from 12.993 to 0.966 under a 3.248 budget.
 The total-budget-only and CVaR-only ablations give 1.122/0.378/0.283 and
-1.121/0.384/0.264 for nRMSE/$F_1$/false credit, respectively. The joint fit is
-therefore identified by the simultaneous total and tail constraints rather than
-by a post-solve clipping rule. Its convex QP has Clarabel KKT stationarity
+1.121/0.384/0.264 for nRMSE/$F_1$/false credit, respectively. Exp28 reports
+the same comparison on the locked tail: joint/total-only/CVaR-only mean false
+credit is 0.303/0.283/0.264 MWh/day, while the absolute
+CVaR$_{0.75}$ is 1.093/1.013/0.937 MWh/day and the 90th percentile is
+0.706/0.787/0.824 MWh/day. The paired three-day bootstrap intervals for the
+joint-minus-control differences contain zero for both single-axis controls;
+the joint fit is therefore identified by satisfying both validation constraints,
+not by an unsupported held-out dominance claim. Its convex QP has Clarabel KKT stationarity
 residual $3.52\times10^{-10}$, primal residual $8.0\times10^{-15}$, and zero
 linear-epigraph residual. The independent meter replay is reported separately:
 RiskSafe has nRMSE 0.455 and MAE 4.813 MW, compared with 0.716 and 7.038 MW for
@@ -946,13 +989,13 @@ Tail-Risk Feasible Counterfactual & 1.121 & 0.264 & 36.562 & 0.384\\
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.47\textwidth]{figures/fig_risk_tail_tradeoff.pdf}\hfill
-\includegraphics[width=0.47\textwidth]{figures/fig28_common_executable_witness.pdf}
+\includegraphics[width=0.47\textwidth]{figures/fig29_target_tracking.pdf}
 \caption{Result evidence for the two coupled certificates. Left: held-out
-absolute daily false-credit exposures for the joint total-plus-CVaR fit and the
-total-budget-only ablation, including the empirical upper tail. Right: declaration baseline and
-event response generated by the same runtime-complete job witness on a locked
-day; the shaded interval is the predeclared event window. The settlement ledger
-retains the full 96-slot day and flags the eight event slots.}
+normalized and absolute false-credit tails for the joint, total-only, and
+CVaR-only fits. Right: the locked-day aggregate contract target and the
+declaration-indexed executable realization, with its measured residual below;
+the realization is the exact finite-start policy minimizer, while target
+tracking is audited rather than assumed.}
 \label{fig:result_certificates}
 \end{figure*}
 
@@ -1047,99 +1090,69 @@ W/W/1; Experiment~12 reports event-window MAE
 \subsection{Independent trace and deployment-boundary audits}
 
 The immutable scheduler/DCGM replay gives a 71,128-job residual below
-$10^{-17}$ MWh; no utility-event label exists. Experiment~17 quantifies the
-information cost: the complete-ledger risk profile has
-nRMSE/false response/$F_1$ 1.123/0.303/0.373, while the slot-62 gate with
-post-gate arrivals masked gives 1.366/0.494/0.080. The gate is fixed before
-scoring, removes post-gate arrivals from every decision LP, and requires 3 MWh
-of committed event service on all 54 locked days. Experiment~20 gives
-trace-meter MAE 4.813 MW for the risk profile (1.909 for the feasible-quantile
-comparator). Experiment~23 enumerates every
-declaration-feasible start under a distinct tariff; its common witness gives
-nRMSE 0.0210, false response 0.0194 MWh/day, and $F_1=0.529$ over 54 days,
-while the independently recomputed policy is an exact $F_1=1.000$ reference.
-The certificate verifies no future arrivals or execution telemetry enter the
-policy and makes no field-causal claim. Table~\ref{tab:security} records the
+$10^{-17}$ MWh and no event tag.
+
+Experiment~17 gives the
+complete-ledger comparator (1.123/0.303/0.373) and slot-62 gate
+(1.366/0.494/0.080); the gate is fixed pre-scoring, masks post-gate arrivals
+and execution truth, and requires 3 MWh on 54 days. The comparator is therefore
+not a deployable guarantee. Experiment~20 gives 4.813 MW trace-meter MAE, and
+Experiment~23 gives 0.0210/0.0194/$F_1=0.529$ under a separate tariff, with
+exact $F_1=1.000$ on independent replay. Table~\ref{tab:security} records the
 boundary.
 
 \begin{table}[t]
 \centering
-\caption{Declared information-boundary and security-replay coverage. The
-independent declaration checks are computed before locked scoring.}
+\caption{Declared information-boundary, security-replay, and indexed-certificate
+coverage. Triplets are nRMSE/false response/$F_1$; declaration checks precede
+locked scoring.}
 \label{tab:security}
 \scriptsize
 \begin{tabular}{@{}p{0.48\columnwidth}p{0.43\columnwidth}@{}}
 \toprule
 Panel & Cells and certificate\\
 \midrule
-Independent declaration replay & 7/7 information and independence checks; nRMSE 0.0210, $F_1=0.529$\\
+Complete-ledger ex-post comparator & 54 days; 1.123/0.303/0.373\\
+Slot-62 gate-causal contract & 54 days; 1.366/0.494/0.080; no future arrivals\\
+Independent declaration replay & 7/7 boundary checks; 0.0210/--/0.529\\
+Indexed job witness & 75,326/71,128 jobs; 13,198,247 variables; 7,306,622 starts; residual $<10^{-11}$ MWh\\
+Executable bridge/settlement & nRMSE 0.02601/8.41$\times10^{-6}$/3.144; signed/cash 161.036/277.806 USD; 1,168 debit cells\\
 Frozen-profile DC N--1 (RTS-24) & 864 cells; 37 outages/cell; 1.0000 p.u.\\
 Shared-plan AC (IEEE-9) & 3,888; 0.880/0.907/0.935 p.u.\\
-Corrective AC (IEEE-9/14) & 864 base + 5,400 outage solves; all feasible\\
-Admissible fixed-plan AC N--1 (four networks) & 9,648 contingency + 144 intact solves; all certified\\
+Corrective AC (IEEE-9/14) & 864 base + 5,400 outages; all feasible\\
+Admissible fixed-plan AC N--1 (four networks) & 9,648 outages + 144 intact; certified\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Indexed workload counterfactual}
 
-Experiment~27 assigns all 75,326 valid submissions a runtime-complete contiguous
-block at the declared GPU nameplate. The indexed Exp19 witness has 13,198,247
-job--slot variables and enumerates every admissible start; nameplate/central
-entitlements are 1,972.115/0.570 MWh, residuals are below $10^{-11}$ MWh, site
-slack is 28.595 MWh, and event-window reduction is 4.68225 MWh
-(Table~\ref{tab:jobcounterfactual}). The signed N--1 ledger covers 5,184
-full-day (432 event) cells with 37 contingencies each. Experiments 25, 24, and
-26 independently validate the 71,128/75,326 execution join and 79-job binding
-cohort, replay 864 frozen-profile cells and 31,968 contingency solves, and
-recompute typed job-to-region/region-to-bus residuals plus the common digest.
-The locked \RiskSafe{} profile is mapped once to a fixed executable contract by
-a submit-time global scale; every declaration-feasible start and its
-upper-capacity/central-energy residual are retained with the same digest before
-network settlement. Full-day settlement keeps negative network-value cells as
-signed debits; event slots remain a diagnostic subset.
-
-\begin{table}[t]
-\centering
-\caption{Exact indexed job-level and binding-capacity certificates.}
-\label{tab:jobcounterfactual}
-\scriptsize
-\begin{tabular}{@{}p{0.58\columnwidth}p{0.32\columnwidth}@{}}
-\toprule
-Quantity & Value\\
-\midrule
-Submitted / execution-matched jobs; admissible starts & 75,326 / 71,128; 13,198,247\\
-Nameplate upper / central declared runtime energy (MWh) & 1,972.115 / 0.570\\
-Nameplate baseline / response event energy; event reduction (MWh) & 165.436 / 160.754; \textbf{4.68225}\\
-Maximum aggregate energy residual; minimum site slack (MWh) & $7.8\times10^{-12}$; 28.595\\
-Binding stress cohort / capacity / service floor (jobs/MW/MWh) & 79 / 0.00016037 / 0.00108\\
-Job-to-network residual; full-day / event settlement cells & 0; 5,184 / 432\\
-Risk-priced executable bridge mean nRMSE (upper / central) & \textbf{0.02601 / 8.41$\times10^{-6}$}\\
-DC N--1 profile panel; RTS-24 outages / cells / evaluations & 37 / 864 / 31,968\\
-Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
-\bottomrule
-\end{tabular}
-\end{table}
+Experiment~27 assigns all 75,326 valid submissions a runtime-complete block;
+Exp29 enumerates 7,306,622 feasible starts and reproduces every minimizer
+(Table~\ref{tab:security}). Nameplate/central entitlements are 1,972.115/0.570
+MWh, residuals are below $10^{-11}$ MWh, site slack is 28.595 MWh, and event
+reduction is 4.68225 MWh. The submit-time-scaled \RiskSafe{} bridge has total
+and flexible-target nRMSE 0.02601 and 3.144 under (\ref{eq:bridge_residual}).
+The 5,184-cell full-day ledger
+retains 1,168 signed debit cells and reports signed/cash settlement
+$161.036/$277.806.
 
 \section{Conclusion}\label{sec:conclusion}
 
 This paper couples a provenance-bound workload verifier with signed nodal
-settlement. On locked data, the joint profile reaches
-nRMSE/false credit/$F_1=1.123/0.303/0.373$ MWh/day with both aggregate and
-absolute daily-CVaR budgets satisfied (Fig.~\ref{fig:result_certificates}). The
-runtime-complete witness covers 75,326 submissions, 1,972.115 MWh of declared
-runtime energy, 4.68225 MWh of event-window reduction, and 5,184 full-day
-RTS-24 cells with 37 finite outages each; the signed payable settlement is
-277.806 USD after signed debits and the pointwise meter cap. The executable
-bridge has mean nRMSE 0.0260, and the independent declaration replay confirms
-the response under a separate tariff. Fixed demand remains outside the flexible
-conversion; deployment requires scheduler, telemetry, and topology attestation,
-with field-causal validation treated as a separate operational step.
+settlement. The locked joint profile reaches nRMSE/false credit/$F_1$
+=1.123/0.303/0.373 while satisfying both CVaR budgets (Fig.~\ref{fig:result_certificates}).
+The witness covers 75,326 submissions and 5,184 RTS-24 cells; signed/cash
+settlement is 161.036/277.806 USD after retaining 1,168 debit cells. The
+exact-start audit reports total/flexible bridge nRMSE 0.0260/3.144, and a
+separate tariff replay confirms the declaration response. Fixed demand remains
+outside conversion; deployment requires scheduler, telemetry, and topology
+attestation.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
 % Keep the reference list readable while preserving the ten-page manuscript limit.
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{8.0}{8.6}\selectfont\setlength{\itemsep}{-0.45pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{7.5}{8.0}\selectfont\setlength{\itemsep}{-0.55pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

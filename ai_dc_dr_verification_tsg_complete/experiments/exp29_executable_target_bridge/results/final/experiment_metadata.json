@@ -1,0 +1,27 @@
+{
+  "experiment": "independent exact audit of the risk-to-executable bridge",
+  "schema_version": 1,
+  "optimization_class": "finite exact enumeration of every declaration-feasible contiguous start",
+  "heuristic_target_tracking": false,
+  "future_arrivals_used": false,
+  "execution_telemetry_used": false,
+  "candidate_count_definition": "submitted jobs multiplied by queue allowance plus one",
+  "submitted_jobs": 75326,
+  "service_variables": 13198247,
+  "enumerated_start_candidates": 7306622,
+  "exact_start_mismatch_jobs": 0,
+  "maximum_objective_recomputation_residual_usd": 2.2737367544323206e-13,
+  "mean_target_tracking_nrmse_total": 0.026011251764522993,
+  "mean_target_tracking_nrmse_flexible": 3.1442192457977347,
+  "mean_target_tracking_relative_l2_flexible": 1.613905797528939,
+  "source_sha256": {
+    "runtime_complete_witness.npz": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488",
+    "job_level_runtime_summary.csv": "152419396bd1f910d66e53b755a276e1729c3f15c1e536ef11125a9c8560d0c4",
+    "risk_to_executable_bridge.csv": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8"
+  },
+  "files": {
+    "summary": "executable_target_bridge_audit.csv",
+    "daily": "executable_target_bridge_daily.csv",
+    "figure": "fig29_target_tracking.pdf"
+  }
+}

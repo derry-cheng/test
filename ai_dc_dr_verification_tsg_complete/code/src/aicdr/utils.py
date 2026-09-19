@@ -120,6 +120,9 @@ def ensure_dirs(root: Path) -> None:
         "experiments/exp28_risk_tail_audit/results/intermediate",
         "experiments/exp28_risk_tail_audit/results/final",
         "experiments/exp28_risk_tail_audit/figures",
+        "experiments/exp29_executable_target_bridge/results/intermediate",
+        "experiments/exp29_executable_target_bridge/results/final",
+        "experiments/exp29_executable_target_bridge/figures",
         "audit",
     ]:
         (root / rel).mkdir(parents=True, exist_ok=True)

@@ -6,10 +6,12 @@ This repository separates implementation, experiments, artifacts, and the manusc
 - `configs/`: frozen study configuration and predeclared capacity commitments.
 - `data/processed/`: compact, hashed intermediate arrays and manifests derived from the source data.
 - `data/raw/`: source-data notices/licenses and optional source files restored for a full preprocessing run.
-- `experiments/exp*/`: one directory per experiment, with `run.py`, `README.md`, `results/intermediate/`, `results/final/`, and `figures/`.
+- `experiments/exp*/`: one directory per experiment, with `run.py`, `README.md`, `results/intermediate/`, `results/final/`, and `figures/`. Experiment 29 is the independent executable target-bridge audit.
 - `results/`: cross-experiment exports that are not owned by one experiment.
 - `audit/`: machine-readable and human-readable completeness reports.
 - `paper/`: LaTeX source, bibliography, figures, and the compiled manuscript.
+- `reports/review/`: claim-by-claim TSG review resolution.
+- `reports/reproducibility/`: targeted rerun manifests and release provenance.
 - `reports/`: revision log and reproducibility notes.
 - `artifacts/`: stage manifests and execution metadata.
 - `tests/`: deterministic certificate and invariant tests.

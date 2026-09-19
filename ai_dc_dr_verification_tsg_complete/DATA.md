@@ -64,7 +64,8 @@ precommitted 128-slot runtime before the same allowance is added. A fixed 0.001
 MW/GPU nameplate provides the per-slot service bound. The observed scheduler
 completion interval is retained only for the independent native replay and
 never defines the counterfactual deadline or power cap. The indexed model
-enumerates 13,198,247 admissible job--slot starts. Experiment 19 uses the
+stores 13,198,247 job--slot service variables and enumerates 7,306,622
+admissible contiguous starts. Experiment 19 uses the
 calibrated central entitlement with an analytically determined remainder in its
 final occupied interval; Experiment 27 freezes those starts and certifies the
 runtime-complete GPU-nameplate upper block and the central-energy realization
@@ -101,8 +102,10 @@ declaration-only runtime entitlement from each requested GPU count, nameplate,
 and allocation runtime. It exports a typed baseline/counterfactual service
 certificate before the common RTS-24 settlement replay; no measured execution
 field or fitted aggregate entitlement enters that witness. Experiment 28 audits
-the held-out total-plus-CVaR tail against the total-budget-only ablation with a
-paired block bootstrap.
+the held-out total-plus-CVaR tail against the total-budget-only and CVaR-only
+ablations with a paired block bootstrap. Experiment 29 independently
+re-enumerates all declaration-feasible executable starts and retains the
+total/flexible target-tracking residual as a measured certificate.
 
 Experiment 16 computes a canonical SHA-256 digest of the sorted joined
 scheduler/DCGM rows, verifies release-before-execution ordering and exact raw-

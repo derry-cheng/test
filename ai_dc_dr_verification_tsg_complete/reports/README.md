@@ -1,6 +1,7 @@
 # Reports and audit records
 
-`audit/` contains machine-generated completeness and result audits. This
-directory contains human-readable revision records and release notes; it does
-not contain solver outputs. The manuscript source and figures remain under
-`paper/`.
+`audit/` contains machine-generated completeness and result audits. `review/`
+contains the human-readable resolution of the TSG review points, while
+`reproducibility/` contains release-time rerun manifests. Solver outputs stay
+under each experiment's `results/` directory, and manuscript source and figures
+remain under `paper/`.

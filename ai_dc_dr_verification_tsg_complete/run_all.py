@@ -61,6 +61,7 @@ def main() -> int:
             "exp25",
             "exp27",
             "exp28",
+            "exp29",
             "exp26",
             "audit",
         ],

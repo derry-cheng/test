@@ -65,10 +65,13 @@ modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--28 each own a protocol README and final
+the LaTeX source. Experiments 1--29 each own a protocol README and final
 results; long-running stages add checkpoints and visualization-producing
-stages add figures. The audit module checks the expected output inventory and
-numerical certificates. Experiment 21 reports both the
+stages add figures. Experiment 29 independently enumerates the admissible
+contiguous start policy for every submitted job and reports both exact policy
+objective residuals and the remaining aggregate target-tracking residual. The
+audit module checks the expected output inventory and numerical certificates.
+Experiment 21 reports both the
 capacity-proportional homogeneous scale and the fixed-nameplate scale; it does
 not treat a scaled witness as a second re-optimised LP. Experiment 22 retains
 the aggregate indexed coupling certificate and checks typed zero residuals
@@ -78,8 +81,9 @@ reuses its digest for the common RTS-24 N--1 valuation and settlement replay.
 The digest covers both indexed service vectors, their contiguous start blocks,
 and the regional profiles; Experiment 26 reconstructs and re-hashes those
 arrays before accepting the lineage.
-Experiment 28 audits the held-out total-plus-CVaR tail against the
-total-budget-only ablation. Experiment 24 independently freezes its profiles and
+Experiment 28 audits the held-out total-plus-CVaR tail against both
+total-budget-only and CVaR-only ablations on ratio and absolute-MWh scales.
+Experiment 24 independently freezes its profiles and
 evaluates all 37 finite RTS-24 DC N--1 outages per cell; native-inadmissible
 outages are screened before workload injection and reported by network. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC

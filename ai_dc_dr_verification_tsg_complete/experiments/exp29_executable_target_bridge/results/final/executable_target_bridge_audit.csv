@@ -1,0 +1,17 @@
+metric,value,unit
+submitted_jobs,75326.0,jobs
+service_variables,13198247.0,job-slot variables
+candidate_starts_per_job,97.0,starts/job
+enumerated_start_candidates,7306622.0,candidates
+exact_start_mismatch_jobs,0.0,jobs
+maximum_objective_recomputation_residual_usd,2.2737367544323206e-13,USD
+mean_target_tracking_nrmse_total,0.026011251764522993,ratio
+mean_target_tracking_nrmse_flexible,3.1442192457977347,ratio
+mean_target_tracking_relative_l2_flexible,1.613905797528939,ratio
+maximum_absolute_target_residual_mw,2.040773344025646,MW
+mean_signed_energy_residual_mwh,0.580939814814741,MWh/day
+maximum_peak_capacity_utilization,0.004440677966101695,ratio
+minimum_site_capacity_slack_mw,117.476,MW
+risk_days,54.0,days
+fixed_load_mw,6.0,MW
+flexible_capacity_mw,118.0,MW

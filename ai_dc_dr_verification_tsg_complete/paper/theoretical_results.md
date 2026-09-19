@@ -446,8 +446,8 @@ an independently optimized aggregate trajectory cannot receive a network
 value. The result follows by finite summation over the disjoint ledger
 partition; no optimization or rounding is involved in the mapping. Experiment
 22 reconstructs the profile from the selected service vector produced by the
-exact model that enumerates 13,198,247 admissible contiguous job--slot starts
-over 75,326 scheduler submissions,
+exact model that stores 13,198,247 job--slot service variables and enumerates
+7,306,622 admissible contiguous starts over 75,326 scheduler submissions,
 checks the job, aggregation, bus-mapping, GPU-bound, and site-capacity rows,
 and records zero residual before either SCED solve. The coupled replay is
 pinned to the public IEEE RTS-24 case and uses a deterministic arithmetic-mean

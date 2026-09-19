@@ -9,7 +9,8 @@ index only; generated checkpoints and raw releases are not copied here.
 The revised closure stages are:
 
 - `exp19_job_level_counterfactual`: exact contiguous indexed witness selected
-  from 13,198,247 admissible starts over 75,326 submissions.
+  from 7,306,622 admissible starts over 75,326 submissions (the indexed
+  service vector contains 13,198,247 job--slot variables).
 - `exp20_trace_meter_replay`: independent 54-day observed-meter replay.
 - `exp21_scale_consistency`: fixed-nameplate and capacity-proportional
   homogeneous transforms of the same indexed witness.
@@ -28,4 +29,6 @@ The revised closure stages are:
   witness, typed job/aggregation/GPU/capacity certificate, and the common
   RTS-24 N--1 settlement replay.
 - `exp28_risk_tail_audit`: paired held-out tail-risk audit against the
-  total-budget-only ablation.
+  total-budget-only and CVaR-only ablations on ratio and absolute-MWh scales.
+- `exp29_executable_target_bridge`: independent finite-start enumeration audit
+  with exact objective replay and explicit total/flexible target residuals.

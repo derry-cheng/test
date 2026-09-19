@@ -9,5 +9,7 @@ signed_nodal_meter_credit_usd,1.2695400286588665e-11,USD
 capacity_payment_usd,161.0362972085452,USD
 payable_response_mwh,1.0735753147236347,MWh
 settlement_floor_cells,1168.0,cells
-signed_payable_settlement_usd,277.8063757461034,USD
+signed_cycle_settlement_usd,161.03629720869256,USD
+cash_floor_settlement_usd,277.8063757461034,USD
+negative_settlement_debit_usd,-116.77007853741088,USD
 signed_value_minus_meter_credit_usd,1.346427414006257e-10,USD

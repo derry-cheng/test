@@ -5,7 +5,7 @@
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
     "runtime-complete common witness used by network settlement": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488",
-    "N-1 settlement replay of the runtime-complete common witness": "c5f6c65956b7abfc098e34ef362aa9176d64865d3e4fa33cdf96f43858bbf404",
+    "N-1 settlement replay of the runtime-complete common witness": "a3106803119fa9ac1df202c39fcf19b2bd7b1197cb82aea51f10001b9ef06da0",
     "exact risk-profile to executable-start bridge": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8",
     "validation-fitted aggregate risk target": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
     "payment-certified feasible profile hull": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
@@ -78,7 +78,7 @@
     "settlement_rows": 5184,
     "settlement_full_cycle_rows": 5184,
     "settlement_signed": true,
-    "settlement_payment_cap_verified": true,
+    "settlement_signed_value_verified": true,
     "central_declared_service_energy_mwh": 0.570394485428465,
     "nameplate_upper_energy_mwh": 1972.1150000000002,
     "risk_bridge_file": "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge.csv",

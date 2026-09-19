@@ -311,6 +311,13 @@ EXPECTED_FILES = {
         "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png",
         "experiments/exp28_risk_tail_audit/README.md",
     ],
+    "experiment_29": [
+        "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv",
+        "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_daily.csv",
+        "experiments/exp29_executable_target_bridge/results/final/experiment_metadata.json",
+        "experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.png",
+        "experiments/exp29_executable_target_bridge/README.md",
+    ],
     "manuscript_sources": [
         "paper/main.tex",
         "paper/main.pdf",
@@ -330,6 +337,10 @@ EXPECTED_FILES = {
         "paper/figures/fig_method_detail.png",
         "paper/figures/fig17_cross_layer_robustness.png",
         "paper/figures/fig17_cross_layer_robustness.pdf",
+        "paper/figures/fig_risk_tail_tradeoff.png",
+        "paper/figures/fig_risk_tail_tradeoff.pdf",
+        "paper/figures/fig29_target_tracking.png",
+        "paper/figures/fig29_target_tracking.pdf",
     ],
 }
 
@@ -392,6 +403,7 @@ def run_audit(
         "exp26",
         "exp27",
         "exp28",
+        "exp29",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -4278,6 +4290,55 @@ def run_audit(
             "Exp27 baseline and counterfactual service vectors independently satisfy "
             "job-energy, regional aggregation, GPU-nameplate, and site-capacity "
             "residual bounds and remain attached to the settlement witness digest"
+        ),
+        checks,
+    )
+
+    target_bridge_summary = pd.read_csv(
+        root
+        / "experiments/exp29_executable_target_bridge/results/final/"
+        "executable_target_bridge_audit.csv"
+    )
+    target_bridge_daily = pd.read_csv(
+        root
+        / "experiments/exp29_executable_target_bridge/results/final/"
+        "executable_target_bridge_daily.csv"
+    )
+    target_bridge_metadata = json.loads(
+        (
+            root
+            / "experiments/exp29_executable_target_bridge/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    target_bridge_values = dict(
+        zip(target_bridge_summary["metric"].astype(str), target_bridge_summary["value"].astype(float))
+    )
+    _check(
+        int(target_bridge_values.get("submitted_jobs", -1)) == 75_326
+        and int(target_bridge_values.get("service_variables", -1)) == 13_198_247
+        and int(target_bridge_values.get("enumerated_start_candidates", -1)) == 7_306_622
+        and int(target_bridge_values.get("exact_start_mismatch_jobs", -1)) == 0
+        and float(target_bridge_values.get("maximum_objective_recomputation_residual_usd", np.inf)) <= 1e-10
+        and len(target_bridge_daily) == 54
+        and np.isfinite(
+            target_bridge_daily[
+                [
+                    "target_tracking_nrmse_total",
+                    "target_tracking_nrmse_flexible",
+                    "target_tracking_relative_l2_flexible",
+                    "maximum_absolute_residual_mw",
+                ]
+            ].to_numpy(dtype=float)
+        ).all()
+        and target_bridge_metadata.get("heuristic_target_tracking") is False
+        and target_bridge_metadata.get("future_arrivals_used") is False
+        and target_bridge_metadata.get("execution_telemetry_used") is False,
+        "exact_target_bridge_residual_audit",
+        (
+            "Exp29 recomputes all 7,306,622 declaration-feasible starts, verifies "
+            "the stored finite-policy minimizers, and reports total/flexible target "
+            "residuals without a heuristic profile correction"
         ),
         checks,
     )

@@ -4,7 +4,7 @@ The uploaded `ai_dc_dr_verification_tsg_complete.tar(1).gz` stream was
 truncated and cannot by itself reproduce the study (`gzip: unexpected end of
 file`). The workspace has been completed with verified public source manifests
 and processed arrays; the large raw inputs are intentionally omitted from the
-working tree. It contains the source code, processed arrays, all 28 experiment directories,
+working tree. It contains the source code, processed arrays, all 29 experiment directories,
 audit reports, tests, manuscript sources, editable figures, and generated
 results.
 
@@ -18,8 +18,9 @@ The repository should also be treated as
 a trace-driven benchmark, not as evidence from a co-located utility event. The
 network placement and workload-to-power scaling are declared scenario
 parameters, and the manuscript states this identification boundary explicitly.
-Experiment 19 now enumerates 13,198,247 admissible contiguous starts over all
-75,326 scheduler submissions; 71,128 execution matches are opened only for
+Experiment 19 stores 13,198,247 job--slot service variables over all 75,326
+scheduler submissions; the exact policy enumerates 7,306,622 admissible
+contiguous starts, while 71,128 execution matches are opened only for
 post-event scoring. Experiment 21 separates the fixed-nameplate deployable scale from its
 capacity-proportional stress profile; Experiment 22 replays the exact indexed
 job witness through N--1 settlement on the predeclared public PYPOWER RTS-24
@@ -31,7 +32,9 @@ profiles. Experiment 25 validates the submit-time declaration boundary and
 binding-capacity stress cohort without using execution telemetry in the
 counterfactual. Experiment 27 adds the declaration-only runtime-complete
 common witness, its typed job/aggregation/GPU/capacity certificate, and the
-RTS-24 settlement replay; Experiment 28 audits the held-out risk tail. The
+RTS-24 settlement replay; Experiment 28 audits the held-out risk tail, and
+Experiment 29 independently enumerates executable starts and reports target
+residuals. The
 tracked
 PGLib IEEE-118 file supports the separate cross-network/AC panels.
 

@@ -309,7 +309,8 @@
     "negative_network_value_cells": 1168,
     "signed_network_value_usd": 1.4733814168721437e-10,
     "signed_nodal_meter_credit_usd": 1.2695400286588665e-11,
-    "signed_payable_settlement_usd": 277.8063757461034,
+    "signed_cycle_settlement_usd": 161.03629720869256,
+    "cash_floor_settlement_usd": 277.8063757461034,
     "all_solver_cells_successful": true
   },
   "files": {

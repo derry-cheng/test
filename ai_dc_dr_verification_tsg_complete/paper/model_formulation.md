@@ -13,7 +13,10 @@ motivate the published-equation translation panel. None of these sources supplie
 the gate-causal ledger, submitted/frozen contract
 separation, or closed-meter settlement rule used here. Those elements are
 defined and proved below; they are not presented as consequences of the cited
-models.
+models. Computation--power coupled collaborative optimization is also a recent
+reference point \cite{li2024computation}; its scheduling/ADN objective is kept
+separate from the declaration-indexed verification and signed settlement chain
+defined below.
 
 ## A. Indices, data, and decision variables
 
@@ -237,8 +240,9 @@ p^{\rm job}_{d\tau}
 The exact flow used for the calibrated Exp19 workload certificate is therefore
 \(x_{skd\tau}=x^{\rm job}_{skd\tau}\), with the same release, deadline,
 capacity, and terminal constraints. Experiment 19 stores the selected
-job--slot service vector from a model that enumerates 13,198,247 admissible
-starts over 75,326 submissions; Experiment 22 reconstructs \(p^{\rm job}\) from
+job--slot service vector with 13,198,247 variables from a model that enumerates
+7,306,622 admissible starts over 75,326 submissions; Experiment 22 reconstructs
+\(p^{\rm job}\) from
 that selected vector and checks its maximum residual against the saved aggregate profile
 before any dispatch is solved. The network value is consequently attached to
 the committed indexed witness, not to a second aggregate optimization. The
