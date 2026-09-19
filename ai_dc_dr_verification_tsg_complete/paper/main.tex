@@ -293,10 +293,19 @@ only after commitment. Canonical ordering makes $h_{\rm sub}$ independent of
 execution telemetry \cite{nist2015fips1804}; Experiment~16 reconciles measured
 power with the 118-MW nameplate fixed before the split.
 
-The verifier assumes scheduler/DCGM services are authoritative and the digest is
-committed before the event decision. It cannot establish that a deadline,
-region, class, or energy field was truthful before signing; upstream attestation
-is outside this certificate.
+\paragraph{Information and threat model.}
+At decision time, $\mathcal I^{\rm dec}$ contains the submission ledger,
+declared topology, pre-event prices, and configuration; the scoring set adds the
+closed meter and execution ledger only after the contract is frozen. The threat
+model covers post-commitment edits, replayed records, and attempts to introduce
+future arrivals into a committed response. The canonical digest rejects an
+altered scheduler tuple, the information-boundary certificate rejects future or
+locked-test fields, and the settlement rule caps payment with the closed meter.
+Scheduler and DCGM services remain trusted sources: a digest detects a changed
+field, while upstream attestation is required to establish that a submitted
+deadline, region, class, or energy field was semantically truthful. Complete-ledger
+profiles are therefore ex-post information comparators; the slot-62 committed
+ledger is the deployable contract protocol.
 
 \subsection{Counterfactual, response, and false credit}
 
@@ -900,6 +909,13 @@ RiskSafe has nRMSE 0.455 and MAE 4.813 MW, compared with 0.716 and 7.038 MW for
 the single projection. No trace-meter value is used in fitting or reserve
 selection.
 
+Three-day moving-block 95\% intervals for the joint fit are [0.982, 1.231] for
+nRMSE and [0.092, 0.628] MWh/day for false credit. Relative to the single
+projection, the paired false-credit improvement is 2.167 MWh/day
+([0.962, 3.713], Holm-adjusted $p=9.16\times10^{-5}$), while the paired nRMSE
+difference is $-0.179$ ([$-0.260$, $-0.104$]); this reports the risk--accuracy
+tradeoff without treating the verifier as a uniformly superior predictor.
+
 \begin{table}[t]
 \centering
 \caption{Locked 54-day mechanism-isolation response results (daily means).}
@@ -989,49 +1005,44 @@ exposing the rebound component that positive-only local accounting omits.
 
 \subsection{Cross-network and N--1 security evidence}
 
-Experiment 5 evaluates 6,480 four-network outcomes; exact value improves the
-trace-anchored error in all 12 cells (mean \$1.913/day; eight Holm-adjusted
-tests below 0.05) with a \$0.050/day workload change. Experiment 6 solves 810
-capacity/deadline schedules (binding shares 0.031--0.911; false credit
-2.374--2.740 MWh). Experiment 7 enumerates 16 four-site and 256 eight-site
-coalitions (budget residual $5.68\times10^{-14}$ dollars) plus 1,296 exact
-20-participant states. Experiment 8 enforces (\ref{eq:n1}) for all 37 RTS-24
-non-islanding outages; trace/workload MAE is
-\$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955 for base exact,
-N--1 linear, and N--1 exact, with 1.000 p.u. maximum loading.
+Experiments 5--8 establish the cross-network and N--1 replay. Across 6,480
+four-network outcomes, exact value improves the trace error in all 12 cells
+(mean \$1.913/day; eight Holm-adjusted tests below 0.05) for a
+\$0.050/day workload change. The capacity/deadline panel solves 810 schedules
+(binding shares 0.031--0.911; false credit 2.374--2.740 MWh), while the
+coalition panel covers 16 four-site, 256 eight-site, and 1,296 exact
+20-participant states with a $5.68\times10^{-14}$ dollar budget residual.
+The 37-outage RTS-24 replay enforces (\ref{eq:n1}); base exact, N--1 linear,
+and N--1 exact give trace/workload MAE
+\$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955, respectively,
+with 1.000 p.u. maximum loading.
 
 Table~\ref{tab:security} summarizes the complete replay scope.
 
 Experiment~9 tests (\ref{eq:paymentdominance}) on 54 programs with a
-validation-frozen seven-profile hull; contiguous-fold nRMSE selects the cap
-reference (Projection $\rho=10$) and validation N--1 MAE selects the payment
-target (Projection $\rho=3$). The declared conversion factors are
-$q_{01}=0.583$, $q_{10}=0.687$, $q_{50}=0.970$, $q_{90}=1.349$, and
-$q_{99}=5.321$; every certificate violation is below $3\times10^{-11}$ USD.
-The q50/q99 MAE (USD/day) for PaymentSafe/single/feasible-quantile/RiskSafe is
-56.858/321.660, 40.675/231.475, 55.360/312.933, and 55.877/317.475,
-respectively; corresponding overpayment is at most 1.087/5.118 USD/day for the
-feasible-quantile comparator and below 0.031/0.024 USD/day for the single
-projection. Their moving-block intervals and the unseen 0.80/1.20 transfer panel
-are stored with the locked artifact.
+validation-frozen seven-profile hull. Contiguous-fold nRMSE selects the cap
+reference ($\rho=10$), and validation N--1 MAE selects the payment target
+($\rho=3$). The declared $q_{01}/q_{10}/q_{50}/q_{90}/q_{99}$ factors are
+0.583/0.687/0.970/1.349/5.321; every certificate violation is below
+$3\times10^{-11}$ USD. PaymentSafe/single/feasible-quantile/RiskSafe q50/q99
+MAE is 56.858/321.660, 40.675/231.475, 55.360/312.933, and 55.877/317.475
+USD/day, with overpayment at most 1.087/5.118 USD/day for the feasible-quantile
+comparator and below 0.031/0.024 USD/day for the single projection. Moving-block
+intervals and the unseen 0.80/1.20 transfer panel are archived with the result.
 
-Experiment~10 replaces the linear network with AC OPF
-\cite{zimmerman2011matpower}: all 864 connected-base and 5,400 corrective
-IEEE-9/14 cells are feasible, with zero deviation in 3,888 shared-plan cells
-(0.880/0.907/0.935 p.u. at 3/6/9\%). Experiment~18 extends the fixed-active
-plan to four networks and 9,648 admissible contingency solves plus 144 intact
-solves; all remaining cells have zero voltage violation and maximum loading
-1.000 p.u. Experiment~11 averages 26 assignments across three penetrations,
-four counterfactuals, and 54 days; its 3/6/9\% MAE is
-\$101.155/\$203.361/\$303.195 for RiskSafe,
-\$105.250/\$211.555/\$315.490 for single, and
-\$81.613/\$164.249/\$244.481 for feasible quantile. Experiment~16 audits
-44,391/9,637/41,154 training, calibration-validation, and locked GPU records;
-MAE/RMSE/$R^2$ are 10.803/14.463/0.8956 and 13.543/20.075/0.8196 W/W/1.
-Experiment~12 reports event-window MAE
+The AC replay (Experiment~10) uses AC OPF \cite{zimmerman2011matpower} and has 864 connected-base and 5,400 corrective
+IEEE-9/14 cells, all feasible, and zero deviation in 3,888 shared-plan cells
+(0.880/0.907/0.935 p.u. at 3/6/9\%); Experiment~18 adds 9,648 admissible
+contingency and 144 intact solves across four networks, with zero voltage
+violation and 1.000 p.u. maximum loading. Experiment~11 averages 26 assignments
+over three penetrations, four counterfactuals, and 54 days; its 3/6/9\% MAE is
+\$101.155/\$203.361/\$303.195, \$105.250/\$211.555/\$315.490, and
+\$81.613/\$164.249/\$244.481 for RiskSafe, single, and feasible quantile.
+The calibration audit (Experiment~16) covers 44,391/9,637/41,154 chronological
+records with MAE/RMSE/$R^2$ of 10.803/14.463/0.8956 and 13.543/20.075/0.8196
+W/W/1; Experiment~12 reports event-window MAE
 \$26.937/\$34.166/\$8.659/\$5.325 and complete-cycle residual
-\$0.621/\$0.569/\$0.104/\$0 for feasible-quantile, payment-certified, RiskSafe,
-and single.
+\$0.621/\$0.569/\$0.104/\$0, respectively.
 
 \subsection{Independent trace and deployment-boundary audits}
 
@@ -1072,30 +1083,21 @@ Admissible fixed-plan AC N--1 (four networks) & 9,648 contingency + 144 intact s
 
 \subsection{Indexed workload counterfactual}
 
-Experiment~27 assigns each of 75,326 valid submissions a runtime-complete
-contiguous block at the declared GPU nameplate. The indexed Exp19 witness has
-13,198,247 job--slot variables; Exp27 enumerates every admissible start in each
-declaration window. The nameplate and calibrated central entitlements are
-1,972.115 and 0.570 MWh, with both residuals below $10^{-11}$ MWh and 28.595
-MWh minimum site slack (Table~\ref{tab:jobcounterfactual}); the event-window
-reduction is 4.68225 MWh. Signed N--1 settlement covers 5,184 full-day cells
-(432 event cells), each with 37 finite contingencies. Experiment~25 validates
-the 71,128/75,326 execution join and its 79-job binding cohort; Experiment~24
-independently covers 864 frozen-profile cells and 31,968 contingency solves.
-Experiment~26 recomputes the job-to-region and region-to-bus residuals, the
-central-energy/risk bridge, and the common digest before settlement; its typed
-lineage certificate passes.
-The risk-to-executable audit uses the locked \RiskSafe{} profile to form a
-fixed executable contract. Because the statistical profile and the declared
-GPU nameplate are calibrated on different absolute scales, the flexible part
-is multiplied once by a global factor determined from locked-day submit-time
-declarations; the raw profile remains in the certificate. Regional slot prices
-are then fixed from that scaled shape and every declaration-feasible start is
-enumerated. Its upper-capacity and central-energy realizations are stored with
-daily residuals and the same submission digest, so the aggregate fit is
-connected to an integer, contiguous job state before any network solve. Full-day settlement
-keeps negative network-value cells as signed debits; the event-slot subset is
-reported only as an event diagnostic.
+Experiment~27 assigns all 75,326 valid submissions a runtime-complete contiguous
+block at the declared GPU nameplate. The indexed Exp19 witness has 13,198,247
+job--slot variables and enumerates every admissible start; nameplate/central
+entitlements are 1,972.115/0.570 MWh, residuals are below $10^{-11}$ MWh, site
+slack is 28.595 MWh, and event-window reduction is 4.68225 MWh
+(Table~\ref{tab:jobcounterfactual}). The signed N--1 ledger covers 5,184
+full-day (432 event) cells with 37 contingencies each. Experiments 25, 24, and
+26 independently validate the 71,128/75,326 execution join and 79-job binding
+cohort, replay 864 frozen-profile cells and 31,968 contingency solves, and
+recompute typed job-to-region/region-to-bus residuals plus the common digest.
+The locked \RiskSafe{} profile is mapped once to a fixed executable contract by
+a submit-time global scale; every declaration-feasible start and its
+upper-capacity/central-energy residual are retained with the same digest before
+network settlement. Full-day settlement keeps negative network-value cells as
+signed debits; event slots remain a diagnostic subset.
 
 \begin{table}[t]
 \centering
@@ -1123,26 +1125,21 @@ Maximum counterfactual post-contingency loading (p.u.) & 1.0000\\
 
 This paper couples a provenance-bound workload verifier with signed nodal
 settlement. On locked data, the joint profile reaches
-nRMSE/false credit/$F_1=1.123/0.303/0.373$ MWh/day, with both the
-aggregate and absolute daily-CVaR budgets checked independently (Fig.~\ref{fig:result_certificates}). The runtime-complete declaration
-witness covers all 75,326 submissions, conserves 1,972.115 MWh of declared
-runtime energy, shifts 4.68225 MWh from the event window, and carries one
-digest through 5,184 full-day RTS-24 settlement cells (432 event cells) and 37
-finite N--1 outages per cell; the signed payable settlement is 277.806 USD,
-with negative network-value cells retained as signed debits before the pointwise
-meter cap. The risk-to-executable bridge has mean nRMSE 0.0260 for the
-nameplate envelope. The independent declaration
-replay confirms the response under a separate exact tariff policy. Fixed demand remains outside the flexible
-conversion, and deployment requires signed scheduler, telemetry, and topology
-attestation; field-causal validation remains a separate operational step.
-The aggregate risk fit is therefore reported as a statistical contract view,
-while the runtime-complete witness is the executable physical state used for
-network settlement.
+nRMSE/false credit/$F_1=1.123/0.303/0.373$ MWh/day with both aggregate and
+absolute daily-CVaR budgets satisfied (Fig.~\ref{fig:result_certificates}). The
+runtime-complete witness covers 75,326 submissions, 1,972.115 MWh of declared
+runtime energy, 4.68225 MWh of event-window reduction, and 5,184 full-day
+RTS-24 cells with 37 finite outages each; the signed payable settlement is
+277.806 USD after signed debits and the pointwise meter cap. The executable
+bridge has mean nRMSE 0.0260, and the independent declaration replay confirms
+the response under a separate tariff. Fixed demand remains outside the flexible
+conversion; deployment requires scheduler, telemetry, and topology attestation,
+with field-causal validation treated as a separate operational step.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
-% Use IEEE's compact reference convention while retaining the 10-point body.
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{7.0}{7.3}\selectfont\setlength{\itemsep}{-0.80pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
+% Keep the reference list readable while preserving the ten-page manuscript limit.
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{8.0}{8.6}\selectfont\setlength{\itemsep}{-0.45pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

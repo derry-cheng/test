@@ -293,7 +293,7 @@ Overall status: **PASS**.
 - [x] decision_time_committed_response_protocol: committed-ledger response is a second masked-ledger LP with the declared DR-price objective, rolling state, and explicit contract cap
 - [x] decision_time_protocol_role_separation: gate diagnostic, deployable response, and complete-ledger comparator are separately named
 - [x] explicit_decision_information_boundary_certificate: the gate certificate records zero post-gate arrivals, execution truth, locked-outcome selection, and utility event labels at decision time, while requiring a frozen submitted contract and payment exclusion of future jobs
-- [x] causal_response_grid_selection: 42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget
+- [x] causal_response_grid_selection: 42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget; selection fails closed when no feasible candidate exists
 - [x] causal_reserve_is_validation_selected_and_payment_ineligible: 4 validation candidates select the recorded eta=0.55 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate
 - [x] cross_network_ac_n1_admissibility_panel: 9648 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
 - [x] homogeneous_scale_has_fixed_nameplate_bound: capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP

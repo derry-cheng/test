@@ -12980,12 +12980,24 @@ def run_exp17(
         response_validation_summary["false_response_mwh"]
         <= response_false_budget + 1e-12
     ]
-    response_pool = feasible_response if len(feasible_response) else response_validation_summary
-    if len(positive_pool):
+    if feasible_response.empty:
+        raise RuntimeError(
+            "No predeclared committed-ledger response candidate satisfies the "
+            f"validation false-credit budget ({response_false_budget:.6g} MWh/day)"
+        )
+    response_pool = feasible_response
+    if bool(
+        cfg["experiments"].get("decision_time_require_positive_response_price", False)
+    ):
         positive_feasible = positive_pool[
             positive_pool["false_response_mwh"] <= response_false_budget + 1e-12
         ]
-        response_pool = positive_feasible if len(positive_feasible) else positive_pool
+        if positive_feasible.empty:
+            raise RuntimeError(
+                "No positive-price committed-ledger response candidate satisfies "
+                f"the validation false-credit budget ({response_false_budget:.6g} MWh/day)"
+            )
+        response_pool = positive_feasible
     selected_response = response_pool.sort_values(
         ["credit_f1", "credit_recall", "nrmse", "false_response_mwh"],
         ascending=[False, False, True, True],
@@ -13392,6 +13404,8 @@ def run_exp17(
             "validation_false_credit_budget_mwh": response_false_budget,
             "selected_dr_price_per_mwh": selected_response_price,
             "selected_projection_weight": selected_response_weight,
+            "candidate_fallback_used": False,
+            "selection_failed_closed_if_no_feasible_candidate": True,
             "committed_event_service_mwh": committed_event_service_mwh,
             "participating_data_center_indices": decision_participants.tolist(),
             "selection_rule": (

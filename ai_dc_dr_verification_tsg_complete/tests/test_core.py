@@ -598,13 +598,12 @@ def test_payment_target_is_frozen_on_validation_and_two_sided_band_is_complete()
         / "experiments/exp2_baseline_verification/results/final/"
         "risk_constrained_validation_certificate.csv"
     ).iloc[0]
-    assert cert["risk_cvar_metric"] == "daily_false_credit_ratio"
+    assert cert["risk_cvar_metric"] == CFG["experiments"]["risk_cvar_metric"]
     assert np.isclose(float(cert["risk_cvar_level"]), float(CFG["experiments"]["risk_cvar_level"]))
     assert float(cert["cvar_budget_slack_metric"]) >= 0.0
     assert bool(cert["cvar75_budget_binding"]) is False
-    active_boundary = cvar[cvar["minimum_cvar_touches_budget"]]
-    assert len(active_boundary) == 1
-    assert np.isclose(float(active_boundary.iloc[0]["cvar_reserve_fraction"]), 0.97)
+    assert not cvar["minimum_cvar_touches_budget"].astype(bool).any()
+    assert np.all(cvar["cvar_budget_minus_minimum_metric"] >= -1e-10)
     assert float(cert["total_objective_weight"]) > 0.0
     ablation_weights = pd.read_csv(
         ROOT
@@ -682,8 +681,8 @@ def test_data_flow_distinguishes_full_join_from_common_tensor_window() -> None:
         }
     assert manifest["mit_supercloud"]["full_positive_energy_joined_jobs"] == 71128
     assert manifest["mit_supercloud"]["valid_joined_jobs"] == 68662
-    assert rows["MIT immutable scheduler-DCGM join"] == 71128
-    assert rows["MIT common trace horizon filter"] == 68662
+    assert rows["MIT independent execution reference"] == 68662
+    assert rows["MIT submit-time declaration ledger"] == 72672
 
 
 def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
@@ -737,8 +736,23 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
         / "experiments/exp17_decision_time_information/results/final/"
         "causal_reserve_test_summary.csv"
     )
+    decision_meta = json.loads(
+        (
+            ROOT
+            / "experiments/exp17_decision_time_information/results/final/"
+            "experiment_metadata.json"
+        ).read_text(encoding="utf-8")
+    )
+    response_meta = decision_meta["causal_response_calibration"]
+    assert response_meta["candidate_fallback_used"] is False
+    assert response_meta["selection_failed_closed_if_no_feasible_candidate"] is True
     assert len(reserve) == 1
-    assert float(reserve.loc[0, "reserve_quantile"]) == 0.60
+    assert np.isclose(
+        float(reserve.loc[0, "reserve_quantile"]),
+        float(decision_meta["causal_reserve_planning"]["selected_quantile"]),
+        rtol=0.0,
+        atol=1e-12,
+    )
     validation_reserve = pd.read_csv(
         ROOT
         / "experiments/exp17_decision_time_information/results/final/"

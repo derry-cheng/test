@@ -1449,7 +1449,7 @@
     {
       "name": "causal_response_grid_selection",
       "passed": true,
-      "detail": "42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget"
+      "detail": "42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget; selection fails closed when no feasible candidate exists"
     },
     {
       "name": "causal_reserve_is_validation_selected_and_payment_ineligible",
@@ -2447,13 +2447,13 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_daily.csv",
-      "bytes": 23295,
-      "sha256": "ab6e3cb8f73c5c06209807f527d549e7d5e97ddc0b51a810caf2182a147c2ee1"
+      "bytes": 23013,
+      "sha256": "e0cc01bd5a1f09a5e5332911503d5606e8a5d686520340d5ebfa23da3d99e7aa"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_test_summary.csv",
       "bytes": 204,
-      "sha256": "5ae706c14aacc441e1282acb7975e28805d8a1216e6657a178cd3ba6e0a47f15"
+      "sha256": "5f272098735cc3b1931817777bb127e921fde27329616336d3b573f259ab0991"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/causal_reserve_validation_daily.csv",
@@ -2477,23 +2477,23 @@
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_comparison.csv",
-      "bytes": 202592,
-      "sha256": "04cd2c8a39004fc1d341336c5857fe59b930e906613381bfc7883ac0493d579e"
+      "bytes": 200777,
+      "sha256": "a4f3196d75f35c05dda815ca9af617b09defd1b7e4bc1809973432fcaf2c7208"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv",
-      "bytes": 1094,
-      "sha256": "644bb1b39042688c4568dae38d4ad8208a4be098f710b8e09a7395dd4883edda"
+      "bytes": 1095,
+      "sha256": "8296c71d0fdf6564a6c5e36200942cdca74c0b49b22da293155e86753cc26f10"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/decision_time_trace_replay.csv",
-      "bytes": 46434,
-      "sha256": "170a8d31805188b6f79f3d136d9f4dfb2911107b98c273c666e58941d79ad1ae"
+      "bytes": 46128,
+      "sha256": "3f5b8708a7c29a31bca964d5762f668cc48a720ec5995fb9d70700192cc78b4e"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/experiment_metadata.json",
-      "bytes": 5518,
-      "sha256": "eb89a91614c1c8a2da9dcc8baa3f8636851257b32fe2c8c03f85a179c808e9d3"
+      "bytes": 5618,
+      "sha256": "d9299ef057b654d0f6af90cc6a55e82f286ed28d442712d9b1327df220184a15"
     },
     {
       "path": "experiments/exp17_decision_time_information/results/final/information_boundary_certificate.csv",
@@ -3278,7 +3278,7 @@
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.pdf",
       "bytes": 17034,
-      "sha256": "0f24f8b902b8b12a8d6bf6bdbf735b365a38b4d1825cfed53bdcc15f51af86af"
+      "sha256": "dd850073325b09d7f5c552b68622171f6ee7bb7a16453873f7ba46691b0e2c86"
     },
     {
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",

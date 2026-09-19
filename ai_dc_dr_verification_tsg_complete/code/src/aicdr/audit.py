@@ -1220,6 +1220,14 @@ def run_audit(
     _check(
         len(response_validation) == expected_response_candidates
         and len(selected_response) == 1
+        and decision_meta.get("causal_response_calibration", {}).get(
+            "candidate_fallback_used"
+        )
+        is False
+        and decision_meta.get("causal_response_calibration", {}).get(
+            "selection_failed_closed_if_no_feasible_candidate"
+        )
+        is True
         and float(selected_response.iloc[0]["false_response_mwh"])
         <= float(cfg["experiments"]["decision_time_response_validation_false_budget_mwh"]) + 1e-8
         and np.isfinite(
@@ -1230,7 +1238,8 @@ def run_audit(
         "causal_response_grid_selection",
         (
             f"{len(response_validation)} masked-ledger response candidates select one "
-            "DR price/regularization pair on validation only under the declared false-credit budget"
+            "DR price/regularization pair on validation only under the declared false-credit budget; "
+            "selection fails closed when no feasible candidate exists"
         ),
         checks,
     )

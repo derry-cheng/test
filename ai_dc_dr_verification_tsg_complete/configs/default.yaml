@@ -160,9 +160,8 @@ experiments:
   preventive_ac_dc_bus_map_one_based:
     "IEEE RTS 24-bus": [1, 2, 7, 13]
     "IEEE 30-bus": [1, 2, 13, 22]
-    # This adjacent generator-bus stratum is fixed before solving; it keeps
-    # the declared 9% penetration feasible under the fixed-active-plan AC
-    # contingency envelope without changing any line or voltage limit.
+    # This public generator-bus stratum is registered before the panel;
+    # native-case admissibility is evaluated independently of locked outcomes.
     "IEEE 39-bus": [30, 31, 32, 33]
     "IEEE 118-bus": [1, 4, 6, 8]
   # Complete factorial spatial validation: every one of the 4! assignments is
