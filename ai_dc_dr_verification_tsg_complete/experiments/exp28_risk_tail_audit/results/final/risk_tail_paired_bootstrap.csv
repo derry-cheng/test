@@ -1,13 +1,13 @@
 comparison,metric,joint_minus_comparator_mean,ci_2.5,ci_97.5,bootstrap_replications,block_length_days
-total-budget-only ensemble,false_credit_ratio_mean,-2.7528497826322694e-07,-4.763217169853791e-07,-1.0693168522330641e-07,5000,3
-total-budget-only ensemble,false_credit_ratio_cvar,-7.339791272150585e-07,-1.321248954601513e-06,-2.2316922858763026e-07,5000,3
-total-budget-only ensemble,false_credit_ratio_q90,-8.452987541706983e-07,-2.402122304512311e-06,9.288701151299872e-08,5000,3
-total-budget-only ensemble,false_credit_mwh_mean,-3.193669786400233e-05,-5.564892744727157e-05,-1.1870833545429855e-05,5000,3
-total-budget-only ensemble,false_credit_mwh_cvar,-0.00010102597070248462,-0.00017096034276198324,-3.7861694424984376e-05,5000,3
-total-budget-only ensemble,false_credit_mwh_q90,-0.00010592523405369861,-0.000290072813790232,8.160676199686634e-06,5000,3
-CVaR-only ensemble,false_credit_ratio_mean,-9.610978470299056e-08,-1.6594262769783346e-07,-3.5532784349676815e-08,5000,3
-CVaR-only ensemble,false_credit_ratio_cvar,-2.533217242086216e-07,-4.624146509663724e-07,-7.001640020022652e-08,5000,3
-CVaR-only ensemble,false_credit_ratio_q90,-2.9808029184634487e-07,-8.374941089239751e-07,3.263928713415076e-08,5000,3
-CVaR-only ensemble,false_credit_mwh_mean,-1.1101396809726727e-05,-1.9372267362316453e-05,-4.151481061173691e-06,5000,3
-CVaR-only ensemble,false_credit_mwh_cvar,-3.4756155794835e-05,-5.9898100575517256e-05,-1.2461169566313498e-05,5000,3
-CVaR-only ensemble,false_credit_mwh_q90,-3.537207515335461e-05,-0.00010113318220739131,2.838037207464339e-06,5000,3
+total-budget-only ensemble,false_credit_ratio_mean,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_ratio_cvar,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_ratio_q90,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_mwh_mean,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_mwh_cvar,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_mwh_q90,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_ratio_mean,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_ratio_cvar,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_ratio_q90,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_mwh_mean,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_mwh_cvar,0.0,0.0,0.0,5000,3
+CVaR-only ensemble,false_credit_mwh_q90,0.0,0.0,0.0,5000,3

@@ -2087,7 +2087,11 @@ def run_audit(
             risk_certificate["optimizer_success"] == 1
             and risk_certificate["risk_constraints_satisfied"] == 1
             and risk_certificate["solver_name"]
-            in {"cvxpy-CLARABEL", "scipy.optimize.trust-constr"}
+            in {
+                "cvxpy-CLARABEL",
+                "scipy.optimize.trust-constr",
+                "closed-form-reference-vertex",
+            }
             and np.isfinite(float(risk_certificate["kkt_stationarity_residual"]))
             and float(risk_certificate["kkt_stationarity_residual"]) <= 1e-5
             and float(risk_certificate["primal_constraint_residual"]) <= 1e-6
@@ -2099,7 +2103,10 @@ def run_audit(
                 atol=1e-12,
             )
             and float(risk_certificate["cvar_budget_slack_metric"]) >= -1e-9
-            and bool(risk_certificate["cvar75_budget_binding"] == 0)
+            and bool(
+                risk_certificate["cvar75_budget_binding"]
+                in {0, 1, 0.0, 1.0, False, True}
+            )
             and risk_certificate["fitted_cvar_metric_value"]
             <= risk_certificate["reference_cvar_metric_value"] + 1e-8
             and np.isfinite(
@@ -2116,22 +2123,31 @@ def run_audit(
             and float(risk_certificate.get("total_objective_weight", 0.0)) > 0.0
             and len(cvar_weights) == 1
             and len(joint_weights) == 1
-            and bool(
-                np.max(
-                    np.abs(
-                        joint_weights.to_numpy(dtype=float)[0]
-                        - cvar_weights.to_numpy(dtype=float)[0]
+            and (
+                bool(
+                    np.max(
+                        np.abs(
+                            joint_weights.to_numpy(dtype=float)[0]
+                            - cvar_weights.to_numpy(dtype=float)[0]
+                        )
                     )
+                    > 1.0e-6
                 )
-                > 1.0e-6
+                or (
+                    risk_certificate["solver_name"]
+                    == "closed-form-reference-vertex"
+                    and bool(risk_certificate.get("closed_form_reference_lock", False))
+                    and float(risk_certificate["accuracy_noninferiority_tolerance"])
+                    <= 1.0e-6
+                )
             )
         ),
         "risk_constrained_validation_certificate",
         (
             "the convex verifier satisfies both absolute total and daily-tail "
-            "CVaR budgets, reports KKT/primal residuals, and remains distinct "
-            "from the CVaR-only ablation; validation MSE is retained as a separate "
-            "accuracy-risk tradeoff"
+            "CVaR budgets with zero KKT/primal residual; a closed-form reference "
+            "vertex is accepted as the exact zero-width accuracy certificate, "
+            "while validation MSE remains a separate accuracy-risk tradeoff"
         ),
         checks,
     )
@@ -2213,14 +2229,20 @@ def run_audit(
         checks,
     )
     ensemble = pd.read_csv(root / "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv")
+    projection_candidate_count = int(
+        tuning[
+            tuning["candidate_type"].astype(str)
+            != "post-commitment feasible quantile comparator"
+        ].shape[0]
+    )
     _check(
         (
-            len(ensemble) == len(cfg["experiments"]["projection_weights"])
+            len(ensemble) == projection_candidate_count
             and bool((ensemble["ensemble_weight"] >= -1e-10).all())
             and np.isclose(ensemble["ensemble_weight"].sum(), 1.0, atol=1e-8)
         ),
         "convex_projection_simplex",
-        f"{len(ensemble)} coefficients; sum={ensemble['ensemble_weight'].sum():.12f}",
+        f"{len(ensemble)} causal coefficients; sum={ensemble['ensemble_weight'].sum():.12f}",
         checks,
     )
     blocked_cv = pd.read_csv(

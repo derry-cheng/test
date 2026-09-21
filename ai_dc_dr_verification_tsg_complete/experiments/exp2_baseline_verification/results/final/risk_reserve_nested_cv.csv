@@ -1,17 +1,5 @@
 reserve_fraction,fold,held_out_days,held_out_nrmse,held_out_false_credit_mw_slots,held_out_reference_false_credit_mw_slots,held_out_false_credit_ratio_to_reference,held_out_risk_noninferior,solver_status,nested_selected_reserve_fraction,selected_reserve_fraction
-0.25,1,45;46;47;48,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.25: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.25,2,49;50;51;52,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.25: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.25,3,53;54;55;56,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.25: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.25,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.25: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.5,1,45;46;47;48,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.5: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.5,2,49;50;51;52,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.5: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.5,3,53;54;55;56,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.5: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.5,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.5: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-0.75,1,45;46;47;48,1.2686140261927006,0.16114893562295052,6.1102765651965045,0.026373427438757514,1.0,optimal,False,False
-0.75,2,49;50;51;52,0.824611097423743,17.776850600405183,17.77685070641585,0.999999994036589,1.0,optimal,False,False
-0.75,3,53;54;55;56,1.0468779942322815,0.7453643258918268,0.745364377388106,0.9999999309112686,1.0,optimal,False,False
-0.75,4,57;58;59;60,inf,inf,,inf,0.0,infeasible:Risk-constrained convex QP is infeasible under the declared reserve fraction 0.75: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None),False,False
-1.0,1,45;46;47;48,1.268614102970847,0.16114894189866824,6.1102765651965045,0.026373428465833404,1.0,optimal,True,True
-1.0,2,49;50;51;52,0.8246110912126103,17.776849205729235,17.77685070641585,0.9999999155819757,1.0,optimal,True,True
-1.0,3,53;54;55;56,1.046877974307923,0.7453643717832286,0.745364377388106,0.9999999924803524,1.0,optimal,True,True
-1.0,4,57;58;59;60,1.1416306717211635,20.99459798373121,33.47180795600011,0.6272322669671552,1.0,optimal,True,True
+1.0,1,45;46;47;48,1.2731467524836881,10.177657485037235,10.177657485037235,1.0,1.0,optimal,True,True
+1.0,2,49;50;51;52,0.5938058647240245,39.531500559632576,39.531500559632576,1.0,1.0,optimal,True,True
+1.0,3,53;54;55;56,0.9811285549838578,5.233224004777378,5.233224004777378,1.0,1.0,optimal,True,True
+1.0,4,57;58;59;60,1.0737140320084646,74.31825520765882,74.31825520765882,1.0,1.0,optimal,True,True

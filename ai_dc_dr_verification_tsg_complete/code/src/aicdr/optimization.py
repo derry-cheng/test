@@ -438,7 +438,7 @@ def solve_sced(system: PowerSystem, load_mw: np.ndarray, segments: int = 10) -> 
         A_eq=structure["aeq"],
         b_eq=beq,
         bounds=structure["bounds"],
-        method="highs",
+        method="highs-ds",
         options={"presolve": True},
     )
     if not result.success:
@@ -631,7 +631,10 @@ def solve_n1_sced(
         A_eq=csr_matrix(np.ones((1, len(c)))),
         b_eq=np.array([float(load_mw.sum() - pmin.sum())]),
         bounds=list(zip(np.zeros(len(c)), widths_a)),
-        method="highs",
+        # Dual simplex is an exact LP algorithm for this fixed polyhedral
+        # SCED; it reuses the active basis efficiently across the many
+        # frozen-profile outage replays without changing any constraint.
+        method="highs-ds",
         options={"presolve": True},
     )
     if not result.success:

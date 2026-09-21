@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-09-21T03:09:20.810591+00:00",
+  "started_utc": "2026-09-21T15:14:36.353145+00:00",
   "stage_requested": "audit",
   "resume": true,
   "environment": {
@@ -10,14 +10,16 @@
     "pandas": "2.2.3",
     "scipy": "1.17.0",
     "scikit_learn": "1.8.0",
-    "git_commit": "04b25bdd9c177f376ee2e9f8b8cae2d38a5238b8"
+    "git_commit": "11e78c6356dcc62da13e67a2f99715ca9381920f"
   },
   "stages": {
     "audit": {
-      "started_utc": "2026-09-21T03:09:20.814436+00:00",
-      "status": "failed",
-      "finished_utc": "2026-09-21T03:09:21.404294+00:00",
-      "error": "RuntimeError(\"Audit failed: ['canonical_unified_manifest_preserved', 'required_abbreviation_expansions_present', 'decision_time_information_boundary_panel', 'independent_trace_meter_replay_panel', 'risk_constrained_validation_certificate', 'payment_panel_lineage_matches_current_profiles_and_manifest', 'ac_profile_lineage_after_refit', 'independent_controlled_event_replay', 'runtime_complete_witness_typed_coupling_certificate', 'end_to_end_upstream_hashes_match_current_artifacts']\")"
+      "started_utc": "2026-09-21T15:14:36.357679+00:00",
+      "status": "completed",
+      "finished_utc": "2026-09-21T15:14:37.271730+00:00",
+      "elapsed_seconds": 0.914051
     }
-  }
+  },
+  "finished_utc": "2026-09-21T15:14:37.272792+00:00",
+  "status": "completed"
 }

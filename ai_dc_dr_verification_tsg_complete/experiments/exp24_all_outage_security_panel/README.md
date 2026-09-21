@@ -5,7 +5,10 @@ and solves the continuous DC security-constrained dispatch (DC N-1 SCED) with
 all 37 finite non-islanding RTS-24 line outages. The outage set is defined by
 the DC RTS-24 topology; no AC admissibility filter, contingency ranking, or
 post-result workload re-optimization is used. The profile-to-bus map and the
-0.90 native-load multiplier are predeclared in `configs/default.yaml`.
+0.90 native-load multiplier are predeclared in `configs/default.yaml`; the
+facility-to-RTS-24 conversion uses the frozen validation-only `dc_power_scale`
+recorded by Experiment 9, so fixed and flexible components remain in the same
+physical units as the payment certificate before any outage is solved.
 
 The replay contains 54 locked days × 8 event slots × 2 frozen profiles, hence
 864 optimization cells and 31,968 sample-contingency evaluations (37 finite

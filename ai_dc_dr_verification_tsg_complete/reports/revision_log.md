@@ -5,21 +5,30 @@ settlement evidence chain. The detailed point-by-point mapping is in
 `reports/review/tsg_resolution.md`.
 
 Exp2, Exp9, Exp17, Exp20, Exp22, Exp23, Exp24, Exp26, Exp27, Exp28, Exp29, and
-Exp30 were regenerated after the risk-contract and active-window changes; the AC
-lineage panel is rerun from the current locked profiles. Exp27 replays 54 locked days over 5,184 full-day
+Exp30 were regenerated after the causal-Pareto risk-contract and active-window
+changes; the AC lineage panel is rerun from the current locked profiles. Exp27 replays 54 locked days over 5,184 full-day
 cells with 37 finite N--1 contingencies per cell. Exp28 contains three risk
 ablations and both ratio and absolute-MWh tail metrics. Exp29 independently
 recomputes 7,306,622 finite declaration-feasible start candidates and verifies
 the saved policy objective. Exp30 makes the declaration-only network replay and
 closed-meter payment gate machine-checkable.
 
-The final release keeps the indexed service-variable count (13,198,247) distinct
+The locked risk profile is the validation-selected \(\rho=10\) causal Pareto
+vertex; its (10^{-6}) RMS non-inferiority certificate is solved in closed
+form and independently checked as a convex-program certificate. The locked
+release reaches 0.691/1.895/17.024/0.699 for nRMSE/false/under-credit/
+\(F_1\), strictly improving the single feasible projection and weakly
+dominating the remaining declaration-causal workload-feasible comparison set. The
+final release keeps the indexed service-variable count (13,198,247) distinct
 from the candidate-start count (7,306,622), separates signed cycle settlement
 from its cash-floor presentation, and labels the complete-ledger profile as an
 ex-post comparator while the slot-62 profile is gate-causal. Exp9's high-memory
-unseen transfer evaluator uses a day-level checkpoint and one worker; the payment
-evaluator is forced to regenerate whenever its profile checksum changes. Exp10's
-AC N--1 panel uses bounded workers and a row checkpoint. Exp26 reproduces the
+unseen transfer evaluator uses a day-level checkpoint; the payment evaluator
+uses two date-level workers and is forced to regenerate whenever its profile
+checksum changes. Exp10's
+AC N--1 panel uses bounded workers and a row checkpoint. Exp24 applies the
+validation-frozen Exp9 $q_{99}$ facility-to-network scale before its complete
+864-cell, 31,968-outage RTS-24 replay. Exp26 reproduces the
 active-window declaration scale, including carry-in jobs, before accepting the
 upstream hashes. The long Exp9 interval and unseen-transfer checkpoints now use
 same-directory atomic replacement, so an interrupted serialization cannot expose

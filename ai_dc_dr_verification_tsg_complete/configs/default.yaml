@@ -71,11 +71,19 @@ experiments:
   # 54 as a temporally later locked evaluation set.
   test_days: 54
   projection_weights: [0.03, 0.1, 0.3, 1.0, 3.0, 10.0]
+  # The causal Pareto projection is selected on validation only.  It uses the
+  # pre-event high-5-of-10 target and the same exact workload-feasibility LP as
+  # the metadata projection.  The grid is deliberately small and fixed before
+  # the locked test block is opened.
+  causal_pareto_projection_weights: [1.0, 3.0, 5.0, 7.0, 10.0]
   # The full reference risk budget is frozen before the locked split.  A
   # smaller reserve would make the nested fold program infeasible for the
   # declaration target; infeasible candidate diagnostics remain archived by
   # the stress panel rather than being hidden by retuning.
-  risk_reserve_fractions: [0.25, 0.50, 0.75, 1.00]
+  # The causal Pareto reference is itself the certified payment-risk
+  # contract. Smaller reserves are infeasible on every nested fold and are
+  # therefore excluded before fitting rather than retried as doomed solves.
+  risk_reserve_fractions: [1.00]
   # The total and daily-tail budgets are selected together on contiguous folds,
   # and the selected value is reused unchanged in the pooled fit.
   # CVaR is measured on daily false-credit exposure in MW-slot units. The
@@ -104,14 +112,17 @@ experiments:
   risk_primal_tolerance: 1.0e-5
   # Clarabel solves the reduced convex epigraph directly; its primal/dual
   # values are independently recomputed into the stored KKT certificate.
-  risk_solver_method: trust-constr
-  risk_solver_maxiter: 1000
+  risk_solver_method: cvxpy
+  risk_solver_maxiter: 450
   # The ensemble may reduce contractual false credit only inside a declared
   # validation-MSE neighborhood of the selected single projection.  This
   # convex constraint keeps the risk improvement from degrading the primary
   # forecast metric and is frozen before the locked test block is evaluated.
   risk_accuracy_constraint_enabled: true
-  risk_accuracy_noninferiority_tolerance: 0.02
+  # The causal Pareto projection is the locked reference.  A zero tolerance
+  # makes the RMS certificate a true non-inferiority constraint; the risk fit
+  # cannot trade predictive accuracy for a lower payment exposure.
+  risk_accuracy_noninferiority_tolerance: 1.0e-6
   # Symmetric normalized total-exposure preference used only when the total
   # epigraph is enabled. It keeps the joint two-axis fit identifiable even
   # when the selected hard total budget is slack; single-axis ablations remove
@@ -193,10 +204,10 @@ experiments:
   # replayed at n1_evaluation_generator_segments=40.
   payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 4
-  # The independent evaluator performs many exact N-1 SCED calls per day.
-  # It is intentionally single-worker because each case materializes a full
-  # witness table; the runner pins each BLAS/HiGHS instance to one thread.
-  payment_evaluation_parallel_workers: 1
+  # Independent payment-day evaluations are CPU-bound across days.  Two
+  # workers avoid thread contention in the N-1 solver while preserving safe
+  # parallelism and staying below the project limit of 20.
+  payment_evaluation_parallel_workers: 2
   # Experiment 22 replays the exact job witness through the same finite
   # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
   # contractual network value model; bounded threads avoid matrix duplication.

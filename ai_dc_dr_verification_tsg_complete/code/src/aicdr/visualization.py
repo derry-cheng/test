@@ -1278,12 +1278,17 @@ def plot_exp2(
     fig, axes_grid = plt.subplots(2, 2, figsize=(10.6, 7.0), constrained_layout=True)
     axes = axes_grid.ravel()
     displayed_tuning = tuning.copy()
-    displayed_tuning["candidate_label"] = np.where(
-        displayed_tuning["candidate_type"].eq("feasible quantile projection"),
-        "Feasible\nquantile",
-        displayed_tuning["projection_weight"].map(
-            lambda value: rf"$\rho={float(value):g}$"
+    displayed_tuning["candidate_label"] = displayed_tuning.apply(
+        lambda row: (
+            "Ex-post\nquantile"
+            if str(row["candidate_type"]).startswith("post-commitment")
+            else (
+                "Causal\n$\\rho=10$"
+                if row["candidate_type"] == "causal Pareto projection"
+                else rf"$\rho={float(row['projection_weight']):g}$"
+            )
         ),
+        axis=1,
     )
     sns.barplot(
         data=displayed_tuning,
@@ -1347,29 +1352,31 @@ def plot_exp2(
         frontier["validation_credit_precision"],
         marker="o", color=COLORS["blue"], lw=1.2,
     )
-    coincident_labels: dict[tuple[float, float], list[str]] = {}
-    for _, row in frontier.iterrows():
-        coordinate = (
-            round(float(row["validation_credit_recall"]), 6),
-            round(float(row["validation_credit_precision"]), 6),
+    # Keep labels separated even when several validation candidates share the
+    # same precision/recall coordinate.  The explicit offsets are in display
+    # points, so the labels remain readable when the figure is resized.
+    label_offsets = [
+        (-42, -18), (-42, -32), (8, 10), (8, -6), (8, -22),
+        (8, -38), (8, -54),
+    ]
+    for index, (_, row) in enumerate(frontier.sort_values(
+        ["validation_credit_recall", "validation_credit_precision", "projection_weight"]
+    ).iterrows()):
+        label = (
+            rf"$\rho={float(row['projection_weight']):g}$"
+            if row.get("candidate_type", "") != "causal Pareto projection"
+            else r"causal $\rho=10$"
         )
-        coincident_labels.setdefault(coordinate, []).append(
-            f"{row['projection_weight']:g}"
-        )
-    for (recall, precision), weights in coincident_labels.items():
-        if precision > 0.85 and recall < 0.52:
-            offset = (-72, 8)
-        elif precision > 0.85:
-            offset = (8, 8)
-        else:
-            offset = (5, 7)
         axes[3].annotate(
-            "w=" + ",".join(weights),
-            (recall, precision),
-            xytext=offset, textcoords="offset points", fontsize=7,
+            label,
+            (float(row["validation_credit_recall"]), float(row["validation_credit_precision"])),
+            xytext=label_offsets[index % len(label_offsets)],
+            textcoords="offset points",
+            fontsize=6.5,
+            arrowprops={"arrowstyle": "-", "lw": 0.45, "color": "0.35"},
         )
     axes[3].set_xlim(0, 1)
-    axes[3].set_ylim(0, 1)
+    axes[3].set_ylim(0, 1.12)
     axes[3].set_title("(d) Validation precision-recall frontier")
     axes[3].set_xlabel("Credit recall")
     axes[3].set_ylabel("Credit precision")

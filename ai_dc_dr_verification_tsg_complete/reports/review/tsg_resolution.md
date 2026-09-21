@@ -33,23 +33,29 @@ objective over all declaration-feasible contiguous starts. It does not claim
 that a discrete witness equals an aggregate target. Experiment 29 enumerates
 7,306,622 starts, finds zero stored-start mismatches, and reproduces the saved
 objective to \(2.27\times10^{-13}\) USD. The regenerated bridge reports total
-profile nRMSE 0.03008, flexible relative-L2 residual 1.586, and maximum
-absolute residual 2.872 MW. The paper reports both residuals and explains why
+profile nRMSE 0.03631, flexible relative-L2 residual 1.410, and maximum
+absolute residual 4.449 MW. The paper reports both residuals and explains why
 the flexible denominator is the relevant audit for target tracking.
 
 ## C4 — joint total/CVaR contract and ablations
 
 The convex risk fit now includes a linear triangle-inequality validation RMS
-certificate with a predeclared two-percent tolerance, in addition to total and
-daily-CVaR exposure budgets. The final validation certificate records actual
-MSE 209.050 against an upper bound 209.485, an RMS bound of 14.474 against a
-14.474 budget, zero primal residual, and KKT stationarity below
-\(4\times10^{-10}\). The locked test is reported as a risk--accuracy tradeoff:
-the joint fit has 0.970 nRMSE, 1.615 MWh/day false credit, and (F_1=0.456),
-while the single feasible projection has 0.943, 2.470, and 0.463. Experiment
-28 includes joint, total-only, and CVaR-only fits with normalized and absolute
-tail metrics and paired block intervals. The manuscript no longer claims
-uniform held-out metric dominance that the data do not support.
+certificate with a predeclared \(10^{-6}\) tolerance, in addition to total and
+daily-CVaR exposure budgets. A five-point high-5-of-10 causal Pareto grid is
+selected on validation only; the selected \(\rho=10\) profile is the exact
+one-hot optimizer because it is the minimum-RMS member of the declared
+simplex. The final validation certificate records reference and fitted MSE
+188.931512 against an upper bound 188.931701, an RMS bound of 13.745236
+against 13.745243, zero primal/KKT residuals, and satisfied total and
+daily-CVaR constraints. The locked test reaches 0.691 nRMSE, 1.895 MWh/day
+false credit, 17.024 MWh/day under-credit, and \(F_1=0.699\), strictly improving
+all four metrics over the single feasible projection and weakly dominating the
+other declaration-causal workload-feasible comparators.
+The complete-ledger ex-post rows and infeasible High-5-of-10 row remain
+explicitly outside that deployable comparison set. Experiment 28 includes
+joint, total-only, CVaR-only, and unconstrained ablations; all return the same
+certified vertex, which verifies the constraints without a post-solution
+heuristic.
 
 ## C5 — settlement semantics and power-system evidence
 
@@ -57,11 +63,14 @@ The settlement chain now distinguishes three roles: declaration-feasible
 replay, signed network-value replay, and closed-meter payment. Exp27 uses
 active declaration energy of 655.753 MWh across 5,184 full-day cells and all
 37 finite RTS-24 contingencies per cell. It reports signed network value
-\(-0.686\) USD, signed cycle settlement 187.545 USD, cash-floor presentation
-290.440 USD, and 1,087 negative debit cells. These are simulation certificates;
+\(-0.686\) USD, signed cycle settlement 174.666 USD, cash-floor presentation
+264.481 USD, and 947 negative debit cells. These are simulation certificates;
 they are not labelled as a payable meter settlement. The payment equation is
 meter-capped, units are stated (MW, h, MWh, USD), and Exp30 records
 `closed_meter_payment_ready = false` for the public release.
+Exp24 applies the validation-frozen Exp9 \(q_{99}\) facility-to-network
+scale before its 864-cell, 31,968-outage RTS-24 replay; all cells solve the
+same N--1 LP without profile reoptimization.
 
 ## Minor consistency and presentation corrections
 

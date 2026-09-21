@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -37,6 +38,32 @@ def run_exp24_all_outage_security_panel(
     source = root / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
     if not source.exists():
         raise FileNotFoundError(f"Locked profile panel is missing: {source}")
+    # The locked profiles are facility-level MW values, whereas the RTS-24
+    # benchmark has a separately calibrated network envelope.  Reuse the
+    # validation-only conversion factor from Exp9 so this replay evaluates the
+    # same physical mapping as the payment certificate.  Applying a raw
+    # facility trace directly to four RTS-24 buses would silently change units
+    # and can make an otherwise valid N-1 LP infeasible.
+    conversion_metadata_path = (
+        root
+        / "experiments/exp9_payment_certificate/results/final/experiment_metadata.json"
+    )
+    if not conversion_metadata_path.exists():
+        raise FileNotFoundError(
+            "Exp9 conversion certificate is required before the full outage replay: "
+            f"{conversion_metadata_path}"
+        )
+    conversion_metadata = json.loads(
+        conversion_metadata_path.read_text(encoding="utf-8")
+    )
+    profile_checksum = hashlib.sha256(source.read_bytes()).hexdigest()
+    if conversion_metadata.get("payment_evaluation_profile_checksum") != profile_checksum:
+        raise RuntimeError(
+            "Exp24 profile checksum does not match the current locked Exp2 profile"
+        )
+    network_dc_scale = float(conversion_metadata.get("dc_power_scale", np.nan))
+    if not np.isfinite(network_dc_scale) or network_dc_scale <= 0.0:
+        raise ValueError("Exp9 dc_power_scale must be a finite positive value")
     stored = np.load(source, allow_pickle=False)
     days = np.asarray(stored["days"], dtype=int)
     methods = [str(value) for value in stored["methods"].tolist()]
@@ -82,8 +109,19 @@ def run_exp24_all_outage_security_panel(
     def solve_one(task: tuple[int, int, int, str, int]) -> dict[str, Any]:
         local_day, day, method_index, method, slot = task
         load = base_load.copy()
-        flexible_mw = np.maximum(profiles[local_day, method_index, :, slot] - fixed_load_mw, 0.0)
-        load[buses] += flexible_mw
+        flexible_mw = np.asarray(
+            profiles[local_day, method_index, :, slot] - fixed_load_mw,
+            dtype=float,
+        )
+        if float(flexible_mw.min(initial=0.0)) < -1.0e-6:
+            raise ValueError(
+                f"Profile {method} day {day} slot {slot} violates the fixed-load floor"
+            )
+        flexible_mw = np.maximum(flexible_mw, 0.0)
+        # Fixed and flexible facility components share the predeclared Exp9
+        # network scale.  The scale is independent of the replay outcome and
+        # is frozen before any outage solve.
+        load[buses] += network_dc_scale * (fixed_load_mw + flexible_mw)
         solved = solve_n1_sced(
             system,
             load,
@@ -95,6 +133,10 @@ def run_exp24_all_outage_security_panel(
             "slot": slot,
             "method": method,
             "flexible_profile_mw": float(flexible_mw.sum()),
+            "network_dc_scale": network_dc_scale,
+            "mapped_dc_load_mw": float(
+                network_dc_scale * (fixed_load_mw + flexible_mw).sum()
+            ),
             "secure_cost_usd_per_interval": float(solved.objective * dt_h),
             "max_base_loading": float(solved.max_loading),
             "max_postcontingency_loading": float(solved.max_post_contingency_loading),
@@ -164,6 +206,11 @@ def run_exp24_all_outage_security_panel(
         "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
         "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
         "profile_source": "Exp2 locked-test profiles frozen before network replay",
+        "profile_checksum": profile_checksum,
+        "network_conversion_source": (
+            "Exp9 validation-only q99 network conversion certificate"
+        ),
+        "network_dc_scale": network_dc_scale,
         "evaluated_methods": selected_methods,
         "locked_days": int(len(days)),
         "event_slots": event_slots,

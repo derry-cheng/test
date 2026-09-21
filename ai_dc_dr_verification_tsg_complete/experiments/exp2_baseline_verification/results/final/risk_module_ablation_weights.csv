@@ -1,6 +1,6 @@
-ablation,split,weight_Metadata projection rho=0.03,weight_Metadata projection rho=0.1,weight_Metadata projection rho=0.3,weight_Metadata projection rho=1,weight_Metadata projection rho=3,weight_Metadata projection rho=10
-single reference,validation,0.0,0.0,0.0,0.0,0.0,1.0
-unconstrained convex ensemble,validation,2.6841690196168396e-05,2.684169019616843e-05,2.7219019576591008e-05,8.534707995347991e-05,0.0007515996417842286,0.9990821508782933
-total-budget-only ensemble,validation,2.2271357404713268e-07,2.2271357404713654e-07,2.2200910138615929e-07,7.888827009097105e-07,0.3604006761441902,0.6395978675368594
-CVaR-only ensemble,validation,9.435262435661541e-08,9.435262435651857e-08,9.431462217905948e-08,3.473803964512998e-07,0.36041124307112127,0.6395881265286114
-total+CVaR ensemble,validation,2.757536910336298e-08,2.7575369103363046e-08,2.7548874670925477e-08,1.0025807870078349e-07,0.36041690166688733,0.6395829153754212
+ablation,split,weight_Metadata projection rho=0.03,weight_Metadata projection rho=0.1,weight_Metadata projection rho=0.3,weight_Metadata projection rho=1,weight_Metadata projection rho=3,weight_Metadata projection rho=10,weight_Causal Pareto projection rho=10
+single reference,validation,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+unconstrained convex ensemble,validation,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+total-budget-only ensemble,validation,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+CVaR-only ensemble,validation,0.0,0.0,0.0,0.0,0.0,0.0,1.0
+total+CVaR ensemble,validation,0.0,0.0,0.0,0.0,0.0,0.0,1.0

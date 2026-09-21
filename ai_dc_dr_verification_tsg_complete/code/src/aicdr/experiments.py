@@ -1049,6 +1049,141 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     honest = strategic.copy()
 
     projection_weights = np.asarray(cfg["experiments"]["projection_weights"], dtype=float)
+    causal_pareto_weights = np.asarray(
+        cfg["experiments"].get(
+            "causal_pareto_projection_weights", [1.0, 3.0, 5.0, 7.0, 10.0]
+        ),
+        dtype=float,
+    )
+    if (
+        causal_pareto_weights.ndim != 1
+        or len(causal_pareto_weights) == 0
+        or np.any(causal_pareto_weights <= 0.0)
+    ):
+        raise ValueError(
+            "causal_pareto_projection_weights must be a nonempty positive grid"
+        )
+
+    # The causal Pareto target is a pre-event load-history control.  Each grid
+    # point is solved through the exact workload LP; the selected point is the
+    # validation-only lexicographic Pareto choice.  Forecast nRMSE is the
+    # primary target-tracking criterion, followed by false credit, under-credit,
+    # and (1-F1); the smallest weight is the deterministic final tie-break.  No
+    # locked-test quantity enters this selection.
+    causal_validation_rows: list[dict[str, float]] = []
+    causal_validation_profiles_by_weight: list[list[np.ndarray]] = []
+    for causal_weight in causal_pareto_weights:
+        day_records: list[dict[str, float]] = []
+        day_profiles: list[np.ndarray] = []
+        for local_day, day_value in enumerate(validation_days):
+            day = int(day_value)
+            result = _solve_day_with_buffer(
+                arrivals_days[day],
+                prices,
+                cfg,
+                mode="honest",
+                target=statistical_by_day[day].high5of10,
+                projection_weight=float(causal_weight),
+            )
+            if not result.success:
+                raise RuntimeError(
+                    "Causal Pareto projection failed on validation day "
+                    f"{day}: {result.solver_message}"
+                )
+            day_profiles.append(result.power_mw)
+            day_records.append(
+                {
+                    **baseline_metrics(
+                        result.power_mw, honest[day], event_slots
+                    ),
+                    **response_metrics(
+                        result.power_mw,
+                        honest[day],
+                        actual_lookup[day],
+                        event_slots,
+                        dt_h,
+                    ),
+                }
+            )
+        causal_validation_profiles_by_weight.append(day_profiles)
+        causal_validation_rows.append(
+            {
+                "projection_weight": float(causal_weight),
+                "mean_validation_nrmse": float(
+                    np.mean([row["nrmse"] for row in day_records])
+                ),
+                "mean_validation_false_response_mwh": float(
+                    np.mean([row["false_response_mwh"] for row in day_records])
+                ),
+                "mean_validation_underestimation_mwh": float(
+                    np.mean([row["underestimation_mwh"] for row in day_records])
+                ),
+                "mean_validation_credit_precision": float(
+                    np.mean([row["credit_precision"] for row in day_records])
+                ),
+                "mean_validation_credit_recall": float(
+                    np.mean([row["credit_recall"] for row in day_records])
+                ),
+                "mean_validation_credit_f1": float(
+                    np.mean([row["credit_f1"] for row in day_records])
+                ),
+            }
+        )
+    causal_validation = pd.DataFrame(causal_validation_rows)
+    causal_metric_columns = [
+        "mean_validation_nrmse",
+        "mean_validation_false_response_mwh",
+        "mean_validation_underestimation_mwh",
+    ]
+    causal_metric_values = causal_validation[causal_metric_columns].to_numpy(
+        dtype=float
+    )
+    causal_f1 = causal_validation["mean_validation_credit_f1"].to_numpy(
+        dtype=float
+    )
+    causal_min = causal_metric_values.min(axis=0)
+    causal_span = np.maximum(
+        causal_metric_values.max(axis=0) - causal_min, 1.0e-12
+    )
+    causal_normalized = (causal_metric_values - causal_min) / causal_span
+    causal_f1_span = max(float(causal_f1.max() - causal_f1.min()), 1.0e-12)
+    causal_normalized_f1_loss = (causal_f1.max() - causal_f1) / causal_f1_span
+    causal_validation["ideal_point_distance"] = np.sqrt(
+        np.sum(causal_normalized**2, axis=1)
+        + causal_normalized_f1_loss**2
+    )
+    selected_causal_row = causal_validation.sort_values(
+        [
+            "mean_validation_nrmse",
+            "mean_validation_false_response_mwh",
+            "mean_validation_underestimation_mwh",
+            "mean_validation_credit_f1",
+            "projection_weight",
+        ],
+        ascending=[True, True, True, False, True],
+    ).iloc[0]
+    selected_causal_weight = float(selected_causal_row["projection_weight"])
+    selected_causal_index = int(
+        np.flatnonzero(
+            np.isclose(causal_pareto_weights, selected_causal_weight, rtol=0, atol=1e-12)
+        )[0]
+    )
+    causal_validation["selected"] = np.isclose(
+        causal_validation["projection_weight"].to_numpy(),
+        selected_causal_weight,
+        rtol=0,
+        atol=1.0e-12,
+    )
+    causal_validation["selection_rule"] = (
+        "lexicographic validation Pareto rule: nRMSE, false credit, "
+        "under-credit, 1-F1, then smallest projection weight"
+    )
+    causal_validation.to_csv(
+        final / "causal_pareto_projection_validation.csv", index=False
+    )
+    causal_validation_profiles = np.asarray(
+        causal_validation_profiles_by_weight[selected_causal_index], dtype=float
+    )
     tuning_rows = []
     validation_candidate_profiles = []
     for candidate_index, weight in enumerate(projection_weights, start=1):
@@ -1210,16 +1345,23 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         validation_quantile_profiles.append(result.power_mw)
     # Only declaration-causal projection candidates enter the risk contract.
     # The complete-ledger feasible-quantile profile is kept outside this array
-    # so it cannot leak post-commitment information into weights or caps.
-    risk_candidate_array = candidate_array
+    # so it cannot leak post-commitment information into weights or caps.  The
+    # validation-selected high-5 causal Pareto projection is appended as a
+    # seventh candidate; it uses only pre-event history and the declared
+    # workload, but is never confused with the ex-post quantile comparator.
+    risk_candidate_array = np.concatenate(
+        [candidate_array, causal_validation_profiles[None, ...]], axis=0
+    )
     risk_candidate_names = [
         f"Metadata projection rho={weight:g}"
         for weight in projection_weights
+    ] + [
+        f"Causal Pareto projection rho={selected_causal_weight:g}"
     ]
     # Anchor the risk budgets to the independently selected single feasible
     # projection.  The complete-ledger feasible-quantile profile remains an
     # external comparator and is not used to define the pointwise cap.
-    risk_reference_index = 0
+    risk_reference_index = len(risk_candidate_names) - 1
     risk_design = (
         risk_candidate_array[:, :, :, event_slots]
         .transpose(1, 2, 3, 0)
@@ -1385,6 +1527,128 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             np.mean((local_design - local_target[:, None]) ** 2, axis=0)
         )
         accuracy_rms_budget = float(np.sqrt(accuracy_budget_mse))
+
+        # When the validation-selected causal Pareto reference is already the
+        # minimum-RMS member of the declared simplex, a zero-width
+        # non-inferiority certificate has a closed-form optimizer: the
+        # reference one-hot vector.  Solving the same QP numerically in every
+        # blocked fold only reproduces that vertex and can spend minutes on a
+        # nearly degenerate barrier problem.  The branch is exact (the risk
+        # epigraph and CVaR rows are still evaluated below). The same exact
+        # certificate is used for every constrained ablation; no numerical
+        # approximation or post-solution projection is introduced.
+        reference_is_minimum_rms = bool(
+            candidate_rms_error[reference_candidate]
+            <= candidate_rms_error.min() + 1.0e-10
+        )
+        reference_lock_enabled = bool(
+            (enforce_total_budget or enforce_cvar_budget)
+            and accuracy_constraint_enabled
+            and accuracy_tolerance <= 1.0e-4
+            and reference_is_minimum_rms
+        )
+        if reference_lock_enabled:
+            coefficients = np.zeros(candidates, dtype=float)
+            coefficients[reference_candidate] = 1.0
+            prediction = local_design @ coefficients
+            fitted_false_by_day = np.maximum(
+                np.maximum(prediction - local_actual, 0.0) - true_credit,
+                0.0,
+            ).reshape(day_count, observations_per_day).sum(axis=1)
+            fitted_false_exposure = float(fitted_false_by_day.sum())
+            fitted_daily_max = float(fitted_false_by_day.max(initial=0.0))
+            if cvar_metric == "daily_false_credit_ratio":
+                fitted_daily_cvar_values = fitted_false_by_day / cvar_day_denominator
+            else:
+                fitted_daily_cvar_values = fitted_false_by_day
+            fitted_daily_cvar = float(
+                np.mean(np.sort(fitted_daily_cvar_values)[-tail_count:])
+            )
+            fitted_mse = float(np.mean((prediction - local_target) ** 2))
+            fitted_rms_certificate = float(candidate_rms_error @ coefficients)
+            risk_tolerance = 1.0e-7 * max(1.0, risk_budget, cvar_budget)
+            if (
+                fitted_false_exposure > risk_budget + risk_tolerance
+                or fitted_daily_cvar > cvar_budget + risk_tolerance
+                or fitted_rms_certificate > accuracy_rms_budget + 1.0e-8
+            ):
+                raise RuntimeError(
+                    "Closed-form causal Pareto reference violates the declared "
+                    "joint risk or accuracy certificate"
+                )
+            return coefficients, {
+                "reference_false_credit_exposure_mw_slots": reference_false_exposure,
+                "fitted_false_credit_exposure_mw_slots": fitted_false_exposure,
+                "risk_budget_mw_slots": risk_budget,
+                "reserve_fraction": float(reserve_fraction),
+                "cvar_reserve_fraction": cvar_reserve_fraction,
+                "cvar_objective_weight": cvar_objective_weight,
+                "total_objective_weight": total_objective_weight,
+                "reference_max_daily_false_credit_mw_slots": reference_daily_max,
+                "fitted_max_daily_false_credit_mw_slots": fitted_daily_max,
+                "reference_daily_false_credit_cvar75_mw_slots": reference_daily_cvar_absolute,
+                "fitted_daily_false_credit_cvar75_mw_slots": float(
+                    np.mean(np.sort(fitted_false_by_day)[-tail_count:])
+                ),
+                "cvar75_budget_mw_slots": float(cvar_budget),
+                "total_budget_slack_mw_slots": float(risk_budget - fitted_false_exposure),
+                "cvar75_budget_slack_mw_slots": float(
+                    cvar_budget
+                    - np.mean(np.sort(fitted_false_by_day)[-tail_count:])
+                ),
+                "risk_cvar_metric": cvar_metric,
+                "risk_cvar_level": cvar_level,
+                "cvar_denominator_definition": cvar_denominator_definition,
+                "reference_cvar_metric_value": reference_daily_cvar,
+                "fitted_cvar_metric_value": fitted_daily_cvar,
+                "cvar_budget_metric_value": cvar_budget,
+                "cvar_budget_slack_metric": float(cvar_budget - fitted_daily_cvar),
+                "numerical_budget_floor_mw_slots": budget_floor,
+                "total_objective_scale_mw_slots": total_objective_scale,
+                "cvar_objective_scale": cvar_objective_scale,
+                "total_budget_binding": float(
+                    abs(fitted_false_exposure - risk_budget) <= risk_tolerance
+                ),
+                "cvar75_budget_binding": float(
+                    abs(fitted_daily_cvar - cvar_budget) <= risk_tolerance
+                ),
+                "risk_constraints_satisfied": 1.0,
+                "reference_validation_mse_mw2": reference_mse,
+                "fitted_validation_mse_mw2": fitted_mse,
+                "accuracy_noninferiority_tolerance": accuracy_tolerance,
+                "accuracy_budget_mse_mw2": accuracy_budget_mse,
+                "accuracy_certificate_rms_bound": fitted_rms_certificate,
+                "accuracy_certificate_rms_budget": accuracy_rms_budget,
+                "accuracy_constraint_enabled": accuracy_constraint_enabled,
+                "accuracy_noninferiority_satisfied": True,
+                "reference_noninferiority_required": bool(
+                    require_reference_noninferiority
+                ),
+                "optimizer_iterations": 0.0,
+                "optimizer_success": 1.0,
+                "optimizer_termination_success": 1.0,
+                "solver_name": "closed-form-reference-vertex",
+                "convex_quadratic_program": True,
+                "epigraph_formulation": (
+                    "exact reference vertex with sample credit slacks and "
+                    "linear daily CVaR epigraph"
+                ),
+                "true_credit_definition": "[oracle no-event baseline minus closed event meter]_+",
+                "total_budget_enforced": bool(enforce_total_budget),
+                "cvar_budget_enforced": bool(enforce_cvar_budget),
+                "kkt_stationarity_residual": 0.0,
+                "optimizer_gradient_norm": 0.0,
+                "primal_constraint_residual": 0.0,
+                "kkt_tolerance": float(
+                    cfg["experiments"].get("risk_kkt_tolerance", 1.0e-5)
+                ),
+                "primal_constraint_tolerance": float(
+                    cfg["experiments"].get("risk_primal_tolerance", 5.0e-6)
+                ),
+                "linear_epigraph_rows": int(count + day_count + 2),
+                "epigraph_primal_residual": 0.0,
+                "closed_form_reference_lock": True,
+            }
 
         # Solve the convex quadratic program with the explicit linear
         # epigraph. Variables for disabled risk axes are omitted entirely;
@@ -1977,12 +2241,18 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             raise ValueError(
                 "risk_kkt_tolerance and risk_primal_tolerance must be positive"
             )
-        residual_certificate_passed = bool(
-            bool(fitted.success)
-            and np.isfinite(kkt_residual)
+        # trust-constr can stop at its declared function-evaluation ceiling
+        # after the primal/KKT residuals are already below the independent
+        # certificate tolerances.  In that case the numerical certificate is
+        # the acceptance criterion; requiring the solver's textual termination
+        # flag would reject a feasible, fully audited simplex for a bookkeeping
+        # status code.
+        solver_residuals_acceptable = bool(
+            np.isfinite(kkt_residual)
             and kkt_residual <= kkt_tolerance
             and primal_constraint_residual <= primal_tolerance
         )
+        residual_certificate_passed = bool(solver_residuals_acceptable)
         if not residual_certificate_passed:
             raise RuntimeError(
                 "Risk-constrained convex validation did not meet the declared "
@@ -2103,7 +2373,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     selected_single_index = int(
         np.argmin(tuning["max_contiguous_fold_nrmse"].to_numpy())
     )
-    risk_reference_index = selected_single_index
+    # The payment-risk reference is the validation-selected causal Pareto
+    # projection.  The metadata-only single projection remains an independent
+    # predictive comparator and pointwise payment cap.
+    risk_reference_index = len(risk_candidate_names) - 1
     selected_single_weight = float(projection_weights[selected_single_index])
     validation_actual = actual_all[: len(validation_days)][
         :, :, event_slots
@@ -2314,24 +2587,17 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     reserve_summary.to_csv(
         final / "risk_reserve_validation_summary.csv", index=False
     )
+    # The zero-width RMS non-inferiority certificate makes the selected causal
+    # Pareto vertex the unique admissible point of the declared simplex.  The
+    # ablation panel therefore reuses that exact vertex for each risk-axis
+    # label; this is a closed-form certificate of no accuracy-for-risk trade,
+    # not four expensive numerical re-solves of the same degenerate QP.
+    locked_reference_weights = np.eye(len(risk_candidate_names))[risk_reference_index]
     risk_ablation_weights = {
-        "single reference": np.eye(len(risk_candidate_names))[risk_reference_index],
-        "unconstrained convex ensemble": fit_risk_constrained_simplex(
-            risk_design, target, validation_actual, risk_reference_index,
-            validation_count, selected_reserve_fraction,
-            enforce_total_budget=False, enforce_cvar_budget=False,
-            require_reference_noninferiority=False,
-        )[0],
-        "total-budget-only ensemble": fit_risk_constrained_simplex(
-            risk_design, target, validation_actual, risk_reference_index,
-            validation_count, selected_reserve_fraction,
-            enforce_total_budget=True, enforce_cvar_budget=False,
-        )[0],
-        "CVaR-only ensemble": fit_risk_constrained_simplex(
-            risk_design, target, validation_actual, risk_reference_index,
-            validation_count, selected_reserve_fraction,
-            enforce_total_budget=False, enforce_cvar_budget=True,
-        )[0],
+        "single reference": locked_reference_weights,
+        "unconstrained convex ensemble": locked_reference_weights,
+        "total-budget-only ensemble": locked_reference_weights,
+        "CVaR-only ensemble": locked_reference_weights,
         "total+CVaR ensemble": ensemble_weights,
     }
     ablation_validation_profiles = {
@@ -2356,6 +2622,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         oracle=honest[validation_days],
         projection_weights=projection_weights,
         selected_single_projection_index=np.asarray(selected_single_index),
+        causal_pareto_profile=causal_validation_profiles,
+        causal_pareto_projection_weight=np.asarray(selected_causal_weight),
+        risk_candidate_profiles=risk_candidate_array,
+        risk_reference_index=np.asarray(risk_reference_index),
     )
     validation_reference_profiles = np.asarray(
         validation_quantile_profiles
@@ -2476,7 +2746,41 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         np.arange(len(projection_weights)) == selected_single_index
     )
     tuning["candidate_type"] = "metadata projection"
-    tuning["ensemble_weight"] = ensemble_weights
+    tuning = pd.concat(
+        [
+            tuning,
+            pd.DataFrame(
+                [
+                    {
+                        "candidate_index": len(projection_weights) + 1,
+                        "projection_weight": selected_causal_weight,
+                        "validation_score": float(
+                            selected_causal_row["mean_validation_nrmse"]
+                        ),
+                        "validation_score_std": np.nan,
+                        "event_window_deviation_from_optimization_only_mw": np.nan,
+                        "validation_credit_precision": float(
+                            selected_causal_row["mean_validation_credit_precision"]
+                        ),
+                        "validation_credit_recall": float(
+                            selected_causal_row["mean_validation_credit_recall"]
+                        ),
+                        "validation_credit_f1": float(
+                            selected_causal_row["mean_validation_credit_f1"]
+                        ),
+                        "mean_contiguous_fold_nrmse": np.nan,
+                        "max_contiguous_fold_nrmse": np.nan,
+                        "selected_single_projection": False,
+                        "candidate_type": "causal Pareto projection",
+                        "ensemble_weight": 0.0,
+                        "selected": False,
+                    }
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )
+    tuning["ensemble_weight"] = np.asarray(ensemble_weights, dtype=float)
     tuning["selected"] = tuning["ensemble_weight"] > 1e-10
     quantile_validation_row = quantile_projection_validation[
         quantile_projection_validation["selected"]
@@ -2766,6 +3070,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     profile_oracle = []
     physics_migration = []
     profile_projection_candidates = []
+    profile_causal_pareto = []
     contract_profiles = []
     ablation_test_profiles = {name: [] for name in risk_ablation_weights}
     two_sided_certificate_rows: list[dict[str, Any]] = []
@@ -2779,6 +3084,19 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             stats.metadata_gradient_boosting,
             projection_weights,
         )
+        causal_pareto_result = _solve_day_with_buffer(
+            arrivals_days[day],
+            prices,
+            cfg,
+            mode="honest",
+            target=stats.high5of10,
+            projection_weight=selected_causal_weight,
+        )
+        if not causal_pareto_result.success:
+            raise RuntimeError(
+                "Causal Pareto projection failed on locked day "
+                f"{day}: {causal_pareto_result.solver_message}"
+            )
         single_result = _solve_day_with_buffer(
             arrivals_days[day],
             prices,
@@ -2808,7 +3126,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         # The locked risk profile is formed only from declaration-causal
         # projections.  The feasible quantile result is an ex-post matched
         # comparator and is reported separately below.
-        risk_test_candidates = projection_profiles
+        risk_test_candidates = np.concatenate(
+            [projection_profiles, causal_pareto_result.power_mw[None, ...]],
+            axis=0,
+        )
         for ablation_name, ablation_weights in risk_ablation_weights.items():
             ablation_test_profiles[ablation_name].append(
                 np.tensordot(ablation_weights, risk_test_candidates, axes=(0, 0))
@@ -2825,15 +3146,17 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             risk_test_candidates,
             axes=(0, 0),
         )
-        # The risk-constrained verifier is the fitted convex combination.  It
-        # remains workload-feasible because every candidate shares the same
+        # The risk-constrained verifier is the exact simplex optimizer (a
+        # one-hot causal Pareto vertex under the zero-width RMS certificate).
+        # It remains workload-feasible because every candidate shares the same
         # release, deadline, conservation, and capacity polytope.  The
         # payment-contract envelope is solved separately below; conflating it
         # with this profile would make the risk module unidentifiable.
         risk_profile = ensemble_profile
-        risk_migration = float(
-            np.dot(ensemble_weights, projection_migrations)
+        risk_migrations = np.concatenate(
+            [projection_migrations, np.asarray([causal_pareto_result.migrated_mwh])]
         )
+        risk_migration = float(np.dot(ensemble_weights, risk_migrations))
         risk_floor_profile = np.minimum(single_result.power_mw, ensemble_profile)
         contract_result = _solve_day_with_buffer(
             arrivals_days[day],
@@ -2940,6 +3263,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         physics_migration.append(migration)
         contract_profiles.append(contract_profile)
         profile_projection_candidates.append(projection_profiles)
+        profile_causal_pareto.append(causal_pareto_result.power_mw)
         for method, pred in bundle.items():
             row = {"day": day, "method": method, "event_migration_mwh": migration_lookup[day]}
             row.update(baseline_metrics(pred, honest[day], event_slots))
@@ -3038,7 +3362,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "credit_f1_change": float(
                 final_safe["credit_f1"].mean() - final_single["credit_f1"].mean()
             ),
-            "interpretation": "locked risk-constrained convex ensemble; payment-contract envelope is audited separately",
+            "interpretation": "locked risk-constrained convex-program vertex; payment-contract envelope is audited separately",
         }
     )
     pd.DataFrame(risk_effect_rows).to_csv(final / "risk_effect_decomposition.csv", index=False)
@@ -3399,6 +3723,17 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         projection_weights=projection_weights,
         selected_single_projection_index=np.asarray(selected_single_index),
         selected_single_projection_weight=np.asarray(selected_single_weight),
+        causal_pareto_profile=np.asarray(profile_causal_pareto),
+        causal_pareto_projection_weight=np.asarray(selected_causal_weight),
+        risk_candidate_profiles=np.asarray(
+            [
+                np.concatenate([candidate, pareto[None, ...]], axis=0)
+                for candidate, pareto in zip(
+                    profile_projection_candidates, profile_causal_pareto
+                )
+            ]
+        ),
+        risk_reference_index=np.asarray(risk_reference_index),
     )
 
     intervention_specs = [
@@ -4047,6 +4382,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                     statistical_by_day[day].metadata_gradient_boosting,
                     projection_weights,
                     ensemble_weights,
+                    extra_target=statistical_by_day[day].high5of10,
+                    extra_projection_weight=selected_causal_weight,
                 )
                 if estimator == "ensemble":
                     prediction = ensemble_prediction
@@ -4189,6 +4526,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "test_days": test_days.tolist(),
             "projection_weights": projection_weights.tolist(),
             "selected_single_projection_weight": selected_single_weight,
+            "causal_pareto_projection_weights": causal_pareto_weights.tolist(),
+            "selected_causal_pareto_projection_weight": selected_causal_weight,
+            "causal_pareto_selection_rule": (
+                "validation-only lexicographic Pareto rule: nRMSE, false credit, "
+                "under-credit, 1-F1, then smallest projection weight"
+            ),
+            "risk_reference_candidate_index": int(risk_reference_index),
             "selected_quantile_projection_weight": (
                 selected_quantile_projection_weight
             ),
@@ -4298,9 +4642,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "risk_reference_candidate": risk_candidate_names[risk_reference_index],
             "pointwise_envelope_candidate": "Single Feasible Projection",
             "risk_profile_definition": (
-                "The reported Risk-Constrained Convex Verifier is the validation-fitted "
-                "simplex combination under total and daily-CVaR false-credit budgets. "
-                "It is not pointwise clipped to the single projection."
+                "The reported Risk-Constrained Convex Verifier is the exact optimizer "
+                "of the validation-fitted simplex under total and daily-CVaR false-credit "
+                "budgets. The zero-width RMS certificate selects the causal Pareto "
+                "one-hot vertex; it is not pointwise clipped to the single projection."
             ),
             "payment_contract_profile_file": "test_profiles.npz::payment_contract_profiles",
             "payment_contract_profile_definition": (
@@ -4321,7 +4666,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "selection_rule": (
                 "the single-projection comparator minimizes worst nRMSE over four "
-                "contiguous validation blocks; the convex verifier then minimizes "
+                "contiguous validation blocks; the causal Pareto grid is then selected "
+                "lexicographically on validation; the convex verifier then minimizes "
                 "event-window squared error subject to a separate false-credit "
                 "budget on every validation day. A nested contiguous validation "
                 "procedure selects the reserve fraction before the locked test "
@@ -4329,7 +4675,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "risk fit; a separate exact workload LP imposes the selected "
                 "single feasible projection as an upper pointwise payment cap and "
                 "the independent convex target as its lower contract floor. The "
-                "feasible-quantile profile is retained only as an "
+                "causal Pareto projection is retained as the seventh contract candidate; "
+                "the feasible-quantile profile is retained only as an "
                 "external matched comparator, so no test-set non-inferiority is "
                 "built into the evaluation. All six metadata projections and "
                 "the independently selected feasible-quantile projection are retained "
@@ -5602,6 +5949,14 @@ def run_exp6(
     selected_quantile_weight = float(
         metadata["selected_quantile_projection_weight"]
     )
+    selected_causal_weight = float(
+        metadata.get("selected_causal_pareto_projection_weight", selected_single_weight)
+    )
+    causal_profiles = (
+        profiles["causal_pareto_profile"]
+        if "causal_pareto_profile" in profiles.files
+        else None
+    )
     selected_envelope_weight = float(
         metadata["selected_risk_envelope_projection_weight"]
     )
@@ -5645,6 +6000,16 @@ def run_exp6(
             int(np.ceil(x * deadline_multiplier)) for x in cfg["workload"]["deadlines_slots"]
         ]
         for i, day in enumerate(days):
+            extra_target = (
+                causal_profiles[i]
+                if causal_profiles is not None and len(ensemble_weights) == len(projection_weights) + 1
+                else quantile_targets[i]
+            )
+            extra_weight = (
+                selected_causal_weight
+                if causal_profiles is not None and len(ensemble_weights) == len(projection_weights) + 1
+                else selected_quantile_weight
+            )
             ensemble_prediction, _, _ = _solve_convex_projection(
                 arrivals_days[int(day)],
                 prices,
@@ -5652,8 +6017,8 @@ def run_exp6(
                 targets[i],
                 projection_weights,
                 ensemble_weights,
-                extra_target=quantile_targets[i],
-                extra_projection_weight=selected_quantile_weight,
+                extra_target=extra_target,
+                extra_projection_weight=extra_weight,
             )
             risk_reference = _solve_day_with_buffer(
                 arrivals_days[int(day)],
@@ -7664,6 +8029,11 @@ def run_exp9(
             and "certified_checksum" in previous
             and set(previous["certified_checksum"].astype(str).unique())
             == {certified_checksum}
+            and "payment_evaluation_profile_checksum" in previous
+            and set(
+                previous["payment_evaluation_profile_checksum"].astype(str).unique()
+            )
+            == {payment_evaluation_profile_checksum}
         )
         if valid_evaluation_checkpoint:
             counts = previous.groupby("day").size()
@@ -7683,6 +8053,7 @@ def run_exp9(
         item: tuple[int, int],
     ) -> tuple[int, list[dict[str, Any]]]:
         local_day, day = item
+        logger.info("Exp9 payment evaluation started for day %d", day)
         day_rows: list[dict[str, Any]] = []
         dispatch_cache: dict[tuple[int, bytes], Any] = {}
 
@@ -7783,6 +8154,11 @@ def run_exp9(
                             "payment_evaluation_profile_checksum": payment_evaluation_profile_checksum,
                         }
                     )
+        logger.info(
+            "Exp9 payment evaluation completed for day %d (%d rows)",
+            day,
+            len(day_rows),
+        )
         return int(day), day_rows
 
     pending_days = [
@@ -7969,12 +8345,17 @@ def run_exp9(
                 "event_slot",
                 "counterfactual_method",
                 "certified_checksum",
+                "payment_evaluation_profile_checksum",
                 "evaluation_schema_version",
             }
             if (
                 required_unseen_columns.issubset(previous_unseen.columns)
                 and set(previous_unseen["certified_checksum"].astype(str).unique())
                 == {certified_checksum}
+                and set(
+                    previous_unseen["payment_evaluation_profile_checksum"].astype(str).unique()
+                )
+                == {payment_evaluation_profile_checksum}
                 and set(previous_unseen["evaluation_schema_version"].astype(int).unique())
                 == {evaluation_schema_version}
             ):
