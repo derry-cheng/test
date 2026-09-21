@@ -11,7 +11,10 @@ import pandas as pd
 from aicdr.coupling_invariant import validate_job_network_coupling
 from aicdr.data import _parse_requested_gpu_count, load_mit_submission_ledger
 from aicdr.declaration_event_replay import _select_exact_starts_independent
-from aicdr.executable_witness import _select_exact_starts
+from aicdr.executable_witness import (
+    _declaration_energy_overlapping_days,
+    _select_exact_starts,
+)
 
 
 def main() -> None:
@@ -110,6 +113,19 @@ def main() -> None:
     assert np.array_equal(exact_start, independent_start)
     assert np.allclose(exact_cost, independent_cost, atol=1e-12)
 
+    # Carry-in declarations must contribute to a locked window.  Selecting
+    # only jobs submitted on the locked day would miss the first job below;
+    # the overlap integral counts 4 of its 8 runtime slots plus the second
+    # job's complete 8-slot block.
+    active_energy = _declaration_energy_overlapping_days(
+        np.asarray([92, 96], dtype=np.int64),
+        np.asarray([8, 8], dtype=np.int64),
+        np.asarray([8.0, 4.0], dtype=float),
+        np.asarray([1], dtype=np.int64),
+        96,
+    )
+    assert np.isclose(active_energy, 8.0, atol=1e-12)
+
     # C2/C5 regression: the risk bridge and signed complete-cycle ledger are
     # complete before publication, with the event subset retained as a flag.
     bridge = pd.read_csv(
@@ -133,6 +149,13 @@ def main() -> None:
             settlement_summary["metric"] == "full_cycle_cells", "value"
         ].iloc[0]
     ) == 54 * 96
+    lineage = pd.read_csv(
+        Path("experiments/exp30_contract_lineage_audit/results/final/contract_lineage_summary.csv")
+    )
+    lineage_values = dict(zip(lineage["metric"], lineage["value"]))
+    assert float(lineage_values["all_lineage_checks_passed"]) == 1.0
+    assert float(lineage_values["declaration_only_network_replay"]) == 1.0
+    assert float(lineage_values["closed_meter_payment_ready"]) == 0.0
     print("all regression tests passed")
 
 

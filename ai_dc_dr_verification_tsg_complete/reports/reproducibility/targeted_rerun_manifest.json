@@ -1,122 +1,123 @@
 {
-  "schema_version": 1,
-  "purpose": "Targeted rerun and release provenance for the TSG revision",
-  "repository_revision_at_rerun": "65802317c3094513437b60be2fbf55d99c55115d",
-  "rerun_date_utc": "2026-09-19",
+  "schema_version": 2,
+  "purpose": "Reproducibility and release provenance for the TSG revision",
+  "repository_revision_before_rerun": "04b25bdd9c177f376ee2e9f8b8cae2d38a5238b8",
+  "release_commit": "1779f497d729703eeba7a8143b1e426f97782254",
+  "rerun_date_utc": "2026-09-21",
   "resource_bound": {
     "observed_processor_count": 9,
+    "exp10_ac_workers": 8,
     "exp27_max_workers": 4,
+    "exp9_independent_evaluator_workers": 1,
     "blas_threads_per_worker": 1,
     "highs_threads": 1,
     "maximum_allowed_cores": 20
   },
   "commands": [
-    "PYTHONPATH=code/src:vendor python run_all.py --stage exp27",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp2 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp9 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp10",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp17",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp20",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp22",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp23",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp24",
     "PYTHONPATH=code/src:vendor python run_all.py --stage exp26",
-    "PYTHONPATH=code/src:vendor python run_all.py --stage exp28",
-    "PYTHONPATH=code/src:vendor python run_all.py --stage exp29",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp27 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp28 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp29 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage exp30 --resume",
+    "PYTHONPATH=code/src:vendor python run_all.py --stage all --resume",
     "PYTHONPATH=code/src:vendor python tests/run_tests.py",
-    "pdflatex -interaction=nonstopmode -halt-on-error main.tex; bibtex main; pdflatex -interaction=nonstopmode -halt-on-error main.tex",
-    "PYTHONPATH=code/src:vendor python run_all.py --stage all --resume"
+    "python -m py_compile code/src/aicdr/*.py run_all.py tests/run_tests.py",
+    "latexmk -pdf -interaction=nonstopmode -halt-on-error paper/main.tex"
   ],
-  "stages": {
-    "exp26": {
-      "status": "completed",
-      "started_utc": "2026-09-19T14:35:35.077446+00:00",
-      "finished_utc": "2026-09-19T14:35:44.133936+00:00",
-      "elapsed_seconds": 9.052871
-    },
-    "exp27": {
-      "status": "completed",
-      "started_utc": "2026-09-19T14:27:15.042688+00:00",
-      "finished_utc": "2026-09-19T14:35:22.723004+00:00",
-      "elapsed_seconds": 487.676138
-    },
-    "exp28": {
-      "status": "completed",
-      "started_utc": "2026-09-19T14:17:56.212475+00:00",
-      "finished_utc": "2026-09-19T14:18:02.151100+00:00",
-      "elapsed_seconds": 5.93486
-    },
-    "exp29": {
-      "status": "completed",
-      "started_utc": "2026-09-19T14:39:32.815106+00:00",
-      "finished_utc": "2026-09-19T14:39:44.046037+00:00",
-      "elapsed_seconds": 11.226608
-    }
-  },
-  "unified_manifest": {
-    "status": "completed",
-    "stage_count": 31,
-    "audit_stage": {
-      "started_utc": "2026-09-19T14:53:24.819954+00:00",
-      "status": "completed",
-      "finished_utc": "2026-09-19T14:53:25.426060+00:00",
-      "elapsed_seconds": 0.606106
-    }
+  "stage_summary": {
+    "unified_stage_count": 32,
+    "audit_checks": {"passed": 390, "total": 390},
+    "exp9_interval_rows": 8640,
+    "exp9_unseen_transfer_rows": 384,
+    "exp10_elapsed_seconds": 2460.445013,
+    "exp27_elapsed_seconds": 439.915982,
+    "exp26_elapsed_seconds": 9.306166
   },
   "validation": {
     "regression_tests": "passed",
-    "audit_checks": {
-      "passed": 385,
-      "total": 385
-    },
+    "python_compile": "passed",
     "manuscript_pages": 10,
-    "latex_overfull_hboxes": 0
+    "latex_overfull_hboxes": 0,
+    "latex_undefined_or_duplicate_references": 0,
+    "checkpoint_writes": "same-directory atomic replacement"
   },
   "key_results": {
-    "signed_cycle_settlement_usd": 161.03629720869256,
-    "cash_floor_settlement_usd": 277.8063757461034,
-    "negative_settlement_debit_usd": -116.77007853741088,
-    "negative_settlement_cells": 1168,
+    "active_declaration_energy_upper_mwh": 655.753,
+    "signed_network_value_usd": -0.6862357,
+    "signed_nodal_meter_credit_usd": -0.6862357,
+    "signed_cycle_settlement_usd": 187.5446,
+    "cash_floor_settlement_usd": 290.4401,
+    "negative_settlement_debit_usd": -102.8955,
+    "negative_settlement_cells": 1087,
     "submitted_jobs": 75326,
     "service_variables": 13198247,
     "enumerated_start_candidates": 7306622,
     "exact_start_mismatch_jobs": 0,
     "maximum_objective_recomputation_residual_usd": 2.273736754432321e-13,
-    "mean_target_tracking_nrmse_total": 0.0260112517645229,
-    "mean_target_tracking_nrmse_flexible": 3.1442192457977347,
+    "mean_target_tracking_nrmse_total": 0.03007602,
+    "mean_target_tracking_relative_l2_flexible": 1.586132,
+    "maximum_absolute_target_residual_mw": 2.871707,
     "risk_tail_methods": {
       "total+CVaR ensemble": {
-        "locked_test_days": 54.0,
-        "false_credit_ratio_mean": 0.0083388627810635,
-        "false_credit_ratio_cvar": 0.0307571054144611,
-        "false_credit_ratio_q90": 0.0254357763798432,
-        "false_credit_mwh_mean": 0.3027967289560589,
-        "false_credit_mwh_cvar": 1.093448259548387,
-        "false_credit_mwh_q90": 0.7056020676410154,
-        "cvar_level": 0.75
+        "locked_test_days": 54,
+        "false_credit_ratio_mean": 0.0220606545,
+        "false_credit_ratio_cvar": 0.0692398048,
+        "false_credit_ratio_q90": 0.0677809532,
+        "false_credit_mwh_mean": 1.6153652,
+        "false_credit_mwh_cvar": 5.3393843,
+        "false_credit_mwh_q90": 6.1623377
       },
       "total-budget-only ensemble": {
-        "locked_test_days": 54.0,
-        "false_credit_ratio_mean": 0.0083148445735462,
-        "false_credit_ratio_cvar": 0.0306360618451915,
-        "false_credit_ratio_q90": 0.0281048019380631,
-        "false_credit_mwh_mean": 0.2831335738021457,
-        "false_credit_mwh_cvar": 1.0131569553891062,
-        "false_credit_mwh_q90": 0.7869573650125358,
-        "cvar_level": 0.75
+        "locked_test_days": 54,
+        "false_credit_ratio_mean": 0.0220609298,
+        "false_credit_ratio_cvar": 0.0692405141,
+        "false_credit_ratio_q90": 0.0677830313,
+        "false_credit_mwh_mean": 1.6153971,
+        "false_credit_mwh_cvar": 5.3394870,
+        "false_credit_mwh_q90": 6.1624343
       },
       "CVaR-only ensemble": {
-        "locked_test_days": 54.0,
-        "false_credit_ratio_mean": 0.0083060793298001,
-        "false_credit_ratio_cvar": 0.0305727353860075,
-        "false_credit_ratio_q90": 0.0290821622020759,
-        "false_credit_mwh_mean": 0.263514798928832,
-        "false_credit_mwh_cvar": 0.9368440914553704,
-        "false_credit_mwh_q90": 0.824176730550974,
-        "cvar_level": 0.75
+        "locked_test_days": 54,
+        "false_credit_ratio_mean": 0.0220607505,
+        "false_credit_ratio_cvar": 0.0692400522,
+        "false_credit_ratio_q90": 0.0677816779,
+        "false_credit_mwh_mean": 1.6153763,
+        "false_credit_mwh_cvar": 5.3394201,
+        "false_credit_mwh_q90": 6.1623714
       }
+    },
+    "payment_panel": {
+      "locked_days": 54,
+      "event_intervals_per_day": 8,
+      "conversion_scenarios": 5,
+      "counterfactual_methods": 4,
+      "unseen_transfer_days": 6,
+      "profile_checksum_unique_in_each_panel": 1
+    },
+    "contract_lineage": {
+      "checks_passed": 9,
+      "closed_meter_payment_ready": false,
+      "declaration_replay_separated_from_observed_meter_scoring": true
     }
   },
   "sha256": {
-    "paper/main.tex": "9fa6a74cc0a9a580b883f7867bcc5c1d352bad0fab9a324487b39eebd36cb20b",
-    "paper/main.pdf": "cd30f21781e4ab1440a53dd3d14a43f60bdd43db64194e77c691de8c64c2159c",
+    "paper/main.tex": "1b0156ff37c4c192d4a5f14713dc73431a79c48c03f97c6749e0b5ab3c20faec",
+    "paper/main.pdf": "7f3f889121e2ea8e665f6cf25a19fd3bea19494ce13658075a7a7ab098dc7d30",
     "paper/references.bib": "da86de274e96d90967a62b12237001f22c62bc02a67afeeb5fb8bb10adefc60c",
-    "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv": "2d7710ca5abaa72fdabc20dd4d87580b77957abfc9376347abbd91959f249f1d",
-    "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv": "1277d06f2b2561563cf07bb6c761e8e67b7e755b4ff9da372a918ffa83442398",
-    "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv": "3fea3f5a9d745c3a31083c5fa2ceb55f88cf06cfcfb921b35dc9bc453d38e276",
-    "experiments/exp29_executable_target_bridge/results/final/experiment_metadata.json": "f326f189175055fe056d617d4b3d98ffb80bb97be64df37e9c95ffb5d0c5d287",
-    "audit/result_audit.json": "4c53299713e6932e6baefed756659f0e80fa7293a7aae73058396f0ce64c5995"
+    "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv": "e881367592b93b752b5fa5073bf34b63272c646d4a25264d2b90a109d9dfc768",
+    "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv": "708f3260919883b845a7b7ae99601355ad286ac866db9c8c46b7b48c50324bad",
+    "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv": "b2373fc90965056a5e097652ae810183bb0bb5c3ba2492a7503b32a407ef3da1",
+    "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv": "b969f05835d386e6a1b878509de2fe13ef91570ef34eb63ea5ff4bbf91b2406a",
+    "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv": "73cd83a32a6973e8a371fee88cc722f267ca41a1d88043645de11e8eaea95ec3",
+    "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv": "282713de5771f05eaafe91bff3eb90fa768fb25bb8eae89d7d6b94cf2fe2e380",
+    "audit/result_audit.json": "f36aeaf064d64a1e1014d4dfa29c6eeb429084a38798c08fab2ecdc02d0d9c19"
   }
 }

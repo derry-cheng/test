@@ -1,0 +1,12 @@
+metric,value,unit
+active_upper_declaration_energy_mwh,655.7530000000003,MWh
+active_central_declaration_energy_mwh,0.1822655343044945,MWh
+locked_risk_days,54.0,days
+declaration_jobs,75326.0,jobs
+settlement_replay_cells,5184.0,day-slots
+observed_meter_scoring_rows,12.0,rows
+target_bridge_audit_rows,16.0,rows
+future_arrivals_used,0.0,boolean
+declaration_only_network_replay,1.0,boolean
+closed_meter_payment_ready,0.0,boolean
+all_lineage_checks_passed,1.0,boolean

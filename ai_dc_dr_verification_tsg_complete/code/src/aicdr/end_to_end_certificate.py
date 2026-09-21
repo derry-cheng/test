@@ -19,7 +19,11 @@ import numpy as np
 import pandas as pd
 
 from .coupling_invariant import validate_job_network_coupling
-from .executable_witness import _array_digest, _service_window_from_runtime_blocks
+from .executable_witness import (
+    _array_digest,
+    _declaration_energy_overlapping_days,
+    _service_window_from_runtime_blocks,
+)
 from .optimization import power_system_from_ppc
 from .utils import sha256, write_json
 
@@ -488,15 +492,27 @@ def run_exp26_end_to_end_certificate(
     fixed_load = float(cfg["project"]["fixed_facility_load_mw"])
     risk_flexible = np.maximum(risk_profile - fixed_load, 0.0)
     risk_flexible_energy = float(risk_flexible.sum() * dt_h)
-    locked_submit_mask = np.isin(
-        common_submit // int(cfg["project"]["slots_per_day"]), risk_days
+    # The contract scale is defined on active declaration energy, not on the
+    # release-day subset.  A job released before a locked day can remain
+    # active inside that day, so reproducing Exp27 requires the same exact
+    # overlap integral and does not use execution telemetry or selected starts.
+    slots_per_day = int(cfg["project"]["slots_per_day"])
+    expected_upper_energy = _declaration_energy_overlapping_days(
+        common_submit,
+        common_runtime,
+        common_declared_upper,
+        risk_days,
+        slots_per_day,
     )
-    expected_upper_scale = (
-        float(common_declared_upper[locked_submit_mask].sum()) / risk_flexible_energy
+    expected_central_energy = _declaration_energy_overlapping_days(
+        common_submit,
+        common_runtime,
+        common_declared_energy,
+        risk_days,
+        slots_per_day,
     )
-    expected_central_scale = (
-        float(common_declared_energy[locked_submit_mask].sum()) / risk_flexible_energy
-    )
+    expected_upper_scale = float(expected_upper_energy / risk_flexible_energy)
+    expected_central_scale = float(expected_central_energy / risk_flexible_energy)
     expected_upper_contract = fixed_load + expected_upper_scale * risk_flexible
     expected_central_contract = fixed_load + expected_central_scale * risk_flexible
     if not np.allclose(

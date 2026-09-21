@@ -4,13 +4,13 @@
   "locked_days": 54,
   "upstream_artifact_hashes": {
     "executable submitted-job witness": "93befd1a9f97dcee4eca6def65cc58979ffb9dd5b3d907c73260ab3196e1f081",
-    "runtime-complete common witness used by network settlement": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488",
-    "N-1 settlement replay of the runtime-complete common witness": "a3106803119fa9ac1df202c39fcf19b2bd7b1197cb82aea51f10001b9ef06da0",
-    "exact risk-profile to executable-start bridge": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8",
-    "validation-fitted aggregate risk target": "5e189fa4cce474091ec334ea1f2e3d4ea97aee08d232c7a2e38cfb2c6e7e63ff",
+    "runtime-complete common witness used by network settlement": "88dbddc7d0405e63f55623531854c51c6d6281bfd4fd5f77f3e46c13f3e79bc1",
+    "N-1 settlement replay of the runtime-complete common witness": "a37c76ee2eea11c0183bafd5d8137aaed00b54d04a04318cf67b2888c8ca9827",
+    "exact risk-profile to executable-start bridge": "2eba6fcf15718b651efcca245e7c3ce8331a0e639ac3c4ccd540f83ada7ae2e2",
+    "validation-fitted aggregate risk target": "11cb2d34d6927168c821427910ffba2339fc7e8f8b433f2f70c2f5934f782bdb",
     "payment-certified feasible profile hull": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
     "recomputed job-to-network certificate summary": "533d384cabf73a443e4e5c486ca5422f396dd36a903e0472bcdce368cf80b55c",
-    "frozen-profile all-outage N-1 replay": "a26d3e5e65eab6a12b68f728c7e78c67c7c4e60e7d2dc34ea369ae490549c537"
+    "frozen-profile all-outage N-1 replay": "d8214553da0011eeb917ba4f9626d7fad4ee8e68c5dc9d316d2ea3d0b4eaf17f"
   },
   "chain": [
     "submit-time declarations -> exact indexed job witness",
@@ -26,7 +26,7 @@
     "payment_profile": "Exp9 feasible profile selected under a relative N-1 cost cap",
     "indexed_job_witness": "Exp19 exact submitted-job declaration index",
     "runtime_complete_common_witness": "Exp27 fixed-runtime contiguous-block witness indexed by the same submission digest",
-    "network_settlement_witness_digest": "a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6",
+    "network_settlement_witness_digest": "52df4c59dca2461118ec6298ad59bef23db587c0f32aea587ecd97fa34a7f188",
     "profile_identity_asserted": true,
     "role_separation_reason": "The common physical chain uses one runtime-complete declaration witness. Aggregate risk and payment profiles remain explicitly labeled calibration and contract-analysis views, so they cannot be silently substituted for that witness."
   },
@@ -68,7 +68,7 @@
     "valid": true
   },
   "common_witness_certificate": {
-    "witness_digest": "a5169a46dbe64f34c2437e217c7b443476338078d74aaea8af90d8710bed69f6",
+    "witness_digest": "52df4c59dca2461118ec6298ad59bef23db587c0f32aea587ecd97fa34a7f188",
     "submitted_jobs": 75326,
     "runtime_energy_mwh": 1972.1150000000002,
     "profile_shape": [

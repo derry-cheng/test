@@ -28,4 +28,7 @@ PYTHONPATH=code/src:vendor python experiments/exp9_payment_certificate/run.py
 
 Checkpoints are written under `results/intermediate`; complete tables, certified
 profiles, metadata, and English vector/raster figures are written under
-`results/final` and `figures`.
+`results/final` and `figures`. A resumed run is accepted only when the current
+Experiment-2 profile checksum appears in both the locked evaluator rows and the
+unseen-transfer rows; changing the risk profile therefore forces a complete
+payment replay rather than a row-count-only reuse.

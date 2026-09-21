@@ -38,6 +38,7 @@ from .exante_validation import run_exp25_exante_job_validation
 from .executable_witness import run_exp27_executable_common_witness
 from .risk_tail_audit import run_exp28_risk_tail_audit
 from .executable_target_bridge_audit import run_exp29_executable_target_bridge_audit
+from .contract_lineage import run_exp30_contract_lineage_audit
 from .end_to_end_certificate import run_exp26_end_to_end_certificate
 from .utils import ensure_dirs, environment_manifest, set_reproducible_seed, write_json
 
@@ -134,6 +135,7 @@ def run_pipeline(
         ("exp23", lambda: run_exp23_independent_event_replay(root, cfg, logger)),
         ("exp28", lambda: run_exp28_risk_tail_audit(root, cfg, logger)),
         ("exp29", lambda: run_exp29_executable_target_bridge_audit(root, cfg, logger)),
+        ("exp30", lambda: run_exp30_contract_lineage_audit(root, cfg, logger)),
         ("exp24", lambda: run_exp24_all_outage_security_panel(root, cfg, logger)),
         ("exp25", lambda: run_exp25_exante_job_validation(root, cfg, logger)),
         ("exp26", lambda: run_exp26_end_to_end_certificate(root, cfg, logger)),
@@ -163,7 +165,7 @@ def run_pipeline(
                 "status": "pending",
                 "migration_note": "stage added after the previous unified run",
             }
-        for name in {"exp2", "exp9", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "audit"}:
+        for name in {"exp2", "exp9", "exp10", "exp11", "exp12", "exp15", "exp17", "exp18", "exp19", "exp20", "exp21", "exp22", "exp23", "exp24", "exp26", "exp27", "exp28", "exp29", "exp30", "audit"}:
             if name not in manifest.get("stages", {}):
                 continue
             # A long stage may have been rerun and independently checked after
@@ -227,11 +229,12 @@ def run_pipeline(
         "exp27",
         "exp28",
         "exp29",
+        "exp30",
         "exp26",
         "audit",
-    } and stage not in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp26"}:
+    } and stage not in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp26"}:
+    elif stage in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound

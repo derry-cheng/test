@@ -1,62 +1,87 @@
-# TSG revision resolution
+# TSG revision resolution matrix
 
-This release maps each critical review point to a changed implementation, a
-machine-readable certificate, and the corresponding manuscript statement.
+This release records the concrete changes made for the five critical review
+points. Every number below is read from the regenerated final artifacts rather
+than copied from an earlier draft.
 
-## C1 — signed settlement ledger
+## C1 — domain-level contribution and novelty boundary
 
-`executable_witness.py` now writes `signed_settlement_usd` and
-`cash_settlement_usd` as separate interval fields. Exp27 aggregates the signed
-cycle before applying the optional cash floor. The regenerated ledger contains
-1,168 negative settlement intervals, a signed cycle total of 161.036 USD, and a
-separate cash-floor presentation of 277.806 USD. Exp26 independently checks both
-pointwise identities and the signed-cycle total.
+The contribution is now stated in power-system terms: a declaration-indexed
+workload state is carried through an active-window energy map, a signed nodal
+value calculation, and a complete finite RTS-24 N--1 replay. The manuscript
+does not present the solver implementation itself as a contribution. The
+information boundary and conditional trace-to-region interpretation are stated
+explicitly because the public workload data do not identify physical facility
+buses. The resulting claim is a verifiable coupling invariant and a settlement
+boundary, not an unsupported claim of a new grid optimizer.
 
-## C2 — risk target and executable policy
+## C2 — information boundary and executable feasibility
 
-The risk-to-start mapping is explicitly an exact minimizer of a finite
-declaration-feasible start objective. It is not described as exact equality to
-the aggregate target. Exp29 recomputes all 7,306,622 candidates, finds zero
-start mismatches and an objective residual below (2.3\times10^{-13}) USD, and
-reports total-load nRMSE 0.0260 together with flexible-target nRMSE 3.144. The
-residual definition and figure are included in the manuscript and retained in
-the daily CSV.
+The executable witness uses only submit-time release, declared runtime, GPU
+request, class, region, and the precommitted queue allowance. The active-window
+map integrates the overlap of every declared runtime interval with the locked
+days, including carry-in jobs. `exp30_contract_lineage_audit` checks nine
+lineage conditions; all pass, with no future-arrival or execution-telemetry
+field entering the decision path. The independent observed-meter panel remains
+post-commitment scoring, and the regenerated release marks the declaration
+replay as ineligible for payment until a closed meter is present.
 
-## C3 — decision-time information boundary
+## C3 — target-to-executable bridge
 
-The complete-ledger risk profile is labelled as an ex-post comparator. The
-slot-62 gate profile is the deployable contract mode: post-gate arrivals and
-execution truth are absent from its decision LP, its 3-MWh committed-service
-constraint is fixed before scoring, and the information-boundary certificate
-records these conditions for all 54 locked days. The results table now reports
-both profiles rather than merging their claims.
+The bridge is defined as the exact minimizer of a finite linear dual-price
+objective over all declaration-feasible contiguous starts. It does not claim
+that a discrete witness equals an aggregate target. Experiment 29 enumerates
+7,306,622 starts, finds zero stored-start mismatches, and reproduces the saved
+objective to \(2.27\times10^{-13}\) USD. The regenerated bridge reports total
+profile nRMSE 0.03008, flexible relative-L2 residual 1.586, and maximum
+absolute residual 2.872 MW. The paper reports both residuals and explains why
+the flexible denominator is the relevant audit for target tracking.
 
-## C4 — joint total/CVaR evidence
+## C4 — joint total/CVaR contract and ablations
 
-Exp28 now evaluates the joint, total-only, and CVaR-only fits on both normalized
-false-credit ratios and absolute daily MWh. It reports means, empirical
-CVaR\(_{0.75}\), 90th percentiles, and paired three-day block intervals. The
-manuscript states that the joint fit is selected by simultaneous validation
-constraints and does not claim held-out dominance where the intervals include
-zero.
+The convex risk fit now includes a linear triangle-inequality validation RMS
+certificate with a predeclared two-percent tolerance, in addition to total and
+daily-CVaR exposure budgets. The final validation certificate records actual
+MSE 209.050 against an upper bound 209.485, an RMS bound of 14.474 against a
+14.474 budget, zero primal residual, and KKT stationarity below
+\(4\times10^{-10}\). The locked test is reported as a risk--accuracy tradeoff:
+the joint fit has 0.970 nRMSE, 1.615 MWh/day false credit, and (F_1=0.456),
+while the single feasible projection has 0.943, 2.470, and 0.463. Experiment
+28 includes joint, total-only, and CVaR-only fits with normalized and absolute
+tail metrics and paired block intervals. The manuscript no longer claims
+uniform held-out metric dominance that the data do not support.
 
-## C5 — theoretical and domain contribution
+## C5 — settlement semantics and power-system evidence
 
-The paper adds a typed residual-to-value bound for a Lipschitz SCED value,
-strengthening the job-to-region-to-bus coupling invariant. The continuous
-conversion claim is restricted to the fixed-counterfactual affine segment
-actually solved by Exp15; the five-scenario payment certificate remains finite
-and explicit. A recent IEEE TSG computation--power coupling reference is added
-to the related-work boundary. The contributions are stated as power-system
-certificates rather than software components.
+The settlement chain now distinguishes three roles: declaration-feasible
+replay, signed network-value replay, and closed-meter payment. Exp27 uses
+active declaration energy of 655.753 MWh across 5,184 full-day cells and all
+37 finite RTS-24 contingencies per cell. It reports signed network value
+\(-0.686\) USD, signed cycle settlement 187.545 USD, cash-floor presentation
+290.440 USD, and 1,087 negative debit cells. These are simulation certificates;
+they are not labelled as a payable meter settlement. The payment equation is
+meter-capped, units are stated (MW, h, MWh, USD), and Exp30 records
+`closed_meter_payment_ready = false` for the public release.
 
 ## Minor consistency and presentation corrections
 
-The manuscript now distinguishes service-variable counts from candidate-start
-counts, uses the signed/cash settlement names consistently, expands required
-abbreviations on first use, removes a duplicate section declaration, updates the
-tail-risk and bridge figures, and adds complete-ledger/gate rows to the
-information-boundary table. Supporting formulation and implementation notes use
-the same counts and claim boundaries. Generated artifacts remain under their
-experiment-specific `results/final` and `figures` directories; human-readable
-review records are kept under `reports/review`.
+The manuscript has one overall framework figure and one method-detail figure,
+all figures and tables are cited in the text, abbreviations are expanded on
+first use, duplicate equation labels and a stray control character were
+removed, and the result figure now calls the residual audited rather than
+measured. The paper compiles to exactly ten pages with 31 references. Source,
+experiment outputs, reports, and result indexes remain in separate top-level
+directories; generated checkpoints stay under their owning experiment.
+
+## Reproduction anchors
+
+The final evidence is regenerated by `run_all.py --stage exp2`, `exp9`, `exp10`,
+`exp22`, `exp23`, `exp24`, `exp26`, `exp27`, `exp28`, `exp29`, and `exp30`,
+followed by `tests/run_tests.py` and the LaTeX build in `paper/`. Exp9's resume
+guard now checks the profile checksum in every evaluator CSV, so a metadata-only
+resume cannot preserve a stale payment panel; its long-running checkpoints use
+same-directory atomic replacement. The final unified audit reports 390/390
+checks passed. The machine-readable certificates are
+`risk_constrained_validation_certificate.csv`, `risk_tail_audit.csv`,
+`executable_target_bridge_audit.csv`,
+`common_witness_settlement_summary.csv`, and `contract_lineage_checks.csv`.

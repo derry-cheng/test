@@ -1,0 +1,25 @@
+{
+  "experiment": "causal contract and settlement lineage audit",
+  "schema_version": 1,
+  "information_boundary": "submit-time declarations for the executable witness; observed meter only for independent locked scoring",
+  "future_arrivals_used": false,
+  "execution_telemetry_used": false,
+  "scale_definition": "sum_j declaration_energy_j * overlap(runtime_block_j, locked_windows) / runtime_slots_j",
+  "target_tracking_definition": "Exp29 reports total RMSE normalized by total-profile magnitude and flexible relative L2; it is not silently treated as exact target feasibility",
+  "settlement_interpretation": "Exp27 is a declaration-only network-value replay; Exp20 is an independent observed-meter scoring panel; a closed meter is required before calling a payment payable",
+  "declaration_only_network_replay": true,
+  "closed_meter_payment_ready": false,
+  "source_sha256": {
+    "runtime_complete_witness.npz": "88dbddc7d0405e63f55623531854c51c6d6281bfd4fd5f77f3e46c13f3e79bc1",
+    "job_level_runtime_summary.csv": "fed206ef364a8422343e237cc15cccab0f345a4c44a45ff1ad27b4f063d1b545",
+    "risk_to_executable_bridge_certificate.json": "594a254a186d14f77b1e5b933f34b5b02cca8e728e4664dff8d7d273e7ae5c44",
+    "runtime_witness_coupling_certificate.json": "91f653eb2f0e68bd6651d6e5aa5a8d9fbec367dad2a779d4cdb6db0b1a004c87",
+    "common_witness_settlement.csv": "a37c76ee2eea11c0183bafd5d8137aaed00b54d04a04318cf67b2888c8ca9827",
+    "trace_meter_replay_summary.csv": "7aa0258a945d8790fa8d0621a37f24c9e2707902d92d2164f485528bceee0b93",
+    "executable_target_bridge_audit.csv": "b2373fc90965056a5e097652ae810183bb0bb5c3ba2492a7503b32a407ef3da1"
+  },
+  "files": {
+    "checks": "contract_lineage_checks.csv",
+    "summary": "contract_lineage_summary.csv"
+  }
+}

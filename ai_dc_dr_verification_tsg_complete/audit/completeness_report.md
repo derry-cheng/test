@@ -240,6 +240,10 @@ Overall status: **PASS**.
 - [x] experiment_29:experiments/exp29_executable_target_bridge/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_29:experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.png: exists and non-empty
 - [x] experiment_29:experiments/exp29_executable_target_bridge/README.md: exists and non-empty
+- [x] experiment_30:experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv: exists and non-empty
+- [x] experiment_30:experiments/exp30_contract_lineage_audit/results/final/contract_lineage_summary.csv: exists and non-empty
+- [x] experiment_30:experiments/exp30_contract_lineage_audit/results/final/experiment_metadata.json: exists and non-empty
+- [x] experiment_30:experiments/exp30_contract_lineage_audit/README.md: exists and non-empty
 - [x] manuscript_sources:paper/main.tex: exists and non-empty
 - [x] manuscript_sources:paper/main.pdf: exists and non-empty
 - [x] manuscript_sources:paper/IEEEtran.cls: exists and non-empty
@@ -262,14 +266,14 @@ Overall status: **PASS**.
 - [x] manuscript_sources:paper/figures/fig_risk_tail_tradeoff.pdf: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig29_target_tracking.png: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig29_target_tracking.pdf: exists and non-empty
-- [x] canonical_unified_manifest_preserved: 31/31 stages recorded; canonical request=all; audit status=running (running is expected during the self-check)
-- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2307x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=2309x1077; fig_method_detail.png=1800x643; fig_risk_tail_tradeoff.png=2307x1045
+- [x] canonical_unified_manifest_preserved: 32/32 stages recorded; canonical request=all; audit status=running (running is expected during the self-check)
+- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2306x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=2309x1077; fig_method_detail.png=1800x643; fig_risk_tail_tradeoff.png=2307x1045
 - [x] ieeetran_pdf_length_and_geometry: 10 pages; boxes=[(612.0, 792.0), (612.0, 792.0)]...
 - [x] model_formula_citation_traceability: 27/27 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
-- [x] maximum_two_sources_per_citation_group: 40 in-text citation groups checked
+- [x] maximum_two_sources_per_citation_group: 39 in-text citation groups checked
 - [x] complete_manuscript_bibliography: 31 verified bibliography entries; 31 unique in-text citations; uncited=[]; missing=[]
-- [x] every_labeled_equation_figure_table_is_referenced: 47 labels; unreferenced=[]; missing=[]
+- [x] every_labeled_equation_figure_table_is_referenced: 49 labels; unreferenced=[]; missing=[]
 - [x] required_abbreviation_expansions_present: MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok
 - [x] sha256_symbol_is_hyphenated: SHA-256 is written consistently in prose and equations
 - [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
@@ -315,7 +319,7 @@ Overall status: **PASS**.
 - [x] cross_experiment_locked_day_identity: 10/10 main panels use the identical locked days 61--114; mismatches=[]
 - [x] dependence_robust_exact_block_tests: 18 pre-declared 3-day blocks, exact sign randomization, attainable-p audit, and Holm family-wise correction
 - [x] tail_risk_counterfactual_estimator_comparison: the tail-risk and single projections are compared with a signed, dependence-aware block test; the reported effects reproduce the two locked-set means over 18 exact temporal blocks without asserting dominance on either metric
-- [x] closest_feasible_baseline_comparison: the risk verifier trades a lower nRMSE and higher F1 for greater false-credit exposure than the feasible-quantile comparator; the paired false-credit interval remains strictly signed (1.122642 versus 1.343958 nRMSE)
+- [x] closest_feasible_baseline_comparison: the risk verifier trades a lower nRMSE and higher F1 for greater false-credit exposure than the feasible-quantile comparator; the paired false-credit interval remains strictly signed (0.970239 versus 1.343958 nRMSE)
 - [x] active_cvar_frontier_certificate: the predeclared validation-only CVaR frontier is feasible at every declared reserve and records the nonnegative distance between its budget and the attainable minimum; the pooled contract uses the separately recorded 1.00 tail reserve
 - [x] matched_effect_sizes_with_dependence_robust_intervals: the risk-versus-feasible-quantile false-credit difference has a strictly signed three-day moving-block 95% interval, while the single-projection effects remain contained in their dependence-aware intervals
 - [x] complete_independent_intervention_panel: 864/864 rows; all matched interventions are evaluated without a comparator-derived cap
@@ -325,8 +329,8 @@ Overall status: **PASS**.
 - [x] risk_ceiling_truth_sources_explicit: the pointwise risk-fit ceiling is labelled as an offline union of the observational and mechanism-isolation trajectories; settlement scores retain the two truth sources separately and do not assert a causal event effect
 - [x] nondegenerate_risk_verifier_output: the risk-fit profile differs from the single reference; the separately stored payment-contract profile retains the independently checked two-sided band
 - [x] risk_constrained_validation_certificate: the convex verifier satisfies both absolute total and daily-tail CVaR budgets, reports KKT/primal residuals, and remains distinct from the CVaR-only ablation; validation MSE is retained as a separate accuracy-risk tradeoff
-- [x] nested_daily_risk_reserve_selection: 16 reserve-fold cells; selected reserve=0.25
-- [x] exact_pointwise_risk_envelope_selection: 6 globally solved envelope projections; selected weight=0.03
+- [x] nested_daily_risk_reserve_selection: 16 reserve-fold cells; selected reserve=1.00
+- [x] exact_pointwise_risk_envelope_selection: 6 globally solved envelope projections; selected weight=0.3
 - [x] matched_post_event_information_protocol: statistical, single-projection, and convex verifiers share the full ledger and never observe execution truth
 - [x] complete_predeclared_projection_validation: 7 pre-declared validation candidates
 - [x] convex_projection_simplex: 6 coefficients; sum=1.000000000000
@@ -387,6 +391,7 @@ Overall status: **PASS**.
 - [x] end_to_end_declaration_to_settlement_lineage_certificate: Exp26 recomputes the indexed coupling, verifies risk/payment/outage certificates, records the common witness and settlement hashes, and preserves explicit role separation
 - [x] runtime_complete_witness_typed_coupling_certificate: Exp27 baseline and counterfactual service vectors independently satisfy job-energy, regional aggregation, GPU-nameplate, and site-capacity residual bounds and remain attached to the settlement witness digest
 - [x] exact_target_bridge_residual_audit: Exp29 recomputes all 7,306,622 declaration-feasible starts, verifies the stored finite-policy minimizers, and reports total/flexible target residuals without a heuristic profile correction
+- [x] contract_lineage_separates_declaration_replay_from_meter_payment: Exp30 recomputes the active declaration scale, confirms the submit-time information boundary, and prevents a declaration-only network replay from being labeled as a closed-meter payment
 - [x] end_to_end_upstream_hashes_match_current_artifacts: executable submitted-job witness=ok; runtime-complete common witness used by network settlement=ok; N-1 settlement replay of the runtime-complete common witness=ok; exact risk-profile to executable-start bridge=ok; validation-fitted aggregate risk target=ok; payment-certified feasible profile hull=ok; recomputed job-to-network certificate summary=ok; frozen-profile all-outage N-1 replay=ok
 - [x] no_stale_atomic_temporary_artifacts: no hidden atomic-writer temporary files remain
 
@@ -402,21 +407,21 @@ Overall status: **PASS**.
 | High-5-of-10 | 1.5859 | 0.4610 | 41.2205 | 0.5390 | 0.8642 | 0.5715 | 3.7564 |
 | Metadata Gradient Boosting | 0.7741 | 0.2977 | 9.1831 | 0.7023 | 0.6820 | 0.6400 | -0.8559 |
 | Ridge | 1.0380 | 0.4018 | 21.9062 | 0.5982 | 0.7036 | 0.5450 | 0.9756 |
-| Risk-Constrained Convex Verifier | 1.1226 | 0.0677 | 0.3028 | 0.9323 | 0.2586 | 0.3732 | -3.2633 |
+| Risk-Constrained Convex Verifier | 0.9702 | 0.0883 | 1.6154 | 0.9117 | 0.3562 | 0.4556 | -2.5205 |
 | Single Feasible Projection | 0.9434 | 0.0976 | 2.4696 | 0.9024 | 0.3707 | 0.4630 | -2.2474 |
 | Synthetic Control | 0.7821 | 0.2055 | 9.3937 | 0.7945 | 0.6774 | 0.6762 | -1.5355 |
-| Tail-Risk Feasible Counterfactual | 1.1215 | 0.0712 | 0.2635 | 0.9288 | 0.2715 | 0.3837 | -3.4000 |
+| Tail-Risk Feasible Counterfactual | 0.9702 | 0.0883 | 1.6154 | 0.9117 | 0.3562 | 0.4556 | -2.5205 |
 
 ## Projection candidate validation
 
 | candidate_index | projection_weight | validation_score | validation_score_std | event_window_deviation_from_optimization_only_mw | validation_credit_precision | validation_credit_recall | validation_credit_f1 | mean_contiguous_fold_nrmse | max_contiguous_fold_nrmse | selected_single_projection | candidate_type | ensemble_weight | selected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0.03000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.14511 | True |
-| 2 | 0.10000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.14511 | True |
-| 3 | 0.30000 | 1.42218 | 0.40261 | 8.37975 | 0.98325 | 0.12723 | 0.22229 | 1.51660 | 1.77793 | False | metadata projection | 0.00000 | False |
-| 4 | 1.00000 | 1.14876 | 0.38595 | 4.97534 | 0.98782 | 0.36037 | 0.50489 | 1.17839 | 1.41195 | False | metadata projection | 0.06581 | True |
-| 5 | 3.00000 | 1.06290 | 0.33620 | 4.56443 | 0.98184 | 0.40248 | 0.54721 | 1.08450 | 1.29388 | False | metadata projection | 0.64397 | True |
-| 6 | 10.00000 | 1.03856 | 0.34259 | 4.46302 | 0.96814 | 0.41927 | 0.55964 | 1.05964 | 1.23894 | True | metadata projection | 0.00000 | False |
+| 1 | 0.03000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.00000 | True |
+| 2 | 0.10000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.00000 | True |
+| 3 | 0.30000 | 1.42218 | 0.40261 | 8.37975 | 0.98325 | 0.12723 | 0.22229 | 1.51660 | 1.77793 | False | metadata projection | 0.00000 | True |
+| 4 | 1.00000 | 1.14876 | 0.38595 | 4.97534 | 0.98782 | 0.36037 | 0.50489 | 1.17839 | 1.41195 | False | metadata projection | 0.00000 | True |
+| 5 | 3.00000 | 1.06290 | 0.33620 | 4.56443 | 0.98184 | 0.40248 | 0.54721 | 1.08450 | 1.29388 | False | metadata projection | 0.36042 | True |
+| 6 | 10.00000 | 1.03856 | 0.34259 | 4.46302 | 0.96814 | 0.41927 | 0.55964 | 1.05964 | 1.23894 | True | metadata projection | 0.63958 | True |
 | 6 | 1.00000 | 1.34945 | nan | nan | nan | nan | 0.36429 | nan | 1.73834 | False | post-commitment feasible quantile comparator | 0.00000 | False |
 
 ## Settlement results
@@ -677,23 +682,23 @@ Overall status: **PASS**.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | q01 | 0.5827 | Feasible Quantile Projection | -23.0646 | 8.8043 | 33.1837 | 0.6574 | 1.0000 |
 | q01 | 0.5827 | Payment-Certified N-1 Verifier | -25.3177 | 8.8043 | 34.1220 | 0.0000 | 1.0000 |
-| q01 | 0.5827 | Risk-Constrained Convex Verifier | -24.6914 | 8.8043 | 33.4958 | 0.0000 | 1.0000 |
+| q01 | 0.5827 | Risk-Constrained Convex Verifier | -19.1056 | 8.8043 | 27.9099 | 0.0000 | 1.0000 |
 | q01 | 0.5827 | Single Feasible Projection | -15.6049 | 8.8043 | 24.4443 | 0.0175 | 1.0000 |
 | q10 | 0.6871 | Feasible Quantile Projection | -27.1991 | 10.4015 | 39.1500 | 0.7747 | 1.0000 |
 | q10 | 0.6871 | Payment-Certified N-1 Verifier | -29.8425 | 10.4015 | 40.2441 | 0.0000 | 1.0000 |
-| q10 | 0.6871 | Risk-Constrained Convex Verifier | -29.1175 | 10.4015 | 39.5190 | 0.0000 | 1.0000 |
+| q10 | 0.6871 | Risk-Constrained Convex Verifier | -22.5137 | 10.4015 | 32.9153 | 0.0000 | 1.0000 |
 | q10 | 0.6871 | Single Feasible Projection | -18.3731 | 10.4015 | 28.8168 | 0.0211 | 1.0000 |
 | q50 | 0.9698 | Feasible Quantile Projection | -38.3984 | 14.7880 | 55.3597 | 1.0867 | 1.0000 |
 | q50 | 0.9698 | Payment-Certified N-1 Verifier | -42.0696 | 14.7880 | 56.8577 | 0.0000 | 1.0000 |
-| q50 | 0.9698 | Risk-Constrained Convex Verifier | -41.0892 | 14.7880 | 55.8773 | 0.0000 | 1.0000 |
+| q50 | 0.9698 | Risk-Constrained Convex Verifier | -31.6920 | 14.7880 | 46.4801 | 0.0000 | 1.0000 |
 | q50 | 0.9698 | Single Feasible Projection | -25.8257 | 14.7880 | 40.6754 | 0.0308 | 1.0000 |
 | q90 | 1.3491 | Feasible Quantile Projection | -53.5538 | 20.7338 | 77.2425 | 1.4774 | 1.0000 |
 | q90 | 1.3491 | Payment-Certified N-1 Verifier | -58.5293 | 20.7338 | 79.2632 | 0.0001 | 1.0000 |
-| q90 | 1.3491 | Risk-Constrained Convex Verifier | -57.2326 | 20.7338 | 77.9665 | 0.0001 | 1.0000 |
+| q90 | 1.3491 | Risk-Constrained Convex Verifier | -44.0508 | 20.7338 | 64.7848 | 0.0001 | 1.0000 |
 | q90 | 1.3491 | Single Feasible Projection | -35.8767 | 20.7338 | 56.6995 | 0.0445 | 1.0000 |
 | q99 | 5.3209 | Feasible Quantile Projection | -215.0013 | 87.6959 | 312.9333 | 5.1181 | 1.0000 |
 | q99 | 5.3209 | Payment-Certified N-1 Verifier | -233.9641 | 87.6959 | 321.6600 | 0.0000 | 1.0000 |
-| q99 | 5.3209 | Risk-Constrained Convex Verifier | -229.7793 | 87.6959 | 317.4752 | 0.0000 | 1.0000 |
+| q99 | 5.3209 | Risk-Constrained Convex Verifier | -176.3602 | 87.6959 | 264.0560 | 0.0000 | 1.0000 |
 | q99 | 5.3209 | Single Feasible Projection | -143.7319 | 87.6959 | 231.4750 | 0.0236 | 1.0000 |
 
 ## Validation-frozen payment target selection
@@ -714,19 +719,19 @@ Overall status: **PASS**.
 | --- | --- | --- | --- | --- | --- |
 | IEEE 118-bus | Feasible Quantile Projection | 1315.5940 | 0.1681 | 0.0421 | 0.0000 |
 | IEEE 118-bus | Payment-Certified N-1 Verifier | 1138.6336 | 15.8057 | 0.0424 | 0.0000 |
-| IEEE 118-bus | Risk-Constrained Convex Verifier | 1182.9436 | 8.7658 | 0.0423 | 0.0000 |
+| IEEE 118-bus | Risk-Constrained Convex Verifier | 1178.0064 | 93.2808 | 0.0424 | 0.0000 |
 | IEEE 118-bus | Single Feasible Projection | 1201.6870 | 137.8232 | 0.0424 | 0.0000 |
 | IEEE 30-bus | Feasible Quantile Projection | 5.2304 | 0.1266 | 1.0000 | 0.0000 |
 | IEEE 30-bus | Payment-Certified N-1 Verifier | 4.6405 | 0.1232 | 1.0000 | 0.0000 |
-| IEEE 30-bus | Risk-Constrained Convex Verifier | 4.7644 | 0.1095 | 1.0000 | 0.0000 |
+| IEEE 30-bus | Risk-Constrained Convex Verifier | 4.8199 | 0.4484 | 1.0000 | 0.0000 |
 | IEEE 30-bus | Single Feasible Projection | 4.9223 | 0.6329 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Feasible Quantile Projection | 884.3686 | 0.1278 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Payment-Certified N-1 Verifier | 792.6199 | 7.3178 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Risk-Constrained Convex Verifier | 819.0837 | 3.6054 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Risk-Constrained Convex Verifier | 812.5509 | 50.2638 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Single Feasible Projection | 826.4742 | 78.4756 | 1.0000 | 0.0000 |
 | IEEE RTS 24-bus | Feasible Quantile Projection | 1110.4934 | 0.1679 | 0.9384 | 0.0000 |
 | IEEE RTS 24-bus | Payment-Certified N-1 Verifier | 970.1261 | 13.7948 | 0.9483 | 0.0000 |
-| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 1005.3312 | 7.8969 | 0.9448 | 0.0000 |
+| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 1003.2952 | 79.3876 | 0.9483 | 0.0000 |
 | IEEE RTS 24-bus | Single Feasible Projection | 1023.2506 | 117.2371 | 0.9485 | 0.0000 |
 
 ## Complete nonlinear AC post-contingency validation
@@ -735,11 +740,11 @@ Overall status: **PASS**.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | IEEE 14-bus | Feasible Quantile Projection | 0.01813 | 0.00000 | 0.97282 | 1.06000 | 19 | 54 |
 | IEEE 14-bus | Payment-Certified N-1 Verifier | 0.01813 | 0.00000 | 0.97419 | 1.06000 | 19 | 54 |
-| IEEE 14-bus | Risk-Constrained Convex Verifier | 0.01813 | 0.00000 | 0.97405 | 1.06000 | 19 | 54 |
+| IEEE 14-bus | Risk-Constrained Convex Verifier | 0.01813 | 0.00000 | 0.97419 | 1.06000 | 19 | 54 |
 | IEEE 14-bus | Single Feasible Projection | 0.01813 | 0.00000 | 0.97419 | 1.06000 | 19 | 54 |
 | IEEE 9-bus | Feasible Quantile Projection | 0.86982 | 0.00000 | 0.94348 | 1.10000 | 6 | 54 |
 | IEEE 9-bus | Payment-Certified N-1 Verifier | 0.88611 | 0.00000 | 0.94433 | 1.10000 | 6 | 54 |
-| IEEE 9-bus | Risk-Constrained Convex Verifier | 0.87964 | 0.00000 | 0.94427 | 1.10000 | 6 | 54 |
+| IEEE 9-bus | Risk-Constrained Convex Verifier | 0.88611 | 0.00000 | 0.94433 | 1.10000 | 6 | 54 |
 | IEEE 9-bus | Single Feasible Projection | 0.88611 | 0.00000 | 0.94433 | 1.10000 | 6 | 54 |
 
 ## Complete spatial-assignment and power-scale robustness
@@ -770,27 +775,27 @@ Overall status: **PASS**.
 
 ## Dependence-robust paired tests
 
-- High-5-of-10 | nrmse: comparator-minus-proposed mean difference 0.4633, two-sided exact block-sign p=0.04799, Holm-adjusted p=0.04799 (18 nonoverlapping blocks).
-- High-5-of-10 | false_response_ratio: comparator-minus-proposed mean difference 0.3932, two-sided exact block-sign p=1.526e-05, Holm-adjusted p=7.629e-05 (18 nonoverlapping blocks).
-- High-5-of-10 | credit_f1: comparator-minus-proposed mean difference -0.1984, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference -0.3485, two-sided exact block-sign p=2.289e-05, Holm-adjusted p=0.0001373 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.2300, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference -0.2668, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference -0.3727, two-sided exact block-sign p=1.526e-05, Holm-adjusted p=0.0001068 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.2298, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference -0.2700, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | nrmse: comparator-minus-proposed mean difference 0.2147, two-sided exact block-sign p=0.0006561, Holm-adjusted p=0.001312 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.1037, two-sided exact block-sign p=0.03232, Holm-adjusted p=0.06464 (18 nonoverlapping blocks).
-- Ex-post Quantile Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.1360, two-sided exact block-sign p=0.02711, Holm-adjusted p=0.02711 (18 nonoverlapping blocks).
-- Synthetic Control | nrmse: comparator-minus-proposed mean difference -0.3405, two-sided exact block-sign p=5.341e-05, Holm-adjusted p=0.0002136 (18 nonoverlapping blocks).
-- Synthetic Control | false_response_ratio: comparator-minus-proposed mean difference 0.1378, two-sided exact block-sign p=8.392e-05, Holm-adjusted p=0.0002518 (18 nonoverlapping blocks).
-- Synthetic Control | credit_f1: comparator-minus-proposed mean difference -0.3030, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | nrmse: comparator-minus-proposed mean difference 0.2213, two-sided exact block-sign p=9.155e-05, Holm-adjusted p=0.0002747 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | false_response_ratio: comparator-minus-proposed mean difference -0.0045, two-sided exact block-sign p=0.8445, Holm-adjusted p=0.8445 (18 nonoverlapping blocks).
-- Feasible Quantile Projection | credit_f1: comparator-minus-proposed mean difference 0.1477, two-sided exact block-sign p=0.001068, Holm-adjusted p=0.002136 (18 nonoverlapping blocks).
-- Single Feasible Projection | nrmse: comparator-minus-proposed mean difference -0.1793, two-sided exact block-sign p=3.052e-05, Holm-adjusted p=0.0001526 (18 nonoverlapping blocks).
-- Single Feasible Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0299, two-sided exact block-sign p=3.052e-05, Holm-adjusted p=0.0001221 (18 nonoverlapping blocks).
-- Single Feasible Projection | credit_f1: comparator-minus-proposed mean difference -0.0899, two-sided exact block-sign p=6.104e-05, Holm-adjusted p=0.0001831 (18 nonoverlapping blocks).
+- High-5-of-10 | nrmse: comparator-minus-proposed mean difference 0.6157, two-sided exact block-sign p=0.004814, Holm-adjusted p=0.009628 (18 nonoverlapping blocks).
+- High-5-of-10 | false_response_ratio: comparator-minus-proposed mean difference 0.3727, two-sided exact block-sign p=1.526e-05, Holm-adjusted p=7.629e-05 (18 nonoverlapping blocks).
+- High-5-of-10 | credit_f1: comparator-minus-proposed mean difference -0.1160, two-sided exact block-sign p=0.0009689, Holm-adjusted p=0.003143 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference -0.1961, two-sided exact block-sign p=0.0006256, Holm-adjusted p=0.002502 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.2094, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference -0.1844, two-sided exact block-sign p=0.0001144, Holm-adjusted p=0.0006866 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | nrmse: comparator-minus-proposed mean difference -0.2203, two-sided exact block-sign p=9.918e-05, Holm-adjusted p=0.0005951 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.2093, two-sided exact block-sign p=7.629e-06, Holm-adjusted p=5.341e-05 (18 nonoverlapping blocks).
+- Ex-post Metadata Gradient Boosting | credit_f1: comparator-minus-proposed mean difference -0.1876, two-sided exact block-sign p=6.866e-05, Holm-adjusted p=0.0004807 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | nrmse: comparator-minus-proposed mean difference 0.3671, two-sided exact block-sign p=0.000267, Holm-adjusted p=0.001335 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | false_response_ratio: comparator-minus-proposed mean difference 0.0831, two-sided exact block-sign p=0.0927, Holm-adjusted p=0.1854 (18 nonoverlapping blocks).
+- Ex-post Quantile Gradient Boosting | credit_f1: comparator-minus-proposed mean difference 0.2183, two-sided exact block-sign p=0.006508, Holm-adjusted p=0.006508 (18 nonoverlapping blocks).
+- Synthetic Control | nrmse: comparator-minus-proposed mean difference -0.1881, two-sided exact block-sign p=0.009933, Holm-adjusted p=0.009933 (18 nonoverlapping blocks).
+- Synthetic Control | false_response_ratio: comparator-minus-proposed mean difference 0.1172, two-sided exact block-sign p=0.0003052, Holm-adjusted p=0.001099 (18 nonoverlapping blocks).
+- Synthetic Control | credit_f1: comparator-minus-proposed mean difference -0.2206, two-sided exact block-sign p=0.0007858, Holm-adjusted p=0.003143 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | nrmse: comparator-minus-proposed mean difference 0.3737, two-sided exact block-sign p=7.629e-05, Holm-adjusted p=0.0005341 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | false_response_ratio: comparator-minus-proposed mean difference -0.0250, two-sided exact block-sign p=0.3109, Holm-adjusted p=0.3109 (18 nonoverlapping blocks).
+- Feasible Quantile Projection | credit_f1: comparator-minus-proposed mean difference 0.2301, two-sided exact block-sign p=0.0004425, Holm-adjusted p=0.002213 (18 nonoverlapping blocks).
+- Single Feasible Projection | nrmse: comparator-minus-proposed mean difference -0.0269, two-sided exact block-sign p=0.0006409, Holm-adjusted p=0.002502 (18 nonoverlapping blocks).
+- Single Feasible Projection | false_response_ratio: comparator-minus-proposed mean difference 0.0093, two-sided exact block-sign p=0.0002747, Holm-adjusted p=0.001099 (18 nonoverlapping blocks).
+- Single Feasible Projection | credit_f1: comparator-minus-proposed mean difference -0.0075, two-sided exact block-sign p=0.001892, Holm-adjusted p=0.003784 (18 nonoverlapping blocks).
 
 ## Scope and limitations
 

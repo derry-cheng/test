@@ -131,6 +131,13 @@ def run_exp29_executable_target_bridge_audit(
         flexible_target = np.maximum(target - fixed_load_mw, 0.0)
         rmse = float(np.sqrt(np.mean(error**2)))
         flex_rmse = float(np.sqrt(np.mean(error**2)))
+        # The flexible-target score is a relative L2 error.  Its denominator
+        # must use the same RMS norm as the numerator; a mean-absolute
+        # denominator artificially inflates the score when the fixed facility
+        # load dominates the total profile.
+        flexible_target_rms = max(
+            float(np.sqrt(np.mean(flexible_target**2))), 1.0e-12
+        )
         daily_rows.append(
             {
                 "day": int(day),
@@ -140,8 +147,7 @@ def run_exp29_executable_target_bridge_audit(
                 "target_tracking_rmse_mw": rmse,
                 "target_tracking_nrmse_total": rmse
                 / max(float(np.mean(np.abs(target))), 1.0e-12),
-                "target_tracking_nrmse_flexible": flex_rmse
-                / max(float(np.mean(np.abs(flexible_target))), 1.0e-12),
+                "target_tracking_nrmse_flexible": flex_rmse / flexible_target_rms,
                 "target_tracking_relative_l2_flexible": float(np.linalg.norm(error))
                 / max(float(np.linalg.norm(flexible_target)), 1.0e-12),
                 "maximum_absolute_residual_mw": float(np.max(np.abs(error))),
@@ -205,8 +211,9 @@ def run_exp29_executable_target_bridge_audit(
     metadata = {
         "experiment": "independent exact audit of the risk-to-executable bridge",
         "schema_version": 1,
-        "optimization_class": "finite exact enumeration of every declaration-feasible contiguous start",
+        "optimization_class": "finite exact enumeration of every declaration-feasible contiguous start under a fixed linear dual-price surrogate",
         "heuristic_target_tracking": False,
+        "target_tracking_definition": "daily total-profile RMSE divided by the flexible-target RMS; relative L2 is also reported",
         "future_arrivals_used": False,
         "execution_telemetry_used": False,
         "candidate_count_definition": "submitted jobs multiplied by queue allowance plus one",

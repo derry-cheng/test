@@ -318,6 +318,12 @@ EXPECTED_FILES = {
         "experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.png",
         "experiments/exp29_executable_target_bridge/README.md",
     ],
+    "experiment_30": [
+        "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv",
+        "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_summary.csv",
+        "experiments/exp30_contract_lineage_audit/results/final/experiment_metadata.json",
+        "experiments/exp30_contract_lineage_audit/README.md",
+    ],
     "manuscript_sources": [
         "paper/main.tex",
         "paper/main.pdf",
@@ -404,6 +410,7 @@ def run_audit(
         "exp27",
         "exp28",
         "exp29",
+        "exp30",
         "audit",
     }
     recorded_stages = unified_manifest.get("stages", {})
@@ -2079,7 +2086,8 @@ def run_audit(
         bool(
             risk_certificate["optimizer_success"] == 1
             and risk_certificate["risk_constraints_satisfied"] == 1
-            and risk_certificate["solver_name"] == "cvxpy-CLARABEL"
+            and risk_certificate["solver_name"]
+            in {"cvxpy-CLARABEL", "scipy.optimize.trust-constr"}
             and np.isfinite(float(risk_certificate["kkt_stationarity_residual"]))
             and float(risk_certificate["kkt_stationarity_residual"]) <= 1e-5
             and float(risk_certificate["primal_constraint_residual"]) <= 1e-6
@@ -4339,6 +4347,27 @@ def run_audit(
             "Exp29 recomputes all 7,306,622 declaration-feasible starts, verifies "
             "the stored finite-policy minimizers, and reports total/flexible target "
             "residuals without a heuristic profile correction"
+        ),
+        checks,
+    )
+
+    lineage_summary = pd.read_csv(
+        root
+        / "experiments/exp30_contract_lineage_audit/results/final/"
+        "contract_lineage_summary.csv"
+    )
+    lineage_values = dict(
+        zip(lineage_summary["metric"].astype(str), lineage_summary["value"].astype(float))
+    )
+    _check(
+        bool(lineage_values.get("all_lineage_checks_passed", 0.0))
+        and bool(lineage_values.get("declaration_only_network_replay", 0.0))
+        and not bool(lineage_values.get("closed_meter_payment_ready", 1.0)),
+        "contract_lineage_separates_declaration_replay_from_meter_payment",
+        (
+            "Exp30 recomputes the active declaration scale, confirms the submit-time "
+            "information boundary, and prevents a declaration-only network replay "
+            "from being labeled as a closed-meter payment"
         ),
         checks,
     )

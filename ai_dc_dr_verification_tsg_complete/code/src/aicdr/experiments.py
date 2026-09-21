@@ -4,6 +4,7 @@ import hashlib
 import json
 import logging
 import math
+import os
 import time
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -82,6 +83,25 @@ METHODS = [
 ]
 
 SETTLEMENT_SCHEMA_VERSION = 6
+
+
+def _atomic_to_csv(frame: pd.DataFrame, path: Path) -> None:
+    """Write a checkpoint without exposing a partially serialized CSV.
+
+    Long payment replays are resumable, so a reader can inspect a checkpoint
+    while the evaluator is running.  Serializing directly to the final path
+    briefly exposes a truncated file and can make an interrupted run appear
+    to have lost completed days.  A same-directory replacement preserves the
+    previous complete checkpoint until the new one is fully flushed.
+    """
+    path = Path(path)
+    temporary = path.with_name(f".{path.name}.tmp")
+    try:
+        frame.to_csv(temporary, index=False)
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 def _exp18_process_opf(payload: dict[str, Any]) -> dict[str, Any]:
@@ -1225,9 +1245,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         validation day separately, rather than only to an aggregate total.
         Positive-part exposure is represented by an exact linear epigraph, so
         the feasible set is convex and contains no rule-based post-processing.
-        The risk fit is allowed to trade point-estimate error for a certified
-        exposure reduction; point-estimate non-inferiority is reported as an
-        outcome diagnostic rather than imposed as a hidden feasibility gate.
+        An explicit validation MSE non-inferiority constraint prevents a risk
+        contract from buying lower exposure by sacrificing the point estimate.
+        The tolerance is declared before fitting and is recorded in the
+        certificate; it is not selected from the locked test block.
         """
         local_scale = max(float(np.mean(local_target**2)), 1e-12)
         count, candidates = local_design.shape
@@ -1245,6 +1266,20 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         true_credit = np.maximum(local_target - local_actual, 0.0)
         credit_threshold = local_actual + true_credit
         reference_prediction = local_design[:, reference_candidate]
+        reference_mse = float(np.mean((reference_prediction - local_target) ** 2))
+        accuracy_tolerance = float(
+            cfg["experiments"].get(
+                "risk_accuracy_noninferiority_tolerance", 0.10
+            )
+        )
+        if accuracy_tolerance < 0.0:
+            raise ValueError(
+                "risk_accuracy_noninferiority_tolerance must be nonnegative"
+            )
+        accuracy_constraint_enabled = bool(
+            cfg["experiments"].get("risk_accuracy_constraint_enabled", True)
+        )
+        accuracy_budget_mse = (1.0 + accuracy_tolerance) * reference_mse
         reference_false_by_day = np.maximum(
             np.maximum(reference_prediction - local_actual, 0.0) - true_credit,
             0.0,
@@ -1339,6 +1374,17 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             raise ValueError("risk_objective_scale_floor_mw_slots must be positive")
         cvar_objective_scale = max(reference_daily_cvar, objective_scale_floor)
         total_objective_scale = max(reference_false_exposure, objective_scale_floor)
+        # A direct quadratic MSE constraint would require an optional conic
+        # solver.  The triangle inequality gives a solver-independent,
+        # sufficient linear certificate:
+        # ||D alpha-y||_2/sqrt(n) <= sum_i alpha_i ||D_i-y||_2/sqrt(n).
+        # Constraining the right-hand side keeps the actual prediction error
+        # inside the declared non-inferiority budget while preserving the same
+        # linear epigraph and SciPy/CVXPY solver path.
+        candidate_rms_error = np.sqrt(
+            np.mean((local_design - local_target[:, None]) ** 2, axis=0)
+        )
+        accuracy_rms_budget = float(np.sqrt(accuracy_budget_mse))
 
         # Solve the convex quadratic program with the explicit linear
         # epigraph. Variables for disabled risk axes are omitted entirely;
@@ -1415,6 +1461,14 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 cols.append(sample_slack_slice.start + sample)
                 values.append(1.0)
             upper.append(risk_budget)
+            row_id += 1
+        accuracy_row_id = None
+        if accuracy_constraint_enabled:
+            rows.extend([row_id] * candidates)
+            cols.extend(range(candidates))
+            values.extend(candidate_rms_error.tolist())
+            upper.append(accuracy_rms_budget)
+            accuracy_row_id = row_id
             row_id += 1
         if row_id:
             a_ub = coo_matrix(
@@ -1560,6 +1614,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             cp_alpha_lower = cp_alpha >= 0.0
             cp_alpha_upper = cp_alpha <= 1.0
             cp_constraints.extend([cp_eq, cp_alpha_lower, cp_alpha_upper])
+            cp_accuracy = None
+            if accuracy_constraint_enabled:
+                cp_accuracy = candidate_rms_error @ cp_alpha <= accuracy_rms_budget
+                cp_constraints.append(cp_accuracy)
             cp_slack = cp.Variable(sample_count) if has_sample_slacks else None
             cp_slack_lower = None
             cp_epigraph = None
@@ -1725,6 +1783,13 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 stationarity[sample_slack_slice] += total_dual
                 total_slack = risk_budget - float(np.sum(cp_slack.value))
                 complementarity_terms.append(abs(total_dual * total_slack))
+            if accuracy_constraint_enabled:
+                accuracy_dual = float(_dual_array(cp_accuracy))
+                stationarity[alpha_slice] += accuracy_dual * candidate_rms_error
+                accuracy_slack = accuracy_rms_budget - float(
+                    candidate_rms_error @ cp_alpha.value
+                )
+                complementarity_terms.append(abs(accuracy_dual * accuracy_slack))
             kkt_from_solver = max(
                 float(np.max(np.abs(stationarity))),
                 max(complementarity_terms, default=0.0),
@@ -1803,10 +1868,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         fitted_daily_cvar = float(
             np.mean(np.sort(fitted_daily_cvar_values)[-tail_count:])
         )
-        reference_mse = float(
-            np.mean((reference_prediction - local_target) ** 2)
-        )
         fitted_mse = float(np.mean((prediction - local_target) ** 2))
+        fitted_rms_certificate = float(candidate_rms_error @ coefficients)
         risk_tolerance = 1e-7 * max(
             1.0, risk_budget, cvar_budget
         )
@@ -1829,6 +1892,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             inequality_residual,
             bound_residual,
             abs(float(coefficients.sum()) - 1.0),
+            max(0.0, fitted_rms_certificate - accuracy_rms_budget)
+            if accuracy_constraint_enabled
+            else 0.0,
         )
         if (
             (enforce_total_budget and fitted_false_exposure > risk_budget + risk_tolerance)
@@ -1837,6 +1903,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             raise RuntimeError(
                 "Risk-constrained ensemble exceeded its total or daily-tail "
                 "false-credit budget"
+            )
+        if accuracy_constraint_enabled and fitted_mse > accuracy_budget_mse + 1.0e-8 * max(1.0, accuracy_budget_mse):
+            raise RuntimeError(
+                "Convex validation solution violated the declared point-estimate "
+                "non-inferiority budget"
             )
         if (
             require_reference_noninferiority
@@ -1965,6 +2036,15 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             ),
             "reference_validation_mse_mw2": reference_mse,
             "fitted_validation_mse_mw2": fitted_mse,
+            "accuracy_noninferiority_tolerance": accuracy_tolerance,
+            "accuracy_budget_mse_mw2": accuracy_budget_mse,
+            "accuracy_certificate_rms_bound": fitted_rms_certificate,
+            "accuracy_certificate_rms_budget": accuracy_rms_budget,
+            "accuracy_constraint_enabled": accuracy_constraint_enabled,
+            "accuracy_noninferiority_satisfied": bool(
+                (not accuracy_constraint_enabled)
+                or fitted_mse <= accuracy_budget_mse + 1.0e-8 * max(1.0, accuracy_budget_mse)
+            ),
             "reference_noninferiority_required": bool(
                 require_reference_noninferiority
             ),
@@ -6870,12 +6950,24 @@ def run_exp9(
         role_path = final / "payment_non_tautology_audit.csv"
         try:
             cached_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            interval_count = len(pd.read_csv(interval_path))
+            interval_frame = pd.read_csv(interval_path)
+            unseen_frame = pd.read_csv(unseen_path)
+            interval_count = len(interval_frame)
             daily_count = len(pd.read_csv(daily_path))
             scenario_count = len(pd.read_csv(scenario_path))
             paired_count = len(pd.read_csv(paired_path))
-            unseen_count = len(pd.read_csv(unseen_path))
+            unseen_count = len(unseen_frame)
             role_count = len(pd.read_csv(role_path))
+            interval_profile_checksums = (
+                set(interval_frame["payment_evaluation_profile_checksum"].astype(str).unique())
+                if "payment_evaluation_profile_checksum" in interval_frame
+                else set()
+            )
+            unseen_profile_checksums = (
+                set(unseen_frame["payment_evaluation_profile_checksum"].astype(str).unique())
+                if "payment_evaluation_profile_checksum" in unseen_frame
+                else set()
+            )
             locked_days = int(cached_metadata.get("locked_days", 0))
             unseen_days = int(
                 cached_metadata.get("unseen_transfer_evaluation", {}).get(
@@ -6891,6 +6983,8 @@ def run_exp9(
                 and paired_count == 54 * 5
                 and unseen_count == unseen_days * 2 * 8 * 4
                 and role_count == 3
+                and interval_profile_checksums == {str(current_profile_checksum)}
+                and unseen_profile_checksums == {str(current_profile_checksum)}
                 and cached_metadata.get("payment_target_selection")
                 and cached_metadata.get("selection_role_separation")
                 and set(
@@ -7705,7 +7799,7 @@ def run_exp9(
         for day, day_rows in executor.map(evaluate_payment_day, pending_days):
             rows.extend(day_rows)
             completed_days.add(day)
-            pd.DataFrame(rows).to_csv(settlement_checkpoint, index=False)
+            _atomic_to_csv(pd.DataFrame(rows), settlement_checkpoint)
             progress.update(1)
     progress.close()
     interval = pd.DataFrame(rows).sort_values(
@@ -7863,7 +7957,44 @@ def run_exp9(
     unseen_day_items = [
         (int(local_day), int(days[local_day])) for local_day in unseen_local_days
     ]
+    unseen_checkpoint = intermediate / "payment_unseen_transfer_checkpoint.csv"
     unseen_rows: list[dict[str, Any]] = []
+    completed_unseen_days: set[int] = set()
+    if resume and unseen_checkpoint.exists():
+        try:
+            previous_unseen = pd.read_csv(unseen_checkpoint)
+            required_unseen_columns = {
+                "day",
+                "conversion_scenario",
+                "event_slot",
+                "counterfactual_method",
+                "certified_checksum",
+                "evaluation_schema_version",
+            }
+            if (
+                required_unseen_columns.issubset(previous_unseen.columns)
+                and set(previous_unseen["certified_checksum"].astype(str).unique())
+                == {certified_checksum}
+                and set(previous_unseen["evaluation_schema_version"].astype(int).unique())
+                == {evaluation_schema_version}
+            ):
+                rows_per_day = len(unseen_labels) * len(event_slots) * len(qualities)
+                day_counts = previous_unseen.groupby("day").size()
+                completed_unseen_days = {
+                    int(day)
+                    for day, count in day_counts.items()
+                    if int(count) == rows_per_day
+                }
+                unseen_rows = previous_unseen[
+                    previous_unseen["day"].isin(completed_unseen_days)
+                ].to_dict("records")
+                logger.info(
+                    "Resuming Experiment 9 unseen-transfer panel with %d complete days",
+                    len(completed_unseen_days),
+                )
+        except (OSError, ValueError, KeyError):
+            unseen_rows = []
+            completed_unseen_days = set()
 
     def evaluate_unseen_payment_day(item: tuple[int, int]) -> tuple[int, list[dict[str, Any]]]:
         local_day, day = item
@@ -7934,12 +8065,24 @@ def run_exp9(
                     )
         return int(day), day_rows
 
+    pending_unseen_items = [
+        item for item in unseen_day_items if item[1] not in completed_unseen_days
+    ]
+    unseen_progress = tqdm(
+        total=len(unseen_day_items),
+        initial=len(completed_unseen_days),
+        desc="Exp9 unseen transfer evaluation",
+    )
     with ThreadPoolExecutor(max_workers=evaluation_workers) as executor:
         for _, day_rows in executor.map(
             evaluate_unseen_payment_day,
-            unseen_day_items,
+            pending_unseen_items,
         ):
             unseen_rows.extend(day_rows)
+            unseen_rows_frame = pd.DataFrame(unseen_rows)
+            _atomic_to_csv(unseen_rows_frame, unseen_checkpoint)
+            unseen_progress.update(1)
+    unseen_progress.close()
     unseen_frame = pd.DataFrame(unseen_rows).sort_values(
         ["day", "conversion_scale_factor", "event_slot", "counterfactual_method"]
     )

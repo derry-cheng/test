@@ -1,0 +1,10 @@
+check,value,unit,passed
+active_upper_scale_recomputed,655.7530000000003,MWh,True
+active_central_scale_recomputed,0.1822655343044945,MWh,True
+active_upper_scale_certificate_residual,0.0,MWh,True
+active_central_scale_certificate_residual,0.0,MWh,True
+future_arrivals_or_execution_telemetry_used,0.0,boolean,True
+declaration_witness_n1_replay_finite,1.0,boolean,True
+settlement_has_closed_meter_fields,0.0,boolean,True
+observed_meter_panel_available_for_scoring,12.0,rows,True
+target_bridge_audit_available,16.0,rows,True

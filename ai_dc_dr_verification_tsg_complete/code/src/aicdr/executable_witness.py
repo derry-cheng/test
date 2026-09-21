@@ -56,6 +56,38 @@ def _aggregate_blocks(
     return np.cumsum(delta[:, :-1], axis=1) * float(dt_h)
 
 
+def _declaration_energy_overlapping_days(
+    submit_slot: np.ndarray,
+    runtime_slots: np.ndarray,
+    declaration_energy_mwh: np.ndarray,
+    days: np.ndarray,
+    slots_per_day: int,
+) -> float:
+    """Integrate declaration energy over locked windows using only release data.
+
+    A job submitted before a locked day remains part of the declared active
+    population when its fixed runtime block overlaps that day.  Selecting jobs
+    by ``submit_slot // slots_per_day`` therefore undercounts carry-in work and
+    changes the physical unit of the contract scale.  Uniform declared power
+    over the fixed runtime block gives an exact overlap integral without using
+    completion, telemetry, or the selected response start.
+    """
+    starts = np.asarray(submit_slot, dtype=np.int64)
+    ends = starts + np.asarray(runtime_slots, dtype=np.int64)
+    energy = np.asarray(declaration_energy_mwh, dtype=float)
+    runtime = np.maximum(np.asarray(runtime_slots, dtype=float), 1.0)
+    total = 0.0
+    for day in np.asarray(days, dtype=np.int64).tolist():
+        window_start = int(day) * int(slots_per_day)
+        window_end = window_start + int(slots_per_day)
+        overlap = np.maximum(
+            0,
+            np.minimum(ends, window_end) - np.maximum(starts, window_start),
+        ).astype(float)
+        total += float(np.sum(energy * overlap / runtime))
+    return total
+
+
 def _service_window_from_runtime_blocks(
     starts: np.ndarray,
     runtime_slots: np.ndarray,
@@ -341,21 +373,29 @@ def run_exp27_executable_common_witness(
     # priced. Exp2 reports a four-region facility profile on its own workload
     # scale, whereas the indexed witness has a deliberately predeclared
     # nameplate. The conversion therefore uses only declarations submitted on
-    # the locked days; no selected start, completion, or telemetry value enters
-    # the scale. The flexible component is then normalized by its largest
-    # locked value for the fixed-price realization below. Both the raw profile
-    # and the scaled executable contract are retained and hashed.
+    # the locked windows; no selected start, completion, or telemetry value
+    # enters the scale.  The overlap integral includes carry-in jobs whose
+    # declaration was released before a locked day, so the contract is defined
+    # on the active declaration population rather than on an arbitrary daily
+    # submission slice.  The flexible component is then normalized by its
+    # largest locked value for the fixed-price realization below.  Both the
+    # raw profile and the scaled executable contract are retained and hashed.
     risk_flexible_target = np.maximum(
         locked_risk_profile - float(cfg["project"]["fixed_facility_load_mw"]), 0.0
     )
-    locked_submission_mask = np.isin(
-        submit_slot // slots_per_day, risk_days.astype(np.int64)
+    locked_declared_upper_energy_mwh = _declaration_energy_overlapping_days(
+        submit_slot,
+        runtime_slots,
+        declared_job_energy_upper_mwh,
+        risk_days,
+        slots_per_day,
     )
-    locked_declared_upper_energy_mwh = float(
-        declared_job_energy_upper_mwh[locked_submission_mask].sum()
-    )
-    locked_declared_central_energy_mwh = float(
-        declared_job_energy_mwh[locked_submission_mask].sum()
+    locked_declared_central_energy_mwh = _declaration_energy_overlapping_days(
+        submit_slot,
+        runtime_slots,
+        declared_job_energy_mwh,
+        risk_days,
+        slots_per_day,
     )
     risk_flexible_target_energy_mwh = float(risk_flexible_target.sum() * dt_h)
     if risk_flexible_target_energy_mwh <= 0.0:
@@ -685,11 +725,11 @@ def run_exp27_executable_common_witness(
                 "central_energy_realization_rmse_mw": float(np.sqrt(np.mean(central_error**2))),
                 "upper_capacity_realization_nrmse_flexible_target": float(
                     np.sqrt(np.mean(upper_error**2))
-                    / max(float(np.mean(np.abs(target_flexible_upper))), 1.0e-12)
+                    / max(float(np.sqrt(np.mean(target_flexible_upper**2))), 1.0e-12)
                 ),
                 "central_energy_realization_nrmse_flexible_target": float(
                     np.sqrt(np.mean(central_error**2))
-                    / max(float(np.mean(np.abs(target_flexible_central))), 1.0e-12)
+                    / max(float(np.sqrt(np.mean(target_flexible_central**2))), 1.0e-12)
                 ),
                 "upper_capacity_profile_max_mw": float(np.max(upper_realization)),
                 "central_profile_max_mw": float(np.max(central_realization)),
@@ -713,13 +753,14 @@ def run_exp27_executable_common_witness(
             "risk_profile_source": "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz::Risk-Constrained Convex Verifier",
             "risk_profile_digest": risk_profile_digest,
             "submission_digest": source_submission_digest,
-            "mapping": "p_exec_upper=P_fix+gamma_upper*max(p_risk-P_fix,0), gamma_upper=locked_submit_nameplate_energy/sum(max(p_risk-P_fix,0)*dt); pi_{r,t}=p_DR*max(p_exec_upper_{r,t}-P_fix,0)/max_{r,t}max(p_exec_upper-P_fix,0); each job enumerates every contiguous declaration-feasible start under waiting + event + pi costs",
+            "mapping": "p_exec_upper=P_fix+gamma_upper*max(p_risk-P_fix,0), gamma_upper=active_declaration_energy_over_locked_windows/sum(max(p_risk-P_fix,0)*dt); pi_{r,t}=p_DR*max(p_exec_upper_{r,t}-P_fix,0)/max_{r,t}max(p_exec_upper-P_fix,0); each job enumerates every contiguous declaration-feasible start under waiting + event + pi costs",
             "optimization_class": "finite exact start-time enumeration with fixed linear slot prices",
             "locked_days": int(len(risk_bridge)),
             "raw_risk_profile_total_energy_mwh": float(locked_risk_profile.sum() * dt_h),
             "risk_flexible_target_energy_mwh": risk_flexible_target_energy_mwh,
-            "locked_submit_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
-            "locked_submit_declared_central_energy_mwh": locked_declared_central_energy_mwh,
+            "locked_active_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
+            "locked_active_declared_central_energy_mwh": locked_declared_central_energy_mwh,
+            "scale_definition": "declaration energy integrated over the overlap of each fixed submit-time runtime block with every locked day",
             "upper_contract_scale": risk_contract_scale_upper,
             "central_contract_scale": risk_contract_scale_central,
             "upper_contract_profile_digest": _array_digest(risk_days, risk_contract_profile_upper),
@@ -824,10 +865,11 @@ def run_exp27_executable_common_witness(
             "price_normalization_mw": risk_target_scale_mw,
             "upper_contract_scale": risk_contract_scale_upper,
             "central_contract_scale": risk_contract_scale_central,
-            "locked_submit_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
-            "locked_submit_declared_central_energy_mwh": locked_declared_central_energy_mwh,
+            "locked_active_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
+            "locked_active_declared_central_energy_mwh": locked_declared_central_energy_mwh,
             "event_tariff_per_mwh": event_price,
-            "scale_source": "submit-time declaration energy on the locked risk days",
+            "scale_source": "submit-time declaration energy integrated over active overlap with the locked risk windows",
+            "scale_definition": "sum_j declaration_energy_j * overlap(runtime_block_j, locked_windows) / runtime_slots_j",
             "raw_profile_retained": True,
             "locked_days": int(len(risk_days)),
         },
@@ -913,8 +955,8 @@ def run_exp27_executable_common_witness(
             {"metric": "risk_aligned_event_reduction_mwh", "value": float(baseline_profile[:, event_indices].sum() - risk_aligned_profile[:, event_indices].sum()), "unit": "MWh"},
             {"metric": "central_risk_aligned_energy_residual_mwh", "value": float(central_risk_aligned_energy_residual), "unit": "MWh"},
             {"metric": "risk_flexible_target_energy_mwh", "value": risk_flexible_target_energy_mwh, "unit": "MWh"},
-            {"metric": "locked_submit_declared_upper_energy_mwh", "value": locked_declared_upper_energy_mwh, "unit": "MWh"},
-            {"metric": "locked_submit_declared_central_energy_mwh", "value": locked_declared_central_energy_mwh, "unit": "MWh"},
+            {"metric": "locked_active_declared_upper_energy_mwh", "value": locked_declared_upper_energy_mwh, "unit": "MWh"},
+            {"metric": "locked_active_declared_central_energy_mwh", "value": locked_declared_central_energy_mwh, "unit": "MWh"},
             {"metric": "risk_contract_scale_upper", "value": risk_contract_scale_upper, "unit": "ratio"},
             {"metric": "risk_contract_scale_central", "value": risk_contract_scale_central, "unit": "ratio"},
             {"metric": "risk_bridge_upper_mean_nrmse", "value": float(risk_bridge["upper_capacity_realization_nrmse"].mean()), "unit": "ratio"},
@@ -1146,14 +1188,15 @@ def run_exp27_executable_common_witness(
             "profile_digest": risk_profile_digest,
             "upper_contract_profile_digest": _array_digest(risk_days, risk_contract_profile_upper),
             "central_contract_profile_digest": _array_digest(risk_days, risk_contract_profile_central),
-            "scale_source": "submit-time declaration energy on the locked risk days",
+            "scale_source": "submit-time declaration energy integrated over active overlap with the locked risk windows",
             "raw_profile_retained": True,
             "price_normalization_mw": risk_target_scale_mw,
             "upper_contract_scale": risk_contract_scale_upper,
             "central_contract_scale": risk_contract_scale_central,
-            "locked_submit_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
-            "locked_submit_declared_central_energy_mwh": locked_declared_central_energy_mwh,
+            "locked_active_declared_upper_energy_mwh": locked_declared_upper_energy_mwh,
+            "locked_active_declared_central_energy_mwh": locked_declared_central_energy_mwh,
             "price_formula": "p_exec_upper=P_fix+gamma_upper*max(p_risk-P_fix,0); pi_{r,t}=p_DR*max(p_exec_upper_{r,t}-P_fix,0)/max_{r,t}max(p_exec_upper-P_fix,0)",
+            "price_interpretation": "fixed linear dual-price surrogate; primal target residual is audited separately",
             "finite_exact_realization": True,
             "network_replay_profile": "risk_aligned_profile",
             "settlement_payment_cap": "min(declaration-witnessed event reduction, frozen contract-cap reduction)",

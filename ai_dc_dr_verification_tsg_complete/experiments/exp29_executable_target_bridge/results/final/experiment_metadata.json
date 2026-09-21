@@ -1,8 +1,9 @@
 {
   "experiment": "independent exact audit of the risk-to-executable bridge",
   "schema_version": 1,
-  "optimization_class": "finite exact enumeration of every declaration-feasible contiguous start",
+  "optimization_class": "finite exact enumeration of every declaration-feasible contiguous start under a fixed linear dual-price surrogate",
   "heuristic_target_tracking": false,
+  "target_tracking_definition": "daily total-profile RMSE divided by the flexible-target RMS; relative L2 is also reported",
   "future_arrivals_used": false,
   "execution_telemetry_used": false,
   "candidate_count_definition": "submitted jobs multiplied by queue allowance plus one",
@@ -11,13 +12,13 @@
   "enumerated_start_candidates": 7306622,
   "exact_start_mismatch_jobs": 0,
   "maximum_objective_recomputation_residual_usd": 2.2737367544323206e-13,
-  "mean_target_tracking_nrmse_total": 0.026011251764522993,
-  "mean_target_tracking_nrmse_flexible": 3.1442192457977347,
-  "mean_target_tracking_relative_l2_flexible": 1.613905797528939,
+  "mean_target_tracking_nrmse_total": 0.030076015939461867,
+  "mean_target_tracking_nrmse_flexible": 1.5861321009420724,
+  "mean_target_tracking_relative_l2_flexible": 1.5861321009420724,
   "source_sha256": {
-    "runtime_complete_witness.npz": "a8620fbec73ce1ff0c80285d0bf19000c753fc6c0ba4f8427543182226670488",
-    "job_level_runtime_summary.csv": "152419396bd1f910d66e53b755a276e1729c3f15c1e536ef11125a9c8560d0c4",
-    "risk_to_executable_bridge.csv": "b6a2ac2978cbd810f94731e00de9389fa2270e20ccc2e76fc591d3638b1e57e8"
+    "runtime_complete_witness.npz": "88dbddc7d0405e63f55623531854c51c6d6281bfd4fd5f77f3e46c13f3e79bc1",
+    "job_level_runtime_summary.csv": "fed206ef364a8422343e237cc15cccab0f345a4c44a45ff1ad27b4f063d1b545",
+    "risk_to_executable_bridge.csv": "2eba6fcf15718b651efcca245e7c3ce8331a0e639ac3c4ccd540f83ada7ae2e2"
   },
   "files": {
     "summary": "executable_target_bridge_audit.csv",
