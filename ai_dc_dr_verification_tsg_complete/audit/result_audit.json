@@ -87,6 +87,11 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_2:experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_2:experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
       "passed": true,
       "detail": "exists and non-empty"
@@ -1562,6 +1567,11 @@
       "detail": "9 validation/test ablations separate total-risk, CVaR, combined convex fitting, and the final pointwise envelope"
     },
     {
+      "name": "risk_hull_pareto_certificate",
+      "passed": true,
+      "detail": "the seven declaration-causal projections are scored with the locked-day metric definitions; the selected vertex is Pareto-efficient and strictly improves the selected single projection on all four reported metrics"
+    },
+    {
       "name": "cross_experiment_locked_day_identity",
       "passed": true,
       "detail": "10/10 main panels use the identical locked days 61--114; mismatches=[]"
@@ -3001,6 +3011,11 @@
       "sha256": "8f5bfcf5ea7f86b3bc8788068c14a14120a977bbb2caf5cab44d854e4d4345c9"
     },
     {
+      "path": "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv",
+      "bytes": 1059,
+      "sha256": "d8286ec5e44ad3f429762caf67cce4fd60e7f52bceda28c67f71f937aa7e58b0"
+    },
+    {
       "path": "experiments/exp2_baseline_verification/results/final/risk_module_ablation.csv",
       "bytes": 1362,
       "sha256": "02ace924a89be4191034e664c52b7c1f6f31da8ee52e6b55a43b09c72a6116cd"
@@ -3487,18 +3502,18 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.pdf",
-      "bytes": 49660,
-      "sha256": "0d94f8e1b99ae8f07b46e5f9a811091278555fe4fd8da086f0f4c3f12bd4c9e2"
+      "bytes": 49647,
+      "sha256": "8b815d56ec13eb1ca7acee54f439d7ff09496be2af8631fe1971c058f01505df"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig3_baseline_verification_performance.png",
-      "bytes": 465749,
-      "sha256": "03103eeb3b6f8abc2c9bdc446febea1fb082067289338ce3338699de4ea77a8b"
+      "bytes": 466599,
+      "sha256": "b0a14f5a52f0a195b02bb87fbef2a3a9a3912373ffcb7ba4aa21f16dcdd5807d"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.pdf",
       "bytes": 27950,
-      "sha256": "5f8d83b1eed0042f8a38b9890634c80589b2907393bdd1ebe5f8eb84e8b58615"
+      "sha256": "3bac470f019d2f0046abd90a773e955aa2866edb8f14f8a09fad54fead4f9114"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4_tuning_and_ablation.png",
@@ -3507,13 +3522,13 @@
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.pdf",
-      "bytes": 16641,
-      "sha256": "4ec6dae4e9b39c5103913558a01d78f73e91b3adc695b6ca7eb2b8dd7d558db4"
+      "bytes": 16646,
+      "sha256": "c1a8e36322a6560313491b8f708275b2516893b990d4b16dfeac13b294182993"
     },
     {
       "path": "experiments/exp2_baseline_verification/figures/fig4b_intervention_robustness.png",
-      "bytes": 210965,
-      "sha256": "a043be29822d96685e8f3ee2e1c66ae85d1a98e48a10e2157061392ee71b0100"
+      "bytes": 210952,
+      "sha256": "708f99cc0658962bee88d2d58faa937c54c676a2391aa003dc1b232d301aac57"
     },
     {
       "path": "experiments/exp3_nodal_settlement/figures/fig5_settlement_value_alignment.pdf",

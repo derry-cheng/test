@@ -85,6 +85,117 @@ METHODS = [
 SETTLEMENT_SCHEMA_VERSION = 6
 
 
+def _build_risk_hull_pareto_certificate(
+    candidate_profiles: np.ndarray,
+    truth_profiles: np.ndarray,
+    actual_profiles: np.ndarray,
+    event_slots: list[int],
+    dt_h: float,
+    candidate_names: list[str],
+    candidate_weights: np.ndarray,
+    selected_single_index: int,
+    selected_risk_index: int,
+) -> pd.DataFrame:
+    """Summarize the complete declaration-causal risk projection hull.
+
+    The certificate is computed from the locked replay with the same daily
+    metric definitions used in the main panel.  It makes the distinction
+    between table-level baseline dominance and the internal accuracy--risk
+    Pareto frontier explicit: a selected risk vertex must dominate the
+    declared single projection and remain Pareto-efficient, but it need not
+    componentwise dominate every deliberately conservative hull candidate.
+    """
+    profiles = np.asarray(candidate_profiles, dtype=float)
+    truth = np.asarray(truth_profiles, dtype=float)
+    actual = np.asarray(actual_profiles, dtype=float)
+    if profiles.ndim != 4:
+        raise ValueError("candidate_profiles must have [day, candidate, dc, slot] shape")
+    if truth.shape != actual.shape or truth.shape != profiles[:, 0].shape:
+        raise ValueError("risk-hull profiles and replay traces must share day shape")
+    candidate_count = profiles.shape[1]
+    if len(candidate_names) != candidate_count or len(candidate_weights) != candidate_count:
+        raise ValueError("risk-hull candidate metadata does not match profile count")
+
+    rows: list[dict[str, Any]] = []
+    for candidate_index in range(candidate_count):
+        daily_rows: list[dict[str, float]] = []
+        for day_index in range(profiles.shape[0]):
+            base = baseline_metrics(
+                profiles[day_index, candidate_index], truth[day_index], event_slots
+            )
+            response = response_metrics(
+                profiles[day_index, candidate_index],
+                truth[day_index],
+                actual[day_index],
+                event_slots,
+                dt_h,
+            )
+            daily_rows.append({**base, **response})
+        rows.append(
+            {
+                "candidate_index": candidate_index,
+                "candidate_name": candidate_names[candidate_index],
+                "projection_weight": float(candidate_weights[candidate_index]),
+                "nrmse": float(np.mean([row["nrmse"] for row in daily_rows])),
+                "false_response_mwh": float(
+                    np.mean([row["false_response_mwh"] for row in daily_rows])
+                ),
+                "underestimation_mwh": float(
+                    np.mean([row["underestimation_mwh"] for row in daily_rows])
+                ),
+                "credit_f1": float(
+                    np.mean([row["credit_f1"] for row in daily_rows])
+                ),
+                "selected_single_reference": int(
+                    candidate_index == int(selected_single_index)
+                ),
+                "selected_risk_reference": int(
+                    candidate_index == int(selected_risk_index)
+                ),
+            }
+        )
+
+    def _dominates(left: dict[str, Any], right: dict[str, Any]) -> bool:
+        lower_better = all(
+            float(left[key]) <= float(right[key]) + 1.0e-12
+            for key in ["nrmse", "false_response_mwh", "underestimation_mwh"]
+        )
+        higher_better = float(left["credit_f1"]) >= float(right["credit_f1"]) - 1.0e-12
+        strict = any(
+            float(left[key]) < float(right[key]) - 1.0e-12
+            for key in ["nrmse", "false_response_mwh", "underestimation_mwh"]
+        ) or float(left["credit_f1"]) > float(right["credit_f1"]) + 1.0e-12
+        return bool(lower_better and higher_better and strict)
+
+    for row in rows:
+        dominated_by = [
+            other["candidate_index"]
+            for other in rows
+            if other["candidate_index"] != row["candidate_index"]
+            and _dominates(other, row)
+        ]
+        dominates = [
+            other["candidate_index"]
+            for other in rows
+            if other["candidate_index"] != row["candidate_index"]
+            and _dominates(row, other)
+        ]
+        row["dominated_by_indices"] = ";".join(map(str, dominated_by))
+        row["dominates_indices"] = ";".join(map(str, dominates))
+        row["pareto_efficient"] = int(not dominated_by)
+        row["strictly_dominates_single_reference"] = int(
+            _dominates(row, rows[int(selected_single_index)])
+            if row["candidate_index"] != int(selected_single_index)
+            else False
+        )
+    selected = rows[int(selected_risk_index)]
+    if not bool(selected["pareto_efficient"]):
+        raise RuntimeError("Selected risk reference is not Pareto-efficient in its declared hull")
+    if not bool(selected["strictly_dominates_single_reference"]):
+        raise RuntimeError("Selected risk reference does not strictly dominate the single reference")
+    return pd.DataFrame(rows)
+
+
 def _atomic_to_csv(frame: pd.DataFrame, path: Path) -> None:
     """Write a checkpoint without exposing a partially serialized CSV.
 
@@ -3291,6 +3402,32 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     pd.DataFrame(trace_replay_rows).to_csv(
         final / "trace_meter_replay.csv", index=False
     )
+    test_risk_candidate_profiles = np.asarray(
+        [
+            np.concatenate([candidate, pareto[None, ...]], axis=0)
+            for candidate, pareto in zip(
+                profile_projection_candidates, profile_causal_pareto
+            )
+        ],
+        dtype=float,
+    )
+    risk_hull_weights = np.concatenate(
+        [np.asarray(projection_weights, dtype=float), np.asarray([selected_causal_weight])]
+    )
+    risk_hull_certificate = _build_risk_hull_pareto_certificate(
+        test_risk_candidate_profiles,
+        np.asarray(profile_oracle, dtype=float),
+        np.asarray(profile_actual, dtype=float),
+        event_slots,
+        dt_h,
+        risk_candidate_names,
+        risk_hull_weights,
+        selected_single_index,
+        risk_reference_index,
+    )
+    risk_hull_certificate.to_csv(
+        final / "risk_hull_pareto_certificate.csv", index=False
+    )
     ablation_daily_rows: list[dict[str, Any]] = []
     for split, profiles, split_days, split_actual in [
         ("validation", ablation_validation_profiles, validation_days, actual_all[:validation_count]),
@@ -3725,14 +3862,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         selected_single_projection_weight=np.asarray(selected_single_weight),
         causal_pareto_profile=np.asarray(profile_causal_pareto),
         causal_pareto_projection_weight=np.asarray(selected_causal_weight),
-        risk_candidate_profiles=np.asarray(
-            [
-                np.concatenate([candidate, pareto[None, ...]], axis=0)
-                for candidate, pareto in zip(
-                    profile_projection_candidates, profile_causal_pareto
-                )
-            ]
-        ),
+        risk_candidate_profiles=test_risk_candidate_profiles,
         risk_reference_index=np.asarray(risk_reference_index),
     )
 

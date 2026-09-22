@@ -21,6 +21,7 @@ Overall status: **PASS**.
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_effect_decomposition.csv: exists and non-empty
+- [x] experiment_2:experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv: exists and non-empty
@@ -316,6 +317,7 @@ Overall status: **PASS**.
 - [x] independent_trace_meter_replay_panel: 648 locked-day method scores against the measured DCGM execution tensor; no event intervention or simulated response is used as scoring truth
 - [x] literature_baseline_fairness_contract: 8 controls use the same ledger, deadlines, capacities, event slots, and locked days; structural translations are not labelled as software reimplementations
 - [x] risk_effect_decomposition_separates_envelope_and_fit: 9 validation/test ablations separate total-risk, CVaR, combined convex fitting, and the final pointwise envelope
+- [x] risk_hull_pareto_certificate: the seven declaration-causal projections are scored with the locked-day metric definitions; the selected vertex is Pareto-efficient and strictly improves the selected single projection on all four reported metrics
 - [x] cross_experiment_locked_day_identity: 10/10 main panels use the identical locked days 61--114; mismatches=[]
 - [x] dependence_robust_exact_block_tests: 18 pre-declared 3-day blocks, exact sign randomization, attainable-p audit, and Holm family-wise correction
 - [x] tail_risk_counterfactual_estimator_comparison: the tail-risk and single projections are compared with a signed, dependence-aware block test; the reported effects reproduce the two locked-set means over 18 exact temporal blocks without asserting dominance on either metric

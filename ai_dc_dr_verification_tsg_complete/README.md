@@ -11,8 +11,11 @@ The locked risk contract is the validation-selected causal Pareto projection
 simplex under a (10^{-6}) RMS non-inferiority certificate. On the 54-day
 locked panel it reaches 0.691 nRMSE, 1.895 MWh/day false credit, 17.024
 MWh/day under-credit, and (F_1=0.699), weakly dominating the other
-declaration-causal workload-feasible comparators (strictly improving the
-single feasible projection). Ex-post rows and the infeasible High-5-of-10
+declaration-causal workload-feasible baseline rows (strictly improving the
+single feasible projection). The complete seven-profile causal hull is
+machine-certified Pareto-efficient, so the baseline dominance claim is not
+confused with componentwise dominance over every internal frontier point.
+Ex-post rows and the infeasible High-5-of-10
 trace remain labelled information-boundary diagnostics. The independent
 payment replay uses the exact N-1 LP with dual-simplex and two date-level
 workers; checkpoints retain profile and certificate hashes.

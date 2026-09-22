@@ -44,6 +44,7 @@ EXPECTED_FILES = {
         "experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv",
         "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
         "experiments/exp2_baseline_verification/results/final/risk_effect_decomposition.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv",
         "experiments/exp2_baseline_verification/results/final/bootstrap_confidence_intervals.csv",
         "experiments/exp2_baseline_verification/results/final/constraint_ablation.csv",
         "experiments/exp2_baseline_verification/results/final/constraint_ablation_daily.csv",
@@ -1607,6 +1608,51 @@ def run_audit(
         (
             f"{len(risk_decomposition)} validation/test ablations separate total-risk, "
             "CVaR, combined convex fitting, and the final pointwise envelope"
+        ),
+        checks,
+    )
+    risk_hull = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_hull_pareto_certificate.csv"
+    )
+    hull_numeric = [
+        "projection_weight",
+        "nrmse",
+        "false_response_mwh",
+        "underestimation_mwh",
+        "credit_f1",
+    ]
+    selected_hull = risk_hull[risk_hull["selected_risk_reference"] == 1]
+    single_hull = risk_hull[risk_hull["selected_single_reference"] == 1]
+    selected_values = selected_hull.iloc[0] if len(selected_hull) == 1 else None
+    single_values = single_hull.iloc[0] if len(single_hull) == 1 else None
+    strict_single_improvement = bool(
+        selected_values is not None
+        and single_values is not None
+        and float(selected_values["nrmse"]) < float(single_values["nrmse"]) - 1.0e-9
+        and float(selected_values["false_response_mwh"])
+        < float(single_values["false_response_mwh"]) - 1.0e-9
+        and float(selected_values["underestimation_mwh"])
+        < float(single_values["underestimation_mwh"]) - 1.0e-9
+        and float(selected_values["credit_f1"])
+        > float(single_values["credit_f1"]) + 1.0e-9
+    )
+    _check(
+        len(risk_hull) == 7
+        and set(risk_hull["candidate_index"].astype(int)) == set(range(7))
+        and risk_hull["candidate_name"].astype(str).is_unique
+        and np.isfinite(risk_hull[hull_numeric].to_numpy(dtype=float)).all()
+        and len(selected_hull) == 1
+        and len(single_hull) == 1
+        and bool(selected_values["pareto_efficient"] == 1)
+        and bool(selected_values["strictly_dominates_single_reference"] == 1)
+        and strict_single_improvement,
+        "risk_hull_pareto_certificate",
+        (
+            "the seven declaration-causal projections are scored with the locked-day "
+            "metric definitions; the selected vertex is Pareto-efficient and strictly "
+            "improves the selected single projection on all four reported metrics"
         ),
         checks,
     )

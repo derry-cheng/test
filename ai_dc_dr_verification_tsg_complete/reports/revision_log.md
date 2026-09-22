@@ -18,7 +18,10 @@ vertex; its (10^{-6}) RMS non-inferiority certificate is solved in closed
 form and independently checked as a convex-program certificate. The locked
 release reaches 0.691/1.895/17.024/0.699 for nRMSE/false/under-credit/
 \(F_1\), strictly improving the single feasible projection and weakly
-dominating the remaining declaration-causal workload-feasible comparison set. The
+dominating every declared declaration-causal workload-feasible baseline row. The
+complete seven-profile causal hull is separately certified Pareto-efficient, so
+the baseline dominance claim is not conflated with componentwise dominance over
+every internal frontier point. The
 final release keeps the indexed service-variable count (13,198,247) distinct
 from the candidate-start count (7,306,622), separates signed cycle settlement
 from its cash-floor presentation, and labels the complete-ledger profile as an
@@ -32,7 +35,7 @@ validation-frozen Exp9 $q_{99}$ facility-to-network scale before its complete
 active-window declaration scale, including carry-in jobs, before accepting the
 upstream hashes. The long Exp9 interval and unseen-transfer checkpoints now use
 same-directory atomic replacement, so an interrupted serialization cannot expose
-a partial CSV to a concurrent audit. The final unified run passes all 390 audit
+a partial CSV to a concurrent audit. The final unified run passes all 392 audit
 checks, regression tests, and the ten-page LaTeX build. All experiment outputs
 are retained in their experiment-specific directories; generated caches and
 temporary files are removed before release.

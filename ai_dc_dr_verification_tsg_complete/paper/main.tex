@@ -40,8 +40,8 @@ fit enforces total and daily conditional value at risk (CVaR) limits together
 with a predeclared validation-error non-inferiority certificate. For the 54-day
 locked block, the causal Pareto contract reaches nRMSE 0.691, 1.895 MWh/day
 false credit, 17.024 MWh/day under-credit, and $F_1=0.699$, weakly dominating
-the declaration-causal workload-feasible comparator set (with strict gains over
-the single feasible projection). The executable bridge enumerates 7,306,622
+all declared declaration-causal workload-feasible baseline rows (with strict
+gains over the single projection). The executable bridge enumerates 7,306,622
 declaration-feasible starts, reproduces the optimum within
 $2.3\times10^{-13}$ USD, and obtains total-profile nRMSE 0.036 while reporting
 the flexible relative-L2 residual 1.410. A signed RTS-24 N--1 replay is kept
@@ -970,7 +970,7 @@ Experiment~2 evaluates twelve methods on the locked 54-day panel
 nRMSE/$F_1$/false credit/under-credit of 0.691/0.699/1.895/17.024 MWh/day.
 It strictly improves all four locked metrics over the single feasible projection
 (0.943/0.463/2.470/26.812) and weakly dominates every other declaration-causal,
-workload-feasible comparator in the table. The selected profile is the exact
+workload-feasible baseline row in the table. The selected profile is the exact
 one-hot causal Pareto vertex returned by the joint convex program; this is
 expected because the $10^{-6}$ RMS certificate makes that validation-selected
 vertex the unique admissible minimum-RMS solution. The validation certificate
@@ -1173,10 +1173,10 @@ required before payment activation.
 
 This paper couples a provenance-bound workload verifier with signed nodal
 valuation. The locked causal Pareto contract reaches
-nRMSE/false credit/$F_1$=0.691/1.895/0.699 while satisfying its predeclared
-total and daily-tail budgets and weakly dominating the declaration-causal
-workload-feasible comparison set (with strict gains over the single feasible
-projection; Fig.~\ref{fig:result_certificates}).
+nRMSE/false credit/$F_1$=0.691/1.895/0.699, satisfies both predeclared budgets,
+and dominates all declared causal workload-feasible baselines, strictly
+improving the single projection; the complete hull certificate marks its vertex
+Pareto-efficient (Fig.~\ref{fig:result_certificates}).
 The witness covers 75,326 submissions,
 5,184 RTS-24 cells, and 655.753 MWh of active declaration energy. The exact
 start audit reports total nRMSE 0.03631 and flexible relative-L2 residual 1.410.

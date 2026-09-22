@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "purpose": "Reproducibility and release provenance for the TSG revision",
-  "repository_revision_before_rerun": "11e78c6356dcc62da13e67a2f99715ca9381920f",
-  "release_commit": "9147a44d57e102afe4409478d3f785c30e7b5666",
-  "rerun_date_utc": "2026-09-21",
+  "repository_revision_before_rerun": "4843f511742bba5ef4fab669990e458365e0c8a1",
+  "release_commit": "ede63ab",
+  "rerun_date_utc": "2026-09-22",
   "resource_bound": {
     "observed_processor_count": 9,
     "exp10_ac_workers": 8,
@@ -34,10 +34,10 @@
   ],
   "stage_summary": {
     "unified_stage_count": 32,
-    "audit_checks": {"passed": 390, "total": 390},
+    "audit_checks": {"passed": 392, "total": 392},
     "exp9_interval_rows": 8640,
     "exp9_unseen_transfer_rows": 384,
-    "exp2_elapsed_seconds": 367.752979,
+    "exp2_elapsed_seconds": 362.177739,
     "exp9_elapsed_seconds": 323.435160,
     "exp10_elapsed_seconds": 2596.331126,
     "exp17_elapsed_seconds": 141.050337,
@@ -127,8 +127,8 @@
     }
   },
   "sha256": {
-    "paper/main.tex": "c623ed6ecf25b9a518bf7474dacd2be08dd50ebaab986cf77c39144ee8b6fccd",
-    "paper/main.pdf": "7dcd467ee3ad6a3a9e134aaa3c353f0bbf32229358ecd4126e208a4402da4cfd",
+    "paper/main.tex": "02aa4585a1135455599a10f883db79f99e16ec53f6d564c73e5a586c1044899b",
+    "paper/main.pdf": "5ef4131ebc73fe960c4c1ae74e6335c5139dab19a6d3a34282243393ac059035",
     "paper/references.bib": "da86de274e96d90967a62b12237001f22c62bc02a67afeeb5fb8bb10adefc60c",
     "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv": "2c45ddb2aa4b5d350f51d9c75e60aeeeab35ac46f479e107ae9d04cc9ab3258a",
     "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv": "0910e6c969205b1541838e3bd51065d32ce2e2ab11e26931010646a7944b54f9",
@@ -137,6 +137,7 @@
     "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv": "dc822084b675834a055d5a1406a0aa5d1be3e6e4d87797e919fb2e89a1fcd409",
     "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv": "80abab0928fdba4e73ca86eb25f62be0ed35b02d08d87c07b40c9137d343112d",
     "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv": "282713de5771f05eaafe91bff3eb90fa768fb25bb8eae89d7d6b94cf2fe2e380",
-    "audit/result_audit.json": "0d0c38db95bb6b7bd98106b7c2b5f44b3d738f112600ac0bb39eed17ff89bfb8"
+    "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv": "d8286ec5e44ad3f429762caf67cce4fd60e7f52bceda28c67f71f937aa7e58b0",
+    "audit/result_audit.json": "3d62ba9111a5d8eb8ef0ed5d89119881e86a8be8f95f9860a1fe0b6a454bbca2"
   }
 }
