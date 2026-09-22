@@ -5,11 +5,11 @@ candidate_starts_per_job,97.0,starts/job
 enumerated_start_candidates,7306622.0,candidates
 exact_start_mismatch_jobs,0.0,jobs
 maximum_objective_recomputation_residual_usd,2.2737367544323206e-13,USD
-mean_target_tracking_nrmse_total,0.030222036008537904,ratio
-mean_target_tracking_nrmse_flexible,1.5825989317515587,ratio
-mean_target_tracking_relative_l2_flexible,1.5825989317515587,ratio
-maximum_absolute_target_residual_mw,3.202055653738894,MW
-mean_signed_energy_residual_mwh,0.000740740740663289,MWh/day
+mean_target_tracking_nrmse_total,0.030231908175845004,ratio
+mean_target_tracking_nrmse_flexible,1.5805474723298734,ratio
+mean_target_tracking_relative_l2_flexible,1.5805474723298734,ratio
+maximum_absolute_target_residual_mw,3.2197672829356456,MW
+mean_signed_energy_residual_mwh,0.000740740740658881,MWh/day
 maximum_peak_capacity_utilization,0.004440677966101695,ratio
 minimum_site_capacity_slack_mw,117.476,MW
 risk_days,54.0,days

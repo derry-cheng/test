@@ -409,8 +409,9 @@ ensemble solves
 \end{aligned}
 \]
 
-Here \(\gamma=0.75\), and the equal objective weights
-\(\omega_T=\omega_C=0.50\) are fixed before the train/validation/test split.
+Here \(\gamma=0.75\), and the predeclared objective weights
+\(\omega_T=1.00\) and \(\omega_C=0.50\) are fixed before the
+train/validation/test split.
 The implementation uses the absolute MW-slot quantities below throughout; no
 day-specific energy denominator is introduced. The total-budget-only and
 CVaR-only ablations remove the omitted axis's objective term and constraint

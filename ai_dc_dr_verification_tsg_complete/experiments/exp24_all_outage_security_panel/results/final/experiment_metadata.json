@@ -4,7 +4,7 @@
   "network_case": "IEEE RTS-24 (PYPOWER case24_ieee_rts)",
   "network_source": "PYPOWER case24_ieee_rts (public RTS-24 benchmark)",
   "profile_source": "Exp2 locked-test profiles frozen before network replay",
-  "profile_checksum": "470226575aec17ed13b4b8c58d98cebfd10f96b9e00310642e96d0aad299b1e2",
+  "profile_checksum": "0e4ef9cfce3d1a15a69e6d6b31fd10aca6b18a91d0b0de0800065fa4d7201736",
   "network_conversion_source": "Exp9 validation-only q99 network conversion certificate",
   "network_dc_scale": 0.1573939030950884,
   "evaluated_methods": [

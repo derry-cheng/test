@@ -96,6 +96,10 @@ experiments:
   risk_cvar_reserve_fraction: 1.00
   # Convex tail preference used only by fits with the CVaR epigraph enabled;
   # the total-budget-only ablation removes this term as well as the CVaR row.
+  # The daily-CVaR row remains a hard contract constraint.  The normalized
+  # weights are fixed before locked scoring; the total-exposure term is
+  # intentionally stronger because it aggregates every event slot, while the
+  # CVaR term separately controls the worst daily tail.
   risk_cvar_objective_weight: 0.50
   # Numerical floor only when a reference fold has exactly zero false credit;
   # it prevents a zero RHS from making the epigraph solver falsely infeasible.
@@ -133,7 +137,7 @@ experiments:
   # epigraph is enabled. It keeps the joint two-axis fit identifiable even
   # when the selected hard total budget is slack; single-axis ablations remove
   # the corresponding preference together with that axis.
-  risk_total_objective_weight: 0.50
+  risk_total_objective_weight: 1.00
   # Blocked-CV folds are diagnostic only; use the full reference tail budget
   # so a small training fold is not declared infeasible by the production
   # pooled reserve. The locked contract still uses risk_cvar_reserve_fraction.

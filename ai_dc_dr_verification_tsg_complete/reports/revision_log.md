@@ -17,7 +17,7 @@ The locked risk profile is the validation-selected \(\rho=10\) causal Pareto
 simplex fit. Its predeclared 10% MSE non-inferiority certificate is solved by
 CVXPY/Clarabel and independently checked through KKT and primal residuals; the
 release reference-lock diagnostic is disabled. The locked release reaches
-0.905/0.816/26.541/0.533 for nRMSE/false/under-credit/\(F_1\), strictly
+0.902/0.780/26.506/0.536 for nRMSE/false/under-credit/\(F_1\), strictly
 improving all four metrics over the single feasible projection. The CVaR-only
 row is retained as an internal comparator rather than relabelled as the joint
 fit. The complete seven-profile causal hull is separately certified

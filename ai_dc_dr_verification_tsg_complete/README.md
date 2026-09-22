@@ -10,8 +10,8 @@ The locked risk contract is the validation-selected causal Pareto simplex fit
 with a predeclared 10% MSE non-inferiority neighborhood. The full seven-profile
 convex program is solved by CVXPY/Clarabel; reference-lock mode is disabled in
 the release configuration and is retained only as an explicit diagnostic. On
-the 54-day locked panel the proposed two-axis verifier reaches 0.905 nRMSE,
-0.816 MWh/day false credit, 26.541 MWh/day under-credit, and F_1=0.533,
+the 54-day locked panel the proposed two-axis verifier reaches 0.902 nRMSE,
+0.780 MWh/day false credit, 26.506 MWh/day under-credit, and F_1=0.536,
 strictly improving all four metrics over the single feasible projection
 (0.943/2.470/26.812/0.463) under the same submitted ledger. The CVaR-only
 internal comparator, ex-post rows, and infeasible High-5-of-10 row are labelled
