@@ -12,13 +12,13 @@
   "enumerated_start_candidates": 7306622,
   "exact_start_mismatch_jobs": 0,
   "maximum_objective_recomputation_residual_usd": 2.2737367544323206e-13,
-  "mean_target_tracking_nrmse_total": 0.03630974800493211,
-  "mean_target_tracking_nrmse_flexible": 1.4099685385771736,
-  "mean_target_tracking_relative_l2_flexible": 1.4099685385771736,
+  "mean_target_tracking_nrmse_total": 0.030222036008537904,
+  "mean_target_tracking_nrmse_flexible": 1.5825989317515587,
+  "mean_target_tracking_relative_l2_flexible": 1.5825989317515587,
   "source_sha256": {
-    "runtime_complete_witness.npz": "561fcae08095d01a8f773ab8ce83c30c447737f2b91e5eec8c1e196ad2104108",
-    "job_level_runtime_summary.csv": "0bc6f75d8a8cd7006e98999a878b4ec18b884ea865cd4e16bdba2bac03ecdd39",
-    "risk_to_executable_bridge.csv": "ce13e3d4a54e32e97caf54d04cec2e1d49917abec4af230b4772d95601068e97"
+    "runtime_complete_witness.npz": "2e6d5b32bc5e0382a7812998c61c368d182e4507d8005169809bee06fbaba8b9",
+    "job_level_runtime_summary.csv": "49fb507bb07b5a482ff0f752b2303e130126e6000f821414ff6e50b88422fcad",
+    "risk_to_executable_bridge.csv": "980307e813022d44396d9afb3b0ef5483cf4fc20a03385727d7af403ff5c4b13"
   },
   "files": {
     "summary": "executable_target_bridge_audit.csv",

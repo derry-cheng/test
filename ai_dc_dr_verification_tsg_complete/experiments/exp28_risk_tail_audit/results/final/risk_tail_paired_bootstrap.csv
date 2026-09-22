@@ -1,13 +1,13 @@
 comparison,metric,joint_minus_comparator_mean,ci_2.5,ci_97.5,bootstrap_replications,block_length_days
-total-budget-only ensemble,false_credit_ratio_mean,0.0,0.0,0.0,5000,3
-total-budget-only ensemble,false_credit_ratio_cvar,0.0,0.0,0.0,5000,3
-total-budget-only ensemble,false_credit_ratio_q90,0.0,0.0,0.0,5000,3
-total-budget-only ensemble,false_credit_mwh_mean,0.0,0.0,0.0,5000,3
-total-budget-only ensemble,false_credit_mwh_cvar,0.0,0.0,0.0,5000,3
-total-budget-only ensemble,false_credit_mwh_q90,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_ratio_mean,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_ratio_cvar,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_ratio_q90,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_mwh_mean,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_mwh_cvar,0.0,0.0,0.0,5000,3
-CVaR-only ensemble,false_credit_mwh_q90,0.0,0.0,0.0,5000,3
+total-budget-only ensemble,false_credit_ratio_mean,0.001249846705859417,-0.00011188186748308323,0.0027794562481287463,5000,3
+total-budget-only ensemble,false_credit_ratio_cvar,0.0029997281279512747,-0.0029487755411002057,0.009335212494457705,5000,3
+total-budget-only ensemble,false_credit_ratio_q90,0.003547664654073698,-0.008439894050069313,0.014501629905387097,5000,3
+total-budget-only ensemble,false_credit_mwh_mean,0.16987300369351155,0.024082382897469612,0.3602802502469004,5000,3
+total-budget-only ensemble,false_credit_mwh_cvar,0.49703862949646155,-0.04518708985420069,1.146881013634218,5000,3
+total-budget-only ensemble,false_credit_mwh_q90,0.4630535663552148,-0.36484839821644854,1.7140030146376635,5000,3
+CVaR-only ensemble,false_credit_ratio_mean,-5.881726526612259e-05,-0.00011927709092917462,-4.580507035218462e-06,5000,3
+CVaR-only ensemble,false_credit_ratio_cvar,-0.00014150182174089645,-0.0019122496419146152,0.0017668454565516216,5000,3
+CVaR-only ensemble,false_credit_ratio_q90,-0.0001853525964313752,-0.00099678930279945,0.0004627848575117638,5000,3
+CVaR-only ensemble,false_credit_mwh_mean,-0.007520266498461038,-0.014577766009674347,-0.0016668976101526566,5000,3
+CVaR-only ensemble,false_credit_mwh_cvar,-0.021466189147072996,-0.046762309890940504,-0.0010829464998709445,5000,3
+CVaR-only ensemble,false_credit_mwh_q90,-0.017873316425165743,-0.08422631144064852,0.018483451006604756,5000,3

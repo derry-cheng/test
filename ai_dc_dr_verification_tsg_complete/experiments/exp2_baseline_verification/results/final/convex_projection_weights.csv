@@ -1,8 +1,8 @@
 candidate,ensemble_weight
-Metadata projection rho=0.03,0.0
-Metadata projection rho=0.1,0.0
-Metadata projection rho=0.3,0.0
-Metadata projection rho=1,0.0
-Metadata projection rho=3,0.0
-Metadata projection rho=10,0.0
-Causal Pareto projection rho=10,1.0
+Metadata projection rho=0.03,-7.762591029675028e-13
+Metadata projection rho=0.1,-7.762591029653648e-13
+Metadata projection rho=0.3,-7.840903650673114e-13
+Metadata projection rho=1,-2.721634063683381e-13
+Metadata projection rho=3,0.5270784345654138
+Metadata projection rho=10,0.26224276327207563
+Causal Pareto projection rho=10,0.21067880216520563

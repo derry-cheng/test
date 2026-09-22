@@ -265,8 +265,10 @@ def run_exp27_executable_common_witness(
     """
     folder = root / "experiments/exp27_executable_common_witness"
     final = folder / "results/final"
+    intermediate = folder / "results/intermediate"
     figures = folder / "figures"
     final.mkdir(parents=True, exist_ok=True)
+    intermediate.mkdir(parents=True, exist_ok=True)
     figures.mkdir(parents=True, exist_ok=True)
     logger.info("Exp27 executable common witness [0%%]")
 
@@ -1007,6 +1009,44 @@ def run_exp27_executable_common_witness(
     network_tasks = [
         (int(day), int(slot)) for day in network_days for slot in settlement_slots
     ]
+    # The N--1 replay is intentionally resumable.  A full 54-day x 96-slot
+    # panel contains 5,184 cells and two secure dispatch solves per cell; a
+    # single monolithic call is needlessly fragile on memory-constrained
+    # runners.  Each checkpoint is keyed by the locked risk-profile digest,
+    # so a changed profile can never silently inherit an old settlement row.
+    checkpoint_path = intermediate / "common_witness_settlement_checkpoint.csv"
+    checkpoint_rows: pd.DataFrame | None = None
+    if checkpoint_path.exists():
+        try:
+            candidate_checkpoint = pd.read_csv(checkpoint_path)
+            if (
+                "risk_profile_digest" in candidate_checkpoint
+                and set(candidate_checkpoint["risk_profile_digest"].astype(str).unique())
+                == {risk_profile_digest}
+                and {"day", "slot"}.issubset(candidate_checkpoint.columns)
+            ):
+                checkpoint_rows = candidate_checkpoint
+        except (OSError, ValueError, pd.errors.ParserError):
+            checkpoint_rows = None
+    if checkpoint_rows is None:
+        checkpoint_rows = pd.DataFrame()
+    completed_network_tasks = set()
+    if not checkpoint_rows.empty:
+        completed_network_tasks = {
+            (int(day), int(slot))
+            for day, slot in checkpoint_rows[["day", "slot"]].itertuples(
+                index=False, name=None
+            )
+        }
+    remaining_network_tasks = [
+        task for task in network_tasks if task not in completed_network_tasks
+    ]
+    network_chunk_size = int(
+        cfg["experiments"].get("common_witness_network_chunk_size", 256)
+    )
+    if network_chunk_size <= 0:
+        raise ValueError("common_witness_network_chunk_size must be positive")
+    tasks_this_call = remaining_network_tasks[:network_chunk_size]
 
     def solve_network(task: tuple[int, int]) -> dict[str, Any]:
         day, slot = task
@@ -1056,6 +1096,7 @@ def run_exp27_executable_common_witness(
             "day": day,
             "slot": slot,
             "absolute_slot": absolute_slot,
+            "risk_profile_digest": risk_profile_digest,
             "is_event_slot": int(slot in event_slot_set),
             "settlement_window": "full_declared_day",
             "baseline_witness_profile_sha256": witness_digest,
@@ -1087,13 +1128,36 @@ def run_exp27_executable_common_witness(
     if not 1 <= workers <= 20:
         raise ValueError("common_witness_network_workers must be between 1 and 20")
     network_rows: list[dict[str, Any]] = []
-    progress = tqdm(total=len(network_tasks), desc="Exp27 common witness RTS-24 settlement")
+    progress = tqdm(
+        total=len(tasks_this_call),
+        desc=(
+            "Exp27 common witness RTS-24 settlement "
+            f"({len(completed_network_tasks)}/{len(network_tasks)} cached)"
+        ),
+    )
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        for row in executor.map(solve_network, network_tasks):
+        for row in executor.map(solve_network, tasks_this_call):
             network_rows.append(row)
             progress.update(1)
     progress.close()
-    network = pd.DataFrame(network_rows).sort_values(["day", "slot"]).reset_index(drop=True)
+    chunk = pd.DataFrame(network_rows)
+    network = pd.concat([checkpoint_rows, chunk], ignore_index=True)
+    network = network.drop_duplicates(subset=["day", "slot"], keep="last")
+    network = network.sort_values(["day", "slot"]).reset_index(drop=True)
+    # Same-directory replacement prevents an interrupted CSV serialization
+    # from being mistaken for a complete checkpoint on the next invocation.
+    checkpoint_tmp = checkpoint_path.with_suffix(".tmp")
+    network.to_csv(checkpoint_tmp, index=False)
+    checkpoint_tmp.replace(checkpoint_path)
+    if len(network) < len(network_tasks):
+        logger.info(
+            "Exp27 network checkpoint [85%%]: %d/%d cells; rerun the same stage "
+            "to continue with the locked profile digest %s",
+            len(network),
+            len(network_tasks),
+            risk_profile_digest[:12],
+        )
+        return
     network.to_csv(final / "common_witness_settlement.csv", index=False)
     if not network["solver_success"].all() or network["finite_n1_contingencies"].ne(int(security[3])).any():
         raise RuntimeError("Common witness settlement contains an incomplete N-1 replay")
@@ -1318,6 +1382,9 @@ def run_exp27_executable_common_witness(
             "settlement_window_slots": settlement_slots,
             "settlement_window": "full_declared_day",
             "generator_segments": segment_count,
+            "network_workers": int(workers),
+            "network_checkpoint_chunk_size": int(network_chunk_size),
+            "network_checkpoint_schema": "risk-profile-digest keyed deterministic batches",
             "finite_nonislanding_n1_contingencies_per_cell": int(security[3]),
             "base_load_multiplier": float(cfg["experiments"].get("n1_load_multiplier", 0.9)),
             "fixed_facility_load_mw_per_bus": fixed_load_mw,

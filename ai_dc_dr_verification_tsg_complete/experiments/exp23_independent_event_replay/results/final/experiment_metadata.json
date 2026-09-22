@@ -5,7 +5,7 @@
   "truth_source": "independent declaration-only exact start policy",
   "assessment_source": "Exp27 runtime-complete common witness response",
   "event_intervention": true,
-  "common_witness_digest": "0cf4b863d54f27cc3d1caa202e53e25822df4b799a319447a7e88536c475d662",
+  "common_witness_digest": "9f1f4826b5fe27b18105ed15cc4d853494135513751d7bc7ef54825d77d0f3dc",
   "event_slots": [
     64,
     65,
@@ -46,5 +46,5 @@
     "protocol": "independent_event_protocol_certificate.csv",
     "figure": "fig26_independent_event_replay.pdf"
   },
-  "source_code_sha256": "b56e6e24b5cec57eba9070643efa669db5c25f805a6ec0fac98b98b7bc0b8727"
+  "source_code_sha256": "a63ba8d2d76226914d7cf15a30c27a0ea8e9b8b39f7218607e0ee39f9368fb12"
 }

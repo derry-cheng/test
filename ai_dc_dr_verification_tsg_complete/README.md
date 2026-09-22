@@ -6,19 +6,22 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 `code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, protocol README, and final results; stages that require long execution or publication figures additionally retain `results/intermediate/` checkpoints or a `figures/` subdirectory. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
-The locked risk contract is the validation-selected causal Pareto projection
-(ρ=10), solved as the exact one-hot vertex of the seven-profile convex
-simplex under a (10^{-6}) RMS non-inferiority certificate. On the 54-day
-locked panel it reaches 0.691 nRMSE, 1.895 MWh/day false credit, 17.024
-MWh/day under-credit, and (F_1=0.699), weakly dominating the other
-declaration-causal workload-feasible baseline rows (strictly improving the
-single feasible projection). The complete seven-profile causal hull is
-machine-certified Pareto-efficient, so the baseline dominance claim is not
-confused with componentwise dominance over every internal frontier point.
-Ex-post rows and the infeasible High-5-of-10
-trace remain labelled information-boundary diagnostics. The independent
-payment replay uses the exact N-1 LP with dual-simplex and two date-level
-workers; checkpoints retain profile and certificate hashes.
+The locked risk contract is the validation-selected causal Pareto simplex fit
+with a predeclared 10% MSE non-inferiority neighborhood. The full seven-profile
+convex program is solved by CVXPY/Clarabel; reference-lock mode is disabled in
+the release configuration and is retained only as an explicit diagnostic. On
+the 54-day locked panel the proposed two-axis verifier reaches 0.905 nRMSE,
+0.816 MWh/day false credit, 26.541 MWh/day under-credit, and F_1=0.533,
+strictly improving all four metrics over the single feasible projection
+(0.943/2.470/26.812/0.463) under the same submitted ledger. The CVaR-only
+internal comparator, ex-post rows, and infeasible High-5-of-10 row are labelled
+separately rather than folded into the deployable claim. The complete
+seven-profile causal hull is machine-certified Pareto-efficient, so the table
+does not confuse a boundary point with componentwise dominance over every
+internal frontier point. The independent payment replay uses a declared
+ten-segment exact N-1 LP with eight date-level workers; the contractual
+certificate remains a four-segment LP, and checkpoints retain profile and
+certificate hashes.
 
 ## Reproduction
 

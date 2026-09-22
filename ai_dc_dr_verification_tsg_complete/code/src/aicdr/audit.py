@@ -52,6 +52,9 @@ EXPECTED_FILES = {
         "experiments/exp2_baseline_verification/results/final/projection_candidate_validation.csv",
         "experiments/exp2_baseline_verification/results/final/convex_projection_weights.csv",
         "experiments/exp2_baseline_verification/results/final/risk_constrained_validation_certificate.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_module_ablation.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_module_ablation_weights.csv",
+        "experiments/exp2_baseline_verification/results/final/risk_module_ablation_certificates.csv",
         "experiments/exp2_baseline_verification/results/final/risk_truth_source_audit.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_nested_cv.csv",
         "experiments/exp2_baseline_verification/results/final/risk_reserve_validation_summary.csv",
@@ -2117,6 +2120,11 @@ def run_audit(
         / "experiments/exp2_baseline_verification/results/final/"
         "risk_module_ablation_weights.csv"
     )
+    risk_ablation_certificates = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "risk_module_ablation_certificates.csv"
+    )
     weight_columns = [
         column
         for column in risk_ablation_weights.columns
@@ -2136,7 +2144,6 @@ def run_audit(
             in {
                 "cvxpy-CLARABEL",
                 "scipy.optimize.trust-constr",
-                "closed-form-reference-vertex",
             }
             and np.isfinite(float(risk_certificate["kkt_stationarity_residual"]))
             and float(risk_certificate["kkt_stationarity_residual"]) <= 1e-5
@@ -2169,31 +2176,90 @@ def run_audit(
             and float(risk_certificate.get("total_objective_weight", 0.0)) > 0.0
             and len(cvar_weights) == 1
             and len(joint_weights) == 1
-            and (
-                bool(
-                    np.max(
-                        np.abs(
-                            joint_weights.to_numpy(dtype=float)[0]
-                            - cvar_weights.to_numpy(dtype=float)[0]
-                        )
+            and bool(
+                np.max(
+                    np.abs(
+                        joint_weights.to_numpy(dtype=float)[0]
+                        - cvar_weights.to_numpy(dtype=float)[0]
                     )
-                    > 1.0e-6
                 )
-                or (
-                    risk_certificate["solver_name"]
-                    == "closed-form-reference-vertex"
-                    and bool(risk_certificate.get("closed_form_reference_lock", False))
-                    and float(risk_certificate["accuracy_noninferiority_tolerance"])
+                > 1.0e-6
+            )
+            and set(risk_ablation_certificates["ablation"].astype(str))
+            == {
+                "single reference",
+                "unconstrained convex ensemble",
+                "total-budget-only ensemble",
+                "CVaR-only ensemble",
+                "total+CVaR ensemble",
+            }
+            and len(risk_ablation_certificates) == 5
+            and bool(
+                risk_ablation_certificates.loc[
+                    risk_ablation_certificates["ablation"] != "single reference",
+                    "solver_name",
+                ].eq("cvxpy-CLARABEL").all()
+            )
+            and bool(
+                risk_ablation_certificates.loc[
+                    risk_ablation_certificates["ablation"] != "single reference",
+                    "convex_quadratic_program",
+                ].astype(bool).all()
+            )
+            and bool(
+                (~risk_ablation_certificates["reference_lock_enabled"].astype(bool)).all()
+            )
+            and bool(
+                np.isfinite(
+                    risk_ablation_certificates.loc[
+                        risk_ablation_certificates["ablation"] != "single reference",
+                        [
+                            "kkt_stationarity_residual",
+                            "primal_constraint_residual",
+                            "fitted_validation_mse_mw2",
+                            "accuracy_budget_mse_mw2",
+                        ],
+                    ].to_numpy(dtype=float)
+                ).all()
+            )
+            and bool(
+                (
+                    risk_ablation_certificates.loc[
+                        risk_ablation_certificates["ablation"] != "single reference",
+                        "kkt_stationarity_residual",
+                    ]
+                    <= 1.0e-5
+                ).all()
+            )
+            and bool(
+                (
+                    risk_ablation_certificates.loc[
+                        risk_ablation_certificates["ablation"] != "single reference",
+                        "primal_constraint_residual",
+                    ]
                     <= 1.0e-6
-                )
+                ).all()
+            )
+            and bool(
+                (
+                    risk_ablation_certificates.loc[
+                        risk_ablation_certificates["ablation"] != "single reference",
+                        "fitted_validation_mse_mw2",
+                    ]
+                    <= risk_ablation_certificates.loc[
+                        risk_ablation_certificates["ablation"] != "single reference",
+                        "accuracy_budget_mse_mw2",
+                    ]
+                    + 1.0e-8
+                ).all()
             )
         ),
         "risk_constrained_validation_certificate",
         (
-            "the convex verifier satisfies both absolute total and daily-tail "
-            "CVaR budgets with zero KKT/primal residual; a closed-form reference "
-            "vertex is accepted as the exact zero-width accuracy certificate, "
-            "while validation MSE remains a separate accuracy-risk tradeoff"
+            "the convex verifier is solved by the declared numerical QP path, "
+            "satisfies both absolute total and daily-tail CVaR budgets with the "
+            "recomputed KKT/primal certificate, and its joint weights differ "
+            "from the CVaR-only ablation"
         ),
         checks,
     )
@@ -2970,7 +3036,7 @@ def run_audit(
         and int(
             payment_metadata.get("independent_evaluation_generator_segments", -1)
         )
-        == 40
+        == int(cfg["experiments"].get("n1_evaluation_generator_segments", 10))
         and float(
             np.max(
                 np.abs(
@@ -3024,7 +3090,7 @@ def run_audit(
             "solved daily certificates across five calibration-validation conversion scenarios; "
             "formal four-segment maximum cap violation="
             f"{payment_certificates['payment_cap_violation_usd'].max():.3e} USD; "
-            "the independent 40-segment transfer comparison is evaluated by its paired mean"
+            "the independent ten-segment transfer comparison is evaluated by its paired mean"
         ),
         checks,
     )
@@ -3096,7 +3162,7 @@ def run_audit(
         (
             f"{len(payment_daily)} method-day-scenario outcomes scored across five "
             "calibration-validation conversion factors with "
-            "the independent 40-segment N-1 evaluator; accuracy is reported "
+            "the independent ten-segment N-1 evaluator; accuracy is reported "
             "as model-transfer evidence and is not part of Proposition 4"
         ),
         checks,

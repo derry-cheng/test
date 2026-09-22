@@ -49,36 +49,40 @@ def _select_exact_starts_independent(
         len(submit_slot) == len(runtime_slots) == len(energy_per_slot_mwh)
     ):
         raise ValueError("Independent replay arrays have inconsistent lengths")
-    chosen = np.empty(len(submit_slot), dtype=np.int64)
-    chosen_cost = np.empty(len(submit_slot), dtype=float)
-    for job, release in enumerate(submit_slot.tolist()):
-        runtime = int(runtime_slots[job])
-        if runtime < 1:
-            raise ValueError("Independent replay runtime must be positive")
-        energy_slot = float(energy_per_slot_mwh[job])
-        best_start = None
-        best_cost = None
-        for candidate in range(int(release), int(release) + int(queue_buffer_slots) + 1):
-            delay = candidate - int(release)
-            delayed_slot_units = sum(delay + offset for offset in range(runtime))
-            cost = float(waiting_cost_per_mwh_slot) * energy_slot * float(
-                delayed_slot_units
-            )
-            if event_price_enabled:
-                event_intervals = int(
-                    event_prefix[candidate + runtime] - event_prefix[candidate]
-                )
-                cost += float(event_price_per_mwh) * energy_slot * float(
-                    event_intervals
-                )
-            # The earliest candidate is the deterministic tie breaker.
-            if best_cost is None or cost < best_cost - 1.0e-12:
-                best_start = candidate
-                best_cost = cost
-        if best_start is None or best_cost is None:
-            raise RuntimeError("Independent replay found no admissible start")
-        chosen[job] = int(best_start)
-        chosen_cost[job] = float(best_cost)
+    if np.any(runtime_slots < 1):
+        raise ValueError("Independent replay runtime must be positive")
+    # The candidate set is a fixed rectangular declaration window.  Evaluating
+    # all 97 starts in one NumPy block preserves the scalar objective exactly
+    # (including the triangular waiting term and earliest-index tie break) but
+    # removes a Python loop over 7.3 million candidates.  This is an exact
+    # vectorization of the finite enumeration, not a heuristic shortcut.
+    candidate_offsets = np.arange(
+        int(queue_buffer_slots) + 1, dtype=np.int64
+    )[None, :]
+    candidates = submit_slot[:, None] + candidate_offsets
+    delay = candidate_offsets.astype(float)
+    runtime_matrix = runtime_slots[:, None].astype(float)
+    delayed_slot_units = runtime_matrix * delay + 0.5 * runtime_matrix * np.maximum(
+        runtime_matrix - 1.0, 0.0
+    )
+    costs = (
+        float(waiting_cost_per_mwh_slot)
+        * energy_per_slot_mwh[:, None]
+        * delayed_slot_units
+    )
+    if event_price_enabled:
+        end_indices = candidates + runtime_slots[:, None]
+        if np.any(end_indices >= len(event_prefix)):
+            raise ValueError("Independent replay start enumeration exceeds the event horizon")
+        event_intervals = event_prefix[end_indices] - event_prefix[candidates]
+        costs = costs + (
+            float(event_price_per_mwh)
+            * energy_per_slot_mwh[:, None]
+            * event_intervals
+        )
+    choice = np.argmin(costs, axis=1)
+    chosen = candidates[np.arange(len(submit_slot)), choice].astype(np.int64)
+    chosen_cost = costs[np.arange(len(submit_slot)), choice].astype(float)
     return chosen, chosen_cost
 
 

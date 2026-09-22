@@ -1,7 +1,7 @@
 # Interval-Robust Payment Certificate
 
 This experiment independently audits the locked payment profile with the
-40-segment N-1 dispatch model at both calibration-validation energy-conversion
+four-segment N-1 dispatch model at both calibration-validation energy-conversion
 interval endpoints (q01 and q99) against the validation-selected single feasible
 projection. Fixed facility demand is carried separately from flexible workload
 in both endpoint solves, so the raw q99 endpoint is activation-eligible under
@@ -15,7 +15,7 @@ interval bound, not as an unproved pointwise ordering of two value functions at
 every interior factor.
 
 The run writes `interval_endpoint_certificates.csv` for the two independent
-40-segment endpoint replays and `payment_value_interval_certificates.csv` for
+four-segment endpoint replays and `payment_value_interval_certificates.csv` for
 the two validation-frozen workload endpoints. The latter is a contractual
 uncertainty interval; it does not use an oracle profile for selection or
 coverage claims. Summaries, certified profiles, metadata, checkpoints, and

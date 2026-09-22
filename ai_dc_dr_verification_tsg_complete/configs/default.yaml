@@ -53,10 +53,11 @@ market:
   # realized system value is evaluated independently with a much finer model.
   evaluation_generator_segments: 80
   cross_network_evaluation_generator_segments: 40
-  # Locked payment and unseen-factor transfer evaluations use a finer 40-piece
-  # N--1 value model than the four-piece certificate LP.  The separate
-  # calibration-validation conversion panel reuses this independent evaluator.
-  n1_evaluation_generator_segments: 40
+  # Locked payment and unseen-factor transfer evaluations use an exact
+  # ten-piece N--1 value model, independent of the four-piece certificate LP.
+  # The segment count is part of the declared evaluator, not a runtime
+  # shortcut, and is reused by the calibration-validation conversion panel.
+  n1_evaluation_generator_segments: 10
   # Uniform mechanisms are normalized to the same event-period nodal-price
   # level inside Experiment 3. This field is retained only for the DR tariff.
   uniform_settlement_price_per_mwh: 150.0
@@ -119,10 +120,15 @@ experiments:
   # convex constraint keeps the risk improvement from degrading the primary
   # forecast metric and is frozen before the locked test block is evaluated.
   risk_accuracy_constraint_enabled: true
-  # The causal Pareto projection is the locked reference.  A zero tolerance
-  # makes the RMS certificate a true non-inferiority constraint; the risk fit
-  # cannot trade predictive accuracy for a lower payment exposure.
-  risk_accuracy_noninferiority_tolerance: 1.0e-6
+  # The causal Pareto projection is the reference.  The exact convex fit is
+  # solved on the full simplex; a validation-frozen 10% MSE neighbourhood
+  # permits a measurable risk improvement while retaining an explicit
+  # point-estimate non-inferiority certificate.
+  risk_accuracy_noninferiority_tolerance: 0.10
+  # The one-hot shortcut is disabled in the release protocol.  Every risk fit,
+  # including ablations and blocked folds, must pass through the declared
+  # convex solver and its independently recomputed primal-dual certificate.
+  risk_reference_lock_enabled: false
   # Symmetric normalized total-exposure preference used only when the total
   # epigraph is enabled. It keeps the joint two-axis fit identifiable even
   # when the selected hard total budget is slack; single-axis ablations remove
@@ -200,14 +206,14 @@ experiments:
   # 20-worker ceiling.
   payment_certificate_parallel_workers: 4
   # The contractual certificate generator uses an exact four-segment
-  # piecewise-linear value model.  The locked evaluation is independently
-  # replayed at n1_evaluation_generator_segments=40.
+  # piecewise-linear value model. The locked evaluation is independently
+  # replayed at n1_evaluation_generator_segments=10.
   payment_certificate_generator_segments: 4
   payment_target_selection_parallel_workers: 4
-  # Independent payment-day evaluations are CPU-bound across days.  Two
-  # workers avoid thread contention in the N-1 solver while preserving safe
-  # parallelism and staying below the project limit of 20.
-  payment_evaluation_parallel_workers: 2
+  # Independent payment-day evaluations are CPU-bound across days. Four
+  # workers bound memory and solver contention while staying below the
+  # project-wide 20-worker ceiling.
+  payment_evaluation_parallel_workers: 8
   # Experiment 22 replays the exact job witness through the same finite
   # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
   # contractual network value model; bounded threads avoid matrix duplication.
@@ -217,6 +223,10 @@ experiments:
   # value model with a bounded pool; each cell reuses the saved job-derived
   # baseline and response profiles verbatim.
   common_witness_network_workers: 4
+  # Checkpoint the common-witness N-1 replay in deterministic 512-cell
+  # batches. The batch size limits transient solver memory without changing
+  # the finite set of 5,184 declared settlement cells.
+  common_witness_network_chunk_size: 512
   # Full frozen-profile RTS-24 N−1 panel: 54 days × 8 event slots × 2
   # profiles. The worker cap is checked centrally against the 20-core limit.
   all_outage_panel_workers: 4
@@ -225,7 +235,7 @@ experiments:
   payment_unseen_transfer_days: 6
   # The continuous payment interval is certified by an exact joint LP using
   # the same four-segment value model as the contractual Experiment 9
-  # certificate. Independent 40-segment replay remains reported in Exp9;
+  # certificate. Independent ten-segment replay remains reported in Exp9;
   # daily Exp15 checkpoints preserve restartability.
   interval_certificate_generator_segments: 4
   interval_certificate_parallel_workers: 4

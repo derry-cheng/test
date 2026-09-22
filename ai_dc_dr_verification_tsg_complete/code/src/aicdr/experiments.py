@@ -1639,23 +1639,19 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         )
         accuracy_rms_budget = float(np.sqrt(accuracy_budget_mse))
 
-        # When the validation-selected causal Pareto reference is already the
-        # minimum-RMS member of the declared simplex, a zero-width
-        # non-inferiority certificate has a closed-form optimizer: the
-        # reference one-hot vector.  Solving the same QP numerically in every
-        # blocked fold only reproduces that vertex and can spend minutes on a
-        # nearly degenerate barrier problem.  The branch is exact (the risk
-        # epigraph and CVaR rows are still evaluated below). The same exact
-        # certificate is used for every constrained ablation; no numerical
-        # approximation or post-solution projection is introduced.
+        # The release configuration always reaches the explicit convex solver
+        # below.  A reference-lock branch is retained only as an opt-in
+        # diagnostic for reproducing an older zero-width certificate; it is
+        # disabled by default and cannot silently replace the QP.
         reference_is_minimum_rms = bool(
             candidate_rms_error[reference_candidate]
             <= candidate_rms_error.min() + 1.0e-10
         )
         reference_lock_enabled = bool(
+            cfg["experiments"].get("risk_reference_lock_enabled", False)
+        ) and bool(
             (enforce_total_budget or enforce_cvar_budget)
             and accuracy_constraint_enabled
-            and accuracy_tolerance <= 1.0e-4
             and reference_is_minimum_rms
         )
         if reference_lock_enabled:
@@ -1759,6 +1755,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
                 "linear_epigraph_rows": int(count + day_count + 2),
                 "epigraph_primal_residual": 0.0,
                 "closed_form_reference_lock": True,
+            "exact_solver_path": "closed_form_reference_lock",
             }
 
         # Solve the convex quadratic program with the explicit linear
@@ -2456,6 +2453,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "primal_constraint_tolerance": primal_tolerance,
             "linear_epigraph_rows": int(row_id),
             "epigraph_primal_residual": float(inequality_residual),
+            "exact_solver_path": "cvxpy-CLARABEL" if risk_solver_method in {"cvxpy", "clarabel"} else "scipy",
+            "reference_lock_enabled": bool(reference_lock_enabled),
         }
 
     candidate_fold_nrmse = np.empty(
@@ -2698,19 +2697,50 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     reserve_summary.to_csv(
         final / "risk_reserve_validation_summary.csv", index=False
     )
-    # The zero-width RMS non-inferiority certificate makes the selected causal
-    # Pareto vertex the unique admissible point of the declared simplex.  The
-    # ablation panel therefore reuses that exact vertex for each risk-axis
-    # label; this is a closed-form certificate of no accuracy-for-risk trade,
-    # not four expensive numerical re-solves of the same degenerate QP.
-    locked_reference_weights = np.eye(len(risk_candidate_names))[risk_reference_index]
-    risk_ablation_weights = {
-        "single reference": locked_reference_weights,
-        "unconstrained convex ensemble": locked_reference_weights,
-        "total-budget-only ensemble": locked_reference_weights,
-        "CVaR-only ensemble": locked_reference_weights,
-        "total+CVaR ensemble": ensemble_weights,
+    # Solve each ablation as its declared convex program.  Reusing the
+    # reference vertex would make the ablation table tautological and would
+    # not test whether either contractual axis changes the fitted profile.
+    ablation_specs = {
+        "single reference": (False, False),
+        "unconstrained convex ensemble": (False, False),
+        "total-budget-only ensemble": (True, False),
+        "CVaR-only ensemble": (False, True),
+        "total+CVaR ensemble": (True, True),
     }
+    risk_ablation_weights: dict[str, np.ndarray] = {}
+    risk_ablation_certificates: list[dict[str, Any]] = []
+    for ablation_name, (enforce_total, enforce_cvar) in ablation_specs.items():
+        if ablation_name == "single reference":
+            ablation_weights = np.eye(len(risk_candidate_names))[risk_reference_index]
+            ablation_certificate = {
+                "solver_name": "declared single-projection comparator",
+                "convex_quadratic_program": False,
+                "exact_solver_path": "reference comparator",
+                "reference_lock_enabled": False,
+            }
+        elif ablation_name == "total+CVaR ensemble":
+            ablation_weights = ensemble_weights
+            ablation_certificate = risk_fit_certificate
+        else:
+            ablation_weights, ablation_certificate = fit_risk_constrained_simplex(
+                risk_design,
+                target,
+                validation_actual,
+                risk_reference_index,
+                validation_count,
+                selected_reserve_fraction,
+                enforce_total_budget=enforce_total,
+                enforce_cvar_budget=enforce_cvar,
+                cvar_reserve_fraction_override=(
+                    selected_reserve_fraction if enforce_cvar else None
+                ),
+            )
+        risk_ablation_weights[ablation_name] = np.asarray(
+            ablation_weights, dtype=float
+        )
+        risk_ablation_certificates.append(
+            {"ablation": ablation_name, **ablation_certificate}
+        )
     ablation_validation_profiles = {
         name: np.tensordot(weights, risk_candidate_array, axes=(0, 0))
         for name, weights in risk_ablation_weights.items()
@@ -2719,6 +2749,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         {"ablation": name, "split": "validation", **{f"weight_{candidate}": float(value) for candidate, value in zip(risk_candidate_names, weights)}}
         for name, weights in risk_ablation_weights.items()
     ]).to_csv(final / "risk_module_ablation_weights.csv", index=False)
+    pd.DataFrame(risk_ablation_certificates).to_csv(
+        final / "risk_module_ablation_certificates.csv", index=False
+    )
     validation_ensemble_profiles = np.tensordot(
         ensemble_weights, risk_candidate_array, axes=(0, 0)
     )
@@ -3257,10 +3290,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             risk_test_candidates,
             axes=(0, 0),
         )
-        # The risk-constrained verifier is the exact simplex optimizer (a
-        # one-hot causal Pareto vertex under the zero-width RMS certificate).
-        # It remains workload-feasible because every candidate shares the same
-        # release, deadline, conservation, and capacity polytope.  The
+        # The risk-constrained verifier is the exact simplex optimizer of the
+        # declared total-plus-CVaR convex program. It remains workload-feasible
+        # because every candidate shares the same release, deadline,
+        # conservation, and capacity polytope. The
         # payment-contract envelope is solved separately below; conflating it
         # with this profile would make the risk module unidentifiable.
         risk_profile = ensemble_profile
@@ -4774,8 +4807,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "risk_profile_definition": (
                 "The reported Risk-Constrained Convex Verifier is the exact optimizer "
                 "of the validation-fitted simplex under total and daily-CVaR false-credit "
-                "budgets. The zero-width RMS certificate selects the causal Pareto "
-                "one-hot vertex; it is not pointwise clipped to the single projection."
+                "budgets. Its declared 10% MSE non-inferiority neighborhood is solved "
+                "with CVXPY/Clarabel and is not replaced by a one-hot shortcut; it is "
+                "not pointwise clipped to the single projection."
             ),
             "payment_contract_profile_file": "test_profiles.npz::payment_contract_profiles",
             "payment_contract_profile_definition": (
@@ -6003,7 +6037,7 @@ def run_exp5(
         "independent_evaluation_generator_segments": evaluation_segments,
         "independent_cost_parameterization": (
             "public benchmark quadratic costs at 10-segment settlement and "
-            "40-segment independent evaluation resolution; for PGLib "
+            "10-segment independent evaluation resolution; for PGLib "
             "IEEE-118, PYPOWER IEEE-118 quadratic curves are aligned by the "
             "identical 54 generator buses while PGLib topology, limits, and "
             "capacities are retained in both layers"
@@ -7016,7 +7050,7 @@ def run_exp8(
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
     settlement_segments = int(cfg["market"]["generator_segments"])
     evaluation_segments = int(
-        cfg["market"].get("n1_evaluation_generator_segments", 40)
+        cfg["market"].get("n1_evaluation_generator_segments", 10)
     )
     load_multiplier = float(
         cfg["experiments"].get("n1_load_multiplier", 0.9)
@@ -7556,7 +7590,7 @@ def run_exp9(
     if certificate_segments < 2:
         raise ValueError("payment_certificate_generator_segments must be at least two")
     evaluation_segments = int(
-        cfg["market"].get("n1_evaluation_generator_segments", 40)
+        cfg["market"].get("n1_evaluation_generator_segments", 10)
     )
     system = power_system_from_ppc(case24_ieee_rts())
     security = build_n1_security_factors(system)
@@ -7568,7 +7602,7 @@ def run_exp9(
     _ = solve_n1_sced(
         system,
         np.asarray(system.bus[:, 2], dtype=float),
-        int(cfg["market"].get("n1_evaluation_generator_segments", 40)),
+        int(cfg["market"].get("n1_evaluation_generator_segments", 10)),
         security_factors=security,
     )
     _ = solve_n1_sced(

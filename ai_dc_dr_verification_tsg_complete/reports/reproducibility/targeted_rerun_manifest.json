@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
   "purpose": "Reproducibility and release provenance for the TSG revision",
-  "repository_revision_before_rerun": "4843f511742bba5ef4fab669990e458365e0c8a1",
-  "release_commit": "ede63ab",
+  "repository_revision_before_rerun": "31feaa8",
+  "release_commit": "31feaa8",
   "rerun_date_utc": "2026-09-22",
   "resource_bound": {
     "observed_processor_count": 9,
     "exp10_ac_workers": 8,
     "exp27_max_workers": 4,
-    "exp9_independent_evaluator_workers": 2,
+    "exp9_independent_evaluator_workers": 8,
     "blas_threads_per_worker": 1,
     "highs_threads": 1,
     "maximum_allowed_cores": 20
@@ -34,20 +34,20 @@
   ],
   "stage_summary": {
     "unified_stage_count": 32,
-    "audit_checks": {"passed": 392, "total": 392},
+    "audit_checks": {"passed": 395, "total": 395},
     "exp9_interval_rows": 8640,
     "exp9_unseen_transfer_rows": 384,
     "exp2_elapsed_seconds": 362.177739,
-    "exp9_elapsed_seconds": 323.435160,
+    "exp9_elapsed_seconds": 747.900000,
     "exp10_elapsed_seconds": 2596.331126,
     "exp17_elapsed_seconds": 141.050337,
     "exp23_elapsed_seconds": 38.615059,
     "exp24_elapsed_seconds": 89.046187,
-    "exp26_elapsed_seconds": 10.304668,
-    "exp27_elapsed_seconds": 463.291329,
+    "exp26_elapsed_seconds": 11.900000,
+    "exp27_elapsed_seconds": 26.100000,
     "exp28_elapsed_seconds": 7.801717,
-    "exp29_elapsed_seconds": 12.118976,
-    "exp30_elapsed_seconds": 0.155775,
+    "exp29_elapsed_seconds": 13.100000,
+    "exp30_elapsed_seconds": 0.200000,
     "audit_elapsed_seconds": 0.914051
   },
   "validation": {
@@ -62,45 +62,45 @@
     "active_declaration_energy_upper_mwh": 655.753,
     "signed_network_value_usd": -0.6862357,
     "signed_nodal_meter_credit_usd": -0.6862357,
-    "signed_cycle_settlement_usd": 174.6663,
-    "cash_floor_settlement_usd": 264.4813,
-    "negative_settlement_debit_usd": -89.8150,
-    "negative_settlement_cells": 947,
+    "signed_cycle_settlement_usd": 185.0886086,
+    "cash_floor_settlement_usd": 283.9329653,
+    "negative_settlement_debit_usd": -98.8443567,
+    "negative_settlement_cells": 1062,
     "submitted_jobs": 75326,
     "service_variables": 13198247,
     "enumerated_start_candidates": 7306622,
     "exact_start_mismatch_jobs": 0,
     "maximum_objective_recomputation_residual_usd": 2.273736754432321e-13,
-    "mean_target_tracking_nrmse_total": 0.03630975,
-    "mean_target_tracking_relative_l2_flexible": 1.409969,
-    "maximum_absolute_target_residual_mw": 4.448727,
+    "mean_target_tracking_nrmse_total": 0.0302220360,
+    "mean_target_tracking_relative_l2_flexible": 1.582598932,
+    "maximum_absolute_target_residual_mw": 3.202055654,
     "risk_tail_methods": {
       "total+CVaR ensemble": {
         "locked_test_days": 54,
-        "false_credit_ratio_mean": 0.0653345998,
-        "false_credit_ratio_cvar": 0.2300832177,
-        "false_credit_ratio_q90": 0.1418520905,
-        "false_credit_mwh_mean": 1.8949510462,
-        "false_credit_mwh_cvar": 5.9707134561,
-        "false_credit_mwh_q90": 5.6510694441
+        "false_credit_ratio_mean": 0.0145820468,
+        "false_credit_ratio_cvar": 0.0481449542,
+        "false_credit_ratio_q90": 0.0361706858,
+        "false_credit_mwh_mean": 0.8163639117,
+        "false_credit_mwh_cvar": 2.7113131847,
+        "false_credit_mwh_q90": 2.6175816638
       },
       "total-budget-only ensemble": {
         "locked_test_days": 54,
-        "false_credit_ratio_mean": 0.0653345998,
-        "false_credit_ratio_cvar": 0.2300832177,
-        "false_credit_ratio_q90": 0.1418520905,
-        "false_credit_mwh_mean": 1.8949510462,
-        "false_credit_mwh_cvar": 5.9707134561,
-        "false_credit_mwh_q90": 5.6510694441
+        "false_credit_ratio_mean": 0.0133324252,
+        "false_credit_ratio_cvar": 0.0449531096,
+        "false_credit_ratio_q90": 0.0311593104,
+        "false_credit_mwh_mean": 0.6455122554,
+        "false_credit_mwh_cvar": 2.2223394640,
+        "false_credit_mwh_q90": 2.0366019716
       },
       "CVaR-only ensemble": {
         "locked_test_days": 54,
-        "false_credit_ratio_mean": 0.0653345998,
-        "false_credit_ratio_cvar": 0.2300832177,
-        "false_credit_ratio_q90": 0.1418520905,
-        "false_credit_mwh_mean": 1.8949510462,
-        "false_credit_mwh_cvar": 5.9707134561,
-        "false_credit_mwh_q90": 5.6510694441
+        "false_credit_ratio_mean": 0.0146406295,
+        "false_credit_ratio_cvar": 0.0482888297,
+        "false_credit_ratio_q90": 0.0363056478,
+        "false_credit_mwh_mean": 0.8238763487,
+        "false_credit_mwh_cvar": 2.7345867760,
+        "false_credit_mwh_q90": 2.6103649254
       }
     },
     "payment_panel": {
@@ -127,17 +127,17 @@
     }
   },
   "sha256": {
-    "paper/main.tex": "50881e9720fef0c8aea61c14a8829d5a951989d6129b09716c07da26bbe95c29",
-    "paper/main.pdf": "bd884c79c2b2ea8a8768d4ff6e6a6e56d0d2146fa8f5e3f4f08e40d70f9b7375",
+    "paper/main.tex": "cafd622b9215260e9c70965f86b6d7e513e1bba06692f01d310fec58c166f190",
+    "paper/main.pdf": "03381c527a8513123f0a36e61d48b14831278f719d4ca33098b4fcb1f5332e3f",
     "paper/references.bib": "da86de274e96d90967a62b12237001f22c62bc02a67afeeb5fb8bb10adefc60c",
-    "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv": "2c45ddb2aa4b5d350f51d9c75e60aeeeab35ac46f479e107ae9d04cc9ab3258a",
-    "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv": "0910e6c969205b1541838e3bd51065d32ce2e2ab11e26931010646a7944b54f9",
-    "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv": "8d71f4e718bb797599f6d51cb3a4fe6f88c79482a4a3d1be492714e09ac3735f",
+    "experiments/exp27_executable_common_witness/results/final/common_witness_settlement_summary.csv": "ad6d066e3aea68913f35b70f151a1e5f8fc40bc7f43db51357fa562c4dcf0004",
+    "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv": "9f3078c56f4878588eef8870552e06b769841dffa92681c719083c2f39557af7",
+    "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv": "3b85a414550f508f71a0f98a67c1e1a3da638ba6ba3ec4cb571ac0f557215abd",
     "experiments/exp24_all_outage_security_panel/results/final/experiment_metadata.json": "2bb2f5ee2a8b1186b17f55a7fd231dc0202f7a28ed18f4d08b6662eb6efa5467",
-    "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv": "dc822084b675834a055d5a1406a0aa5d1be3e6e4d87797e919fb2e89a1fcd409",
-    "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv": "80abab0928fdba4e73ca86eb25f62be0ed35b02d08d87c07b40c9137d343112d",
+    "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv": "6010b67ea1415664a90668c9f8f117cb094eda6361475488742ada446860c350",
+    "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv": "2e7be9c990e3510c64ea95fa4102e3629ef45031fe95cd8410159b79b8f13901",
     "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv": "282713de5771f05eaafe91bff3eb90fa768fb25bb8eae89d7d6b94cf2fe2e380",
     "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv": "d8286ec5e44ad3f429762caf67cce4fd60e7f52bceda28c67f71f937aa7e58b0",
-    "audit/result_audit.json": "3d62ba9111a5d8eb8ef0ed5d89119881e86a8be8f95f9860a1fe0b6a454bbca2"
+    "audit/result_audit.json": "cab4ccc3938194cb62bef0be84db23d5dd0b5eb3a58fcc1228e96b4a0fbd5abd"
   }
 }
