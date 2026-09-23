@@ -1,7 +1,7 @@
 {
-  "started_utc": "2026-09-22T17:32:05.986777+00:00",
+  "started_utc": "2026-09-23T11:10:58.719303+00:00",
   "stage_requested": "audit",
-  "resume": true,
+  "resume": false,
   "environment": {
     "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
     "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
@@ -14,12 +14,12 @@
   },
   "stages": {
     "audit": {
-      "started_utc": "2026-09-22T17:32:05.990634+00:00",
+      "started_utc": "2026-09-23T11:10:58.724071+00:00",
       "status": "completed",
-      "finished_utc": "2026-09-22T17:32:06.781560+00:00",
-      "elapsed_seconds": 0.790926
+      "finished_utc": "2026-09-23T11:10:59.380756+00:00",
+      "elapsed_seconds": 0.656685
     }
   },
-  "finished_utc": "2026-09-22T17:32:06.782334+00:00",
+  "finished_utc": "2026-09-23T11:10:59.381407+00:00",
   "status": "completed"
 }

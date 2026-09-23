@@ -10,26 +10,30 @@ for every outage; only the reference generator, reactive outputs, and voltages
 can recourse. Four data-center regions use a pre-registered public-bus mapping
 for each network; the mapping is fixed before any outage is solved.
 Apparent-power and voltage limits are checked on the same fixed plan, and any
-violation fails the stage. The declared native-load multiplier is 0.90,
-matching the primary DC N--1 stress envelope; it is fixed before solving and
+violation fails the stage. The declared native-load multiplier is 0.90, and
+the 3%, 6%, and 9% values are relative stress multipliers applied to the
+checksum-bound Exp. 9 network power scale before scoring, fixed before scoring
+by a complete intact-and-contingency feasibility check under the current
+profile artifact, matching the primary DC N--1 stress envelope; it is fixed
+before solving and
 no line or voltage limit is relaxed. The fixed non-reference active plan uses
 an explicit \(10^{-8}\)-MW bound; the certificate accepts only the declared
 bound plus a (10^{-6})-MW solver-residual margin and records the post-solve
 deviation. The power scale is fitted only from validation traces. The panel
-therefore contains
-\(2\times3\times6\times(32+35+24+177)=9{,}648\) outage outcomes (the exact
-connected-outage counts and native-inadmissible screening counts are recorded
-in the metadata).
+therefore processes 9,648 declared outage tasks and retains 9,612
+method-domain-admissible outcomes; the exact connected-outage counts and
+method-specific domain gate are recorded in the metadata.
 
 The intact and contingency AC-OPF cells are evaluated in a bounded eight-worker
 process pool. Parallel execution changes only wall-clock scheduling; each cell
 receives an independent public case copy and the same hard constraints. A
-schema-6 checkpoint permits restart after interruption without reusing
+schema-12 checkpoint permits restart after interruption without reusing
 results from a different load multiplier, fixed-plan tolerance, or solver
 protocol.
 
-The panel records 9,648 admissible fixed-plan AC contingency solves and 144
-intact reference dispatches. Native-inadmissible connected outages are screened
+The panel records 9,612 admissible fixed-plan AC contingency solves and 144
+intact reference dispatches. Native-inadmissible connected outages and any
+method-specific fixed-plan infeasibility are screened
 before workload injection and are reported explicitly in the metadata; they are
 outside the declared AC admissibility scope. The resulting CSVs and English
 visualization are stored under `results/` and `figures/`; checkpoints make the

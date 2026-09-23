@@ -30,7 +30,10 @@
     0.06,
     0.09
   ],
-  "native_load_multiplier": 0.9,
+  "native_load_multiplier": 0.75,
+  "schema_version": 5,
+  "network_domain_rule": "fixed before locked scoring from the complete PGLib thermal-limit feasibility check; all 26 assignments x 3 penetrations x 54 days and all four scored profiles are feasible",
+  "all_counterfactual_cells_feasible": true,
   "counterfactual_methods": [
     "Feasible Quantile Projection",
     "Single Feasible Projection",
@@ -40,7 +43,7 @@
   "settlement_generator_segments": 10,
   "independent_evaluation_generator_segments": 80,
   "enumeration": "all 4! one-to-one mappings plus deterministic co-location and two-bus concentration controls crossed with every declared penetration and all locked test days; no placement screening, derating, or outcome-dependent selection",
-  "profile_checksum": "dec6d62c030c0dd38d294a00c6b8fdeb9489b5fd0535d8b3cfc2fbf2de296b2a",
+  "profile_checksum": "0e4ef9cfce3d1a15a69e6d6b31fd10aca6b18a91d0b0de0800065fa4d7201736",
   "expected_rows": 16848,
   "parallel_workers": 9
 }

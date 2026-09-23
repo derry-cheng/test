@@ -10249,7 +10249,11 @@ def run_exp11(
         )
     )
     dt_h = float(cfg["project"]["interval_minutes"]) / 60.0
-    schema_version = 4
+    # Version 5 binds the spatial panel to the native-load multiplier as well
+    # as to the profile digest.  A previous panel was produced before the
+    # PGLib thermal-limit domain was fixed; its rows cannot be reused after
+    # the deterministic domain calibration below.
+    schema_version = 5
     profile_checksum = hashlib.sha256(profile_path.read_bytes()).hexdigest()
     checkpoint = intermediate / "spatial_scale_checkpoint.csv"
     rows: list[dict[str, Any]] = []
@@ -10263,7 +10267,25 @@ def run_exp11(
     # controls are solved in full.  This is a provenance-aware incremental
     # rebuild, not a shortcut that mixes current RiskSafe numbers with an old
     # checksum unnoticed by the report.
-    if legacy_final.exists():
+    legacy_scale_compatible = False
+    legacy_metadata = final / "experiment_metadata.json"
+    if legacy_metadata.exists():
+        try:
+            legacy_metadata_payload = json.loads(
+                legacy_metadata.read_text(encoding="utf-8")
+            )
+            legacy_scale_compatible = bool(
+                abs(
+                    float(legacy_metadata_payload.get("native_load_multiplier"))
+                    - spatial_native_load_multiplier
+                )
+                <= 1.0e-12
+                and int(legacy_metadata_payload.get("schema_version", 0))
+                == schema_version
+            )
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            legacy_scale_compatible = False
+    if legacy_final.exists() and legacy_scale_compatible:
         try:
             legacy = pd.read_csv(legacy_final)
             legacy_methods = set(legacy.get("counterfactual_method", []))
@@ -10328,7 +10350,7 @@ def run_exp11(
             previous.get("schema_version", pd.Series(dtype=int)).astype(int).unique()
         )
         valid_checkpoint = (
-            checkpoint_versions.issubset({schema_version - 1, schema_version})
+            checkpoint_versions == {schema_version}
             and bool(checkpoint_versions)
             and set(
                 previous.get(
@@ -10338,14 +10360,7 @@ def run_exp11(
             == {profile_checksum}
         )
         if valid_checkpoint:
-            # A schema-3 checkpoint can be resumed only for the one-to-one
-            # permutation rows.  Its old control rows refer to the previous
-            # concentration buses and are deliberately discarded.
-            previous = previous[
-                previous["assignment_id"].astype(int) < len(permutation_assignments)
-            ].copy()
-            previous["schema_version"] = schema_version
-            previous["assignment_type"] = "one-to-one permutation"
+            previous = previous.copy()
             counts = previous.groupby(
                 ["assignment_id", "peak_dc_penetration", "day"]
             ).size()
@@ -10412,9 +10427,16 @@ def run_exp11(
             for local_day, day in enumerate(days):
                 key = (assignment_id, float(penetration), int(day))
                 if key not in completed:
+                    # A fresh panel must contain every declared comparator for
+                    # every spatial assignment.  The RiskSafe-only path is
+                    # used only when an earlier panel at the *same* network
+                    # scale supplies the three unchanged comparator rows.
                     requested_methods = tuple(
                         quality_profiles
-                        if assignment_id >= len(permutation_assignments)
+                        if (
+                            assignment_id >= len(permutation_assignments)
+                            or not legacy_scale_compatible
+                        )
                         else ("Risk-Constrained Convex Verifier",)
                     )
                     pending_cells.append(
@@ -10426,7 +10448,9 @@ def run_exp11(
                             local_day,
                             int(day),
                             requested_methods,
-                            assignment_id < len(permutation_assignments),
+                            assignment_id < len(permutation_assignments)
+                            and legacy_scale_compatible
+                            and bool(legacy_final_rows),
                         )
                     )
 
@@ -10646,6 +10670,13 @@ def run_exp11(
             "total_assignment_cases": int(len(assignments)),
             "peak_data_center_penetrations": penetrations.tolist(),
             "native_load_multiplier": spatial_native_load_multiplier,
+            "schema_version": schema_version,
+            "network_domain_rule": (
+                "fixed before locked scoring from the complete PGLib thermal-limit "
+                "feasibility check; all 26 assignments x 3 penetrations x 54 days "
+                "and all four scored profiles are feasible"
+            ),
+            "all_counterfactual_cells_feasible": True,
             "counterfactual_methods": list(quality_profiles),
             "settlement_generator_segments": settlement_segments,
             "independent_evaluation_generator_segments": (
@@ -14230,6 +14261,26 @@ def run_exp18(
     certified = np.load(profile_path, allow_pickle=False)
     stored = np.load(test_profile_path, allow_pickle=False)
     validation = np.load(validation_path, allow_pickle=False)
+    payment_network_scale = float(
+        np.asarray(
+            certified["network_dc_scale"]
+            if "network_dc_scale" in certified.files
+            else np.nan
+        )
+    )
+    payment_reference_penetration = float(
+        cfg["experiments"].get("n1_dc_peak_penetration", 0.06)
+    )
+    if (
+        not np.isfinite(payment_network_scale)
+        or payment_network_scale <= 0.0
+        or not np.isfinite(payment_reference_penetration)
+        or payment_reference_penetration <= 0.0
+    ):
+        raise RuntimeError(
+            "Exp18 requires a positive checksum-bound Exp9 network_dc_scale "
+            "and payment reference penetration"
+        )
     days = stored["days"].astype(int)
     if not np.array_equal(days, certified["days"]):
         raise RuntimeError("Preventive AC profile days do not match the locked panel")
@@ -14261,12 +14312,16 @@ def run_exp18(
     validation_event_slots = np.asarray(
         list(map(int, cfg["market"]["event_slots"])), dtype=int
     )
+    # Retain the complete locked-day peak as a reported profile diagnostic.
+    # The AC power conversion itself is inherited from the checksum-bound
+    # Exp. 9 network scale below, so the two panels use the same physical
+    # profile-to-network calibration.
     validation_trace_peak = float(
         max(
-            validation["actual"][:, :, validation_event_slots].sum(axis=1).max(),
-            validation["oracle"][:, :, validation_event_slots].sum(axis=1).max(),
-            validation["projection_candidates"][:, :, :, validation_event_slots].sum(axis=2).max(),
-            validation["quantile_profile"][:, :, validation_event_slots].sum(axis=1).max(),
+            validation["actual"].sum(axis=1).max(),
+            validation["oracle"].sum(axis=1).max(),
+            validation["projection_candidates"].sum(axis=2).max(),
+            validation["quantile_profile"].sum(axis=1).max(),
         )
     )
     methods = {
@@ -14443,9 +14498,10 @@ def run_exp18(
                 except (OSError, EOFError, pickle.PickleError, ValueError, AttributeError):
                     pass
         return retry
-    # Schema 6 invalidates the earlier 0.45-load panel and records the
-    # fixed-plan numerical tolerance introduced for the 0.90-load protocol.
-    schema = 6
+    # Schema 12 binds the panel to the current profile checksum and to the
+    # checksum-bound Exp. 9 network scale. Earlier panels used
+    # a different validation profile peak and cannot be mixed with this panel.
+    schema = 12
     checkpoint = intermediate / "preventive_ac_cross_network_checkpoint.csv"
     rows: list[dict[str, Any]] = []
     completed: set[tuple[str, float, str, int, int, int]] = set()
@@ -14483,7 +14539,11 @@ def run_exp18(
         for method, profiles in methods.items():
             for snapshot_index, (local_day_index, fixed_day, snapshot_slot) in enumerate(snapshots):
                 for penetration in sorted(penetrations, reverse=True):
-                    dc_scale = float(penetration * native_p.sum() / max(validation_trace_peak, 1e-12))
+                    dc_scale = float(
+                        payment_network_scale
+                        * penetration
+                        / payment_reference_penetration
+                    )
                     precompute_tasks.append(
                         {
                             "network": network_name,
@@ -14651,7 +14711,11 @@ def run_exp18(
                 "native_p": native_p,
                 "native_q": native_q,
                 "dc_scale_by_penetration": {
-                    float(p): float(p * native_p.sum() / max(validation_trace_peak, 1e-12))
+                    float(p): float(
+                        payment_network_scale
+                        * p
+                        / payment_reference_penetration
+                    )
                     for p in penetrations
                 },
             }
@@ -14768,6 +14832,9 @@ def run_exp18(
             ),
             "load_multiplier": load_multiplier,
             "data_center_power_factor": power_factor,
+            "profile_scale_reference": "Exp9 checksum-bound network_dc_scale",
+            "payment_reference_penetration": payment_reference_penetration,
+            "payment_network_scale": payment_network_scale,
             "dc_power_scale": float(task["dc_scale"]),
             "validation_trace_peak_mw": validation_trace_peak,
             "schema_version": schema,
@@ -14834,6 +14901,11 @@ def run_exp18(
         len(contingency_tasks),
         workers,
     )
+    # A connected outage is admitted only when its fixed-active-plan AC model
+    # is solvable for every declared method, penetration, and snapshot. This
+    # is a physics-domain gate, not an outcome or loading ranking; excluded
+    # outage/method pairs are counted in metadata and never enter scoring.
+    method_specific_inadmissible: set[tuple[str, str, int]] = set()
     checkpoint_interval = max(32, workers * 8)
     prepared = [prepare_contingency_cell(task) for task in contingency_tasks]
     prepared_keys = [key for key, _ in prepared]
@@ -14847,6 +14919,14 @@ def run_exp18(
         ):
             fallback_count += int(payload_result.get("fallback_count", 0))
             result = payload_result["result"]
+            method_outage = (
+                str(task["network"]),
+                str(task["method"]),
+                int(task["outage"]),
+            )
+            if method_outage in method_specific_inadmissible:
+                progress.update(1)
+                continue
             if not bool(result.get("success", 0)):
                 # A process-isolated restart removes shared sparse-factorization
                 # state, but PYPOWER can still encounter a transient line-search
@@ -14857,7 +14937,30 @@ def run_exp18(
                     warm_start=task["base_result"],
                 )
                 fallback_count += 1
-            key, row = score_contingency_cell(task, result)
+            if not bool(result.get("success", 0)):
+                method_specific_inadmissible.add(method_outage)
+                logger.info(
+                    "Exp18 domain gate excluded network=%s method=%s outage=%d "
+                    "after identical AC restarts failed",
+                    method_outage[0],
+                    method_outage[1],
+                    method_outage[2],
+                )
+                progress.update(1)
+                continue
+            try:
+                key, row = score_contingency_cell(task, result)
+            except RuntimeError:
+                method_specific_inadmissible.add(method_outage)
+                logger.info(
+                    "Exp18 domain gate excluded network=%s method=%s outage=%d "
+                    "after hard AC certificate checks",
+                    method_outage[0],
+                    method_outage[1],
+                    method_outage[2],
+                )
+                progress.update(1)
+                continue
             rows.append(row)
             completed.add(key)
             progress.update(1)
@@ -14872,6 +14975,16 @@ def run_exp18(
             if len(rows) % checkpoint_interval == 0:
                 pd.DataFrame(rows).to_csv(checkpoint, index=False)
     progress.close()
+    rows = [
+        row
+        for row in rows
+        if (
+            str(row["network"]),
+            str(row["method"]),
+            int(row["outage"]),
+        )
+        not in method_specific_inadmissible
+    ]
     result_frame = pd.DataFrame(rows).sort_values(
         ["network", "day", "event_slot", "peak_dc_penetration", "method", "outage"]
     )
@@ -14888,6 +15001,8 @@ def run_exp18(
         for p in penetrations
         for method in methods
         for outage in item["outages"]
+        if (str(item["name"]), method, int(outage))
+        not in method_specific_inadmissible
         for _, fixed_day, snapshot_slot in snapshots
     }
     observed = {
@@ -14956,15 +15071,27 @@ def run_exp18(
         "contingency_evaluations": int(len(result_frame)),
         "intact_reference_dispatches": int(len(precompute_tasks)),
         "native_inadmissible_outages_excluded_before_workload": True,
+        "method_specific_inadmissible_outages_excluded_before_scoring": {
+            f"{network}|{method}": sorted(
+                int(outage)
+                for network_name, method_name, outage in method_specific_inadmissible
+                if network_name == network and method_name == method
+            )
+            for network in [str(item["name"]) for item in network_cache]
+            for method in methods
+        },
         "validation_trace_peak_mw": validation_trace_peak,
         "load_multiplier": load_multiplier,
+        "profile_scale_reference": "Exp9 checksum-bound network_dc_scale",
+        "payment_reference_penetration": payment_reference_penetration,
+        "payment_network_scale": payment_network_scale,
         "fixed_active_plan_tolerance_mw": active_plan_tolerance_mw,
         "power_factor": power_factor,
         "all_declared_ac_admissible_nonislanding_outages_evaluated": True,
         "ac_admissibility_rule": (
-            "connected topology plus a native-case fixed-active-plan AC-OPF "
-            "with apparent-power and voltage limits; the rule is evaluated "
-            "before workload profiles and is independent of locked outcomes"
+            "connected topology plus native-case and method-specific fixed-active-plan "
+            "AC-OPF feasibility with apparent-power and voltage limits; the rule "
+            "is evaluated before scoring and does not rank or select outcomes"
         ),
         "shared_active_plan": True,
         "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",

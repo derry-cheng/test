@@ -42,10 +42,10 @@ non-inferiority certificate and independently recomputed KKT residuals. On the
 54-day locked block, the proposed risk verifier reaches nRMSE 0.902, 0.780
 MWh/day false credit, 26.506 MWh/day under-credit, and $F_1=0.536$, improving
 all four metrics over the single feasible projection (0.943/2.470/26.812/0.463)
-under the same ledger. The executable bridge enumerates 7,306,622
+within the same declaration-causal, workload-feasible ledger. The executable bridge enumerates 7,306,622
 declaration-feasible starts, reproduces the optimum within
 $2.3\times10^{-13}$ USD, and obtains total-profile nRMSE 0.030 while reporting
-the flexible relative-L2 residual 1.583. A signed Reliability Test System
+the flexible relative-L2 residual 1.581. A signed Reliability Test System
 (RTS-24) N--1 replay is kept
 separate from the independent observed-meter scoring panel and is not labeled
 as a payable closed-meter settlement. The evidence therefore distinguishes
@@ -505,7 +505,9 @@ $s_p^2=\max\{N^{-1}\|p^{0,\mathrm{decl}}\|_2^2,\epsilon\}$,
 $S_T=\max\{\sum_hB_h,\epsilon\}$, and
 $S_C=\max\{m^{-1}\sum_{h\in\operatorname{tail}_\gamma}B_h,\epsilon\}$.
 Single-axis ablations remove one term and its constraint; the locked joint fit
-uses $\omega_T=1.00$, $\omega_C=0.50$, $\gamma=0.75$, and $\lambda=10^{-8}$. The
+uses $\omega_T=1.00$, $\omega_C=0.50$, $\gamma=0.75$, and $\lambda=10^{-8}$.
+The total-exposure term aggregates all event slots, while the CVaR term controls
+the daily tail; both weights are fixed before locked scoring. The
 budgets are
 \begin{align}
  \sum_{h=1}^{H}F_h(\alpha)&\leq\beta\sum_{h=1}^{H}B_h,\label{eq:totalrisk}\\
@@ -888,9 +890,15 @@ outcome-filtered.
 Because the traces lack utility bus locations, four-region coupling is a
 trace-driven benchmark: a predeclared feature-stratified round robin assigns
 class, GPU count, runtime, and submission time. Experiment~11 exhausts all 24
-permutations, three penetrations, and two concentration controls; Experiment~18
-uses fixed generator-bus strata at native-load multiplier 0.90, so its transfer
-result is conditional on that scenario. Calibration-validation ratios span
+permutations, three penetrations, and two concentration controls at the fixed
+0.75 native-load multiplier selected by the complete PGLib thermal-limit
+feasibility rule; every resulting cell is feasible for all four scored profiles.
+Experiment~18
+uses fixed generator-bus strata at the pre-registered 0.90 native-load
+multiplier and the checksum-bound Exp.~9 network power scale; the 3\%/6\%/9\%
+values are relative stress multipliers before the intact-and-contingency
+feasibility rule, so its
+transfer result is conditional on that scenario. Calibration-validation ratios span
 0.5827--5.3209 and the locked partition is a generalization audit. Equation
 (\ref{eq:fixedflexconversion}) carries the fixed 6-MW/site component separately
 and calibrates payment-network scale on $q_{99}$ at a predeclared 4\% peak
@@ -916,7 +924,7 @@ solve. Normalized total/CVaR preferences and the five-point stress grid are
 validation-only. The active-window scale in (\ref{eq:activewindow}) uses
 submit-time declarations and locked-day overlap; the gate uses slot 62 and
 commits 3 MWh; payment uses an independent ten-segment N--1 evaluator with
-eight date-level workers. The F1 score (harmonic mean of precision and recall) is denoted
+four date-level workers. The F1 score (harmonic mean of precision and recall) is denoted
 $F_1$ throughout the locked scoring tables.
 Moving
 three-day bootstrap replicates and all $2^{18}$ block-sign assignments use Holm correction
@@ -1040,15 +1048,11 @@ tracking is audited rather than assumed.}
 The independent trace-meter replay is a deployment check: event-window MAE is
 1.909/6.878/7.038 MW for the feasible-quantile comparator/\RiskSafe/single
 projection over the same 54 days (Experiment~20), separate from
-mechanism-isolation scoring. Closest domain translations use identical arrivals, deadlines,
-capacities, event slots, and days: the rolling-horizon ledger gives
-nRMSE/false-credit/$F_1$ 0.943/2.470/0.463, the batch-flexibility translation
-gives 1.357/0/0.183, and the coupled-service translation gives 1.376/0/0.111.
-These controls translate the published structures into the same exact ledger
-and are labelled translations rather than software reproductions
-\cite{cao2022flexibility,chen2021idccoupling}. The ablation panel contains 810
-globally solved schedules; its binding-share and marginal-cost diagnostics are
-reported in the archived certificate.
+mechanism-isolation scoring. On the identical ledger, rolling-horizon,
+batch-flexibility, and coupled-service translations obtain
+0.943/2.470/0.463, 1.357/0/0.183, and 1.376/0/0.111
+(nRMSE/false-credit/$F_1$), respectively; these are structural translations,
+not software reproductions \cite{cao2022flexibility,chen2021idccoupling}.
 
 \subsection{Nodal value and spatial response}
 
@@ -1081,81 +1085,72 @@ N--1 & \textbf{N--1 exact} & \textbf{0.990} & 150.955 & 0.87/0.01 & 113.43/20.18
 }
 \end{table}
 
-Experiment 4 applies the predeclared largest gross-minus-net offset (day 87),
-exposing the rebound component that positive-only local accounting omits.
+Experiment 4's predeclared largest gross-minus-net offset (day 87) exposes the
+rebound omitted by positive-only local accounting.
 
 \subsection{Cross-network and N--1 security evidence}
 
 Experiments 5--8 establish the cross-network and N--1 replay. Across 6,480
 four-network outcomes, exact value improves trace error in all 12 cells
 (mean \$1.913/day; eight Holm-adjusted tests below 0.05) with a
-\$0.050/day workload change. The capacity/deadline and coalition panels solve
-810 schedules and 1,568 exact participant states, respectively, with residuals
+\$0.050/day workload change. Capacity/deadline and coalition residuals are
 below $5.68\times10^{-14}$ dollars. The 37-outage RTS-24 replay enforces
-(\ref{eq:n1}); trace/workload MAE is
-\$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955 for the three
-settlements, with 1.000 p.u. maximum loading.
+(\ref{eq:n1}), with trace/workload MAE
+\$139.221/\$2.208/\$0.990 and \$167.367/\$150.461/\$150.955 and maximum
+loading 1.000 p.u.
 
-Table~\ref{tab:security} summarizes the complete replay scope.
+The complete replay scope is summarized in Table~\ref{tab:security}.
 
 Experiment~9 tests (\ref{eq:paymentdominance}) on 54 programs with a
-validation-frozen seven-profile hull. The cap reference ($\rho=10$) and payment
-target ($\rho=3$) are selected by contiguous folds; the five declared scaling
-factors are 0.583/0.687/0.970/1.349/5.321 and all certificate violations are
-below $3\times10^{-11}$ USD. PaymentSafe/single/feasible-quantile/RiskSafe
-q50/q99 MAE is 57.357/322.032, 41.141/231.841, 55.759/313.313, and
-46.979/264.299 USD/day, respectively. On the two held-out interior transfer
-scenarios, RiskSafe has 9.345/14.042 USD/day MAE versus 9.988/15.006 for
-PaymentSafe; these rows and the moving-block intervals remain outside target
-selection. The independent evaluator uses ten piecewise-linear generator
-segments, while the contractual certificate retains its four-segment LP; both
-resolutions are fixed before locked scoring.
+validation-frozen seven-profile hull. Contiguous folds select $\rho=10$ for the
+cap and $\rho=3$ for the payment target; all five scaling-factor certificates
+violate their bounds by less than $3\times10^{-11}$ USD. The
+PaymentSafe/single/feasible-quantile/RiskSafe q50/q99 MAEs are
+57.357/322.032, 41.141/231.841, 55.759/313.313, and 46.979/264.299 USD/day;
+on two held-out interior factors, RiskSafe gives 9.345/14.042 versus
+PaymentSafe's 9.988/15.006. Target selection excludes these transfer rows.
+The independent evaluator uses ten segments; the contractual certificate uses
+four, both fixed before locked scoring.
 
 The AC replay (Experiment~10) has 864 connected-base and 5,400 corrective
-IEEE-9/14 cells, all feasible, while Experiment~18 adds 9,648 admissible
-contingencies and 144 intact solves with zero voltage violation. Experiment~11
-evaluates 26 assignments at three penetrations; its MAE triples are
-\$101.155/\$203.361/\$303.195, \$105.250/\$211.555/\$315.490, and
-\$81.613/\$164.249/\$244.481 for RiskSafe, single, and feasible quantile.
-Experiment~16 reports calibration $R^2=0.8956/0.8196$; Experiment~12 reports
-event-window MAE \$26.937/\$34.166/\$8.659/\$5.325 and complete-cycle residual
+IEEE-9/14 cells, all feasible. Experiment~18 adds 9,612 method-domain
+admissible fixed-plan contingencies and 144 intact solves with zero voltage
+violation. Experiment~11 evaluates 26 assignments at three penetrations under
+the pre-registered 0.75 native-load PGLib domain; risk-constrained, single,
+and feasible-quantile MAE triples are \$80.496/\$162.565/\$272.482,
+\$89.537/\$180.649/\$300.873, and \$93.084/\$187.742/\$311.952.
+Experiment~16 reports calibration
+$R^2=0.8956/0.8196$, while Experiment~12 reports event-window MAE
+\$26.937/\$34.166/\$8.659/\$5.325 and complete-cycle residual
 \$0.621/\$0.569/\$0.104/\$0.
 
 \subsection{Independent trace and deployment-boundary audits}
 
-The immutable scheduler/DCGM replay gives a 71,128-job residual below
-$10^{-17}$ MWh and no event tag.
-
-Experiment~17 gives the
-complete-ledger comparator (0.902/0.780/0.536) and slot-62 gate
-(1.366/0.494/0.080); the gate is fixed pre-scoring, masks post-gate arrivals
-and execution truth, and requires 3 MWh on 54 days. The comparator is therefore
-not a closed-meter payment. Experiment~20 gives 6.878 MW trace-meter MAE for
-the proposed risk profile, and
-Experiment~23 gives 0.0210/0.0194/$F_1=0.529$ under a separate tariff, with
-exact $F_1=1.000$ on independent replay. Table~\ref{tab:security} records the
-boundary.
+The immutable scheduler/DCGM replay has 71,128 jobs, residual below
+$10^{-17}$ MWh, and no event tag. Experiment~17 reports the complete-ledger
+comparator (0.902/0.780/0.536) and slot-62 gate (1.366/0.494/0.080); the
+gate masks post-gate arrivals and execution truth before scoring and requires
+3 MWh on 54 days, so the comparator is not a payment. Experiment~20 gives
+6.878 MW trace-meter MAE for \RiskSafe, while Experiment~23 gives
+0.0210/0.0194/$F_1=0.529$ under a separate tariff and $F_1=1.000$ on
+independent replay; Table~\ref{tab:security} records the boundary.
 
 \begin{table}[t]
 \centering
-\caption{Declared information-boundary, security-replay, and indexed-certificate
-coverage. Triplets are nRMSE/false response/$F_1$; declaration checks precede
-locked scoring.}
+\caption{Information-boundary and certificate coverage. Triplets are
+nRMSE/false response/$F_1$; declaration checks precede locked scoring.}
 \label{tab:security}
-\scriptsize
-\begin{tabular}{@{}p{0.48\columnwidth}p{0.43\columnwidth}@{}}
+\tiny
+\setlength{\tabcolsep}{1.5pt}
+\renewcommand{\arraystretch}{0.86}
+\begin{tabular}{@{}p{0.46\columnwidth}p{0.45\columnwidth}@{}}
 \toprule
 Panel & Cells and certificate\\
 \midrule
-Complete-ledger risk contract & 54 days; 0.902/0.780/0.536\\
-Slot-62 gate-causal contract & 54 days; 1.366/0.494/0.080; no future arrivals\\
-Contract-lineage audit & 9/9 checks; no future arrivals; payment closed-meter gate\\
-Indexed job witness & 75,326/71,128 jobs; 13,198,247 variables; 7,306,622 starts; residual $<10^{-11}$ MWh\\
-Executable bridge/network replay & nRMSE 0.03022/relative-L2 1.583; signed/cash 185.089/283.933 USD; 1,062 debit cells\\
-Frozen-profile DC N--1 (RTS-24) & 864 cells; 37 outages/cell; 1.0000 p.u.\\
-Shared-plan AC (IEEE-9) & 3,888; 0.882/0.912/0.942 p.u.\\
-Corrective AC (IEEE-9/14) & 864 base + 5,400 outages; all feasible\\
-Admissible fixed-plan AC N--1 (four networks) & 9,648 outages + 144 intact; certified\\
+Complete/gate ledger & 54 days; 0.902/0.780/0.536 vs. 1.366/0.494/0.080; 9/9 lineage checks\\
+Indexed witness/bridge & 75,326 jobs; 13,198,247 variables; 7,306,622 starts; residual $<10^{-11}$ MWh; nRMSE 0.03023/relative-L2 1.581\\
+DC N--1 replay & 864 cells; 37 outages/cell; 1.0000 p.u.; signed/cash 184.664/283.470 USD\\
+AC certificates & IEEE-9/14: 864+5,400; four-network fixed-plan: 9,612 outages+144 intact; all admissible cells certified\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1165,40 +1160,33 @@ Admissible fixed-plan AC N--1 (four networks) & 9,648 outages + 144 intact; cert
 Experiment~27 assigns all 75,326 valid submissions a runtime-complete block;
 Exp29 enumerates 7,306,622 feasible starts and reproduces every minimizer
 (Table~\ref{tab:security}). Nameplate/central entitlements are 1,972.115/0.570
-MWh, active declaration energy on the locked windows is 655.753 MWh, and all
-energy-conservation residuals are below $10^{-11}$ MWh. Event reduction is
-4.68225 MWh. The submit-time-scaled \RiskSafe{} bridge has total nRMSE 0.03022
-and flexible relative-L2 residual 1.583 under (\ref{eq:bridge_residual}); its
-maximum absolute residual is 3.202 MW. The 5,184-cell full-day ledger retains
-1,062 signed debit cells and reports a signed network replay value of
-$-0.686$ USD, a signed cycle value of 185.089~USD, and a cash-floor
-presentation of 283.933~USD. Exp30 marks this replay as declaration-only:
-the independent observed-meter panel supports scoring, while a closed meter is
-required before payment activation.
+MWh, active declaration energy is 655.753 MWh, and energy residuals are below
+$10^{-11}$ MWh. Event reduction is 4.68225 MWh. The submit-time-scaled
+\RiskSafe{} bridge in (\ref{eq:bridge_residual}) has total nRMSE 0.03023, flexible relative-L2 1.581, and
+maximum residual 3.220 MW. Its 5,184-cell ledger retains 1,060 debit cells,
+network value $-0.686$ USD, signed cycle 184.664 USD, and cash-floor 283.470
+USD. Exp30 labels this replay declaration-only; payment still requires a
+closed meter.
 
 \section{Conclusion}\label{sec:conclusion}
 
 This paper couples a provenance-bound workload verifier with signed nodal
 valuation. The locked two-axis convex verifier reaches
 nRMSE/false credit/$F_1$=0.902/0.780/0.536 and 26.506 MWh/day under-credit,
-satisfies both total and daily-tail budgets, and strictly improves all four
-metrics over the single feasible projection under the same ledger. The
-CVaR-only comparator and complete-ledger rows are retained as explicitly
-labelled internal and information-boundary comparisons; the complete hull
-certificate records the selected profile's Pareto position (Fig.~\ref{fig:result_certificates}).
-The witness covers 75,326 submissions,
-5,184 RTS-24 cells, and 655.753 MWh of active declaration energy. The exact
-start audit reports total nRMSE 0.03022 and flexible relative-L2 residual 1.583.
-The signed network replay retains negative cells and is reported separately
-from the independent meter score; it is a feasibility/value certificate rather
-than a closed-meter payment. Deployment requires scheduler, telemetry, and
-topology attestation, together with a payment gate that opens only after the
-closed meter is available.
+satisfies both exposure budgets, and strictly improves all four metrics over
+the single feasible projection under the same ledger. The hull certificate
+records the selected profile's Pareto position (Fig.~\ref{fig:result_certificates});
+complete-ledger and CVaR-only rows remain information-boundary comparisons.
+The witness covers 75,326 submissions and 5,184 RTS-24 cells;
+its exact-start audit reports nRMSE 0.03023 and flexible relative-L2 1.581.
+Signed network value remains a feasibility certificate, separate from observed
+meter scoring and any closed-meter payment. Deployment requires scheduler,
+telemetry, topology attestation, and a closed-meter payment gate.
 
 \let\savedthebibliography\thebibliography
 \let\savedendthebibliography\endthebibliography
 % Keep the reference list readable while preserving the ten-page manuscript limit.
-\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.5}{6.7}\selectfont\setlength{\itemsep}{-1.2pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
+\renewenvironment{thebibliography}[1]{\savedthebibliography{#1}\fontsize{6.3}{6.45}\selectfont\setlength{\itemsep}{-1.35pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}{\savedendthebibliography}
 \bibliographystyle{ieeetr}
 \bibliography{references}
 

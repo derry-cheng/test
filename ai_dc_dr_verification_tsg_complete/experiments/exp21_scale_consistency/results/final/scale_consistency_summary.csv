@@ -1,6 +1,6 @@
 metric,value,unit
 source_exp19_scale_factor,1.0,x
-declared_batch_hyperscale_multiplier,15350.07101986688,x
+declared_batch_hyperscale_multiplier,11755.543673331451,x
 capacity_safe_scale_factor,6838.672329621412,x
 capacity_proportional_network_scale_factor,6838.672329621412,x
 fixed_gpu_nameplate_scale_factor,3.033184773956104,x

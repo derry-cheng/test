@@ -28,7 +28,7 @@ from the candidate-start count (7,306,622), separates signed cycle settlement
 from its cash-floor presentation, and labels the complete-ledger profile as an
 ex-post comparator while the slot-62 profile is gate-causal. Exp9's unseen
 transfer evaluator uses a day-level checkpoint; the independent panel uses a
-ten-segment exact N--1 evaluator with eight date-level workers and is forced to
+ten-segment exact N--1 evaluator with four date-level workers and is forced to
 regenerate whenever its profile checksum changes. Exp10's
 AC N--1 panel uses bounded workers and a row checkpoint. Exp24 applies the
 validation-frozen Exp9 $q_{99}$ facility-to-network scale before its complete

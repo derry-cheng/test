@@ -33,8 +33,8 @@ objective over all declaration-feasible contiguous starts. It does not claim
 that a discrete witness equals an aggregate target. Experiment 29 enumerates
 7,306,622 starts, finds zero stored-start mismatches, and reproduces the saved
 objective to \(2.27\times10^{-13}\) USD. The regenerated bridge reports total
-profile nRMSE 0.03022, flexible relative-L2 residual 1.583, and maximum
-absolute residual 3.202 MW. The paper reports both residuals and explains why
+profile nRMSE 0.03023, flexible relative-L2 residual 1.581, and maximum
+absolute residual 3.220 MW. The paper reports both residuals and explains why
 the flexible denominator is the relevant audit for target tracking.
 
 ## C4 — joint total/CVaR contract and ablations
@@ -69,8 +69,8 @@ The settlement chain now distinguishes three roles: declaration-feasible
 replay, signed network-value replay, and closed-meter payment. Exp27 uses
 active declaration energy of 655.753 MWh across 5,184 full-day cells and all
 37 finite RTS-24 contingencies per cell. It reports signed network value
-\(-0.686\) USD, signed cycle settlement 185.089 USD, cash-floor presentation
-283.933 USD, and 1,062 negative debit cells. These are simulation certificates;
+\(-0.686\) USD, signed cycle settlement 184.664 USD, cash-floor presentation
+283.470 USD, and 1,060 negative debit cells. These are simulation certificates;
 they are not labelled as a payable meter settlement. The payment equation is
 meter-capped, units are stated (MW, h, MWh, USD), and Exp30 records
 `closed_meter_payment_ready = false` for the public release.

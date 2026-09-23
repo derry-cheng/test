@@ -32,7 +32,7 @@
   "payment_evaluation_recompute_scope": "the declared payment evaluator is rebuilt from the current Experiment-2 profile cache; byte-identical quality profiles may reuse their numerically identical rows, while any changed profile is re-solved before the panel is finalized",
   "validation_profile_file_checksum": "89430658f30e2a40ca52c80bca4528c15c97ed3cb29f82f1405a1fd73e391592",
   "data_manifest_checksum": "d9383aa09b344467e21a7f3c64c2edae5c5c87b43a4619b66b3b7e8dd3493262",
-  "config_checksum": "7d8b2730e5e05bf5dc983ae11397270c765143c336adf1c8c592f4d184479f20",
+  "config_checksum": "1d360bec9b010ce26540f171208b10030f842748e33a5654f3bbd8615a4b77b0",
   "optimization": "two lexicographically ordered global linear programs per day over the complete workload-feasible convex hull. The contractual certificate uses a four-segment N-1 SCED value model at every declared conversion scenario; convexity of the exact value function makes the vertex-cost Jensen upper bound explicit, while the locked evaluator is independently replayed at the higher-resolution N-1 model",
   "power_conversion_scenario_source": "1st, 10th, 50th, 90th, and 99th percentiles of calibration-validation per-job measured-to-predicted energy ratios from the full MIT DCGM table; the two tails are included in the payment certificate",
   "power_conversion_scenarios": {
@@ -71,7 +71,7 @@
   "settlement_generator_segments": 10,
   "payment_certificate_generator_segments": 4,
   "independent_evaluation_generator_segments": 10,
-  "independent_evaluation_parallel_workers": 8,
+  "independent_evaluation_parallel_workers": 4,
   "unseen_transfer_evaluation": {
     "daily_file": "payment_evaluation_unseen_scenarios.csv",
     "summary_file": "payment_evaluation_unseen_summary.csv",

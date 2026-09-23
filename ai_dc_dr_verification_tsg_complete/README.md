@@ -19,7 +19,7 @@ separately rather than folded into the deployable claim. The complete
 seven-profile causal hull is machine-certified Pareto-efficient, so the table
 does not confuse a boundary point with componentwise dominance over every
 internal frontier point. The independent payment replay uses a declared
-ten-segment exact N-1 LP with eight date-level workers; the contractual
+ten-segment exact N-1 LP with four date-level workers; the contractual
 certificate remains a four-segment LP, and checkpoints retain profile and
 certificate hashes.
 
@@ -69,7 +69,10 @@ are intentionally excluded from version control; the tracked PGLib case is a
 public network benchmark with no private telemetry. Public traces do not expose facility geography, so the
 four-region placement and trace-to-power conversion are declared benchmark
 scenarios; all 24 region-to-bus permutations plus two predeclared concentration
-controls are evaluated in Experiment 11.
+controls are evaluated in Experiment 11. That panel fixes the PGLib native-load
+multiplier at 0.75 before scoring: all 26 assignments, three penetrations, and
+54 locked days are feasible for all four profiles, yielding 16,848 retained
+counterfactual rows.
 
 The submit-time calibration label join contains 71,141 positive scheduler/DCGM records; the full execution replay contains 71,128 after applying valid measured start/end intervals. The 13-record difference is label-only and cannot enter the counterfactual or locked eligibility sets.
 

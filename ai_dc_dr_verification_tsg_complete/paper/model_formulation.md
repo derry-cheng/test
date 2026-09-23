@@ -409,9 +409,10 @@ ensemble solves
 \end{aligned}
 \]
 
-Here \(\gamma=0.75\), and the predeclared objective weights
-\(\omega_T=1.00\) and \(\omega_C=0.50\) are fixed before the
-train/validation/test split.
+Here \(\gamma=0.75\), with \(\omega_T=1.00\) for aggregate exposure and
+\(\omega_C=0.50\) for the daily-tail term. These weights are fixed before the
+train/validation/test split; the total term aggregates all event slots while
+the CVaR term controls the daily tail.
 The implementation uses the absolute MW-slot quantities below throughout; no
 day-specific energy denominator is introduced. The total-budget-only and
 CVaR-only ablations remove the omitted axis's objective term and constraint
@@ -688,8 +689,11 @@ Experiment 11 treats spatial placement and trace-to-power scaling as a complete
 finite uncertainty set. It evaluates all \(4!\) assignments of the four
 measured regional traces to the four fixed IEEE-118 connection buses, crossed
 with the predeclared 3%, 6%, and 9% peak penetrations and every locked day.
-The 10-segment market objective and independent 80-segment value objective are
-re-solved for every cell; no mapping, penetration, or outcome is screened.
+The native network profile is fixed at 0.75 of the public PGLib case by a
+pre-registered full-panel feasibility rule; the 10-segment market objective and independent 80-segment value objective are
+re-solved for every cell; no mapping, penetration, or outcome is screened. The
+resulting panel contains 26 assignments, three penetrations, and 54 locked days,
+with all four scored profiles feasible in every cell.
 
 ## F. Participant allocation
 

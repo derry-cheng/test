@@ -3,7 +3,7 @@
   "source": "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz",
   "proof_basis": "fixed-nameplate scaling preserves release/deadline support, job-energy equalities, nonnegativity, and the declared GPU upper bounds; the larger network-capacity profile is a proportional stress scenario",
   "source_scale": 1.0,
-  "declared_scale": 15350.07101986688,
+  "declared_scale": 11755.543673331451,
   "capacity_safe_scale": 6838.672329621412,
   "capacity_proportional_network_scale": 6838.672329621412,
   "fixed_gpu_nameplate_scale": 3.033184773956104,

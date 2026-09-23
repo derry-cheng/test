@@ -302,7 +302,7 @@
     "settlement_window": "full_declared_day",
     "generator_segments": 4,
     "network_workers": 4,
-    "network_checkpoint_chunk_size": 512,
+    "network_checkpoint_chunk_size": 5184,
     "network_checkpoint_schema": "risk-profile-digest keyed deterministic batches",
     "finite_nonislanding_n1_contingencies_per_cell": 37,
     "base_load_multiplier": 0.9,
@@ -312,9 +312,9 @@
     "signed_settlement": true,
     "negative_network_value_cells": 1060,
     "signed_network_value_usd": -0.6862356798556002,
-    "signed_nodal_meter_credit_usd": -0.6862356799857122,
+    "signed_nodal_meter_credit_usd": -0.6862356799857114,
     "signed_cycle_settlement_usd": 184.66413459727897,
-    "cash_floor_settlement_usd": 283.470235215133,
+    "cash_floor_settlement_usd": 283.4702352151331,
     "all_solver_cells_successful": true
   },
   "files": {

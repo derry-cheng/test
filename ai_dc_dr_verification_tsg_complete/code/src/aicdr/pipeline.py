@@ -232,9 +232,9 @@ def run_pipeline(
         "exp30",
         "exp26",
         "audit",
-    } and stage not in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
+    } and stage not in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp18", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
         preprocess_all(root, cfg, False, logger)
-    elif stage in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
+    elif stage in {"audit", "exp2", "exp9", "exp10", "exp11", "exp12", "exp17", "exp18", "exp20", "exp21", "exp22", "exp23", "exp24", "exp27", "exp28", "exp29", "exp30", "exp26"}:
         # The audit is intentionally runnable from the compact source/artifact
         # package after raw inputs have been moved to the verified archive.  It
         # consumes the locked processed tensor and checks its manifest-bound

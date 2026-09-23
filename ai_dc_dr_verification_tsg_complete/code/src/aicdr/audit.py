@@ -1346,17 +1346,34 @@ def run_audit(
         len(cfg["experiments"].get("preventive_ac_validation_day_indices", []))
         * len(cfg["experiments"].get("preventive_ac_validation_event_slots", []))
     )
+    # The retained panel is smaller than the connected-topology Cartesian
+    # product because the pre-registered native and method-specific AC domain
+    # gates exclude infeasible fixed-plan outage/method pairs before scoring.
+    # Reconstruct that count from the metadata instead of silently assuming
+    # every topology-connected outage survives both physical gates.
+    expected_ac_outcomes = int(
+        sum(
+            (
+                2 * int(ac_cross_meta["outages_by_network"][network])
+                - sum(
+                    len(outages)
+                    for key, outages in ac_cross_meta.get(
+                        "method_specific_inadmissible_outages_excluded_before_scoring",
+                        {},
+                    ).items()
+                    if str(key).startswith(f"{network}|")
+                )
+            )
+            for network in expected_ac_networks
+        )
+        * 3
+        * int(ac_cross_meta.get("locked_snapshot_count", 0))
+    )
     _check(
         set(ac_cross["network"].unique()) == expected_ac_networks
         and set(ac_cross["method"].unique())
         == {"Payment-Certified N-1 Verifier", "Trace-Anchored Reference"}
-        and len(ac_cross) == sum(
-            int(count)
-            for count in ac_cross_meta["outages_by_network"].values()
-        )
-        * 3
-        * 2
-        * int(ac_cross_meta.get("locked_snapshot_count", 0))
+        and len(ac_cross) == expected_ac_outcomes
         and bool((ac_cross["solver_success"] == 1).all())
         and np.isfinite(
             ac_cross[
@@ -1367,7 +1384,9 @@ def run_audit(
                 ]
             ].to_numpy(dtype=float)
         ).all()
-        and set(ac_cross["schema_version"].astype(int).unique()) == {6}
+        # Exp18 schema 12 carries the checksum-bound Exp9 scale and the
+        # method-specific physical-domain gate in every retained row.
+        and set(ac_cross["schema_version"].astype(int).unique()) == {12}
         and int(ac_cross_meta.get("locked_snapshot_count", 0)) == len(
             ac_cross_meta.get("locked_snapshots", [])
         )
@@ -1398,6 +1417,12 @@ def run_audit(
                 ac_cross["maximum_nonreference_active_plan_deviation_mw"]
                 <= float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")) + 1e-6
             ).all()
+        )
+        and all(
+            int(ac_cross_meta["topology_connected_outages_by_network"][network])
+            == int(ac_cross_meta["outages_by_network"][network])
+            + int(ac_cross_meta["native_ac_inadmissible_connected_outages_by_network"].get(network, 0))
+            for network in expected_ac_networks
         )
         and ac_cross_meta["test_outcomes_used_for_scaling"] is False,
         "cross_network_ac_n1_admissibility_panel",

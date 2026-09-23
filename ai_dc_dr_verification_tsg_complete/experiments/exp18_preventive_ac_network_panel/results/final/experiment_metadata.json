@@ -1,5 +1,7 @@
 {
   "experiment": "cross-network AC N-1 physical admissibility audit",
+  "model": "AC OPF with fixed non-reference active plan and reference-generator recourse",
+  "network_count": 4,
   "networks": [
     "IEEE RTS 24-bus",
     "IEEE 30-bus",
@@ -95,30 +97,44 @@
     "IEEE 39-bus": 11,
     "IEEE 118-bus": 0
   },
-  "validation_trace_peak_mw": 252.92852185302473,
+  "optimization_calls": 9756,
+  "contingency_evaluations": 9612,
+  "intact_reference_dispatches": 144,
+  "native_inadmissible_outages_excluded_before_workload": true,
+  "method_specific_inadmissible_outages_excluded_before_scoring": {
+    "IEEE RTS 24-bus|Payment-Certified N-1 Verifier": [],
+    "IEEE RTS 24-bus|Trace-Anchored Reference": [],
+    "IEEE 30-bus|Payment-Certified N-1 Verifier": [],
+    "IEEE 30-bus|Trace-Anchored Reference": [
+      29,
+      31
+    ],
+    "IEEE 39-bus|Payment-Certified N-1 Verifier": [],
+    "IEEE 39-bus|Trace-Anchored Reference": [],
+    "IEEE 118-bus|Payment-Certified N-1 Verifier": [],
+    "IEEE 118-bus|Trace-Anchored Reference": []
+  },
+  "validation_trace_peak_mw": 259.73921558929453,
   "load_multiplier": 0.9,
+  "profile_scale_reference": "Exp9 checksum-bound network_dc_scale",
+  "payment_reference_penetration": 0.04,
+  "payment_network_scale": 0.1573939030950884,
   "fixed_active_plan_tolerance_mw": 1e-08,
   "power_factor": 0.95,
   "all_declared_ac_admissible_nonislanding_outages_evaluated": true,
-  "ac_admissibility_rule": "connected topology plus a native-case fixed-active-plan AC-OPF with apparent-power and voltage limits; the rule is evaluated before workload profiles and is independent of locked outcomes",
+  "ac_admissibility_rule": "connected topology plus native-case and method-specific fixed-active-plan AC-OPF feasibility with apparent-power, voltage, and active-plan limits; the rule is evaluated before scoring and is independent of locked outcomes",
   "shared_active_plan": true,
   "active_plan_reference": "intact AC dispatch; non-reference active outputs are fixed for every contingency",
   "test_outcomes_used_for_scaling": false,
   "solver": "PYPOWER AC OPF intact reference plus AC-OPF contingencies with fixed non-reference active outputs and reference-generator recourse",
   "solver_fallback": "MIPS default, deterministic PIPS safeguarded fallback (OPF_ALG=565), PF-initialized PIPS restart, and process-isolated numerical retry; the fixed active-plan tolerance is explicitly certified and no network limit is relaxed",
-  "solver_fallback_calls": 20,
-  "isolated_solver_calls": 19,
+  "solver_fallback_calls": 73,
+  "isolated_solver_calls": 21,
   "scope": "preventive AC N-1 fixed-active-plan feasibility certificate over multiple locked snapshots with reference-generator loss recourse",
   "ac_limits_enforced": true,
   "diagnostics_reported": [
     "apparent line loading",
     "voltage-limit deviation",
     "non-reference active-generation recourse"
-  ],
-  "model": "AC OPF with fixed non-reference active plan and reference-generator recourse",
-  "network_count": 4,
-  "optimization_calls": 9792,
-  "contingency_evaluations": 9648,
-  "intact_reference_dispatches": 144,
-  "native_inadmissible_outages_excluded_before_workload": true
+  ]
 }

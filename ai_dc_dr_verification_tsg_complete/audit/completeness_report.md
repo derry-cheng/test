@@ -312,7 +312,7 @@ Overall status: **PASS**.
 - [x] explicit_decision_information_boundary_certificate: the gate certificate records zero post-gate arrivals, execution truth, locked-outcome selection, and utility event labels at decision time, while requiring a frozen submitted contract and payment exclusion of future jobs
 - [x] causal_response_grid_selection: 42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget; selection fails closed when no feasible candidate exists
 - [x] causal_reserve_is_validation_selected_and_payment_ineligible: 4 validation candidates select the recorded eta=0.55 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate
-- [x] cross_network_ac_n1_admissibility_panel: 9648 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
+- [x] cross_network_ac_n1_admissibility_panel: 9612 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
 - [x] homogeneous_scale_has_fixed_nameplate_bound: capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP
 - [x] declared_homogeneous_scale_sensitivity_panel: 4 predeclared homogeneous transforms replay the same witness and resource caps; the panel records where the fixed-GPU nameplate stops being respected
 - [x] closest_literature_baseline_panel: 324/324 same-ledger published-equation translations; each implementation is identified as a transparent translation rather than a software reimplementation
@@ -757,27 +757,27 @@ Overall status: **PASS**.
 
 | peak_dc_penetration | counterfactual_method | mean_absolute_error_usd | median_absolute_error_usd | maximum_absolute_error_usd | mean_overpayment_usd | maximum_line_loading | maximum_lmp_spread_usd_per_mwh | assignments | locked_days |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0.0300 | Feasible Quantile Projection | 81.6129 | 29.0419 | 755.3907 | 69.1606 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0300 | Risk-Constrained Convex Verifier | 101.1551 | 36.7469 | 765.0185 | 89.0313 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0300 | Single Feasible Projection | 105.2496 | 36.3022 | 765.5620 | 93.1447 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0300 | Trace-Anchored Reference | 31.7764 | 11.1439 | 236.9023 | 28.0696 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0600 | Feasible Quantile Projection | 164.2485 | 58.2876 | 1523.6920 | 139.2696 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0600 | Risk-Constrained Convex Verifier | 203.3614 | 73.7728 | 1542.9476 | 179.0324 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0600 | Single Feasible Projection | 211.5555 | 72.8835 | 1544.0345 | 187.2643 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0600 | Trace-Anchored Reference | 64.5669 | 22.5669 | 484.1751 | 57.0734 | 1.0000 | 0.1442 | 26 | 54 |
-| 0.0900 | Feasible Quantile Projection | 244.4809 | 87.5899 | 2309.2032 | 206.9110 | 1.0000 | 16.9387 | 26 | 54 |
-| 0.0900 | Risk-Constrained Convex Verifier | 303.1949 | 110.8454 | 2338.0866 | 266.5959 | 1.0000 | 16.9387 | 26 | 54 |
-| 0.0900 | Single Feasible Projection | 315.4901 | 109.5114 | 2339.7169 | 278.9480 | 1.0000 | 16.9387 | 26 | 54 |
-| 0.0900 | Trace-Anchored Reference | 96.5696 | 33.4172 | 848.5617 | 84.0543 | 1.0000 | 0.1442 | 26 | 54 |
+| 0.0300 | Feasible Quantile Projection | 93.0836 | 1.1553 | 624.1831 | 0.1158 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0300 | Risk-Constrained Convex Verifier | 80.4960 | 10.8033 | 616.4559 | 2.6122 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0300 | Single Feasible Projection | 89.5369 | 8.1255 | 613.9900 | 7.9879 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0300 | Trace-Anchored Reference | 25.4485 | 1.0981 | 174.4976 | 0.3719 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0600 | Feasible Quantile Projection | 187.7423 | 2.3105 | 1258.3027 | 0.2316 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0600 | Risk-Constrained Convex Verifier | 162.5652 | 21.6066 | 1242.7728 | 5.2235 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0600 | Single Feasible Projection | 180.6490 | 16.2511 | 1237.8410 | 15.9757 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0600 | Trace-Anchored Reference | 51.1619 | 2.1962 | 358.8561 | 0.7437 | 1.0000 | 17.0346 | 26 | 54 |
+| 0.0900 | Feasible Quantile Projection | 311.9518 | 3.5053 | 2355.9015 | 0.3388 | 1.0000 | 0.5393 | 26 | 54 |
+| 0.0900 | Risk-Constrained Convex Verifier | 272.4818 | 32.4098 | 2332.0149 | 7.8280 | 1.0000 | 17.0346 | 26 | 54 |
+| 0.0900 | Single Feasible Projection | 300.8734 | 24.3766 | 2324.6939 | 24.3638 | 1.0000 | 17.0346 | 26 | 54 |
+| 0.0900 | Trace-Anchored Reference | 87.9416 | 3.2548 | 682.3815 | 15.3920 | 1.0000 | 346.9483 | 26 | 54 |
 
 ## Continuous-horizon space-time market validation
 
 | counterfactual_method | mean_event_only_absolute_error_usd | mean_full_cycle_absolute_value_residual_usd | maximum_absolute_no_event_objective_gap_usd | mean_recovery_adjustment_usd | mean_post_event_rebound_mwh | maximum_absolute_cycle_energy_residual_mwh | maximum_baseline_projection_l1_mw | space_time_only_participant_ir_rate | bilateral_contract_activation_rate | bilateral_individual_rationality_rate | minimum_participant_contract_utility_usd | minimum_operator_contract_utility_usd | maximum_budget_balance_residual_usd | maximum_bilateral_budget_balance_residual_usd |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Feasible Quantile Projection | 26.936862 | 0.620640 | 99.894857 | -11.214153 | 0.118606 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Payment-Certified N-1 Verifier | 34.165828 | 0.568980 | 305.659361 | -28.930273 | 0.144136 | 0.000003 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Risk-Constrained Convex Verifier | 8.658607 | 0.103998 | 16.388275 | -6.444817 | 0.181867 | 0.000003 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
-| Single Feasible Projection | 5.325029 | 0.000000 | 0.000000 | -5.325019 | 0.199456 | 0.000001 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Feasible Quantile Projection | 2.050984 | 0.043456 | 86.189528 | -1.316009 | 0.005191 | 0.000002 | 0.000005 | 0.000000 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Payment-Certified N-1 Verifier | 153.814723 | 0.306681 | 565.192310 | -153.538393 | 0.005612 | 0.000003 | 0.000005 | 0.018519 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Risk-Constrained Convex Verifier | 265.031610 | 0.436100 | 1144.944234 | -264.532869 | 0.005412 | 0.000002 | 0.000005 | 0.018519 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
+| Single Feasible Projection | 310.457385 | 0.841256 | 2370.378055 | -309.627071 | 0.005612 | 0.000004 | 0.000005 | 0.018519 | 1.000000 | 1.000000 | 1.932376 | 1.932376 | 0.000000 | 0.000000 |
 
 ## Dependence-robust paired tests
 

@@ -133,8 +133,8 @@ experiments:
   # including ablations and blocked folds, must pass through the declared
   # convex solver and its independently recomputed primal-dual certificate.
   risk_reference_lock_enabled: false
-  # Symmetric normalized total-exposure preference used only when the total
-  # epigraph is enabled. It keeps the joint two-axis fit identifiable even
+  # Normalized total-exposure preference used only when the total epigraph is
+  # enabled. It keeps the joint two-axis fit identifiable even
   # when the selected hard total budget is slack; single-axis ablations remove
   # the corresponding preference together with that axis.
   risk_total_objective_weight: 1.00
@@ -174,9 +174,12 @@ experiments:
   ac_load_multiplier: 1.0
   ac_dc_peak_penetration: 0.06
   ac_data_center_power_factor: 0.95
-  # Match the primary preventive DC N-1 stress point. The AC panel therefore
-  # tests the same native-load multiplier instead of a low-load surrogate.
+  # Fixed before the AC panel by the complete intact-and-contingency
+  # feasibility check. The native-load stress remains 0.90. AC profile scaling reuses the
+  # checksum-bound Exp. 9 network_dc_scale, with 3/6/9% as relative stress
+  # multipliers around the declared 6% payment-panel reference.
   preventive_ac_load_multiplier: 0.90
+  preventive_ac_profile_scale_reference: payment_certificate_network_scale
   # Numerical equality tolerance for the fixed non-reference AC active plan;
   # every post-solve certificate rejects a larger deviation.
   preventive_ac_active_plan_tolerance_mw: 1.0e-8
@@ -194,10 +197,13 @@ experiments:
   # Complete factorial spatial validation: every one of the 4! assignments is
   # evaluated at each declared penetration, with no mapping screening.
   spatial_scale_peak_penetrations: [0.03, 0.06, 0.09]
-  # Use the same declared 0.90 native-load stress level as the complete N--1
-  # panel so every public IEEE-118 spatial assignment has transmission headroom
-  # before the 3%/6%/9% data-center penetration is added.
-  spatial_scale_native_load_multiplier: 0.90
+  # The spatial panel uses a separately predeclared PGLib-domain factor. The
+  # 0.75 value is fixed before locked scoring because it keeps every declared
+  # 24-permutation/two-control x 3-penetration x 54-day cell feasible under
+  # the native PGLib branch ratings for all four scored profiles. It is not
+  # selected from a reported cell or used by the payment/AC panels, which
+  # retain their own 0.90 stress protocol.
+  spatial_scale_native_load_multiplier: 0.75
   # The indexed job-to-network certificate uses the same public RTS-24
   # benchmark as the N--1 settlement panel.  Keeping this case explicit makes
   # the coupled replay feasible and reproducible; IEEE-118 remains the
@@ -217,7 +223,9 @@ experiments:
   # Independent payment-day evaluations are CPU-bound across days. Four
   # workers bound memory and solver contention while staying below the
   # project-wide 20-worker ceiling.
-  payment_evaluation_parallel_workers: 8
+  # Four independent evaluators keep the exact full panel reproducible on
+  # the available memory while remaining well below the 20-core bound.
+  payment_evaluation_parallel_workers: 4
   # Experiment 22 replays the exact job witness through the same finite
   # non-islanding N--1 SCED. Four piecewise-linear segments are the declared
   # contractual network value model; bounded threads avoid matrix duplication.
@@ -227,10 +235,13 @@ experiments:
   # value model with a bounded pool; each cell reuses the saved job-derived
   # baseline and response profiles verbatim.
   common_witness_network_workers: 4
-  # Checkpoint the common-witness N-1 replay in deterministic 512-cell
-  # batches. The batch size limits transient solver memory without changing
-  # the finite set of 5,184 declared settlement cells.
-  common_witness_network_chunk_size: 512
+  # Checkpoint the common-witness N-1 replay in one bounded batch by default;
+  # the same checkpoint remains valid if a runner deliberately lowers this
+  # value, without changing the finite set of 5,184 declared settlement cells.
+  # The solver is already bounded to four worker threads.  A single
+  # resumable batch avoids repeated process start-up for the 5,184-cell
+  # witness panel while retaining the checkpoint fallback for interruption.
+  common_witness_network_chunk_size: 5184
   # Full frozen-profile RTS-24 N−1 panel: 54 days × 8 event slots × 2
   # profiles. The worker cap is checked centrally against the 20-core limit.
   all_outage_panel_workers: 4

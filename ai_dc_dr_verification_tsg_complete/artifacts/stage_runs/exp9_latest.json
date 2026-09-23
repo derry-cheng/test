@@ -1,5 +1,5 @@
 {
-  "started_utc": "2026-09-22T16:27:25.967447+00:00",
+  "started_utc": "2026-09-23T10:51:15.385342+00:00",
   "stage_requested": "exp9",
   "resume": true,
   "environment": {
@@ -14,12 +14,12 @@
   },
   "stages": {
     "exp9": {
-      "started_utc": "2026-09-22T16:27:25.971326+00:00",
+      "started_utc": "2026-09-23T10:51:15.389251+00:00",
       "status": "completed",
-      "finished_utc": "2026-09-22T16:44:09.999473+00:00",
-      "elapsed_seconds": 1004.028147
+      "finished_utc": "2026-09-23T10:51:19.545743+00:00",
+      "elapsed_seconds": 4.156492
     }
   },
-  "finished_utc": "2026-09-22T16:44:09.999843+00:00",
+  "finished_utc": "2026-09-23T10:51:19.546109+00:00",
   "status": "completed"
 }
