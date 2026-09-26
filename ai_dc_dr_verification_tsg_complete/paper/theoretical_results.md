@@ -160,17 +160,18 @@ Four contiguous folds select \(\beta\) without locked-test labels. The accepted
 ensemble is workload feasible and satisfies a total-plus-daily-tail validation
 risk contract.
 
-For the final schedule, let \(p^{\mathrm{safe}}\) solve the same exact workload
-model with two-sided event constraints
+For the final schedule, define the lower contract profile as
+$p_n^{\mathrm{floor}}=\min\{p_n^{(\ell^\star)},\bar p_n\}$, where $\bar p$
+is the pre-projection validation fit. The payment schedule satisfies
 
 \[
-p_n^{(\ell^\star)}-\varepsilon
-\leq p_n^{\mathrm{safe}}\leq p_n^{(\ell^\star)},
-\qquad n\in\mathcal D\times\mathcal E.
+p_n^{\mathrm{floor}}-\varepsilon\leq p_n^{\mathrm{safe}}\leq
+p_n^{(\ell^\star)},\qquad n\in\mathcal D\times\mathcal E,
 \]
 
-The reference schedule itself proves nonemptiness. Here \(\varepsilon=1\) MW is
-fixed before the locked test split. Since \(z\mapsto[z-c]_+\) is
+with $\varepsilon=0$ in the locked release. The single projection proves
+nonemptiness because $p_n^{\mathrm{floor}}\leq p_n^{(\ell^\star)}$ and it is
+feasible in the shared workload polytope. Since $z\mapsto[z-c]_+$ is
 monotone,
 
 \[
@@ -178,18 +179,18 @@ monotone,
 \leq[p_n^{(\ell^\star)}-c_n]_+
 \]
 
-for every sample and every possible unseen \(c_n\). Summing proves daily and
-full-panel false-credit-MWh noninferiority on the locked test set without using
-test labels. The statement is relative to the selected workload-feasible
-reference; it does not make that reference a distribution-free estimate of an
-arbitrary operator's no-event meter. The lower inequality also gives
+for every sample $c_n$. This bounds excess credited response pointwise relative
+to the selected reference. The lower band also gives
+
 \[
-[c_n-p_n^{\mathrm{safe}}]_+
-\leq[c_n-p_n^{(\ell^\star)}]_++\varepsilon,
+[p_n^0-c_n]_+-[p_n^{\mathrm{safe}}-c_n]_+
+\leq[p_n^0-p_n^{\mathrm{floor}}]_++\varepsilon,
 \]
-so the additional under-credit is at most
-\(\varepsilon|\mathcal D||\mathcal E|\Delta t\). This is a structural
-two-sided certificate; nRMSE and \(F_1\) remain empirical.
+
+so missed credit is bounded by the oracle-to-floor gap and band tolerance.
+These structural inequalities do not imply improved nRMSE, $F_1$, event-time
+performance, or distribution-free accuracy for an operator meter; those remain
+empirical quantities.
 
 ## Proposition 3: global polyhedral value-gap certificate
 
@@ -465,3 +466,4 @@ single trajectory. The proposed estimator combines a statistical pre-estimator
 with exact projection onto that set. Its empirical claim is therefore evaluated
 against trace-observed execution produced independently of the verifier. No result
 uses a verifier-generated trajectory as scoring truth.
+

@@ -1,102 +1,33 @@
-# TSG revision resolution matrix
+# TSG revision status and evidence record
 
-This release records the concrete changes made for the five critical review
-points. Every number below is read from the regenerated final artifacts rather
-than copied from an earlier draft.
+This revision reconciles the manuscript and project summary with the locked artifacts. It updates wording, table references, settlement units, a trace-meter transcription, and the two-sided-credit derivation. It does not regenerate the locked experiment outputs: the raw BurstGPT and MIT Supercloud data are excluded from this checkout, so no rerun of the 54-day fitting/decision-time panels was possible in this session. All fitted model scores remain the existing, version-controlled results. I did rerun the paired three-day block bootstrap from the archived 54-day daily ablation ledger (5,000 resamples, seed 20260720); its 12 reported estimates and intervals match the checked-in output exactly.
 
-## C1 — domain-level contribution and novelty boundary
+## C1 — domain contribution and novelty
 
-The contribution is now stated in power-system terms: a declaration-indexed
-workload state is carried through an active-window energy map, a signed nodal
-value calculation, and a complete finite RTS-24 N--1 replay. The manuscript
-does not present the solver implementation itself as a contribution. The
-information boundary and conditional trace-to-region interpretation are stated
-explicitly because the public workload data do not identify physical facility
-buses. The resulting claim is a verifiable coupling invariant and a settlement
-boundary, not an unsupported claim of a new grid optimizer.
+The Introduction frames the contribution around a power-system problem: connect declaration-feasible workload service to signed nodal value and N--1 settlement on one auditable ledger. Implementation primitives are not presented as a new optimizer. The claim is scoped to this coupling and its certificates. This clarifies the claimed contribution, but does not by itself establish novelty over prior spatially coupled data-center demand-response work; the literature positioning still requires expert review.
 
-## C2 — information boundary and executable feasibility
+## C2 — decision-time evidence
 
-The executable witness uses only submit-time release, declared runtime, GPU
-request, class, region, and the precommitted queue allowance. The active-window
-map integrates the overlap of every declared runtime interval with the locked
-days, including carry-in jobs. `exp30_contract_lineage_audit` checks nine
-lineage conditions; all pass, with no future-arrival or execution-telemetry
-field entering the decision path. The independent observed-meter panel remains
-post-commitment scoring, and the regenerated release marks the declaration
-replay as ineligible for payment until a closed meter is present.
+The paper separates the complete-ledger mechanism-isolation comparison from the slot-62 committed-ledger evaluation and independent observational meter replay. The slot-62 score remains nRMSE 1.366 and F1 0.080 over 54 days, so current evidence does not establish strong event-time prediction. The text no longer treats the full-ledger score as an operational result. A model redesign and locked replay would be needed to improve this evidence; no test-period tuning is admissible.
 
-## C3 — target-to-executable bridge
+## C3 — aggregate-to-job bridge
 
-The bridge is defined as the exact minimizer of a finite linear dual-price
-objective over all declaration-feasible contiguous starts. It does not claim
-that a discrete witness equals an aggregate target. Experiment 29 enumerates
-7,306,622 starts, finds zero stored-start mismatches, and reproduces the saved
-objective to \(2.27\times10^{-13}\) USD. The regenerated bridge reports total
-profile nRMSE 0.03023, flexible relative-L2 residual 1.581, and maximum
-absolute residual 3.220 MW. The paper reports both residuals and explains why
-the flexible denominator is the relevant audit for target tracking.
+The claim now distinguishes exact optimization of the declared finite linear-price objective from tracking the aggregate target. The existing audit enumerates 7,306,622 starts, reports zero selected-start mismatches and an objective residual of 2.27e-13 USD, while total-load nRMSE is 0.03023, flexible relative-L2 residual is 1.581, and maximum absolute residual is 3.220 MW. This verifies the finite policy minimizer but does not establish close flexible-load target tracking. No new objective or experiment was run here.
 
-## C4 — joint total/CVaR contract and ablations
+## C4 — risk objective and internal comparisons
 
-The convex risk fit now includes a linear triangle-inequality validation MSE
-certificate with a predeclared 10% tolerance, in addition to total and
-daily-CVaR exposure budgets. A five-point high-5-of-10 causal Pareto grid is
-selected on validation only; the selected \(\rho=10\) profile is fitted on the
-full simplex by CVXPY/Clarabel, with reference-lock mode disabled. The final
-validation certificate records reference and fitted MSE 188.931512 and
-200.575471 against an upper bound 207.824664, an RMS bound of 14.416125,
-KKT residual \(5.80\times10^{-10}\), primal residual
-\(3.74\times10^{-11}\), and satisfied total and daily-CVaR constraints. The
-locked test reaches 0.902 nRMSE, 0.780 MWh/day false credit, 26.506 MWh/day
-under-credit, and \(F_1=0.536\), strictly improving all four metrics over the
-single feasible projection. The CVaR-only, total-only, and unconstrained
-ablations are solved independently and their weights and certificates are
-archived; no ablation is generated by a post-solution rule. A new seven-profile
-causal-hull certificate scores every vertex with the locked metric definitions
-and marks the selected profile's Pareto position; this keeps the table-level
-comparison distinct from the internal accuracy--risk frontier.
-The complete-ledger ex-post rows and infeasible High-5-of-10 row remain
-explicitly outside that deployable comparison set. Experiment 28 includes
-joint, total-only, CVaR-only, and unconstrained ablations; each is solved as a
-separate numerical convex program, and the non-identical weight vectors are
-retained to verify that the contractual axes change the fitted profile without
-a post-solution heuristic.
+Table I includes the validation-selected Causal Pareto reference, separately from the rho=10 single feasible projection. The joint fit has locked metrics 0.9021/0.780/26.506/0.536 (nRMSE/false MWh/day/under-credit MWh/day/F1). The Causal Pareto reference scores 0.6914/1.895/17.024/0.699. The total-budget-only fit scores 0.8917/0.6455/26.3723/0.549 and false-credit CVaR 2.222 MWh/day, versus 2.607 for the joint fit. Thus the current data do not support dominance of the joint method over its internal reference or the total-only ablation, nor an empirical benefit from adding CVaR. The reproduced bootstrap gives joint-minus-total-only mean false credit of +0.134 MWh/day (95% interval 0.016--0.287) and a 75%-CVaR difference of +0.394 MWh/day (95% interval -0.049--0.923). The manuscript now reports these intervals and says explicitly that the tail-risk claim is not supported by this panel. Validation feasibility and KKT certificates are optimization evidence, not locked-test superiority. Resolving this critical issue requires a revised objective chosen on training/validation data and a fresh locked evaluation; the raw records needed for that run were unavailable here.
 
-## C5 — settlement semantics and power-system evidence
+## C5 — settlement and power-system scope
 
-The settlement chain now distinguishes three roles: declaration-feasible
-replay, signed network-value replay, and closed-meter payment. Exp27 uses
-active declaration energy of 655.753 MWh across 5,184 full-day cells and all
-37 finite RTS-24 contingencies per cell. It reports signed network value
-\(-0.686\) USD, signed cycle settlement 184.664 USD, cash-floor presentation
-283.470 USD, and 1,060 negative debit cells. These are simulation certificates;
-they are not labelled as a payable meter settlement. The payment equation is
-meter-capped, units are stated (MW, h, MWh, USD), and Exp30 records
-`closed_meter_payment_ready = false` for the public release.
-Exp24 applies the validation-frozen Exp9 \(q_{99}\) facility-to-network
-scale before its 864-cell, 31,968-outage RTS-24 replay; all cells solve the
-same N--1 LP without profile reoptimization.
+The method and results distinguish declaration replay, signed network-value accounting, and meter-gated payment. The indexed N--1 replay is not labelled as a payable settlement. A closed meter remains a payment precondition. Trace-to-region placement is described as a benchmark scenario because the public data do not identify facility buses. The manuscript states MW, h, MWh, and USD roles in the settlement equations and retains negative debit cells in the signed ledger. The logged replay values are simulation evidence, not field settlement evidence.
 
-## Minor consistency and presentation corrections
+## Secondary consistency checks
 
-The manuscript has one overall framework figure and one method-detail figure,
-all figures and tables are cited in the text, abbreviations are expanded on
-first use, duplicate equation labels and a stray control character were
-removed, and the result figure now calls the residual audited rather than
-measured. The paper compiles to exactly ten pages with 31 references. Source,
-experiment outputs, reports, and result indexes remain in separate top-level
-directories; generated checkpoints stay under their owning experiment.
+The paper compiles to ten US-letter pages with 31 references. The abstract is 255 words and expands AI, DR, GPU, CVaR, MSE, and nRMSE at first use. Tables and figures are cited and retain captions; the paper has three tables and three figures. The independent trace-meter MAE for the risk-constrained verifier is 6.879838 MW, displayed as 6.880 MW. The README and implementation-alignment note have been corrected to remove unsupported dominance language. The supporting credit-bound derivation now matches the paper's floor definition and epsilon=0 contract.
 
-## Reproduction anchors
+## Reproduction and repository state
 
-The final evidence is regenerated by `run_all.py --stage exp2`, `exp9`, `exp10`,
-`exp22`, `exp23`, `exp24`, `exp26`, `exp27`, `exp28`, `exp29`, and `exp30`,
-followed by `tests/run_tests.py` and the LaTeX build in `paper/`. Exp9's resume
-guard now checks the profile checksum in every evaluator CSV, so a metadata-only
-resume cannot preserve a stale payment panel; its long-running checkpoints use
-same-directory atomic replacement. The final unified audit reports 395/395
-checks passed. The machine-readable certificates are
-`risk_constrained_validation_certificate.csv`, `risk_tail_audit.csv`,
-`executable_target_bridge_audit.csv`,
-`common_witness_settlement_summary.csv`, and `contract_lineage_checks.csv`.
+No model training or optimization rerun was performed in this revision. The paired bootstrap recheck ran as a single-process calculation (about 13 s); the existing runner configuration uses at most 12 workers, within the stated 20-core cap. Other checks used manuscript compilation and source/result reconciliation. The branch inventory already contained only `main`, and the repository was approximately 340 MB, below the 4 GB ceiling. Existing directories already separate code, experiments, paper, reports, results, and data, so no result or dataset files were deleted.
+
+Validation performed: three-pass LaTeX/BibTeX build; ten-page PDF check; no undefined references, citations, or overfull boxes in the final build log; metric comparison against the checked-in ablation and trace-meter summaries.
