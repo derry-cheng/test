@@ -311,10 +311,10 @@
     "settlement_source_digest": "153f2686a97e34b41099eda91952d787a1cd6c17a5aa81869ab7d08d479584be",
     "signed_settlement": true,
     "negative_network_value_cells": 1060,
-    "signed_network_value_usd": -0.6862356798556002,
-    "signed_nodal_meter_credit_usd": -0.6862356799857114,
+    "signed_network_value_usd": -0.6862356798556006,
+    "signed_nodal_meter_credit_usd": -0.686235679985712,
     "signed_cycle_settlement_usd": 184.66413459727897,
-    "cash_floor_settlement_usd": 283.4702352151331,
+    "cash_floor_settlement_usd": 283.470235215133,
     "all_solver_cells_successful": true
   },
   "files": {

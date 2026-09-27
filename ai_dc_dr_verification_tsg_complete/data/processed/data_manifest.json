@@ -62,7 +62,7 @@
     "full_positive_energy_joined_jobs": 71128,
     "valid_joined_jobs": 68662,
     "jobs_excluded_by_common_trace_horizon": 2466,
-    "common_trace_horizon_definition": "submission origin is the earliest valid scheduler GPU declaration; execution rows are clipped only after this declaration-time alignment",
+    "common_trace_horizon_definition": "submission origin is a precommitted scheduler-clock origin recorded in the manifest before execution telemetry is joined; execution rows are clipped only after this declaration-time alignment",
     "time_origin_seconds": 21193772.0,
     "arrival_origin_source": "precommitted scheduler-clock origin",
     "clipped_at_trace_horizon": 110,

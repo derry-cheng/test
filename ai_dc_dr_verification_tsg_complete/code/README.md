@@ -5,6 +5,10 @@ single orchestration entry point, while each `experiments/exp*/run.py` is a
 standalone stage wrapper. The manuscript source is under `paper/`. Tests live under `tests/`; no generated result or
 raw-data file belongs in this directory.
 
+`code/scripts/download_public_inputs.py` restores the four optional public
+BurstGPT and MIT CSVs into the ignored `data/raw/` directories and verifies
+them against the byte counts and SHA-256 values in the locked data manifest.
+
 The job-indexed Exp19 stage uses an exact contiguous fixed-rate start-time
 witness: one binary start is selected per submitted job, with an exact
 terminal-slot remainder for the calibrated central entitlement. Exp27 freezes

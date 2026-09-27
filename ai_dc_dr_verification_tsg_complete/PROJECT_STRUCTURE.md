@@ -3,6 +3,7 @@
 This repository separates implementation, experiments, artifacts, and the manuscript so that a locked result can be traced without mixing source code and generated files.
 
 - `code/src/aicdr/`: reusable data, optimization, certificate, replay, and audit modules.
+- `code/scripts/`: small reproducibility utilities, including the hash-checked public-input downloader.
 - `configs/`: frozen study configuration and predeclared capacity commitments.
 - `data/processed/`: compact, hashed intermediate arrays and manifests derived from the source data.
 - `data/raw/`: source-data notices/licenses and optional source files restored for a full preprocessing run.

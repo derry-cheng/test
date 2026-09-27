@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "purpose": "Reproducibility and release provenance for the TSG revision",
   "repository_revision_before_rerun": "aaa336bbad54e4e63045f1a03ac6affc00c25ec3",
   "release_commit": "aaa336bbad54e4e63045f1a03ac6affc00c25ec3",
@@ -38,7 +38,10 @@
   ],
   "stage_summary": {
     "unified_stage_count": 32,
-    "audit_checks": {"passed": 395, "total": 395},
+    "audit_checks": {
+      "passed": 395,
+      "total": 395
+    },
     "exp9_interval_rows": 8640,
     "exp9_unseen_transfer_rows": 384,
     "exp2_elapsed_seconds": 362.177739,
@@ -46,13 +49,13 @@
     "exp10_elapsed_seconds": 2870.552605,
     "exp11_elapsed_seconds": 2167.236084,
     "exp12_elapsed_seconds": 440.183001,
-    "exp17_elapsed_seconds": 176.275230,
+    "exp17_elapsed_seconds": 176.27523,
     "exp18_elapsed_seconds": 792.504404,
     "exp20_elapsed_seconds": 0.990032,
     "exp21_elapsed_seconds": 1.177214,
     "exp22_elapsed_seconds": 5.983251,
     "exp23_elapsed_seconds": 1.331931,
-    "exp24_elapsed_seconds": 87.004640,
+    "exp24_elapsed_seconds": 87.00464,
     "exp26_elapsed_seconds": 9.974627,
     "exp27_elapsed_seconds": 369.653677,
     "exp28_elapsed_seconds": 6.503358,
@@ -109,7 +112,7 @@
         "false_credit_ratio_cvar": 0.0482888297,
         "false_credit_ratio_q90": 0.0363056478,
         "false_credit_mwh_mean": 0.8238763487,
-        "false_credit_mwh_cvar": 2.7345867760,
+        "false_credit_mwh_cvar": 2.734586776,
         "false_credit_mwh_q90": 2.6103649254
       }
     },
@@ -125,7 +128,7 @@
     "full_outage_rts24": {
       "cells": 864,
       "finite_outages_per_cell": 37,
-    "contingency_evaluations": 31968,
+      "contingency_evaluations": 31968,
       "network_dc_scale": 0.1573939031,
       "all_cells_successful": true,
       "maximum_postcontingency_loading": 1.0000000000000022
@@ -149,5 +152,153 @@
     "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv": "282713de5771f05eaafe91bff3eb90fa768fb25bb8eae89d7d6b94cf2fe2e380",
     "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv": "d8286ec5e44ad3f429762caf67cce4fd60e7f52bceda28c67f71f937aa7e58b0",
     "audit/result_audit.json": "9d721ce5c70dc851f30a2e447be4ee11b82f85fd27b060c38a7a707bb2360401"
+  },
+  "record_status": "Legacy top-level fields retain the 2026-09-23 run. Use latest_rerun for artifacts regenerated on 2026-09-27.",
+  "latest_rerun": {
+    "date_utc": "2026-09-27",
+    "base_revision": "01ee08fcda4f023ab24a36e94106c1d68959e781",
+    "scope": "Verified-source data rebuild and targeted locked-panel reruns; no test-period model selection.",
+    "input_restore": {
+      "command": "python code/scripts/download_public_inputs.py",
+      "all_manifest_sources_verified": true,
+      "sources": [
+        {
+          "path": "data/raw/burstgpt/BurstGPT_without_fails_1.csv",
+          "bytes": 51429517,
+          "sha256": "a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4"
+        },
+        {
+          "path": "data/raw/burstgpt/BurstGPT_without_fails_2.csv",
+          "bytes": 142376815,
+          "sha256": "56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501"
+        },
+        {
+          "path": "data/raw/mit_supercloud/scheduler_data.csv",
+          "bytes": 73081826,
+          "sha256": "80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092"
+        },
+        {
+          "path": "data/raw/mit_supercloud/dcgm_verified_full.csv",
+          "bytes": 14496062,
+          "sha256": "1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4"
+        },
+        {
+          "path": "data/raw/pglib/pglib_opf_case118_ieee.m",
+          "bytes": 80336,
+          "sha256": "b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78"
+        }
+      ]
+    },
+    "resource_bound": {
+      "observed_processor_count": 9,
+      "maximum_allowed_cores": 20,
+      "blas_omp_mkl_numexpr_threads": 1,
+      "stages_run_concurrently": false,
+      "maximum_configured_worker_pool": 4
+    },
+    "stage_elapsed_seconds": {
+      "data": 92.314621,
+      "exp2": 341.899809,
+      "exp9": 3.754394,
+      "exp16": 2.250547,
+      "exp17": 79.575002,
+      "exp20": 1.11731,
+      "exp22": 2.207127,
+      "exp26": 4.875471,
+      "exp27": 18.174779,
+      "exp28": 5.737272,
+      "exp29": 11.128089,
+      "exp30": 0.124283,
+      "audit": 0.748007
+    },
+    "commands": [
+      "python run_all.py --stage data --force-preprocess",
+      "python run_all.py --stage exp2",
+      "python run_all.py --stage exp9 --resume",
+      "python run_all.py --stage exp16",
+      "python run_all.py --stage exp17 --resume",
+      "python run_all.py --stage exp20",
+      "python run_all.py --stage exp22",
+      "python run_all.py --stage exp26 --resume",
+      "python run_all.py --stage exp27 --resume",
+      "python run_all.py --stage exp28 --resume",
+      "python run_all.py --stage exp29 --resume",
+      "python run_all.py --stage exp30 --resume",
+      "python run_all.py --stage audit",
+      "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1 PYTHONPATH=code/src:vendor python tests/run_tests.py",
+      "latexmk -pdf -interaction=nonstopmode -halt-on-error paper/main.tex"
+    ],
+    "key_results": {
+      "exp2_locked_days": 54,
+      "joint_total_cvar": {
+        "nrmse": 0.9020719,
+        "false_credit_mwh_per_day": 0.7802863,
+        "under_credit_mwh_per_day": 26.5059418,
+        "f1": 0.5362498,
+        "false_credit_cvar_mwh_per_day": 2.6065379
+      },
+      "total_budget_only": {
+        "nrmse": 0.8917321,
+        "false_credit_mwh_per_day": 0.6455123,
+        "under_credit_mwh_per_day": 26.3723129,
+        "f1": 0.5489806,
+        "false_credit_cvar_mwh_per_day": 2.2223395
+      },
+      "paired_three_day_bootstrap_5000": {
+        "joint_minus_total_only_mean_false_credit_mwh_per_day": 0.1339673,
+        "mean_false_credit_ci_95": [
+          0.0164324,
+          0.28661
+        ],
+        "joint_minus_total_only_false_credit_cvar_mwh_per_day": 0.3935755,
+        "false_credit_cvar_ci_95": [
+          -0.0493465,
+          0.9232117
+        ]
+      },
+      "exp17_slot62": {
+        "locked_days": 54,
+        "nrmse": 1.3659536,
+        "f1": 0.0799831,
+        "recall": 0.0499826,
+        "false_response_mwh_per_day": 0.4944423
+      },
+      "exp27": {
+        "full_cycle_cells": 5184,
+        "n_minus_1_outages_per_cell": 37,
+        "maximum_service_network_coupling_residual_mwh": 0.0
+      },
+      "exp29": {
+        "enumerated_start_candidates": 7306622,
+        "exact_start_mismatch_jobs": 0,
+        "maximum_objective_recomputation_residual_usd": 2.2737367544323206e-13,
+        "mean_total_nrmse": 0.0302319,
+        "mean_flexible_relative_l2_residual": 1.5805475,
+        "maximum_absolute_target_residual_mw": 3.2197673
+      },
+      "exp30_closed_meter_payment_ready": false,
+      "audit_checks": {
+        "passed": 395,
+        "total": 395
+      },
+      "regression_tests": "passed",
+      "public_input_hash_check": "passed for all five manifest entries",
+      "manuscript_pages": 10,
+      "latex_overfull_hboxes": 0,
+      "latex_undefined_or_duplicate_references": 0
+    },
+    "sha256": {
+      "data/processed/data_manifest.json": "8f7d2db0ebf7d6490958736a785a44310e4db0a1f6a04f785f14a7b7bfc78d9e",
+      "paper/main.tex": "bcfd4a42c0e424ad74928fea00554c7ce74150775d889866d300d1fb11067f8d",
+      "paper/main.pdf": "20e6132d366eab98e49e5389efc058fe2d0b95fac61f950ceee0194b40293c78",
+      "audit/result_audit.json": "cb90011f1d52476879e0fa36253f50abe009d60c758eb5993e85cef8c0badceb",
+      "experiments/exp2_baseline_verification/results/final/risk_hull_pareto_certificate.csv": "d8286ec5e44ad3f429762caf67cce4fd60e7f52bceda28c67f71f937aa7e58b0",
+      "experiments/exp17_decision_time_information/results/final/decision_time_summary.csv": "3fd535b9232dee538cc02daa1c534c27dacdce14c88a3e9127c69749bd8a8619",
+      "experiments/exp28_risk_tail_audit/results/final/risk_tail_paired_bootstrap.csv": "aa1a5fa38bfa5aec7d981d7d60a47802c35bcb776d61883c4f600693bff8a91b",
+      "experiments/exp27_executable_common_witness/results/final/common_witness_summary.csv": "4646ece0e69570bbfbace0d61d62fd5fab8f9282d8a3458233a31f2c196b3f89",
+      "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv": "1d9643ce90202d2d05b5bb8033c4d93ac5372ad31660cf3794016342768bf728",
+      "experiments/exp30_contract_lineage_audit/results/final/contract_lineage_checks.csv": "282713de5771f05eaafe91bff3eb90fa768fb25bb8eae89d7d6b94cf2fe2e380"
+    },
+    "interpretation": "C1-C5 are not all resolved; the locked results contradict universal dominance and are not relabelled as such."
   }
 }

@@ -28,7 +28,7 @@ Nodal Net-Value Settlement for Spatially Coupled AI Data Centers}
 \maketitle
 
 \begin{abstract}
-Artificial-intelligence (AI) data centers can provide demand response (DR), but meter decreases do not show pre-event workload commitment or positive network value. Delayed service and cross-site rebound make workload-feasibility and signed-value checks essential. This paper develops a declaration-indexed verifier for spatially coupled data centers. Submit-time scheduler records, including release, declared runtime, graphics processing unit (GPU) request, class, and region, define a cumulative workload-state model, a convex risk contract, and a contiguous runtime witness on one ledger. An active-window energy map includes carry-in jobs, while execution telemetry remains outside decision-time fitting. The risk fit combines total exposure with conditional value-at-risk (CVaR) under a validation-frozen mean-square-error (MSE) bound; exact job-start enumeration audits its finite executable bridge. In a 54-day mechanism-isolation panel, the joint fit reaches normalized root-mean-square error (nRMSE) 0.902, false credit 0.780 MWh/day, under-credit 26.506 MWh/day, and a precision--recall harmonic-mean $F_1$ score of 0.536. The total-budget-only fit has lower nRMSE, false credit, and under-credit, higher $F_1$ (0.549 versus 0.536), and lower false-credit CVaR. Thus, these locked results do not establish an empirical benefit from the tail term. At the slot-62 information gate, nRMSE is 1.366 and $F_1$ is 0.080. The job-level bridge exactly audits 7,306,622 feasible starts, while its flexible-load relative-$L_2$ residual is 1.581. The IEEE Reliability Test System 24-bus (RTS-24) result is a declaration-only single-line N--1 network replay; payment activation requires a closed meter, and observational workload traces do not identify a utility intervention effect.
+Artificial-intelligence (AI) data centers can provide demand response (DR), but meter decreases do not show pre-event workload commitment or positive network value. Delayed service and cross-site rebound make workload-feasibility and signed-value checks essential. This paper develops a declaration-indexed verifier for spatially coupled data centers. Submit-time scheduler records, including release, declared runtime, graphics processing unit (GPU) request, class, and region, define a cumulative workload-state model, a convex risk contract, and a contiguous runtime witness on one ledger. An active-window energy map includes carry-in jobs, while execution telemetry remains outside decision-time fitting. The risk fit combines total exposure with conditional value-at-risk (CVaR) under a validation-frozen mean-square-error (MSE) bound; exact job-start enumeration audits its finite executable bridge. In a 54-day mechanism-isolation panel, the joint fit reaches normalized root-mean-square error (nRMSE) 0.902, false credit 0.780 MWh/day, under-credit 26.506 MWh/day, and an F1 score (harmonic mean of precision and recall) of 0.536. The total-budget-only fit has lower nRMSE, false credit, and under-credit, higher $F_1$ (0.549 versus 0.536), and lower false-credit CVaR. Thus, these locked results do not establish an empirical benefit from the tail term. At the slot-62 information gate, nRMSE is 1.366 and $F_1$ is 0.080. The job-level bridge exactly audits 7,306,622 feasible starts, while its flexible-load relative-$L_2$ residual is 1.581. The IEEE Reliability Test System 24-bus (RTS-24) result is a declaration-only single-line N--1 network replay; payment activation requires a closed meter, and observational workload traces do not identify a utility intervention effect.
 \end{abstract}
 
 \noindent\textbf{Index Terms---}AI data centers, counterfactual verification,
@@ -865,14 +865,15 @@ contract window; population membership is not filtered by outcomes.
 The traces do not identify facility geography. Four-region coupling is
 therefore a trace-driven benchmark with feature-stratified round-robin
 assignment. We enumerate all 24 region-to-bus permutations and two concentration
-controls at three penetrations. The PGLib native-load multiplier is fixed at
+controls at three penetrations. The Power Grid Library (PGLib) native-load multiplier is fixed at
 0.75 by the intact and contingency feasibility rule; all scored cells are
 feasible. A separate fixed-generator-bus panel uses the pre-registered 0.90
 multiplier and remains conditional on that scenario. Payment-network scale is
 calibrated on $q_{99}$ at 4\% peak penetration, and all raw endpoints are
 N--1-feasible under this scale. The flexible-only capacity-safe factor is
-reported as a planning diagnostic, not an endpoint clip. PGLib, MATPOWER, and
-RTS-24 supply the network cases \cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower,grigg1999rts}.
+reported as a planning diagnostic, not an endpoint clip. PGLib and MATPOWER supply
+case data from their public benchmark libraries \cite{babaeinejadsarookolaee2021pglib,zimmerman2011matpower}. The IEEE Reliability Test
+System (RTS-24) supplies the third network case \cite{grigg1999rts}.
 
 \subsection{Baselines, parameters, and inference}
 

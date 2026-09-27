@@ -280,10 +280,10 @@ Overall status: **PASS**.
 - [x] every_labeled_equation_figure_table_is_referenced: 49 labels; unreferenced=[]; missing=[]
 - [x] required_abbreviation_expansions_present: MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok
 - [x] sha256_symbol_is_hyphenated: SHA-256 is written consistently in prose and equations
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68662

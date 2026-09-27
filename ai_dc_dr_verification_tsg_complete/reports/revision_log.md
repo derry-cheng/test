@@ -40,3 +40,34 @@ a partial CSV to a concurrent audit. The final unified run passes all 395 audit
 checks, regression tests, and the ten-page LaTeX build. All experiment outputs
 are retained in their experiment-specific directories; generated caches and
 temporary files are removed before release.
+
+## 2026-09-27 — verified-source rerun and critical-issue reconciliation
+
+Restored the four untracked BurstGPT and MIT Supercloud CSV inputs using the
+new `code/scripts/download_public_inputs.py` utility. Their sizes and SHA-256
+values match `data/processed/data_manifest.json`; the tracked PGLib case also
+passes the same check. Rebuilt the processed data from those inputs (92.315 s),
+then reran Exp2 (341.900 s), Exp17 at the precommitted slot-62 gate (79.575 s),
+Exp9 (3.754 s), Exp16 (2.251 s), Exp20 (1.117 s), Exp22 (2.207 s), Exp26
+(4.875 s), Exp27 (18.175 s), Exp28 (5.737 s), Exp29 (11.128 s), and Exp30
+(0.124 s). The runner exposed nine processors; numerical-library thread counts
+were clamped to one and stages ran sequentially.
+
+The reruns reproduce the locked evidence rather than selecting against the
+test period. Exp2's joint total-plus-CVaR model remains behind the total-only
+ablation on nRMSE, mean false credit, under-credit, F1, and absolute false-credit
+CVaR. A paired three-day bootstrap gives a +0.134 MWh/day mean false-credit
+difference (95% CI 0.016--0.287) and a +0.394 MWh/day absolute-CVaR difference
+(95% CI -0.049--0.923). Exp17 retains slot-62 nRMSE 1.366, F1 0.080, and
+recall 0.050. Exp29 confirms zero finite-start mismatches but retains flexible
+relative-L2 target residual 1.581. Exp27 verifies zero network/service coupling
+residual across the 5,184-cell common witness; Exp30 continues to report that
+closed-meter payment is not ready. These results do not resolve C1--C5 and do
+not justify a universal baseline-superiority claim.
+
+After the revised evidence reconciliation, the independent audit passes
+395/395 checks, `tests/run_tests.py` passes, the public-input check passes, and
+the manuscript remains ten pages with no overfull boxes or unresolved
+references. See `reports/review/tsg_resolution.md` and the
+`latest_rerun` object in `reports/reproducibility/targeted_rerun_manifest.json`
+for the point-by-point status and machine-readable provenance.
