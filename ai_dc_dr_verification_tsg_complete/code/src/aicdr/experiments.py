@@ -265,6 +265,240 @@ def _exp18_process_opf(payload: dict[str, Any]) -> dict[str, Any]:
     return {"result": retry, "fallback_count": fallback_count}
 
 
+def _exp10_ac_n1_process_worker(payload: dict[str, Any]) -> dict[str, Any]:
+    """Solve one Exp10 nonlinear AC N-1 cell in an isolated process.
+
+    PYPOWER's outage-case construction is Python-bound, so a thread pool
+    serialized most of this panel under the GIL. Each worker receives the
+    exact case function, frozen load vectors, outage, and solver tolerances;
+    the model and retry path are identical to the former thread worker.
+    """
+    from pypower.idx_brch import BR_STATUS, PF, PT, QF, QT, RATE_A
+    from pypower.idx_bus import PD, QD, VM, VMAX, VMIN
+    from pypower.ppoption import ppoption
+    from pypower.runopf import runopf
+
+    result = None
+    for opf_alg in (0, 565):
+        for _ in range(3):
+            case = payload["case_function"]()
+            case["bus"][:, PD] = payload["native_p"]
+            case["bus"][:, QD] = payload["native_q"]
+            case["bus"][payload["dc_buses"], PD] += payload["dc_power"]
+            case["bus"][payload["dc_buses"], QD] += (
+                payload["dc_power"] * payload["reactive_ratio"]
+            )
+            case["branch"][int(payload["outage"]), BR_STATUS] = 0
+            options = ppoption(
+                VERBOSE=0,
+                OUT_ALL=0,
+                OPF_VIOLATION=float(payload["ac_feasibility_tolerance"]),
+                PDIPM_MAX_IT=int(payload["ac_max_iterations"]),
+                OPF_ALG=opf_alg,
+            )
+            result = runopf(case, options)
+            if bool(result["success"]):
+                break
+        if result is not None and bool(result["success"]):
+            break
+    if result is None or not bool(result["success"]):
+        raise RuntimeError(
+            "AC post-contingency OPF failed for "
+            f"{payload['network']}, day {payload['day']}, "
+            f"method {payload['method']}, outage {payload['outage']}"
+        )
+
+    in_service = result["branch"][:, BR_STATUS] > 0
+    rate = result["branch"][in_service, RATE_A].copy()
+    rate[rate <= 0] = np.inf
+    apparent_from = np.hypot(
+        result["branch"][in_service, PF], result["branch"][in_service, QF]
+    )
+    apparent_to = np.hypot(
+        result["branch"][in_service, PT], result["branch"][in_service, QT]
+    )
+    voltage = result["bus"][:, VM]
+    voltage_violation = np.maximum(
+        result["bus"][:, VMIN] - voltage,
+        voltage - result["bus"][:, VMAX],
+    )
+    return {
+        "network": str(payload["network"]),
+        "day": int(payload["day"]),
+        "peak_event_slot": int(payload["slot"]),
+        "counterfactual_method": str(payload["method"]),
+        "outage": int(payload["outage"]),
+        "objective_usd_per_h": float(result["f"]),
+        "maximum_apparent_line_loading": float(
+            (np.maximum(apparent_from, apparent_to) / rate).max(initial=0.0)
+        ),
+        "maximum_voltage_violation_pu": float(
+            max(0.0, voltage_violation.max(initial=0.0))
+        ),
+        "minimum_voltage_pu": float(voltage.min()),
+        "maximum_voltage_pu": float(voltage.max()),
+        "solver_success": 1,
+        "load_multiplier": float(payload["load_multiplier"]),
+        "peak_dc_penetration": float(payload["penetration"]),
+        "data_center_power_factor": float(payload["power_factor"]),
+        "dc_power_scale": float(payload["dc_scale"]),
+        "ac_checkpoint_schema_version": int(payload["schema_version"]),
+        "ac_profile_checksum": str(payload["profile_checksum"]),
+    }
+
+
+def _exp10_preventive_ac_n1_group_worker(
+    payload: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Solve one intact-plan case and its locked N-1 outage group.
+
+    Keeping base dispatch and all of its outage replays in one worker preserves
+    the shared active-generation plan while allowing independent day/method/
+    penetration groups to run in separate processes.
+    """
+    from pypower.idx_brch import BR_STATUS, PF, PT, QF, QT, RATE_A
+    from pypower.idx_bus import BUS_TYPE, PD, QD, REF, VM, VMAX, VMIN
+    from pypower.idx_gen import GEN_BUS, PG, PMAX, PMIN
+    from pypower.ppoption import ppoption
+    from pypower.runopf import runopf
+
+    def make_case(outage: int | None = None, shared_pg: np.ndarray | None = None,
+                  nonreference_generators: np.ndarray | None = None) -> dict[str, Any]:
+        case = payload["case_function"]()
+        case["gen"] = case["gen"].astype(float)
+        case["bus"][:, PD] = payload["native_p"]
+        case["bus"][:, QD] = payload["native_q"]
+        case["bus"][payload["dc_buses"], PD] += payload["dc_power"]
+        case["bus"][payload["dc_buses"], QD] += (
+            payload["dc_power"] * payload["reactive_ratio"]
+        )
+        if outage is not None:
+            case["branch"][int(outage), BR_STATUS] = 0
+            assert shared_pg is not None and nonreference_generators is not None
+            case["gen"][nonreference_generators, PMIN] = (
+                shared_pg[nonreference_generators]
+            )
+            case["gen"][nonreference_generators, PMAX] = (
+                shared_pg[nonreference_generators]
+            )
+        return case
+
+    def solve(case: dict[str, Any], algorithm: int) -> dict[str, Any]:
+        options = ppoption(
+            VERBOSE=0,
+            OUT_ALL=0,
+            OPF_VIOLATION=float(payload["ac_feasibility_tolerance"]),
+            PDIPM_MAX_IT=int(payload["ac_max_iterations"]),
+            OPF_ALG=algorithm,
+        )
+        return runopf(case, options)
+
+    base_result = solve(make_case(), 0)
+    if not bool(base_result["success"]):
+        base_result = solve(make_case(), 565)
+    if not bool(base_result["success"]):
+        raise RuntimeError(
+            "Preventive base AC OPF failed for "
+            f"day {payload['day']}, method {payload['method']}, penetration "
+            f"{payload['penetration']:.3f}"
+        )
+
+    reference_buses = set(
+        np.where(base_result["bus"][:, BUS_TYPE] == REF)[0]
+    )
+    nonreference_generators = np.asarray(
+        [
+            generator
+            for generator in range(len(base_result["gen"]))
+            if int(base_result["gen"][generator, GEN_BUS]) - 1
+            not in reference_buses
+        ],
+        dtype=int,
+    )
+    shared_pg = base_result["gen"][:, PG].copy()
+    rows: list[dict[str, Any]] = []
+    for outage in payload["outages"]:
+        result = solve(
+            make_case(int(outage), shared_pg, nonreference_generators), 0
+        )
+        if not bool(result["success"]):
+            result = solve(
+                make_case(int(outage), shared_pg, nonreference_generators), 565
+            )
+        if not bool(result["success"]):
+            raise RuntimeError(
+                "Shared-active-plan preventive AC OPF failed for "
+                f"day {payload['day']}, method {payload['method']}, "
+                f"penetration {payload['penetration']:.3f}, outage {outage}"
+            )
+
+        in_service = result["branch"][:, BR_STATUS] > 0
+        rate = result["branch"][in_service, RATE_A].copy()
+        rate[rate <= 0] = np.inf
+        apparent_from = np.hypot(
+            result["branch"][in_service, PF],
+            result["branch"][in_service, QF],
+        )
+        apparent_to = np.hypot(
+            result["branch"][in_service, PT],
+            result["branch"][in_service, QT],
+        )
+        voltage = result["bus"][:, VM]
+        voltage_violation = np.maximum(
+            result["bus"][:, VMIN] - voltage,
+            voltage - result["bus"][:, VMAX],
+        )
+        maximum_pg_deviation = float(
+            np.max(
+                np.abs(
+                    result["gen"][nonreference_generators, PG]
+                    - shared_pg[nonreference_generators]
+                ),
+                initial=0.0,
+            )
+        )
+        rows.append(
+            {
+                "network": str(payload["network"]),
+                "day": int(payload["day"]),
+                "peak_event_slot": int(payload["slot"]),
+                "counterfactual_method": str(payload["method"]),
+                "peak_dc_penetration": float(payload["penetration"]),
+                "outage": int(outage),
+                "solver_success": 1,
+                "intact_plan_objective_usd_per_h": float(base_result["f"]),
+                **{
+                    f"shared_pg_generator_{generator}_mw": float(
+                        shared_pg[generator]
+                    )
+                    for generator in range(len(shared_pg))
+                },
+                "maximum_nonreference_active_plan_deviation_mw": (
+                    maximum_pg_deviation
+                ),
+                "reference_generator_loss_recourse_mw": float(
+                    result["gen"][0, PG] - shared_pg[0]
+                ),
+                "maximum_apparent_line_loading": float(
+                    (np.maximum(apparent_from, apparent_to) / rate).max(
+                        initial=0.0
+                    )
+                ),
+                "maximum_voltage_violation_pu": float(
+                    max(0.0, voltage_violation.max(initial=0.0))
+                ),
+                "minimum_voltage_pu": float(voltage.min()),
+                "maximum_voltage_pu": float(voltage.max()),
+                "load_multiplier": float(payload["load_multiplier"]),
+                "data_center_power_factor": float(payload["power_factor"]),
+                "dc_power_scale": float(payload["dc_scale"]),
+                "ac_checkpoint_schema_version": int(payload["schema_version"]),
+                "ac_profile_checksum": str(payload["profile_checksum"]),
+            }
+        )
+    return rows
+
+
 def _exact_group_symmetric_shapley(
     values: dict[tuple[int, ...], float],
     members_per_group: int,
@@ -930,6 +1164,56 @@ def _event_risk_lower_envelope(
     return lower
 
 
+def _network_scaled_capacity_metrics(
+    facility_profiles_mw: np.ndarray,
+    conversion_scale_factor: float,
+    dc_power_scale: float,
+    fixed_facility_load_mw: float,
+    flexible_capacity_mw: float,
+) -> dict[str, float]:
+    """Audit flexible-site nameplate after the declared network normalization.
+
+    The calibration quantile is applied to the flexible component, while the
+    fixed component is held constant across quantiles.  The benchmark-to-grid
+    normalization is then applied to both components, matching the load sent
+    to the network evaluator.  This reports feasibility for that normalized
+    study scenario; it does not make the source trace a co-located facility
+    measurement.
+    """
+    profiles = np.asarray(facility_profiles_mw, dtype=float)
+    if profiles.ndim < 2 or not np.isfinite(profiles).all():
+        raise ValueError("Capacity audit profiles must be finite site-by-time arrays")
+    if (
+        conversion_scale_factor <= 0.0
+        or dc_power_scale <= 0.0
+        or fixed_facility_load_mw < 0.0
+        or flexible_capacity_mw <= 0.0
+    ):
+        raise ValueError("Capacity audit scales and limits are invalid")
+    flexible = profiles - float(fixed_facility_load_mw)
+    if float(np.min(flexible)) < -1e-8:
+        raise ValueError("Facility profile falls below its declared fixed component")
+    flexible = np.maximum(flexible, 0.0)
+    mapped_flexible = (
+        float(dc_power_scale) * float(conversion_scale_factor) * flexible
+    )
+    mapped_total = float(dc_power_scale) * (
+        float(fixed_facility_load_mw)
+        + float(conversion_scale_factor) * flexible
+    )
+    maximum_flexible = float(np.max(mapped_flexible))
+    maximum_total = float(np.max(mapped_total))
+    violation = max(0.0, maximum_flexible - float(flexible_capacity_mw))
+    return {
+        "maximum_mapped_flexible_mw": maximum_flexible,
+        "maximum_mapped_total_site_load_mw": maximum_total,
+        "flexible_nameplate_mw": float(flexible_capacity_mw),
+        "maximum_flexible_nameplate_violation_mw": violation,
+        "fixed_component_mapped_once": 1.0,
+        "capacity_activation_eligible": float(violation <= 1e-8),
+    }
+
+
 def _extended_arrivals_for_certificate(arrivals: np.ndarray, cfg: dict[str, Any]) -> np.ndarray:
     lookahead = int(cfg["experiments"].get("lookahead_slots", 0))
     if lookahead <= 0:
@@ -1469,9 +1753,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     ] + [
         f"Causal Pareto projection rho={selected_causal_weight:g}"
     ]
-    # Anchor the risk budgets to the independently selected single feasible
-    # projection.  The complete-ledger feasible-quantile profile remains an
-    # external comparator and is not used to define the pointwise cap.
+    # Anchor the risk budgets to the separately validation-selected causal
+    # Pareto candidate. It is distinct from the metadata-targeted single
+    # projection used as the external workload-feasible comparator.
     risk_reference_index = len(risk_candidate_names) - 1
     risk_design = (
         risk_candidate_array[:, :, :, event_slots]
@@ -1493,8 +1777,8 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     ) -> tuple[np.ndarray, dict[str, float]]:
         """Fit the minimum-MSE ensemble under separate daily risk budgets.
 
-        The reference budgets are computed from the independently selected
-        single feasible projection. A reserve fraction is applied to every
+        The reference budgets are computed from the validation-selected causal
+        Pareto anchor. A reserve fraction is applied to every
         validation day separately, rather than only to an aggregate total.
         Positive-part exposure is represented by an exact linear epigraph, so
         the feasible set is convex and contains no rule-based post-processing.
@@ -1872,9 +2156,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             method="highs",
         )
         if not feasibility.success:
-            # The selected single projection is explicitly part of the
-            # candidate simplex, so a reserve of one must be feasible by
-            # construction.  Persist the independent budget diagnostics in
+            # The causal Pareto anchor is explicitly part of the candidate
+            # simplex, so a reserve of one must be feasible by construction.
+            # Persist the independent budget diagnostics in
             # the log before failing; this distinguishes a genuine contract
             # conflict from an incorrectly assembled epigraph.
             logger.error(
@@ -1970,10 +2254,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         if solver_maxiter <= 0:
             raise ValueError("risk_solver_maxiter must be positive")
         if risk_solver_method in {"cvxpy", "clarabel"}:
-            # CVXPY/Clarabel solves the same convex quadratic program directly
-            # and exposes dual values for every epigraph row.  It is the
-            # default release solver because the reduced KKT system remains
-            # well-conditioned even when one risk axis is disabled.
+            # CVXPY/Clarabel is an optional backend for the same convex
+            # quadratic program and exposes dual values for every epigraph
+            # row. The release configuration selects SciPy trust-constr and
+            # independently recomputes its KKT and primal residuals.
             try:
                 import cvxpy as cp
             except ImportError as exc:  # pragma: no cover - dependency gate
@@ -2501,9 +2785,9 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         raise ValueError("Risk reserve fractions must lie in (0, 1]")
 
     # Nested contiguous validation selects the reserve without consulting any
-    # locked test response.  The reserve is anchored to the independently
-    # selected single feasible projection; the feasible-quantile comparator is
-    # not used as a hard constraint.
+    # locked test response. The reserve is anchored to the causal Pareto
+    # reference; the metadata-targeted single projection and feasible-quantile
+    # comparator are not used as hard constraints.
     reserve_cv_rows: list[dict[str, Any]] = []
     for reserve_fraction in reserve_candidates:
         for fold, held in enumerate(fold_partitions, start=1):
@@ -2701,7 +2985,7 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     # reference vertex would make the ablation table tautological and would
     # not test whether either contractual axis changes the fitted profile.
     ablation_specs = {
-        "single reference": (False, False),
+        "causal Pareto anchor": (False, False),
         "unconstrained convex ensemble": (False, False),
         "total-budget-only ensemble": (True, False),
         "CVaR-only ensemble": (False, True),
@@ -2710,10 +2994,10 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     risk_ablation_weights: dict[str, np.ndarray] = {}
     risk_ablation_certificates: list[dict[str, Any]] = []
     for ablation_name, (enforce_total, enforce_cvar) in ablation_specs.items():
-        if ablation_name == "single reference":
+        if ablation_name == "causal Pareto anchor":
             ablation_weights = np.eye(len(risk_candidate_names))[risk_reference_index]
             ablation_certificate = {
-                "solver_name": "declared single-projection comparator",
+                "solver_name": "validation-selected causal Pareto anchor",
                 "convex_quadratic_program": False,
                 "exact_solver_path": "reference comparator",
                 "reference_lock_enabled": False,
@@ -3491,9 +3775,11 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
     risk_effect_rows: list[dict[str, Any]] = []
     for split in ["validation", "test"]:
         split_ablation = ablation_summary[ablation_summary["split"] == split]
-        single_row = split_ablation[split_ablation["ablation"] == "single reference"]
-        if len(single_row) != 1:
-            raise RuntimeError(f"Missing single-reference risk ablation for {split}")
+        anchor_row = split_ablation[
+            split_ablation["ablation"] == "causal Pareto anchor"
+        ]
+        if len(anchor_row) != 1:
+            raise RuntimeError(f"Missing causal Pareto anchor for {split}")
         for variant in [
             "unconstrained convex ensemble",
             "total-budget-only ensemble",
@@ -3506,14 +3792,14 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             risk_effect_rows.append(
                 {
                     "split": split,
-                    "comparison": f"{variant} vs single reference",
-                    "nrmse_change": float(row.iloc[0]["nrmse"] - single_row.iloc[0]["nrmse"]),
+                    "comparison": f"{variant} vs causal Pareto anchor",
+                    "nrmse_change": float(row.iloc[0]["nrmse"] - anchor_row.iloc[0]["nrmse"]),
                     "false_response_change_mwh": float(
                         row.iloc[0]["false_response_mwh"]
-                        - single_row.iloc[0]["false_response_mwh"]
+                        - anchor_row.iloc[0]["false_response_mwh"]
                     ),
                     "credit_f1_change": float(
-                        row.iloc[0]["credit_f1"] - single_row.iloc[0]["credit_f1"]
+                        row.iloc[0]["credit_f1"] - anchor_row.iloc[0]["credit_f1"]
                     ),
                     "interpretation": "convex risk fit before pointwise event envelope",
                 }
@@ -3673,19 +3959,47 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
         final / "risk_truth_source_audit.csv", index=False
     )
 
-    # Reproduce the closest power/energy-domain mechanisms as exact workload
+    # The event-reward translation previously reused the strategic generator
+    # profile as its prediction. That makes it an oracle identity check, not an
+    # independent method. Preserve the check in a separate file and exclude it
+    # from baseline rankings and published-method comparisons.
+    oracle_identity_rows: list[dict[str, Any]] = []
+    for day_value in test_days:
+        day = int(day_value)
+        candidate = np.asarray(model_strategic[day], dtype=float)
+        truth = np.asarray(honest[day], dtype=float)
+        row = {
+            "day": day,
+            "diagnostic": "strategic generator identity",
+            "comparison_role": "oracle_identity_check_excluded_from_ranking",
+            "truth_source": "same strategic generator used to construct candidate",
+            "maximum_profile_difference_mw": float(
+                np.max(np.abs(candidate - truth))
+            ),
+        }
+        row.update(baseline_metrics(candidate, truth, event_slots))
+        row.update(
+            response_metrics(
+                candidate, truth, actual_lookup[day], event_slots, dt_h
+            )
+        )
+        oracle_identity_rows.append(row)
+    oracle_identity = pd.DataFrame(oracle_identity_rows)
+    oracle_identity.to_csv(final / "oracle_identity_audit.csv", index=False)
+    oracle_identity.groupby("diagnostic", as_index=False).agg(
+        n_days=("day", "nunique"),
+        maximum_profile_difference_mw=("maximum_profile_difference_mw", "max"),
+        nrmse=("nrmse", "mean"),
+        false_response_mwh=("false_response_mwh", "mean"),
+        credit_f1=("credit_f1", "mean"),
+    ).to_csv(final / "oracle_identity_summary.csv", index=False)
+
+    # Translate the closest power/energy-domain mechanisms as exact workload
     # LP instantiations rather than comparing only generic regressors.  The
     # source rows are deliberately kept separate from the main METHODS table:
     # each comparator receives the same submitted ledger and is scored against
     # the same locked execution intervention.
     literature_specs = [
-        (
-            "Event-reward ledger translation",
-            "chen2021incentive",
-            "event_reward_ledger_lp",
-            model_strategic,
-            "published event-reward structure translated into the declared workload ledger: exact release, deadline, conservation, capacity, and event-reward LP; reference-specific estimator and data are not imported",
-        ),
         (
             "Batch-flexibility ledger translation",
             "cao2022flexibility",
@@ -4805,11 +5119,12 @@ def run_exp2(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
             "risk_reference_candidate": risk_candidate_names[risk_reference_index],
             "pointwise_envelope_candidate": "Single Feasible Projection",
             "risk_profile_definition": (
-                "The reported Risk-Constrained Convex Verifier is the exact optimizer "
+                "The reported Risk-Constrained Convex Verifier is the numerical optimizer "
                 "of the validation-fitted simplex under total and daily-CVaR false-credit "
                 "budgets. Its declared 10% MSE non-inferiority neighborhood is solved "
-                "with CVXPY/Clarabel and is not replaced by a one-hot shortcut; it is "
-                "not pointwise clipped to the single projection."
+                "with the configured convex QP backend and independently checked using "
+                "KKT and primal residuals; it is not pointwise clipped to the single "
+                "projection. The locked run records the backend in the solver certificate."
             ),
             "payment_contract_profile_file": "test_profiles.npz::payment_contract_profiles",
             "payment_contract_profile_definition": (
@@ -7504,7 +7819,7 @@ def run_exp9(
                 )
             )
             if (
-                cached_metadata.get("certificate_schema_version") == 10
+                cached_metadata.get("certificate_schema_version") == 11
                 and locked_days == 54
                 and interval_count == 54 * 5 * 8 * 4
                 and daily_count == 54 * 5 * 4
@@ -7721,6 +8036,40 @@ def run_exp9(
             validation_stored["quantile_profile"][:, None, :, :],
         ],
         axis=1,
+    )
+    flexible_nameplate_mw = float(cfg["project"]["flexible_capacity_mw"])
+    network_capacity_audit_rows: list[dict[str, Any]] = []
+    for split_name, profile_stack in [
+        ("calibration_validation", validation_candidate_profiles),
+        ("locked_test", candidate_profiles),
+    ]:
+        for scenario_label, conversion_factor in zip(
+            conversion_scenario_labels, conversion_scale_factors
+        ):
+            capacity_metrics = _network_scaled_capacity_metrics(
+                profile_stack,
+                float(conversion_factor),
+                dc_scale,
+                fixed_facility_load_mw,
+                flexible_nameplate_mw,
+            )
+            if not bool(capacity_metrics["capacity_activation_eligible"]):
+                raise RuntimeError(
+                    f"{split_name} {scenario_label} facility profile exceeds the "
+                    "committed flexible nameplate after the declared network scale"
+                )
+            network_capacity_audit_rows.append(
+                {
+                    "split": split_name,
+                    "conversion_scenario": scenario_label,
+                    "conversion_scale_factor": float(conversion_factor),
+                    "network_dc_scale": float(dc_scale),
+                    **capacity_metrics,
+                }
+            )
+    network_capacity_audit = pd.DataFrame(network_capacity_audit_rows)
+    network_capacity_audit.to_csv(
+        final / "network_capacity_activation_audit.csv", index=False
     )
     validation_actual = validation_stored["actual"]
     validation_oracle = validation_stored["oracle"]
@@ -7961,9 +8310,9 @@ def run_exp9(
     certificate_rows: list[dict[str, Any]] = []
     certified_profiles = np.full_like(actual, np.nan)
     completed: set[int] = set()
-    # Schema 10 adds q99 to the robust vertex-cost Jensen certificate; older
-    # checkpoints belong to a smaller scenario contract.
-    certificate_schema_version = 10
+    # Schema 11 adds an explicit per-site flexible-nameplate audit after the
+    # fixed/flexible conversion and benchmark-to-network normalization.
+    certificate_schema_version = 11
     candidate_checksum = hashlib.sha256(
         b"fixed-flexible-network-conversion-v2"
         + np.ascontiguousarray(candidate_profiles).tobytes()
@@ -8120,7 +8469,31 @@ def run_exp9(
     certificates.to_csv(final / "daily_payment_certificates.csv", index=False)
     scenario_certificate_rows: list[dict[str, Any]] = []
     for row in certificates.itertuples(index=False):
+        local_day = int(np.flatnonzero(days == int(row.day))[0])
         for label in conversion_scenario_labels:
+            conversion_factor = float(
+                getattr(row, f"conversion_scale_{label}")
+            )
+            day_capacity_metrics = _network_scaled_capacity_metrics(
+                np.stack(
+                    [
+                        candidate_profiles[
+                            local_day, reference_candidate
+                        ],
+                        certified_profiles[local_day],
+                    ],
+                    axis=0,
+                ),
+                conversion_factor,
+                dc_scale,
+                fixed_facility_load_mw,
+                flexible_nameplate_mw,
+            )
+            if not bool(day_capacity_metrics["capacity_activation_eligible"]):
+                raise RuntimeError(
+                    f"Locked day {row.day} {label} endpoint exceeds the "
+                    "committed flexible nameplate after network normalization"
+                )
             certified_cost = float(
                 getattr(row, f"certified_cost_{label}_usd")
             )
@@ -8140,6 +8513,7 @@ def run_exp9(
                     "payment_cap_violation_usd": max(
                         0.0, certified_cost - reference_cost
                     ),
+                    **day_capacity_metrics,
                 }
             )
     scenario_certificates = pd.DataFrame(scenario_certificate_rows)
@@ -8210,8 +8584,10 @@ def run_exp9(
     evaluation_workers = int(
         cfg["experiments"].get("payment_evaluation_parallel_workers", 6)
     )
-    if evaluation_workers <= 0:
-        raise ValueError("payment_evaluation_parallel_workers must be positive")
+    if evaluation_workers <= 0 or evaluation_workers > 20:
+        raise ValueError(
+            "payment_evaluation_parallel_workers must be between 1 and 20"
+        )
 
     def evaluate_payment_day(
         item: tuple[int, int],
@@ -8746,6 +9122,19 @@ def run_exp9(
                 "network_scale_calibrated_on_q99": True,
                 "network_peak_target_mw": peak_dc_mw,
                 "formula": "L_dc = dc_scale * (fixed + xi * (p_facility - fixed))",
+                "capacity_check": (
+                    "flexible site nameplate is checked after the declared "
+                    "benchmark-to-network scale and quantile conversion, against "
+                    "the selected reference and certified profile hull"
+                ),
+                "capacity_audit_file": "network_capacity_activation_audit.csv",
+                "capacity_activation_eligible_all_splits": bool(
+                    network_capacity_audit["capacity_activation_eligible"].all()
+                ),
+                "maximum_mapped_flexible_site_load_mw": float(
+                    network_capacity_audit["maximum_mapped_flexible_mw"].max()
+                ),
+                "committed_flexible_nameplate_mw_per_site": flexible_nameplate_mw,
             },
             "reference_payment_cap": candidate_names[reference_candidate],
             "external_transfer_comparator": "Feasible Quantile Projection",
@@ -9295,77 +9684,7 @@ def run_exp10(
         desc="Exp10 complete AC N-1 public cases",
     )
     contingency_progress.update(len(completed_contingencies))
-    def solve_contingency_cell(
-        task: tuple[dict[str, Any], int, int, int, str, np.ndarray, int],
-    ) -> dict[str, Any]:
-        contingency_item, local_day, day, slot, method, profiles, outage = task
-        contingency_network = str(contingency_item["network"])
-        contingency_buses = contingency_item["buses"]
-        contingency_native_p = contingency_item["native_p"]
-        contingency_native_q = contingency_item["native_q"]
-        contingency_dc_scale = float(contingency_item["dc_scale"])
-        dc_power = profiles[local_day, :, slot] * contingency_dc_scale
-        result = None
-        for opf_alg in (0, 565):
-            for _ in range(3):
-                case = contingency_item["case_function"]()
-                case["bus"][:, PD] = contingency_native_p
-                case["bus"][:, QD] = contingency_native_q
-                case["bus"][contingency_buses, PD] += dc_power
-                case["bus"][contingency_buses, QD] += dc_power * reactive_ratio
-                case["branch"][int(outage), BR_STATUS] = 0
-                result = runopf(case, make_ac_options(opf_alg))
-                if bool(result["success"]):
-                    break
-            if result is not None and bool(result["success"]):
-                break
-        if not bool(result["success"]):
-            raise RuntimeError(
-                "AC post-contingency OPF failed for "
-                f"{contingency_network}, day {day}, method {method}, "
-                f"outage {outage}"
-            )
-        in_service = result["branch"][:, BR_STATUS] > 0
-        rate = result["branch"][in_service, RATE_A].copy()
-        rate[rate <= 0] = np.inf
-        apparent_from = np.hypot(
-            result["branch"][in_service, PF],
-            result["branch"][in_service, QF],
-        )
-        apparent_to = np.hypot(
-            result["branch"][in_service, PT],
-            result["branch"][in_service, QT],
-        )
-        voltage = result["bus"][:, VM]
-        voltage_violation = np.maximum(
-            result["bus"][:, VMIN] - voltage,
-            voltage - result["bus"][:, VMAX],
-        )
-        return {
-            "network": contingency_network,
-            "day": int(day),
-            "peak_event_slot": slot,
-            "counterfactual_method": method,
-            "outage": int(outage),
-            "objective_usd_per_h": float(result["f"]),
-            "maximum_apparent_line_loading": float(
-                (np.maximum(apparent_from, apparent_to) / rate).max(initial=0.0)
-            ),
-            "maximum_voltage_violation_pu": float(
-                max(0.0, voltage_violation.max(initial=0.0))
-            ),
-            "minimum_voltage_pu": float(voltage.min()),
-            "maximum_voltage_pu": float(voltage.max()),
-            "solver_success": 1,
-            "load_multiplier": load_multiplier,
-            "peak_dc_penetration": penetration,
-            "data_center_power_factor": power_factor,
-            "dc_power_scale": contingency_dc_scale,
-            "ac_checkpoint_schema_version": ac_checkpoint_schema_version,
-            "ac_profile_checksum": ac_profile_checksum,
-        }
-
-    tasks: list[tuple[dict[str, Any], int, int, int, str, np.ndarray, int]] = []
+    tasks: list[dict[str, Any]] = []
     for contingency_item in contingency_data:
         for local_day, day in enumerate(days):
             slot = int(peak_slots[local_day])
@@ -9379,21 +9698,34 @@ def run_exp10(
                     )
                     if key not in completed_contingencies:
                         tasks.append(
-                            (
-                                contingency_item,
-                                local_day,
-                                int(day),
-                                slot,
-                                method,
-                                profiles,
-                                int(outage),
-                            )
+                            {
+                                "network": contingency_network,
+                                "case_function": contingency_item["case_function"],
+                                "native_p": contingency_item["native_p"],
+                                "native_q": contingency_item["native_q"],
+                                "dc_buses": contingency_item["buses"],
+                                "dc_power": profiles[local_day, :, slot]
+                                * float(contingency_item["dc_scale"]),
+                                "reactive_ratio": reactive_ratio,
+                                "outage": int(outage),
+                                "day": int(day),
+                                "slot": slot,
+                                "method": method,
+                                "load_multiplier": load_multiplier,
+                                "penetration": penetration,
+                                "power_factor": power_factor,
+                                "dc_scale": float(contingency_item["dc_scale"]),
+                                "ac_feasibility_tolerance": ac_feasibility_tolerance,
+                                "ac_max_iterations": ac_max_iterations,
+                                "schema_version": ac_checkpoint_schema_version,
+                                "profile_checksum": ac_profile_checksum,
+                            }
                         )
     workers = int(cfg["experiments"].get("ac_n1_workers", 6))
-    if workers <= 0:
-        raise ValueError("ac_n1_workers must be positive")
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        for row in executor.map(solve_contingency_cell, tasks):
+    if workers <= 0 or workers > 20:
+        raise ValueError("ac_n1_workers must be between 1 and 20")
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        for row in executor.map(_exp10_ac_n1_process_worker, tasks):
             contingency_rows.append(row)
             contingency_progress.update(1)
             if len(contingency_rows) % 19 == 0:
@@ -9573,7 +9905,7 @@ def run_exp10(
         initial=len(preventive_completed),
         desc="Exp10 shared-plan preventive AC N-1",
     )
-    preventive_cells_since_checkpoint = 0
+    preventive_tasks: list[dict[str, Any]] = []
     for preventive_penetration in preventive_penetrations:
         preventive_dc_scale = (
             float(preventive_penetration)
@@ -9596,182 +9928,59 @@ def run_exp10(
                 ]
                 if not pending_outages:
                     continue
-                dc_power = (
-                    profiles[local_day, :, slot] * preventive_dc_scale
+                dc_power = profiles[local_day, :, slot] * preventive_dc_scale
+                preventive_tasks.append(
+                    {
+                        "network": preventive_network,
+                        "case_function": preventive_case_function,
+                        "native_p": preventive_native_p,
+                        "native_q": preventive_native_q,
+                        "dc_buses": preventive_buses,
+                        "dc_power": dc_power,
+                        "reactive_ratio": reactive_ratio,
+                        "outages": pending_outages,
+                        "day": int(day),
+                        "slot": slot,
+                        "method": method,
+                        "penetration": float(preventive_penetration),
+                        "load_multiplier": load_multiplier,
+                        "power_factor": power_factor,
+                        "dc_scale": preventive_dc_scale,
+                        "ac_feasibility_tolerance": ac_feasibility_tolerance,
+                        "ac_max_iterations": ac_max_iterations,
+                        "schema_version": ac_checkpoint_schema_version,
+                        "profile_checksum": ac_profile_checksum,
+                    }
                 )
-                base_case = preventive_case_function()
-                base_case["gen"] = base_case["gen"].astype(float)
-                base_case["bus"][:, PD] = preventive_native_p
-                base_case["bus"][:, QD] = preventive_native_q
-                base_case["bus"][preventive_buses, PD] += dc_power
-                base_case["bus"][preventive_buses, QD] += (
-                    dc_power * reactive_ratio
+
+    workers = int(cfg["experiments"].get("ac_n1_workers", 6))
+    if workers <= 0 or workers > 20:
+        raise ValueError("ac_n1_workers must be between 1 and 20")
+    checkpoint_interval = max(1, len(preventive_outages) * 4)
+    preventive_cells_since_checkpoint = 0
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        for group_rows in executor.map(
+            _exp10_preventive_ac_n1_group_worker, preventive_tasks
+        ):
+            preventive_rows.extend(group_rows)
+            for row in group_rows:
+                preventive_completed.add(
+                    (
+                        round(float(row["peak_dc_penetration"]), 12),
+                        int(row["day"]),
+                        str(row["counterfactual_method"]),
+                        int(row["outage"]),
+                    )
                 )
-                base_result = runopf(base_case, make_ac_options())
-                if not bool(base_result["success"]):
-                    # Same preventive AC-OPF model, alternate numerical
-                    # implementation only; no recourse or limit is changed.
-                    base_case = preventive_case_function()
-                    base_case["gen"] = base_case["gen"].astype(float)
-                    base_case["bus"][:, PD] = preventive_native_p
-                    base_case["bus"][:, QD] = preventive_native_q
-                    base_case["bus"][preventive_buses, PD] += dc_power
-                    base_case["bus"][preventive_buses, QD] += (
-                        dc_power * reactive_ratio
-                    )
-                    base_result = runopf(base_case, make_ac_options(565))
-                if not bool(base_result["success"]):
-                    raise RuntimeError(
-                        "Preventive base AC OPF failed for "
-                        f"day {day}, method {method}, penetration "
-                        f"{preventive_penetration:.3f}"
-                    )
-                reference_buses = set(
-                    np.where(base_result["bus"][:, BUS_TYPE] == REF)[0]
+            preventive_progress.update(len(group_rows))
+            preventive_cells_since_checkpoint += len(group_rows)
+            if preventive_cells_since_checkpoint >= checkpoint_interval:
+                _atomic_to_csv(
+                    pd.DataFrame(preventive_rows), preventive_checkpoint
                 )
-                nonreference_generators = np.asarray(
-                    [
-                        generator
-                        for generator in range(len(base_result["gen"]))
-                        if int(base_result["gen"][generator, GEN_BUS]) - 1
-                        not in reference_buses
-                    ],
-                    dtype=int,
-                )
-                shared_pg = base_result["gen"][:, PG].copy()
-                for outage in pending_outages:
-                    case = preventive_case_function()
-                    case["gen"] = case["gen"].astype(float)
-                    case["bus"][:, PD] = preventive_native_p
-                    case["bus"][:, QD] = preventive_native_q
-                    case["bus"][preventive_buses, PD] += dc_power
-                    case["bus"][preventive_buses, QD] += (
-                        dc_power * reactive_ratio
-                    )
-                    case["branch"][outage, BR_STATUS] = 0
-                    case["gen"][nonreference_generators, PMIN] = (
-                        shared_pg[nonreference_generators]
-                    )
-                    case["gen"][nonreference_generators, PMAX] = (
-                        shared_pg[nonreference_generators]
-                    )
-                    result = runopf(case, make_ac_options())
-                    if not bool(result["success"]):
-                        case = preventive_case_function()
-                        case["gen"] = case["gen"].astype(float)
-                        case["bus"][:, PD] = preventive_native_p
-                        case["bus"][:, QD] = preventive_native_q
-                        case["bus"][preventive_buses, PD] += dc_power
-                        case["bus"][preventive_buses, QD] += (
-                            dc_power * reactive_ratio
-                        )
-                        case["branch"][outage, BR_STATUS] = 0
-                        case["gen"][nonreference_generators, PMIN] = (
-                            shared_pg[nonreference_generators]
-                        )
-                        case["gen"][nonreference_generators, PMAX] = (
-                            shared_pg[nonreference_generators]
-                        )
-                        result = runopf(case, make_ac_options(565))
-                    if not bool(result["success"]):
-                        raise RuntimeError(
-                            "Shared-active-plan preventive AC OPF failed for "
-                            f"day {day}, method {method}, penetration "
-                            f"{preventive_penetration:.3f}, outage {outage}"
-                        )
-                    in_service = result["branch"][:, BR_STATUS] > 0
-                    rate = result["branch"][in_service, RATE_A].copy()
-                    rate[rate <= 0] = np.inf
-                    apparent_from = np.hypot(
-                        result["branch"][in_service, PF],
-                        result["branch"][in_service, QF],
-                    )
-                    apparent_to = np.hypot(
-                        result["branch"][in_service, PT],
-                        result["branch"][in_service, QT],
-                    )
-                    voltage = result["bus"][:, VM]
-                    voltage_violation = np.maximum(
-                        result["bus"][:, VMIN] - voltage,
-                        voltage - result["bus"][:, VMAX],
-                    )
-                    maximum_pg_deviation = float(
-                        np.max(
-                            np.abs(
-                                result["gen"][
-                                    nonreference_generators, PG
-                                ]
-                                - shared_pg[nonreference_generators]
-                            ),
-                            initial=0.0,
-                        )
-                    )
-                    preventive_rows.append(
-                        {
-                            "network": preventive_network,
-                            "day": int(day),
-                            "peak_event_slot": slot,
-                            "counterfactual_method": method,
-                            "peak_dc_penetration": float(
-                                preventive_penetration
-                            ),
-                            "outage": int(outage),
-                            "solver_success": 1,
-                            "intact_plan_objective_usd_per_h": float(
-                                base_result["f"]
-                            ),
-                            **{
-                                f"shared_pg_generator_{generator}_mw": float(
-                                    shared_pg[generator]
-                                )
-                                for generator in range(len(shared_pg))
-                            },
-                            "maximum_nonreference_active_plan_deviation_mw": (
-                                maximum_pg_deviation
-                            ),
-                            "reference_generator_loss_recourse_mw": float(
-                                result["gen"][0, PG] - shared_pg[0]
-                            ),
-                            "maximum_apparent_line_loading": float(
-                                (
-                                    np.maximum(apparent_from, apparent_to)
-                                    / rate
-                                ).max(initial=0.0)
-                            ),
-                            "maximum_voltage_violation_pu": float(
-                                max(
-                                    0.0,
-                                    voltage_violation.max(initial=0.0),
-                                )
-                            ),
-                            "minimum_voltage_pu": float(voltage.min()),
-                            "maximum_voltage_pu": float(voltage.max()),
-                            "load_multiplier": load_multiplier,
-                            "data_center_power_factor": power_factor,
-                            "dc_power_scale": preventive_dc_scale,
-                            "ac_checkpoint_schema_version": (
-                                ac_checkpoint_schema_version
-                            ),
-                            "ac_profile_checksum": ac_profile_checksum,
-                        }
-                    )
-                    preventive_completed.add(
-                        (
-                            round(float(preventive_penetration), 12),
-                            int(day),
-                            method,
-                            int(outage),
-                        )
-                    )
-                    preventive_progress.update(1)
-                    preventive_cells_since_checkpoint += 1
-                    if preventive_cells_since_checkpoint >= len(
-                        preventive_outages
-                    ):
-                        pd.DataFrame(preventive_rows).to_csv(
-                            preventive_checkpoint, index=False
-                        )
-                        preventive_cells_since_checkpoint = 0
+                preventive_cells_since_checkpoint = 0
+    if preventive_cells_since_checkpoint:
+        _atomic_to_csv(pd.DataFrame(preventive_rows), preventive_checkpoint)
     preventive_progress.close()
     preventive_results = pd.DataFrame(preventive_rows).sort_values(
         [
@@ -12400,7 +12609,7 @@ def run_exp15(
             exp9_metadata.get("power_conversion_scenarios", {}).keys()
         )
         exp9_refresh_required = exp9_refresh_required or not (
-            exp9_metadata.get("certificate_schema_version") == 10
+            exp9_metadata.get("certificate_schema_version") == 11
             and scenario_keys == {"q01", "q10", "q50", "q90", "q99"}
             and exp9_metadata.get("network_conversion_decomposition", {}).get(
                 "network_scale_calibrated_on_q99"
@@ -12459,17 +12668,52 @@ def run_exp15(
             "Experiment 16 must provide one predeclared q99 capacity audit row"
         )
     capacity_safe_upper = float(q99_row.iloc[0]["capacity_safe_scale_factor"])
-    # Keep the complete calibration-validation q99 endpoint in the interval audit.  The
-    # network scale was calibrated on q99 while fixed facility demand is held
-    # separate, so this endpoint is solved and can be activated without
-    # clipping the declared conversion factor.  The flexible-only capacity
-    # diagnostic from Experiment 16 remains a separate reconciliation.
+    # Keep the raw calibration-validation q99 ratio, but check activation
+    # feasibility on the actual fixed/flexible load passed to the network
+    # evaluator after the declared benchmark-to-network scale. Experiment 16's
+    # capacity-safe factor is an unnormalized benchmark diagnostic and cannot
+    # replace this site-level check.
     endpoint_labels = ["q01", "q99"]
     endpoint_scales = np.asarray(
         [raw_endpoint_scales[0], raw_endpoint_scales[1]],
         dtype=float,
     )
-    q99_capacity_eligible = True
+    flexible_nameplate_mw = float(cfg["project"]["flexible_capacity_mw"])
+    endpoint_capacity_audit: dict[str, dict[str, float]] = {}
+    endpoint_capacity_rows: list[dict[str, Any]] = []
+    for endpoint, conversion_factor in zip(endpoint_labels, endpoint_scales):
+        capacity_metrics = _network_scaled_capacity_metrics(
+            candidate_profiles,
+            float(conversion_factor),
+            dc_scale,
+            fixed_facility_load_mw,
+            flexible_nameplate_mw,
+        )
+        if not bool(capacity_metrics["capacity_activation_eligible"]):
+            raise RuntimeError(
+                f"{endpoint} payment endpoint exceeds the committed flexible "
+                "nameplate after the declared network normalization"
+            )
+        endpoint_capacity_audit[endpoint] = capacity_metrics
+        endpoint_capacity_rows.append(
+            {
+                "endpoint": endpoint,
+                "raw_conversion_scale_factor": float(conversion_factor),
+                "network_dc_scale": float(dc_scale),
+                "pre_network_capacity_safe_factor_q99": capacity_safe_upper,
+                **capacity_metrics,
+                "capacity_scope": (
+                    "selected-reference and payment-certified profile hull after "
+                    "fixed/flexible conversion and network normalization"
+                ),
+            }
+        )
+    pd.DataFrame(endpoint_capacity_rows).to_csv(
+        final / "endpoint_capacity_activation_audit.csv", index=False
+    )
+    q99_capacity_eligible = bool(
+        endpoint_capacity_audit["q99"]["capacity_activation_eligible"]
+    )
     if not (endpoint_scales[0] < 1.0 < endpoint_scales[1]):
         raise RuntimeError("Calibration-validation q01/q99 interval must bracket unity")
     # Every endpoint cache is tied to the exact frozen profiles and endpoint
@@ -12505,7 +12749,7 @@ def run_exp15(
     # continuous-segment solves. Earlier checkpoints used a direct
     # ``scale * total-profile`` segment path and are therefore not eligible
     # for resume.
-    schema = 13
+    schema = 14
     rows: list[dict[str, Any]] = []
     interval_rows: list[dict[str, Any]] = []
     existing_endpoint_path = final / "interval_endpoint_certificates.csv"
@@ -12630,7 +12874,21 @@ def run_exp15(
                             raw_endpoint_scales[endpoint_labels.index(endpoint)]
                         ),
                         "solver_status": "optimal",
-                        "capacity_activation_eligible": True,
+                        "maximum_mapped_flexible_mw": endpoint_capacity_audit[
+                            endpoint
+                        ]["maximum_mapped_flexible_mw"],
+                        "maximum_mapped_total_site_load_mw": endpoint_capacity_audit[
+                            endpoint
+                        ]["maximum_mapped_total_site_load_mw"],
+                        "flexible_nameplate_mw": flexible_nameplate_mw,
+                        "maximum_flexible_nameplate_violation_mw": endpoint_capacity_audit[
+                            endpoint
+                        ]["maximum_flexible_nameplate_violation_mw"],
+                        "capacity_activation_eligible": bool(
+                            endpoint_capacity_audit[endpoint][
+                                "capacity_activation_eligible"
+                            ]
+                        ),
                         "method": method,
                         "certified_cost_usd": float(cost),
                         "reference_cost_usd": float(reference_cost),
@@ -12729,7 +12987,21 @@ def run_exp15(
                         raw_endpoint_scales[endpoint_labels.index(endpoint)]
                     ),
                     "solver_status": "optimal",
-                    "capacity_activation_eligible": True,
+                    "maximum_mapped_flexible_mw": endpoint_capacity_audit[
+                        endpoint
+                    ]["maximum_mapped_flexible_mw"],
+                    "maximum_mapped_total_site_load_mw": endpoint_capacity_audit[
+                        endpoint
+                    ]["maximum_mapped_total_site_load_mw"],
+                    "flexible_nameplate_mw": flexible_nameplate_mw,
+                    "maximum_flexible_nameplate_violation_mw": endpoint_capacity_audit[
+                        endpoint
+                    ]["maximum_flexible_nameplate_violation_mw"],
+                    "capacity_activation_eligible": bool(
+                        endpoint_capacity_audit[endpoint][
+                            "capacity_activation_eligible"
+                        ]
+                    ),
                     "hull_baseline_cost_min_usd": float(hull_costs.min()),
                     "hull_baseline_cost_max_usd": float(hull_costs.max()),
                     "continuous_segment_minimum_baseline_cost_usd": float(
@@ -12777,6 +13049,19 @@ def run_exp15(
             mean_margin_usd=("margin_usd", "mean"),
             minimum_margin_usd=("margin_usd", "min"),
             maximum_payment_cap_violation_usd=("payment_cap_violation_usd", "max"),
+            maximum_mapped_flexible_mw=("maximum_mapped_flexible_mw", "first"),
+            maximum_mapped_total_site_load_mw=(
+                "maximum_mapped_total_site_load_mw",
+                "first",
+            ),
+            maximum_flexible_nameplate_violation_mw=(
+                "maximum_flexible_nameplate_violation_mw",
+                "first",
+            ),
+            capacity_activation_eligible=(
+                "capacity_activation_eligible",
+                "all",
+            ),
             locked_day_count=("day", "nunique"),
         )
     )
@@ -12822,6 +13107,21 @@ def run_exp15(
                 "q99_capacity_safe_upper": capacity_safe_upper,
                 "q99_capacity_activation_eligible": q99_capacity_eligible,
                 "fixed_load_separated": True,
+                "capacity_scope": (
+                    "The raw q01/q99 ratios are tested after the declared "
+                    "benchmark-to-network normalization; per-site flexible "
+                    "demand is checked against the committed 118-MW nameplate. "
+                    "This is a normalized network scenario, not a co-located "
+                    "utility measurement."
+                ),
+                "capacity_audit_file": "endpoint_capacity_activation_audit.csv",
+                "q99_maximum_mapped_flexible_mw": endpoint_capacity_audit[
+                    "q99"
+                ]["maximum_mapped_flexible_mw"],
+                "q99_maximum_mapped_total_site_load_mw": endpoint_capacity_audit[
+                    "q99"
+                ]["maximum_mapped_total_site_load_mw"],
+                "flexible_nameplate_mw_per_site": flexible_nameplate_mw,
             },
             "continuous_segment_theorem": (
                 "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound."
@@ -12849,6 +13149,8 @@ def run_exp15(
                 "capacity_eligible_endpoints_only": True,
                 "raw_q99_is_stress_only": False,
                 "fixed_load_separated": True,
+                "capacity_audit_file": "endpoint_capacity_activation_audit.csv",
+                "capacity_check_applied_after_network_normalization": True,
             },
         },
     )

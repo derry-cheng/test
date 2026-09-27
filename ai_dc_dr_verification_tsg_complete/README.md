@@ -4,28 +4,26 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 ## Repository layout
 
-`code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. Each directory under `experiments/` owns its runner, protocol README, and final results; stages that require long execution or publication figures additionally retain `results/intermediate/` checkpoints or a `figures/` subdirectory. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
+`code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. `code/scripts/` contains small reproducibility utilities, including the manifest-checked public-input downloader. Each directory under `experiments/` owns its runner, protocol README, and final results; stages that require long execution or publication figures additionally retain `results/intermediate/` checkpoints or a `figures/` subdirectory. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
-The locked risk fit is selected on contiguous validation folds and solved as a
-convex program with frozen total-exposure, daily-CVaR, and 10% MSE constraints.
-On the 54-day mechanism-isolation panel it reaches nRMSE 0.9021, false credit
-0.780 MWh/day, under-credit 26.506 MWh/day, and F1=0.536. The same locked
-ablation shows the total-budget-only fit has lower nRMSE, false credit, and
-under-credit, higher F1 (0.549 versus 0.536), and lower false-credit CVaR
-(2.222 versus 2.607 MWh/day). The joint method therefore
-satisfies its validation certificates, while empirical dominance from the CVaR
-term is not supported by this panel. The validation-selected Causal Pareto
-reference and separate slot-62 score are reported in the manuscript. The
-independent trace-meter replay gives 6.880 MW MAE for the risk-constrained
-verifier; it is an observational score, not an event-treatment estimate.
-
-The executable bridge exactly audits 7,306,622 declaration-feasible starts,
-but target tracking is separately measured: total-load nRMSE is 0.03023 and
-flexible-load relative-L2 residual is 1.581. RTS-24 N--1 outputs are
-declaration-only network replays; the release does not mark them payment-ready
-without a closed meter. The independent payment evaluator uses ten segments;
-the contractual certificate uses four, with profile and certificate hashes
-retained in the owning experiment results.
+The locked risk contract is a validation-fitted seven-profile simplex with a
+predeclared 10% MSE non-inferiority neighborhood. The sparse convex program is
+solved by SciPy trust-constr and independently checked with KKT and primal
+residuals; reference-lock mode is disabled in the release configuration
+and retained only as an explicit diagnostic. On the 54-day locked panel the
+two-axis verifier reaches 0.902 nRMSE, 0.780 MWh/day false credit, 26.506
+MWh/day under-credit, and F_1=0.536, improving all four mean metrics over the
+selected single feasible projection (0.943/2.470/26.812/0.463) under the same
+submitted ledger. The validation-selected causal Pareto anchor and total-only
+ablation are also reported: the joint fit trades false-credit exposure against
+the anchor, and the total-only fit has lower means on all four response metrics
+than the joint fit. Results therefore support a cross-metric frontier, not
+universal componentwise dominance. The event-reward generator identity is
+isolated as an oracle check and excluded from rankings. Ex-post rows and the
+infeasible High-5-of-10 row are separately labelled. The independent payment replay uses a declared
+ten-segment exact N-1 LP with four date-level workers; the contractual
+certificate remains a four-segment LP, and checkpoints retain profile and
+certificate hashes.
 
 ## Reproduction
 
@@ -36,6 +34,14 @@ dependencies:
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
 PYTHONPATH=code/src:vendor .venv/bin/python run_all.py --config configs/default.yaml --stage audit
+```
+
+The large public input CSVs remain outside version control. Restore them from
+their declared endpoints and verify their byte counts and hashes before a full
+preprocessing run:
+
+```text
+python code/scripts/download_public_inputs.py
 ```
 
 After restoring the raw files named in `configs/default.yaml`, the complete
@@ -124,4 +130,3 @@ audit.
 ## Reproducibility boundaries
 
 The region labels in the processed traces are feature-stratified scenario labels; they do not claim physical data-center geography. Declaration arrivals and regions are fixed before the execution trace is opened. Event-response panels that use an LP-generated intervention are labelled mechanism-isolation analyses. Decision-time and trace-meter panels score predictions against an independently observed execution tensor and do not attach utility-event labels to that observational target. The Exp27 network ledger is a declaration replay; payment activation is gated on a closed meter and audited separately by Exp30.
-

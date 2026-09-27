@@ -17,6 +17,8 @@ Overall status: **PASS**.
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv: exists and non-empty
+- [x] experiment_2:experiments/exp2_baseline_verification/results/final/oracle_identity_audit.csv: exists and non-empty
+- [x] experiment_2:experiments/exp2_baseline_verification/results/final/oracle_identity_summary.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/structural_literature_baselines.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv: exists and non-empty
 - [x] experiment_2:experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv: exists and non-empty
@@ -96,6 +98,7 @@ Overall status: **PASS**.
 - [x] experiment_8:experiments/exp8_n1_security/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_8:experiments/exp8_n1_security/figures/fig13_n1_security_validation.png: exists and non-empty
 - [x] experiment_9:experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv: exists and non-empty
+- [x] experiment_9:experiments/exp9_payment_certificate/results/final/network_capacity_activation_audit.csv: exists and non-empty
 - [x] experiment_9:experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv: exists and non-empty
 - [x] experiment_9:experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz: exists and non-empty
 - [x] experiment_9:experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv: exists and non-empty
@@ -148,6 +151,7 @@ Overall status: **PASS**.
 - [x] experiment_14:experiments/exp14_job_level_fidelity/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_14:experiments/exp14_job_level_fidelity/figures/fig20_job_level_fidelity.png: exists and non-empty
 - [x] experiment_15:experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv: exists and non-empty
+- [x] experiment_15:experiments/exp15_interval_certificate/results/final/endpoint_capacity_activation_audit.csv: exists and non-empty
 - [x] experiment_15:experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv: exists and non-empty
 - [x] experiment_15:experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv: exists and non-empty
 - [x] experiment_15:experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv: exists and non-empty
@@ -276,14 +280,14 @@ Overall status: **PASS**.
 - [x] model_formula_citation_traceability: 27/27 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
 - [x] maximum_two_sources_per_citation_group: 39 in-text citation groups checked
-- [x] complete_manuscript_bibliography: 31 verified bibliography entries; 31 unique in-text citations; uncited=[]; missing=[]
+- [x] complete_manuscript_bibliography: 32 verified bibliography entries; 32 unique in-text citations; uncited=[]; missing=[]
 - [x] every_labeled_equation_figure_table_is_referenced: 49 labels; unreferenced=[]; missing=[]
 - [x] required_abbreviation_expansions_present: MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok
 - [x] sha256_symbol_is_hyphenated: SHA-256 is written consistently in prose and equations
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: a4d068a7113ec0290e74063a1b3447dc6001a30e4298eb313581b71006dda1f4
-- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: 56193aa9b2bb26128ded43d2d29a960df6bf5af062bcfc9b005f3fcaa4e6e501
-- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: 80c0b5bbe1c99b3920aa088bbc583fab01379d948c3ad7bcfa9ce524b0e9c092
-- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: 1b0a31722ef297745d9741ec0e68eeda8e40e2e3838fefaf61f1cac792c509c4
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_2.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/scheduler_data.csv: raw source deferred to verified archive; locked processed artifact retained
+- [x] sha256:data/raw/mit_supercloud/dcgm_verified_full.csv: raw source deferred to verified archive; locked processed artifact retained
 - [x] sha256:data/raw/pglib/pglib_opf_case118_ieee.m: b1af0833849040c04babc3700631cff0d9afa66b79c5d3e13ae79bdf516cec78
 - [x] full_burstgpt_rows: 5188507
 - [x] full_measured_gpu_jobs: 68662
@@ -315,7 +319,8 @@ Overall status: **PASS**.
 - [x] cross_network_ac_n1_admissibility_panel: 9612 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
 - [x] homogeneous_scale_has_fixed_nameplate_bound: capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP
 - [x] declared_homogeneous_scale_sensitivity_panel: 4 predeclared homogeneous transforms replay the same witness and resource caps; the panel records where the fixed-GPU nameplate stops being respected
-- [x] closest_literature_baseline_panel: 324/324 same-ledger published-equation translations; each implementation is identified as a transparent translation rather than a software reimplementation
+- [x] closest_literature_baseline_panel: 270/270 same-ledger method-day scores spanning equation-level translations and an internal control; published mappings are explicitly not software reimplementations
+- [x] event_reward_translation_is_reported_only_as_oracle_identity: 54/54 generator-identity rows are isolated from ranked baselines and have zero profile residual within tolerance
 - [x] exact_structural_dc_t_dc_st_baseline_panel: 108/108 same-ledger DC-T/DC-ST outcomes retain native-site and migration assignment as explicit structural controls
 - [x] independent_trace_meter_replay_panel: 648 locked-day method scores against the measured DCGM execution tensor; no event intervention or simulated response is used as scoring truth
 - [x] literature_baseline_fairness_contract: 8 controls use the same ledger, deadlines, capacities, event slots, and locked days; structural translations are not labelled as software reimplementations
@@ -362,11 +367,13 @@ Overall status: **PASS**.
 - [x] complete_n1_security_panel: 2592/2592 interval-mechanism outcomes; all 37 non-islanding line outages enforced
 - [x] n1_mechanism_identification: trace-reference N-1 exact MAE=0.990 USD versus base-case exact MAE=139.221 USD and N-1 linear MAE=2.208 USD
 - [x] scenario_robust_exact_n1_payment_noninferiority_certificate: 54/54 lexicographically solved daily certificates across five calibration-validation conversion scenarios; formal four-segment maximum cap violation=2.910e-11 USD; the independent ten-segment transfer comparison is evaluated by its paired mean
+- [x] network_normalized_flexible_nameplate_audit: 10/10 split-scenario hull checks apply the fixed/flexible conversion before network normalization and verify each mapped flexible site load against its committed nameplate
 - [x] payment_panel_lineage_matches_current_profiles_and_manifest: the payment evaluator records the current Experiment-2 test and validation profile digests, data-manifest digest, configuration digest, and certified-profile byte digest; stale row-count-complete panels are rejected
 - [x] payment_cap_and_target_are_not_a_fixed_plan_identity: the contractual cap is frozen by Experiment-2 nRMSE, while the payment target is selected by an independent high-resolution N-1 payment MAE on validation days; locked test days are excluded
 - [x] complete_independent_payment_model_transfer_evaluation: 1080 method-day-scenario outcomes scored across five calibration-validation conversion factors with the independent ten-segment N-1 evaluator; accuracy is reported as model-transfer evidence and is not part of Proposition 4
 - [x] paired_payment_accuracy_and_overpayment_pareto: 15 comparator-scenario rows use paired moving-block intervals for both absolute error and overpayment; the payment-cap guarantee is kept separate from any universal MAE claim
 - [x] unseen_conversion_factor_transfer_panel: 8 frozen-profile outcomes across two interior conversion factors absent from the certificate and target selection; the finer N-1 replay is independent of the contractual RHS
+- [x] interval_endpoint_nameplate_certificate: 2/2 raw conversion endpoints pass the site-level flexible nameplate check after network normalization
 - [x] independent_endpoint_certificate_uses_selected_single_reference: 216/216 endpoint rows compare the payment-certified profile with the preselected single feasible reference; the quantile profile remains external
 - [x] payment_uncertainty_interval_has_posthoc_oracle_audit_only: 108/108 endpoint rows retain the raw q01/q99 interval; fixed and flexible demand are separated and both endpoints are solved under the q99-calibrated scale, while oracle values remain post-hoc coverage diagnostics (2/108 inside)
 - [x] independent_nondegenerate_payment_candidate_hull: six first-stage projection candidates plus an external matched feasible-quantile comparator; the selected single projection is the contractual reference; the risk verifier is excluded from the certificate input and evaluated as an external target; 25 distinct daily optimal weight vectors
@@ -412,22 +419,22 @@ Overall status: **PASS**.
 | High-5-of-10 | 1.5859 | 0.4610 | 41.2205 | 0.5390 | 0.8642 | 0.5715 | 3.7564 |
 | Metadata Gradient Boosting | 0.7741 | 0.2977 | 9.1831 | 0.7023 | 0.6820 | 0.6400 | -0.8559 |
 | Ridge | 1.0380 | 0.4018 | 21.9062 | 0.5982 | 0.7036 | 0.5450 | 0.9756 |
-| Risk-Constrained Convex Verifier | 0.9021 | 0.0460 | 0.7803 | 0.9540 | 0.4144 | 0.5362 | -2.4665 |
+| Risk-Constrained Convex Verifier | 0.9021 | 0.0460 | 0.7803 | 0.9540 | 0.4144 | 0.5363 | -2.4665 |
 | Single Feasible Projection | 0.9434 | 0.0976 | 2.4696 | 0.9024 | 0.3707 | 0.4630 | -2.2474 |
 | Synthetic Control | 0.7821 | 0.2055 | 9.3937 | 0.7945 | 0.6774 | 0.6762 | -1.5355 |
-| Tail-Risk Feasible Counterfactual | 0.9051 | 0.0474 | 0.8239 | 0.9526 | 0.4115 | 0.5325 | -2.4631 |
+| Tail-Risk Feasible Counterfactual | 0.9046 | 0.0471 | 0.8166 | 0.9529 | 0.4119 | 0.5331 | -2.4636 |
 
 ## Projection candidate validation
 
 | candidate_index | projection_weight | validation_score | validation_score_std | event_window_deviation_from_optimization_only_mw | validation_credit_precision | validation_credit_recall | validation_credit_f1 | mean_contiguous_fold_nrmse | max_contiguous_fold_nrmse | selected_single_projection | candidate_type | ensemble_weight | selected |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 0.03000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | -0.00000 | False |
-| 2 | 0.10000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | -0.00000 | False |
-| 3 | 0.30000 | 1.42218 | 0.40261 | 8.37975 | 0.98325 | 0.12723 | 0.22229 | 1.51660 | 1.77793 | False | metadata projection | -0.00000 | False |
-| 4 | 1.00000 | 1.14876 | 0.38595 | 4.97534 | 0.98782 | 0.36037 | 0.50489 | 1.17839 | 1.41195 | False | metadata projection | -0.00000 | False |
+| 1 | 0.03000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.00000 | True |
+| 2 | 0.10000 | 1.42369 | 0.40284 | 8.38396 | 1.00000 | 0.12674 | 0.22195 | 1.51799 | 1.78148 | False | metadata projection | 0.00000 | True |
+| 3 | 0.30000 | 1.42218 | 0.40261 | 8.37975 | 0.98325 | 0.12723 | 0.22229 | 1.51660 | 1.77793 | False | metadata projection | 0.00000 | True |
+| 4 | 1.00000 | 1.14876 | 0.38595 | 4.97534 | 0.98782 | 0.36037 | 0.50489 | 1.17839 | 1.41195 | False | metadata projection | 0.00000 | True |
 | 5 | 3.00000 | 1.06290 | 0.33620 | 4.56443 | 0.98184 | 0.40248 | 0.54721 | 1.08450 | 1.29388 | False | metadata projection | 0.54380 | True |
 | 6 | 10.00000 | 1.03856 | 0.34259 | 4.46302 | 0.96814 | 0.41927 | 0.55964 | 1.05964 | 1.23894 | True | metadata projection | 0.23422 | True |
-| 7 | 10.00000 | 0.94733 | nan | nan | 0.95644 | 0.55416 | 0.68464 | nan | nan | False | causal Pareto projection | 0.22197 | True |
+| 7 | 10.00000 | 0.94733 | nan | nan | 0.95644 | 0.55416 | 0.68464 | nan | nan | False | causal Pareto projection | 0.22198 | True |
 | 7 | 1.00000 | 1.34945 | nan | nan | nan | nan | 0.36429 | nan | 1.73834 | False | post-commitment feasible quantile comparator | 0.00000 | False |
 
 ## Settlement results
@@ -692,7 +699,7 @@ Overall status: **PASS**.
 | q01 | 0.5827 | Single Feasible Projection | -15.6049 | 9.0290 | 24.6516 | 0.0088 | 1.0000 |
 | q10 | 0.6871 | Feasible Quantile Projection | -27.1991 | 10.7144 | 39.3664 | 0.7265 | 1.0000 |
 | q10 | 0.6871 | Payment-Certified N-1 Verifier | -29.8425 | 10.7144 | 40.5569 | 0.0000 | 1.0000 |
-| q10 | 0.6871 | Risk-Constrained Convex Verifier | -22.5935 | 10.7144 | 33.3079 | 0.0000 | 1.0000 |
+| q10 | 0.6871 | Risk-Constrained Convex Verifier | -22.5934 | 10.7144 | 33.3079 | 0.0000 | 1.0000 |
 | q10 | 0.6871 | Single Feasible Projection | -18.3731 | 10.7144 | 29.1077 | 0.0101 | 1.0000 |
 | q50 | 0.9698 | Feasible Quantile Projection | -38.3984 | 15.3252 | 55.7383 | 1.0073 | 1.0000 |
 | q50 | 0.9698 | Payment-Certified N-1 Verifier | -42.0696 | 15.3252 | 57.3949 | 0.0000 | 1.0000 |
@@ -704,7 +711,7 @@ Overall status: **PASS**.
 | q90 | 1.3491 | Single Feasible Projection | -35.8767 | 21.4533 | 57.3665 | 0.0183 | 1.0000 |
 | q99 | 5.3209 | Feasible Quantile Projection | -215.0013 | 88.0807 | 313.3345 | 5.1263 | 1.0000 |
 | q99 | 5.3209 | Payment-Certified N-1 Verifier | -233.9641 | 88.0807 | 322.0449 | 0.0000 | 1.0000 |
-| q99 | 5.3209 | Risk-Constrained Convex Verifier | -176.9221 | 88.0807 | 265.0028 | 0.0000 | 1.0000 |
+| q99 | 5.3209 | Risk-Constrained Convex Verifier | -176.9220 | 88.0807 | 265.0027 | 0.0000 | 1.0000 |
 | q99 | 5.3209 | Single Feasible Projection | -143.7319 | 88.0807 | 231.8544 | 0.0209 | 1.0000 |
 
 ## Validation-frozen payment target selection
@@ -725,7 +732,7 @@ Overall status: **PASS**.
 | --- | --- | --- | --- | --- | --- |
 | IEEE 118-bus | Feasible Quantile Projection | 1315.5940 | 0.1681 | 0.0421 | 0.0000 |
 | IEEE 118-bus | Payment-Certified N-1 Verifier | 1138.6336 | 15.8057 | 0.0424 | 0.0000 |
-| IEEE 118-bus | Risk-Constrained Convex Verifier | 1039.4003 | 42.0540 | 0.0424 | 0.0000 |
+| IEEE 118-bus | Risk-Constrained Convex Verifier | 1039.3998 | 42.0538 | 0.0424 | 0.0000 |
 | IEEE 118-bus | Single Feasible Projection | 1201.6870 | 137.8232 | 0.0424 | 0.0000 |
 | IEEE 30-bus | Feasible Quantile Projection | 5.2304 | 0.1266 | 1.0000 | 0.0000 |
 | IEEE 30-bus | Payment-Certified N-1 Verifier | 4.6405 | 0.1232 | 1.0000 | 0.0000 |
@@ -733,11 +740,11 @@ Overall status: **PASS**.
 | IEEE 30-bus | Single Feasible Projection | 4.9223 | 0.6329 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Feasible Quantile Projection | 884.3686 | 0.1278 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Payment-Certified N-1 Verifier | 792.6199 | 7.3178 | 1.0000 | 0.0000 |
-| IEEE 39-bus | Risk-Constrained Convex Verifier | 727.2150 | 21.3181 | 1.0000 | 0.0000 |
+| IEEE 39-bus | Risk-Constrained Convex Verifier | 727.2147 | 21.3181 | 1.0000 | 0.0000 |
 | IEEE 39-bus | Single Feasible Projection | 826.4742 | 78.4756 | 1.0000 | 0.0000 |
 | IEEE RTS 24-bus | Feasible Quantile Projection | 1110.4934 | 0.1679 | 0.9384 | 0.0000 |
 | IEEE RTS 24-bus | Payment-Certified N-1 Verifier | 970.1261 | 13.7948 | 0.9483 | 0.0000 |
-| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 885.8243 | 35.9861 | 0.9501 | 0.0000 |
+| IEEE RTS 24-bus | Risk-Constrained Convex Verifier | 885.8239 | 35.9860 | 0.9501 | 0.0000 |
 | IEEE RTS 24-bus | Single Feasible Projection | 1023.2506 | 117.2371 | 0.9485 | 0.0000 |
 
 ## Complete nonlinear AC post-contingency validation

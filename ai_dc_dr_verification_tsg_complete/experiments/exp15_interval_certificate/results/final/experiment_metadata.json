@@ -8,7 +8,12 @@
     "upper_endpoint_policy": "retain raw q99 and apply it only to the flexible workload component; fixed facility demand is carried separately and the benchmark scale is calibrated on the q99 envelope",
     "q99_capacity_safe_upper": 1.1616096305979453,
     "q99_capacity_activation_eligible": true,
-    "fixed_load_separated": true
+    "fixed_load_separated": true,
+    "capacity_scope": "The raw q01/q99 ratios are tested after the declared benchmark-to-network normalization; per-site flexible demand is checked against the committed 118-MW nameplate. This is a normalized network scenario, not a co-located utility measurement.",
+    "capacity_audit_file": "endpoint_capacity_activation_audit.csv",
+    "q99_maximum_mapped_flexible_mw": 65.26325340660279,
+    "q99_maximum_mapped_total_site_load_mw": 66.20761682517332,
+    "flexible_nameplate_mw_per_site": 118.0
   },
   "continuous_segment_theorem": "For the affine segment joining the two frozen workload profiles, the joint N-1 SCED LP computes the exact minimum over the shared segment parameter. The optimal linear N-1 SCED value is convex in the conversion factor, so the maximum over the closed interval is attained at an endpoint. The interval therefore uses the joint-LP minimum and convex endpoint maximum, without a grid or endpoint-only lower bound.",
   "profile_source": "Experiment 9 global payment certificate; selected single feasible projection is the contractual reference; no endpoint-specific refit or post-hoc profile selection",
@@ -42,6 +47,8 @@
     "intervals_are_contractual": true,
     "capacity_eligible_endpoints_only": true,
     "raw_q99_is_stress_only": false,
-    "fixed_load_separated": true
+    "fixed_load_separated": true,
+    "capacity_audit_file": "endpoint_capacity_activation_audit.csv",
+    "capacity_check_applied_after_network_normalization": true
   }
 }

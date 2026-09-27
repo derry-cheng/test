@@ -15,14 +15,17 @@ closed-meter payment gate machine-checkable.
 
 The locked risk profile is the validation-selected \(\rho=10\) causal Pareto
 simplex fit. Its predeclared 10% MSE non-inferiority certificate is solved by
-CVXPY/Clarabel and independently checked through KKT and primal residuals; the
-release reference-lock diagnostic is disabled. The locked release reaches
-0.902/0.780/26.506/0.536 for nRMSE/false/under-credit/\(F_1\), strictly
-improving all four metrics over the single feasible projection. The CVaR-only
-row is retained as an internal comparator rather than relabelled as the joint
-fit. The complete seven-profile causal hull is separately certified
-Pareto-efficient, so the table does not conflate a boundary point with
-componentwise dominance over every internal frontier point. The
+SciPy trust-constr and independently checked through KKT and primal residuals;
+the locked fit's stationarity residual is below \(10^{-9}\), and the release
+reference-lock diagnostic is disabled. The locked release reaches
+0.902/0.780/26.506/0.536 for nRMSE/false/under-credit/\(F_1\), improving the
+four means over the selected single feasible projection. This does not amount
+to componentwise dominance: the validation-selected causal Pareto anchor has
+better nRMSE, under-credit, and \(F_1\), while the total-budget-only ablation
+has better locked means on all four metrics than the joint total-plus-CVaR fit.
+The reported evidence therefore supports a trade-off, not universal
+superiority. The complete seven-profile causal hull is separately certified
+Pareto-efficient. The
 final release keeps the indexed service-variable count (13,198,247) distinct
 from the candidate-start count (7,306,622), separates signed cycle settlement
 from its cash-floor presentation, and labels the complete-ledger profile as an
@@ -36,38 +39,25 @@ validation-frozen Exp9 $q_{99}$ facility-to-network scale before its complete
 active-window declaration scale, including carry-in jobs, before accepting the
 upstream hashes. The long Exp9 interval and unseen-transfer checkpoints now use
 same-directory atomic replacement, so an interrupted serialization cannot expose
-a partial CSV to a concurrent audit. The final unified run passes all 395 audit
-checks, regression tests, and the ten-page LaTeX build. All experiment outputs
-are retained in their experiment-specific directories; generated caches and
-temporary files are removed before release.
+a partial CSV to a concurrent audit. The final audit count is recorded in the
+regenerated audit artifact rather than hard-coded here. Regression tests and
+the ten-page LaTeX build are run against the final staged outputs. Experiment
+outputs remain in their experiment-specific directories; disposable caches and
+temporary files are excluded from the release.
 
-## 2026-09-27 — verified-source rerun and critical-issue reconciliation
-
-Restored the four untracked BurstGPT and MIT Supercloud CSV inputs using the
-new `code/scripts/download_public_inputs.py` utility. Their sizes and SHA-256
-values match `data/processed/data_manifest.json`; the tracked PGLib case also
-passes the same check. Rebuilt the processed data from those inputs (92.315 s),
-then reran Exp2 (341.900 s), Exp17 at the precommitted slot-62 gate (79.575 s),
-Exp9 (3.754 s), Exp16 (2.251 s), Exp20 (1.117 s), Exp22 (2.207 s), Exp26
-(4.875 s), Exp27 (18.175 s), Exp28 (5.737 s), Exp29 (11.128 s), and Exp30
-(0.124 s). The runner exposed nine processors; numerical-library thread counts
-were clamped to one and stages ran sequentially.
-
-The reruns reproduce the locked evidence rather than selecting against the
-test period. Exp2's joint total-plus-CVaR model remains behind the total-only
-ablation on nRMSE, mean false credit, under-credit, F1, and absolute false-credit
-CVaR. A paired three-day bootstrap gives a +0.134 MWh/day mean false-credit
-difference (95% CI 0.016--0.287) and a +0.394 MWh/day absolute-CVaR difference
-(95% CI -0.049--0.923). Exp17 retains slot-62 nRMSE 1.366, F1 0.080, and
-recall 0.050. Exp29 confirms zero finite-start mismatches but retains flexible
-relative-L2 target residual 1.581. Exp27 verifies zero network/service coupling
-residual across the 5,184-cell common witness; Exp30 continues to report that
-closed-meter payment is not ready. These results do not resolve C1--C5 and do
-not justify a universal baseline-superiority claim.
-
-After the revised evidence reconciliation, the independent audit passes
-395/395 checks, `tests/run_tests.py` passes, the public-input check passes, and
-the manuscript remains ten pages with no overfull boxes or unresolved
-references. See `reports/review/tsg_resolution.md` and the
-`latest_rerun` object in `reports/reproducibility/targeted_rerun_manifest.json`
-for the point-by-point status and machine-readable provenance.
+Final release verification (2026-09-27) regenerated Experiments 2, 9, 10, 15,
+17, 20, 23, 26, and 27 against the current locked profile and witness hashes.
+Experiment 27 completed 5,184 network-settlement cells, after which Exp26
+rechecked 75,326 jobs and 13,198,247 indexed variables with zero bridge
+residual. The independent event replay was then regenerated against the new
+witness digest. The unified audit passed all 402 checks, and the regression
+suite passed. The IEEEtran manuscript rebuilt to exactly ten pages; rendered
+pages were inspected for clipping, overlap, and table/figure layout. The
+repository is 112 MB, with one local branch (`main`) and a worker cap of eight.
+Exp10's Python-level AC case construction was GIL-bound under threads, so its
+corrective and intact-plan preventive cases now use bounded process workers;
+sampled process results match the prior implementation to numerical precision.
+The large BurstGPT and MIT SuperCloud CSVs remain outside version control; the
+manifest-checked downloader in `code/scripts/download_public_inputs.py` restores
+them for full preprocessing. This final session consumed the locked processed
+assets and reran the dependent experiment stages and audit.

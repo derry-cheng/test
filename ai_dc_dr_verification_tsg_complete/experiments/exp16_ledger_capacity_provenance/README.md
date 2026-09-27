@@ -10,10 +10,10 @@ trace envelope.
 
 `workload_power_calibration_sensitivity.csv` evaluates calibration-validation
 measured-to-predicted energy ratios at quantiles 0.01, 0.10, 0.50, 0.90, and
-0.99. The direct ratios are reported even when they exceed the committed
-capacity; the current flexible-only `capacity_safe_scale_factor` is 0.890086.
-It is the predeclared clipped conversion used for capacity planning and never
-produces a peak above 118 MW. The raw q99 endpoint remains un-clipped in the
-separate fixed/flexible payment-network model of Experiments 9 and 15.
+0.99. The raw q90/q99 benchmark factors exceed the 118-MW flexible nameplate;
+the diagnostic capacity-safe multiplier is 1.161610 and yields a 118-MW peak
+on the pre-network benchmark envelope. It is a planning diagnostic, not the
+network activation gate. Experiments 9 and 15 retain raw q01/q99 conversion
+factors and check the resulting normalized network scenario separately.
 This calibration audit is separate from network-placement permutations and
 does not use test outcomes to choose the scale.

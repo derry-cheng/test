@@ -4,9 +4,15 @@ This experiment independently audits the locked payment profile with the
 four-segment N-1 dispatch model at both calibration-validation energy-conversion
 interval endpoints (q01 and q99) against the validation-selected single feasible
 projection. Fixed facility demand is carried separately from flexible workload
-in both endpoint solves, so the raw q99 endpoint is activation-eligible under
-the q99-calibrated benchmark scale; no factor is clipped. The flexible-only
-capacity-safe factor from Experiment 16 is retained as a planning diagnostic.
+in both endpoint solves. Each endpoint is checked against the 118-MW flexible
+nameplate after the declared network normalization, with the values retained in
+`endpoint_capacity_activation_audit.csv`; no conversion factor is clipped. This
+certificate applies to the normalized network scenario and does not establish a
+co-located facility measurement. The flexible-only capacity-safe factor from
+Experiment 16 is retained as a pre-network planning diagnostic.
+The standalone stage consumes the locked processed workload and Exp9 artifacts;
+raw-source validation remains the responsibility of the explicit `data` or
+`all` pipeline stages.
 The feasible-quantile profile remains an external transfer comparator. Convexity
 of each optimal dispatch value makes the two endpoints an exact worst-case cost
 audit over the closed interval. The finite q10/q50/q90 payment guarantee

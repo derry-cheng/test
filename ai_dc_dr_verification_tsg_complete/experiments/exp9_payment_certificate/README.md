@@ -15,10 +15,14 @@ projection in every calibration-validation q01/q10/q50/q90/q99 conversion
 scenario; locked days are an independent certificate replay.
 
 Facility conversion uses a fixed/flexible decomposition. The benchmark scale is
-calibrated on the calibration-validation q99 flexible peak; fixed 6-MW/site demand is carried
-separately, so the raw q99 factor is retained without clipping and can be
-audited as an activation endpoint. The flexible-only capacity-safe factor in
-Experiment 16 is a planning diagnostic, not a payment gate.
+calibrated on the calibration-validation q99 flexible peak, and fixed 6-MW/site
+demand is carried separately. Each q01/q10/q50/q90/q99 profile is checked
+against the 118-MW flexible nameplate after the declared network normalization;
+the split-level results are saved in
+`network_capacity_activation_audit.csv`. This is a normalized network scenario
+check, not evidence that the public trace is a co-located facility measurement.
+Experiment 16's raw flexible-only capacity-safe factor remains a separate
+pre-network planning diagnostic.
 
 Run with:
 

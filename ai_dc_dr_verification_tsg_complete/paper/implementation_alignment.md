@@ -5,7 +5,7 @@
 | Declaration-to-settlement provenance is auditable across stages | run_exp26_end_to_end_certificate reads only locked upstream artifacts, recomputes the indexed job-to-region aggregation and the declared RTS-24 region-to-bus incidence, reconstructs both saved indexed service vectors from their start blocks, and verifies risk, payment, and outage certificates before recording source hashes | Eight explicit profile roles, eight SHA-256 digests, service-vector identity and digest recomputation flags, zero typed residuals, 864 frozen outage cells, and end_to_end_lineage.csv with the common runtime witness identity checked |
 | Multi-day baseline rules create endogenous manipulation incentives | `run_exp1`, `mode="strategic_reference"`, independent minimum-service dual certificates | Complete 8-price × 7-call-probability grid over ten reference days; 56/56 strict-profit boundary agreement |
 | Workload-state constraints verify a counterfactual independently of its generator | cumulative-state LP; total-plus-daily-tail risk convex counterfactual; exact pointwise event risk envelope | Twelve-method, 54-day Experiment 2 panel including complete-ledger quantile boosting, its exact feasible projection, and synthetic control |
-| Workload feasibility and information boundaries are independently checked; locked dominance is not established | complete submitted-job ledger, held-out ablations, slot-62 gate, and independent measured-trace scoring | the joint fit satisfies its frozen validation certificates, while the locked total-only ablation scores better on all four reported mechanism-isolation metrics and on false-credit CVaR; the slot-62 score is reported separately from full-ledger scoring |
+| Workload feasibility and information boundaries are audited without implying universal dominance | complete submitted-job ledger, validation-frozen risk fit, slot-62 gate, and independent trace-meter scoring | The joint fit improves four locked means over the selected single projection, while total-only improves on all four means over joint; gate results are reported separately, and public traces have no utility-event labels |
 | Cross-midnight workload is conserved | 1,216-slot continuous real-arrival horizon with deadline-indexed terminal equality, lexicographic event-window embedding, and endogenous pre-event/recovery operation | Experiment 12 energy residuals, conservation audit, and unit tests |
 | False credit and missed credit are distinct | `response_metrics` | Precision, recall, \(F_1\), false-credit, and under-credit intervals |
 | Gross forecast credit is not cash payment | `response_metrics` and `run_exp17` settlement fields | `paid_response_mwh` is retained as gross forecast credit; `contract_capped_response_mwh` is the observable intersection of submitted credit, frozen contract credit, and the closed meter; `meter_capped_false_response_mwh` and `meter_capped_underpayment_mwh` are oracle-only diagnostics and are never hard-coded to zero |
@@ -30,9 +30,10 @@
 | Full DC security coverage is distinct from native-case AC admissibility | `run_exp24_all_outage_security_panel` freezes profiles and evaluates every finite RTS-24 outage | 864 profile cells, 37 outages per cell, 31,968 contingency solves, and no outage ranking or post-solve profile reoptimization |
 
 All workload and SCED optimization problems are solved to HiGHS optimality. The
-risk ensemble uses a convex quadratic program in CVXPY/Clarabel with an explicit
-linear epigraph and independently recomputed KKT/primal residuals; no
-feasibility repair, rule-based dispatch, mock row, or result substitution is used.
+risk ensemble uses the declared convex quadratic program with an explicit linear
+epigraph; the locked release uses SciPy trust-constr and records independently
+recomputed KKT and primal residuals. The configured backend is part of the
+machine-readable certificate. No feasibility repair, rule-based dispatch, mock
+row, or result substitution is used.
 The statistical estimators are comparators and pre-estimators, not hidden generators
 of the trace-observed scoring truth.
-

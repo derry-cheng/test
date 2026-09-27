@@ -1,0 +1,3 @@
+endpoint,raw_conversion_scale_factor,network_dc_scale,pre_network_capacity_safe_factor_q99,maximum_mapped_flexible_mw,maximum_mapped_total_site_load_mw,flexible_nameplate_mw,maximum_flexible_nameplate_violation_mw,fixed_component_mapped_once,capacity_activation_eligible,capacity_scope
+q01,0.5826705226086141,0.1573939030950884,1.1616096305979453,7.146701448837961,8.091064867408491,118.0,0.0,1.0,1.0,selected-reference and payment-certified profile hull after fixed/flexible conversion and network normalization
+q99,5.320912625466783,0.1573939030950884,1.1616096305979453,65.26325340660279,66.20761682517332,118.0,0.0,1.0,1.0,selected-reference and payment-certified profile hull after fixed/flexible conversion and network normalization

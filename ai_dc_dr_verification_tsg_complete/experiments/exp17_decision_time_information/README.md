@@ -1,9 +1,9 @@
 # Experiment 17: Event-Gate Decision-Time Information
 
 This experiment evaluates the workload-state verifier under the information
-available at the pre-event commitment gate. Every arrival after slot 62
-(30 minutes before the first event interval at slot 64) is removed from both
-the gate-consistent target construction and the optimization
+available at the first declared event interval. Every arrival after the event
+gate (slot 62, 30 minutes before the event window) is removed from both the
+gate-consistent target construction and the optimization
 input, and the terminal equality is relaxed only for work that is not yet due.
 The complete-ledger verifier is reported as a separate information-rich
 comparator. The deployable committed-ledger rolling-service mode projects the

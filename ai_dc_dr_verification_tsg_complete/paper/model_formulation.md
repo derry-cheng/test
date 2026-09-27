@@ -459,9 +459,11 @@ fractions, and the final fit is refitted once at that declared fraction.
 
 The empirical conditional-value-at-risk representation and its convexity follow
 \cite{rockafellar2000cvar}; positive-part epigraphs follow
-\cite{boyd2004convex}. The release uses CVXPY with Clarabel for this convex
-quadratic program and records primal, epigraph, and KKT residuals. An infeasible
-reserve is recorded and cannot be selected. Convex-set closure
+\cite{boyd2004convex}. The release solves this convex quadratic program with
+the configured backend and records primal, epigraph, and KKT residuals. The
+locked run uses SciPy's trust-constr solver; the backend name and termination
+certificate are stored with the experiment outputs. An infeasible reserve is
+recorded and cannot be selected. Convex-set closure
 \cite{boyd2004convex} proves that
 \(\bar x=\sum_\ell\alpha_\ell x^{(\ell)}\) preserves every workload constraint.
 The final certificate checks both absolute risk budgets independently; its

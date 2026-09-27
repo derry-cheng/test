@@ -40,6 +40,8 @@ EXPECTED_FILES = {
         "experiments/exp2_baseline_verification/results/final/per_day_baseline_metrics.csv",
         "experiments/exp2_baseline_verification/results/final/closest_literature_baselines.csv",
         "experiments/exp2_baseline_verification/results/final/closest_literature_baselines_summary.csv",
+        "experiments/exp2_baseline_verification/results/final/oracle_identity_audit.csv",
+        "experiments/exp2_baseline_verification/results/final/oracle_identity_summary.csv",
         "experiments/exp2_baseline_verification/results/final/structural_literature_baselines.csv",
         "experiments/exp2_baseline_verification/results/final/structural_literature_baselines_summary.csv",
         "experiments/exp2_baseline_verification/results/final/baseline_fairness_audit.csv",
@@ -133,6 +135,7 @@ EXPECTED_FILES = {
     ],
     "experiment_9": [
         "experiments/exp9_payment_certificate/results/final/daily_payment_certificates.csv",
+        "experiments/exp9_payment_certificate/results/final/network_capacity_activation_audit.csv",
         "experiments/exp9_payment_certificate/results/final/conversion_scenario_certificates.csv",
         "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
         "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
@@ -197,6 +200,7 @@ EXPECTED_FILES = {
     ],
     "experiment_15": [
         "experiments/exp15_interval_certificate/results/final/interval_endpoint_certificates.csv",
+        "experiments/exp15_interval_certificate/results/final/endpoint_capacity_activation_audit.csv",
         "experiments/exp15_interval_certificate/results/final/interval_certificate_summary.csv",
         "experiments/exp15_interval_certificate/results/final/payment_value_interval_certificates.csv",
         "experiments/exp15_interval_certificate/results/final/payment_value_interval_summary.csv",
@@ -1496,7 +1500,6 @@ def run_audit(
         "closest_literature_baselines.csv"
     )
     expected_literature = {
-        "Event-reward ledger translation",
         "Batch-flexibility ledger translation",
         "Rolling-horizon ledger translation",
         "All-site coupled event-response control",
@@ -1512,9 +1515,30 @@ def run_audit(
         "closest_literature_baseline_panel",
         (
             f"{len(literature)}/{expected_test * len(expected_literature)} "
-            "same-ledger published-equation translations; each implementation "
-            "is identified as a transparent translation rather than a software "
-            "reimplementation"
+            "same-ledger method-day scores spanning equation-level translations "
+            "and an internal control; published mappings are explicitly not "
+            "software reimplementations"
+        ),
+        checks,
+    )
+    oracle_identity = pd.read_csv(
+        root
+        / "experiments/exp2_baseline_verification/results/final/"
+        "oracle_identity_audit.csv"
+    )
+    _check(
+        len(oracle_identity) == expected_test
+        and set(oracle_identity["comparison_role"].astype(str))
+        == {"oracle_identity_check_excluded_from_ranking"}
+        and set(oracle_identity["truth_source"].astype(str))
+        == {"same strategic generator used to construct candidate"}
+        and float(oracle_identity["maximum_profile_difference_mw"].max())
+        <= 1.0e-10
+        and float(oracle_identity["nrmse"].max()) <= 1.0e-10,
+        "event_reward_translation_is_reported_only_as_oracle_identity",
+        (
+            f"{len(oracle_identity)}/{expected_test} generator-identity rows are "
+            "isolated from ranked baselines and have zero profile residual within tolerance"
         ),
         checks,
     )
@@ -2212,7 +2236,7 @@ def run_audit(
             )
             and set(risk_ablation_certificates["ablation"].astype(str))
             == {
-                "single reference",
+                "causal Pareto anchor",
                 "unconstrained convex ensemble",
                 "total-budget-only ensemble",
                 "CVaR-only ensemble",
@@ -2220,14 +2244,16 @@ def run_audit(
             }
             and len(risk_ablation_certificates) == 5
             and bool(
-                risk_ablation_certificates.loc[
-                    risk_ablation_certificates["ablation"] != "single reference",
+            risk_ablation_certificates.loc[
+                    risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                     "solver_name",
-                ].eq("cvxpy-CLARABEL").all()
+                ].isin(
+                    {"cvxpy-CLARABEL", "scipy.optimize.trust-constr"}
+                ).all()
             )
             and bool(
                 risk_ablation_certificates.loc[
-                    risk_ablation_certificates["ablation"] != "single reference",
+                    risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                     "convex_quadratic_program",
                 ].astype(bool).all()
             )
@@ -2237,7 +2263,7 @@ def run_audit(
             and bool(
                 np.isfinite(
                     risk_ablation_certificates.loc[
-                        risk_ablation_certificates["ablation"] != "single reference",
+                        risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                         [
                             "kkt_stationarity_residual",
                             "primal_constraint_residual",
@@ -2250,7 +2276,7 @@ def run_audit(
             and bool(
                 (
                     risk_ablation_certificates.loc[
-                        risk_ablation_certificates["ablation"] != "single reference",
+                        risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                         "kkt_stationarity_residual",
                     ]
                     <= 1.0e-5
@@ -2259,7 +2285,7 @@ def run_audit(
             and bool(
                 (
                     risk_ablation_certificates.loc[
-                        risk_ablation_certificates["ablation"] != "single reference",
+                        risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                         "primal_constraint_residual",
                     ]
                     <= 1.0e-6
@@ -2268,11 +2294,11 @@ def run_audit(
             and bool(
                 (
                     risk_ablation_certificates.loc[
-                        risk_ablation_certificates["ablation"] != "single reference",
+                        risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                         "fitted_validation_mse_mw2",
                     ]
                     <= risk_ablation_certificates.loc[
-                        risk_ablation_certificates["ablation"] != "single reference",
+                        risk_ablation_certificates["ablation"] != "causal Pareto anchor",
                         "accuracy_budget_mse_mw2",
                     ]
                     + 1.0e-8
@@ -2963,6 +2989,11 @@ def run_audit(
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
     )
+    payment_capacity_audit = pd.read_csv(
+        root
+        / "experiments/exp9_payment_certificate/results/final/"
+        "network_capacity_activation_audit.csv"
+    )
     profile_store = np.load(
         root
         / "experiments/exp2_baseline_verification/results/intermediate/"
@@ -3051,7 +3082,7 @@ def run_audit(
         len(payment_certificates) == expected_test
         and payment_certificates["day"].nunique() == expected_test
         and bool((payment_certificates["solver_success"] == 1).all())
-        and payment_metadata.get("certificate_schema_version") == 10
+        and payment_metadata.get("certificate_schema_version") == 11
         and set(payment_metadata.get("power_conversion_scenarios", {}).keys())
         == {"q01", "q10", "q50", "q90", "q99"}
         and payment_metadata.get("network_conversion_decomposition", {}).get(
@@ -3116,6 +3147,51 @@ def run_audit(
             "formal four-segment maximum cap violation="
             f"{payment_certificates['payment_cap_violation_usd'].max():.3e} USD; "
             "the independent ten-segment transfer comparison is evaluated by its paired mean"
+        ),
+        checks,
+    )
+    capacity_conversion = payment_metadata.get(
+        "network_conversion_decomposition", {}
+    )
+    _check(
+        len(payment_capacity_audit) == 2 * 5
+        and set(payment_capacity_audit["split"].astype(str))
+        == {"calibration_validation", "locked_test"}
+        and set(payment_capacity_audit["conversion_scenario"].astype(str))
+        == {"q01", "q10", "q50", "q90", "q99"}
+        and bool(
+            payment_capacity_audit["capacity_activation_eligible"]
+            .astype(bool)
+            .all()
+        )
+        and bool(
+            (
+                payment_capacity_audit[
+                    "maximum_flexible_nameplate_violation_mw"
+                ].to_numpy(dtype=float)
+                <= 1.0e-8
+            ).all()
+        )
+        and bool(
+            (
+                payment_capacity_audit["maximum_mapped_flexible_mw"].to_numpy(
+                    dtype=float
+                )
+                <= payment_capacity_audit["flexible_nameplate_mw"].to_numpy(
+                    dtype=float
+                )
+                + 1.0e-8
+            ).all()
+        )
+        and capacity_conversion.get("capacity_audit_file")
+        == "network_capacity_activation_audit.csv"
+        and capacity_conversion.get("capacity_activation_eligible_all_splits")
+        is True,
+        "network_normalized_flexible_nameplate_audit",
+        (
+            f"{len(payment_capacity_audit)}/10 split-scenario hull checks apply "
+            "the fixed/flexible conversion before network normalization and "
+            "verify each mapped flexible site load against its committed nameplate"
         ),
         checks,
     )
@@ -3257,12 +3333,44 @@ def run_audit(
         / "experiments/exp15_interval_certificate/results/final/"
         "interval_endpoint_certificates.csv"
     )
+    endpoint_capacity_audit = pd.read_csv(
+        root
+        / "experiments/exp15_interval_certificate/results/final/"
+        "endpoint_capacity_activation_audit.csv"
+    )
     interval_metadata = json.loads(
         (
             root
             / "experiments/exp15_interval_certificate/results/final/"
             "experiment_metadata.json"
         ).read_text(encoding="utf-8")
+    )
+    _check(
+        len(endpoint_capacity_audit) == 2
+        and set(endpoint_capacity_audit["endpoint"].astype(str)) == {"q01", "q99"}
+        and bool(
+            endpoint_capacity_audit["capacity_activation_eligible"]
+            .astype(bool)
+            .all()
+        )
+        and bool(
+            (
+                endpoint_capacity_audit[
+                    "maximum_flexible_nameplate_violation_mw"
+                ].to_numpy(dtype=float)
+                <= 1.0e-8
+            ).all()
+        )
+        and interval_metadata.get("payment_value_interval", {}).get(
+            "capacity_audit_file"
+        )
+        == "endpoint_capacity_activation_audit.csv",
+        "interval_endpoint_nameplate_certificate",
+        (
+            f"{len(endpoint_capacity_audit)}/2 raw conversion endpoints pass the "
+            "site-level flexible nameplate check after network normalization"
+        ),
+        checks,
     )
     _check(
         len(interval_endpoint) == expected_test * 2 * 2
@@ -3276,6 +3384,14 @@ def run_audit(
         and set(interval_endpoint["endpoint"].astype(str)) == {"q01", "q99"}
         and bool((interval_endpoint.loc[interval_endpoint["endpoint"] == "q01", "capacity_activation_eligible"] == True).all())
         and bool((interval_endpoint.loc[interval_endpoint["endpoint"] == "q99", "capacity_activation_eligible"] == True).all())
+        and bool(
+            (
+                interval_endpoint[
+                    "maximum_flexible_nameplate_violation_mw"
+                ].to_numpy(dtype=float)
+                <= 1.0e-8
+            ).all()
+        )
         and bool((interval_endpoint.loc[interval_endpoint["endpoint"] == "q99", "solver_status"] == "optimal").all())
         and bool(np.isfinite(interval_endpoint["payment_cap_violation_usd"].to_numpy(dtype=float)).all())
         and bool(
