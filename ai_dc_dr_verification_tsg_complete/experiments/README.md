@@ -22,3 +22,7 @@ RTS-24 settlement; Exp. 28 supplies the held-out tail-risk audit and Exp. 29
 independently recomputes every executable start objective and its target
 residual. Exp. 30 audits active-window carry-in scaling, information-set
 lineage, and the closed-meter payment gate without refitting the risk profile.
+
+## October 14 extensions
+
+Experiments 31 and 32 have their own protocol READMEs and compact final results. Use the unified entry point with `--stage exp31` or `--stage exp32`; both consume compact committed artifacts. The Exp18 common-domain repair runner documents checksum-verified reuse versus freshly solved cells. Historical result sets remain attributable to their actual protocol.

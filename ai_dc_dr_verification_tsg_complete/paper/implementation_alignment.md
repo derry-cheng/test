@@ -1,3 +1,5 @@
+> Historical design record (superseded on 14 October 2026). This file preserves earlier derivations and implementation context; it is not the specification or evidence for the revised release. In particular, earlier claims of composed risk guarantees, all-pass AC coverage, independent selector implementation, or payment-wide dominance must not be inferred from this record. The canonical current statement is [main.tex](main.tex), with the corrected evidence indexed in [revision_matrix.md](revision_matrix.md) and the experiment-specific READMEs for Experiments 18, 28, 31, and 32.
+
 # Paper-to-Implementation Alignment
 
 | Paper claim | Implementation | Direct evidence |

@@ -1,0 +1,7 @@
+{
+  "reason": "cache signature changed; genuine candidate rebuild required",
+  "old_signature": "826dd1a9c1c281bb8b0880e26c699a91acc3580072c9bf0e3024f74d7c70700c",
+  "new_signature": "66ff68efaf6f14f15a194b1a5b78a7d37f48872ad93a506f0870726e73ca6af5",
+  "old_file": "matched_gate_profiles_retired_826dd1a9c1c281bb.npz",
+  "new_schema_version": 2
+}

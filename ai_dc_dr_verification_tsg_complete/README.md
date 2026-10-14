@@ -6,24 +6,26 @@ This repository contains the reproducible source, locked experiment manifests, a
 
 `code/src/aicdr/` contains the data, optimization, experiment, audit, and plotting modules. `code/scripts/` contains small reproducibility utilities, including the manifest-checked public-input downloader. Each directory under `experiments/` owns its runner, protocol README, and final results; stages that require long execution or publication figures additionally retain `results/intermediate/` checkpoints or a `figures/` subdirectory. `configs/default.yaml` is the single frozen configuration entry point. `paper/` contains the LaTeX source, figures, and supporting formulation notes; `reports/` contains review/revision records; `results/` indexes final experiment outputs. The large BurstGPT and MIT SuperCloud releases are kept outside version control; the small public PGLib IEEE-118 case is retained under `data/raw/pglib/` for network reproducibility. All configured paths and provenance requirements are recorded in `data/processed/data_manifest.json`.
 
-The locked risk contract is a validation-fitted seven-profile simplex with a
-predeclared 10% MSE non-inferiority neighborhood. The sparse convex program is
-solved by SciPy trust-constr and independently checked with KKT and primal
-residuals; reference-lock mode is disabled in the release configuration
-and retained only as an explicit diagnostic. On the 54-day locked panel the
-two-axis verifier reaches 0.902 nRMSE, 0.780 MWh/day false credit, 26.506
-MWh/day under-credit, and F_1=0.536, improving all four mean metrics over the
-selected single feasible projection (0.943/2.470/26.812/0.463) under the same
-submitted ledger. The validation-selected causal Pareto anchor and total-only
-ablation are also reported: the joint fit trades false-credit exposure against
-the anchor, and the total-only fit has lower means on all four response metrics
-than the joint fit. Results therefore support a cross-metric frontier, not
-universal componentwise dominance. The event-reward generator identity is
-isolated as an oracle check and excluded from rankings. Ex-post rows and the
-infeasible High-5-of-10 row are separately labelled. The independent payment replay uses a declared
-ten-segment exact N-1 LP with four date-level workers; the contractual
-certificate remains a four-segment LP, and checkpoints retain profile and
-certificate hashes.
+## Current evidence and revision
+
+The archived seven-profile contract and its original results remain unchanged.
+Experiment 31 adds an exact-convex MSE neighborhood, independently checked
+conic certificates, validation-defined active-tail constraints, and explicit
+risk/accuracy transport checks on runtime-complete execution. Experiment 32
+uses matched event-gate scoring and an all-slot binary-start capacity model
+with unchanged runtime, power and deadline semantics. The new development is
+retrospective: it is not advertised as a previously unseen external validation.
+
+The preventive AC panel now preserves a common topology-connected contingency
+domain. Numerical unknowns and converged constraint violations are retained
+separately from certified cells. A method's failure cannot remove a contingency
+from the denominator. The independent DC panel retains its complete finite
+non-islanding RTS24 domain.
+
+For current scientific boundaries, exact values, and the ten review items, see
+[`reports/review/tsg_resolution.md`](reports/review/tsg_resolution.md).
+Source hashes and actual rerun commands are recorded separately from historical
+all-stage execution.
 
 ## Reproduction
 
@@ -58,7 +60,7 @@ canonical all-stage manifest. The deterministic regression suite is run with
 The entry points clamp BLAS/HiGHS numerical backends to one thread per worker;
 configured worker pools are checked against the 20-core ceiling.
 
-The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every native-case-admissible connected finite outage result in a schema-versioned checkpoint before finalization; native-inadmissible connected outages are counted in the metadata and excluded by the pre-registered model-domain rule. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized declaration-only replay with a distinct predeclared tariff and no future-arrival or execution-telemetry input, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
+The full data pipeline requires the raw files named in `configs/default.yaml`. Job-level counterfactual optimization fails closed if any declared job requires more service slots than its submit-time window; the indexed witness is an exact contiguous fixed-rate start-time model with one selected start per submitted job. The preventive AC panel uses six predeclared day/slot snapshots, all 3/6/9% penetrations, and records every topology-connected finite outage result in a schema-versioned checkpoint before finalization; native numerical unknowns remain in the common primary denominator and are separately identified. Experiment 22 validates the typed job-to-region-to-bus coupling before network settlement, Experiment 23 supplies an independently parameterized declaration-only replay with a distinct predeclared tariff and no future-arrival or execution-telemetry input, and Experiment 24 evaluates all 37 finite non-islanding RTS-24 outages in every frozen-profile cell. The independent trace-meter replay is runnable once the processed workload and Exp2 committed profiles are present:
 
 ```text
 PYTHONPATH=code/src:vendor .venv/bin/python experiments/exp20_trace_meter_replay/run.py
@@ -95,14 +97,14 @@ modulo rule, or locked-day outcome selects the Exp19 submission population.
 
 The compiled paper is `paper/main.pdf`. Supporting formulation, source
 boundaries, implementation alignment, and the revision matrix are kept beside
-the LaTeX source. Experiments 1--30 each own a protocol README and final
+the LaTeX source. Experiments 1--32 each own a protocol README and final
 results; long-running stages add checkpoints and visualization-producing
 stages add figures. Experiment 29 independently enumerates the admissible
 contiguous start policy for every submitted job and reports both exact policy
 objective residuals and the remaining aggregate target-tracking residual. The
 audit module checks the expected output inventory and numerical certificates.
 The current release audit and regression-suite counts are recorded in
-`reports/reproducibility/targeted_rerun_manifest.json` before the ten-page
+`reports/reproducibility/oct14_revision_manifest.json` before the ten-page
 manuscript is archived.
 Experiment 30 audits active-window carry-in scaling, decision-time lineage,
 declaration-only network replay, and the closed-meter payment gate.
@@ -119,8 +121,9 @@ arrays before accepting the lineage.
 Experiment 28 audits the held-out total-plus-CVaR tail against both
 total-budget-only and CVaR-only ablations on ratio and absolute-MWh scales.
 Experiment 24 independently freezes its profiles and
-evaluates all 37 finite RTS-24 DC N--1 outages per cell; native-inadmissible
-outages are screened before workload injection and reported by network. The
+evaluates all 37 finite RTS-24 DC N--1 outages per cell. Native AC screening
+is a separately reported subgroup and never removes cells from the current
+common-domain AC denominator. The
 larger IEEE-118/PGLib case is reserved for the separate cross-network and AC
 panels. Experiment 26 is a cached-only end-to-end lineage certificate: it
 recomputes indexed coupling residuals, verifies the common witness and

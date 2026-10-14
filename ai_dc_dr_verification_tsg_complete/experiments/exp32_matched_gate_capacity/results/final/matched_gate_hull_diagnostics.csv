@@ -1,0 +1,3 @@
+split,days,candidate_count,distinct_event_profiles,event_affine_hull_rank,rank_absolute_tolerance,maximum_pairwise_event_l2_mw,all_method_day_cells,service_floor_binding_cells,maximum_fitted_profile_difference_from_selected_single_mw,interpretation
+validation,16,7,3,2,1e-08,40.99370510512736,208,208,1.6909700306655395e-09,"fixed pre-gate benchmark and binding3MWh event service floor leave a rank2 shape hull; all objectives choose the same vertex, so no incremental risk-module benefit"
+locked,54,7,3,2,1e-08,77.23134315940864,702,702,1.965076990018133e-09,"fixed pre-gate benchmark and binding3MWh event service floor leave a rank2 shape hull; all objectives choose the same vertex, so no incremental risk-module benefit"

@@ -1,0 +1,35 @@
+{
+  "expected_cells": 12,
+  "retained_cells": 12,
+  "selected_locked_days": [
+    61,
+    88,
+    114
+  ],
+  "nominal_reference_peak_utilizations": [
+    0.98,
+    1.1
+  ],
+  "joint_cells": 6,
+  "phase_one_cells": 6,
+  "power_quantum_mw": 0.001,
+  "epigraph": "exact finite tangent maximum on every attainable integer power level",
+  "total_risk_budget_mwh": 0.0,
+  "tail_risk_budget_mwh": 0.0,
+  "joint_mse_budget_mw2": 0.0,
+  "phase_one_objective": "minimum exact event MSE subject to same full-runtime, capacity, zero total/tail constraints",
+  "sequential_diagnostic": true,
+  "changed_entitlements": false,
+  "selection_uses_risk_outcomes": false,
+  "modeled_scenario_information": "declaration-only schedules known at gate; not a post-event measured outcome",
+  "feasible_cells": 10,
+  "optimal_cells": 10,
+  "proven_infeasible_cells": 2,
+  "time_limited_cells": 0,
+  "implementation_sha256": {
+    "matched_gate_capacity.py": "b7e18507bf7e031fa0646e8299d8bc604d02f6c9a3d8ac1e6ef3f136c0bb9071",
+    "runtime_capacity.py": "39723a98a903bee0d3e2f87e8c6142023e6b337d98d41f6b836db622f6dbb382",
+    "risk_execution_composition.py": "eb042db8989b280ba457be428a838acb0bad4e7ebf759692eb3533dd9f937eb6"
+  },
+  "protocol_sha256": "70a308d2cc7a4651138a1b6edae84386cd3bcad55d70c39a3eea32310cfb83b5"
+}

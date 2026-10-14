@@ -1,0 +1,17 @@
+{
+  "certified_profiles": {
+    "file_sha_same": true,
+    "arrays_all_same": true,
+    "arrays": 8
+  },
+  "test_profiles": {
+    "file_sha_same": true,
+    "arrays_all_same": true,
+    "arrays": 15
+  },
+  "validation_profiles": {
+    "file_sha_same": true,
+    "arrays_all_same": true,
+    "arrays": 11
+  }
+}

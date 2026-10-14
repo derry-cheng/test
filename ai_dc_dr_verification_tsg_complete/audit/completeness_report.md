@@ -182,6 +182,14 @@ Overall status: **PASS**.
 - [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv: exists and non-empty
 - [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.png: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.pdf: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/common_domain_manifest.csv: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/common_domain_protocol.json: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/native_connected_outage_diagnostics.csv: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/native_screened_common_domain_summary.csv: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/reconstructed_cells.csv: exists and non-empty
+- [x] experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/solver_attempt_diagnostics.csv: exists and non-empty
 - [x] experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv: exists and non-empty
 - [x] experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_profile.csv: exists and non-empty
 - [x] experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_solution.npz: exists and non-empty
@@ -252,6 +260,36 @@ Overall status: **PASS**.
 - [x] experiment_30:experiments/exp30_contract_lineage_audit/results/final/contract_lineage_summary.csv: exists and non-empty
 - [x] experiment_30:experiments/exp30_contract_lineage_audit/results/final/experiment_metadata.json: exists and non-empty
 - [x] experiment_30:experiments/exp30_contract_lineage_audit/README.md: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/experiment_metadata.json: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_freeze_manifest.json: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_frozen_weights.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_solver_certificates.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/risk_frontier_daily.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/risk_frontier_summary.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/paired_tail_bootstrap.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/execution_transfer_certificates.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/execution_transfer_daily.csv: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/results/final/solver_failures.json: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/README.md: exists and non-empty
+- [x] experiment_31:experiments/exp31_risk_execution_composition/run.py: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/experiment_metadata.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_metadata.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_daily.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_summary.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_weights.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_fit_certificates.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_information_boundary.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_frozen_profiles.npz: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cells.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_summary.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cohort.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_metadata.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_direct_risk_certificates.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_cells.csv: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_metadata.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_certificates.json: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/README.md: exists and non-empty
+- [x] experiment_32:experiments/exp32_matched_gate_capacity/run.py: exists and non-empty
 - [x] manuscript_sources:paper/main.tex: exists and non-empty
 - [x] manuscript_sources:paper/main.pdf: exists and non-empty
 - [x] manuscript_sources:paper/IEEEtran.cls: exists and non-empty
@@ -274,14 +312,14 @@ Overall status: **PASS**.
 - [x] manuscript_sources:paper/figures/fig_risk_tail_tradeoff.pdf: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig29_target_tracking.png: exists and non-empty
 - [x] manuscript_sources:paper/figures/fig29_target_tracking.pdf: exists and non-empty
-- [x] canonical_unified_manifest_preserved: 32/32 stages recorded; canonical request=all; audit status=completed (running is expected during the self-check)
-- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2306x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=2309x1077; fig_method_detail.png=1800x643; fig_risk_tail_tradeoff.png=2306x1045
+- [x] canonical_unified_manifest_preserved: historical 32-stage all-run retained; current revision is targeted, not a new full run; recorded=32; status_valid=True
+- [x] all_png_figures_decodable_and_high_resolution: fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_common_domain_coverage.png=1980x720; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2306x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=2150x625; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=1123x800; fig_method_detail.png=1050x829; fig_risk_tail_tradeoff.png=1123x800
 - [x] ieeetran_pdf_length_and_geometry: 10 pages; boxes=[(612.0, 792.0), (612.0, 792.0)]...
 - [x] model_formula_citation_traceability: 27/27 required source keys in bibliography, formula-source matrix, and complete formulation
 - [x] official_ieee_journal_template: manuscript uses the vendored official IEEEtran journal class
-- [x] maximum_two_sources_per_citation_group: 39 in-text citation groups checked
+- [x] maximum_two_sources_per_citation_group: 36 in-text citation groups checked
 - [x] complete_manuscript_bibliography: 32 verified bibliography entries; 32 unique in-text citations; uncited=[]; missing=[]
-- [x] every_labeled_equation_figure_table_is_referenced: 49 labels; unreferenced=[]; missing=[]
+- [x] every_labeled_equation_figure_table_is_referenced: 47 labels; unreferenced=[]; missing=[]
 - [x] required_abbreviation_expansions_present: MILP=ok; MIT=ok; DCGM=ok; PGLib=ok; SHA-256=ok; QP=ok; MAE=ok; RMSE=ok; F1=ok
 - [x] sha256_symbol_is_hyphenated: SHA-256 is written consistently in prose and equations
 - [x] sha256:data/raw/burstgpt/BurstGPT_without_fails_1.csv: raw source deferred to verified archive; locked processed artifact retained
@@ -316,7 +354,7 @@ Overall status: **PASS**.
 - [x] explicit_decision_information_boundary_certificate: the gate certificate records zero post-gate arrivals, execution truth, locked-outcome selection, and utility event labels at decision time, while requiring a frozen submitted contract and payment exclusion of future jobs
 - [x] causal_response_grid_selection: 42 masked-ledger response candidates select one DR price/regularization pair on validation only under the declared false-credit budget; selection fails closed when no feasible candidate exists
 - [x] causal_reserve_is_validation_selected_and_payment_ineligible: 4 validation candidates select the recorded eta=0.55 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate
-- [x] cross_network_ac_n1_admissibility_panel: 9612 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded
+- [x] cross_network_ac_n1_common_domain_panel: 10332/10332 topology-declared cells; status counts={'certified': 9642, 'numerical_unknown': 690}; failures remain in both method denominators
 - [x] homogeneous_scale_has_fixed_nameplate_bound: capacity-proportional and fixed-nameplate scales are reported separately; the certified peak remains within the committed capacity without a second LP
 - [x] declared_homogeneous_scale_sensitivity_panel: 4 predeclared homogeneous transforms replay the same witness and resource caps; the panel records where the fixed-GPU nameplate stops being respected
 - [x] closest_literature_baseline_panel: 270/270 same-ledger method-day scores spanning equation-level translations and an internal control; published mappings are explicitly not software reimplementations
@@ -406,6 +444,14 @@ Overall status: **PASS**.
 - [x] contract_lineage_separates_declaration_replay_from_meter_payment: Exp30 recomputes the active declaration scale, confirms the submit-time information boundary, and prevents a declaration-only network replay from being labeled as a closed-meter payment
 - [x] end_to_end_upstream_hashes_match_current_artifacts: executable submitted-job witness=ok; runtime-complete common witness used by network settlement=ok; N-1 settlement replay of the runtime-complete common witness=ok; exact risk-profile to executable-start bridge=ok; validation-fitted aggregate risk target=ok; payment-certified feasible profile hull=ok; recomputed job-to-network certificate summary=ok; frozen-profile all-outage N-1 replay=ok
 - [x] no_stale_atomic_temporary_artifacts: no hidden atomic-writer temporary files remain
+- [x] tail_audit_source_top_m_and_inference_scope: Exp28 recomputes all point statistics from the current locked source; each resample uses exactly 14 tail observations; percentile intervals are exploratory and unadjusted
+- [x] risk_revision_hashes_and_retrospective_scope: Exp31 binds the frozen validation design, implementation, original locked profiles, and original executable witness; the redesign is retrospective exploratory evidence
+- [x] risk_revision_complete_panels_and_solver_certificates: 8 validation fits and 10 locked controls retain all planned days; primal/KKT checks, simplex mass, exact measured accuracy and exploratory interval scope are explicit
+- [x] risk_execution_transfer_preserves_bounds_and_failures: 3 complete runtime replays; executable accepted=0/3 and modeled capped risk accepted=3/3; distinct claims are not conflated
+- [x] gate_runtime_revision_source_lineage: Exp32's three panels bind the current protocol and implementation; runtime declarations bind the unchanged full witness
+- [x] matched_gate_complete_common_information_and_scoring: 910 method/day rows share eligible-ledger/reference/response hashes, 3-MWh floor and pre-gate state; modeled credits are not observed intervention evidence
+- [x] runtime_full_entitlement_capacity_and_status_counts: 24 planned full-runtime cells; feasible=24, optimal=24; raw/summary/metadata statuses agree; infrastructure errors are not scientific outcomes
+- [x] runtime_joint_risk_accuracy_retains_infeasible_cells: 12 declared joint/phase-I cells; feasible=10, proven infeasible=2; same executed schedule is scored for capacity, risk and exact MSE
 
 ## Locked test-set baseline results
 
@@ -820,4 +866,4 @@ Overall status: **PASS**.
 - The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.
 - The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.
 - The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.
-- The cross-network AC panel is a fixed-active-plan preventive AC-OPF certificate over every native-case admissible non-islanding outage in four public networks; it is a steady-state feasibility result and not a transient-stability or intertemporal unit-commitment certificate.
+- The cross-network AC panel retains every connected non-islanding outage in four public networks, classifies certified/limit-violation/numerical-unknown outcomes on identical method denominators, and does not treat nonlinear failure as physical infeasibility; certified cells are steady-state checks, not transient-stability or unit-commitment certificates.

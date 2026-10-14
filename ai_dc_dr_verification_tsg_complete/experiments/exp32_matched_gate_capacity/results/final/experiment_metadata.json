@@ -1,0 +1,17 @@
+{
+  "experiment": "exp32_matched_gate_capacity",
+  "schema_version": 1,
+  "source_witness_sha256": "e8e819b52be45742bd373ba0325d700afe82c5f52c6b79b56da9148b4c8cf6a1",
+  "panels": [
+    "matched_gate_metadata.json",
+    "runtime_capacity_metadata.json",
+    "joint_runtime_risk_mse_metadata.json"
+  ],
+  "protocol_sha256": "70a308d2cc7a4651138a1b6edae84386cd3bcad55d70c39a3eea32310cfb83b5",
+  "implementation_sha256": {
+    "matched_gate_capacity.py": "b7e18507bf7e031fa0646e8299d8bc604d02f6c9a3d8ac1e6ef3f136c0bb9071",
+    "runtime_capacity.py": "39723a98a903bee0d3e2f87e8c6142023e6b337d98d41f6b836db622f6dbb382",
+    "risk_execution_composition.py": "eb042db8989b280ba457be428a838acb0bad4e7ebf759692eb3533dd9f937eb6"
+  },
+  "interpretation": "matched aggregate gate evidence and separate small-cohort full-runtime stress; no claim these alone close a deployed measured pipeline"
+}

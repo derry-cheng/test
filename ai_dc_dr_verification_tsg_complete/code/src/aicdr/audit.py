@@ -237,6 +237,14 @@ EXPECTED_FILES = {
         "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
         "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
         "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.png",
+        "experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.png",
+        "experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.pdf",
+        "experiments/exp18_preventive_ac_network_panel/results/final/common_domain_manifest.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/common_domain_protocol.json",
+        "experiments/exp18_preventive_ac_network_panel/results/final/native_connected_outage_diagnostics.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/native_screened_common_domain_summary.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/reconstructed_cells.csv",
+        "experiments/exp18_preventive_ac_network_panel/results/final/solver_attempt_diagnostics.csv",
     ],
     "experiment_19": [
         "experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
@@ -332,6 +340,40 @@ EXPECTED_FILES = {
         "experiments/exp30_contract_lineage_audit/results/final/experiment_metadata.json",
         "experiments/exp30_contract_lineage_audit/README.md",
     ],
+    "experiment_31": [
+        "experiments/exp31_risk_execution_composition/results/final/experiment_metadata.json",
+        "experiments/exp31_risk_execution_composition/results/final/validation_freeze_manifest.json",
+        "experiments/exp31_risk_execution_composition/results/final/validation_frozen_weights.csv",
+        "experiments/exp31_risk_execution_composition/results/final/validation_solver_certificates.csv",
+        "experiments/exp31_risk_execution_composition/results/final/risk_frontier_daily.csv",
+        "experiments/exp31_risk_execution_composition/results/final/risk_frontier_summary.csv",
+        "experiments/exp31_risk_execution_composition/results/final/paired_tail_bootstrap.csv",
+        "experiments/exp31_risk_execution_composition/results/final/execution_transfer_certificates.csv",
+        "experiments/exp31_risk_execution_composition/results/final/execution_transfer_daily.csv",
+        "experiments/exp31_risk_execution_composition/results/final/solver_failures.json",
+        "experiments/exp31_risk_execution_composition/README.md",
+        "experiments/exp31_risk_execution_composition/run.py",
+    ],
+    "experiment_32": [
+        "experiments/exp32_matched_gate_capacity/results/final/experiment_metadata.json",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_metadata.json",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_daily.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_summary.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_weights.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_fit_certificates.json",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_information_boundary.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/matched_gate_frozen_profiles.npz",
+        "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cells.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_summary.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cohort.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_metadata.json",
+        "experiments/exp32_matched_gate_capacity/results/final/runtime_direct_risk_certificates.json",
+        "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_cells.csv",
+        "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_metadata.json",
+        "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_certificates.json",
+        "experiments/exp32_matched_gate_capacity/README.md",
+        "experiments/exp32_matched_gate_capacity/run.py",
+    ],
     "manuscript_sources": [
         "paper/main.tex",
         "paper/main.pdf",
@@ -359,6 +401,31 @@ EXPECTED_FILES = {
 }
 
 
+def _canonical_manifest_scope(
+    manifest: dict[str, Any], targeted_revision: dict[str, Any]
+) -> tuple[bool, str]:
+    """Keep the historical all-run record distinct from targeted new stages."""
+    legacy = {"data", "audit"} | {f"exp{index}" for index in range(1, 31)}
+    current = legacy | {"exp31", "exp32"}
+    recorded = manifest.get("stages", {})
+    historical = set(recorded) == legacy
+    scope_ok = set(recorded) == current or (
+        historical
+        and targeted_revision.get("historical_full_run_not_reexecuted") is True
+    )
+    status_ok = all(
+        row.get("status") == "completed"
+        for name, row in recorded.items() if name != "audit"
+    ) and recorded.get("audit", {}).get("status") in {"running", "completed"}
+    scope = (
+        "historical 32-stage all-run retained; current revision is targeted, not a new full run"
+        if historical else "current 34-stage all-run"
+    )
+    return bool(manifest.get("stage_requested") == "all" and scope_ok and status_ok), (
+        f"{scope}; recorded={len(recorded)}; status_valid={status_ok}"
+    )
+
+
 def _check(condition: bool, name: str, detail: str, checks: list[dict[str, Any]]) -> None:
     checks.append({"name": name, "passed": bool(condition), "detail": detail})
 
@@ -369,6 +436,199 @@ def _all_true(values: pd.Series) -> bool:
         return bool(values.all())
     normalized = values.astype(str).str.strip().str.lower()
     return bool(normalized.eq("true").all())
+
+
+def _audit_risk_revision(root: Path, cfg: dict[str, Any], checks: list[dict[str, Any]]) -> None:
+    """Check evidence consistency, never require scientific superiority."""
+    from .risk_tail_audit import _cvar, _paired_locked_panel
+
+    tail_folder = root / "experiments/exp28_risk_tail_audit/results/final"
+    tail_meta = json.loads((tail_folder / "experiment_metadata.json").read_text())
+    tail_summary = pd.read_csv(tail_folder / "risk_tail_audit.csv").set_index("ablation")
+    tail_boot = pd.read_csv(tail_folder / "risk_tail_paired_bootstrap.csv")
+    methods = ["total+CVaR ensemble", "total-budget-only ensemble", "CVaR-only ensemble"]
+    source = root / "experiments/exp2_baseline_verification/results/final/risk_module_ablation_daily.csv"
+    pivot, oracle = _paired_locked_panel(pd.read_csv(source), methods, int(cfg["experiments"]["test_days"]))
+    level = float(cfg["experiments"].get("risk_cvar_level", .75))
+    point_metrics_valid = True
+    for method in methods:
+        for scale, values in (("mwh", pivot[method].to_numpy()), ("ratio", (pivot[method] / oracle.clip(lower=1e-12)).to_numpy())):
+            for suffix, expected in (("mean", values.mean()), ("cvar", _cvar(values, level)), ("q90", np.quantile(values, .9))):
+                point_metrics_valid &= bool(np.isclose(tail_summary.loc[method, f"false_credit_{scale}_{suffix}"], expected, rtol=0., atol=1e-12))
+    _check(
+        tail_meta.get("source_sha256") == sha256(source)
+        and tail_meta.get("implementation_sha256") == sha256(root / "code/src/aicdr/risk_tail_audit.py")
+        and tail_meta.get("schema_version") == 2
+        and tail_meta.get("cvar_tail_days") == 14
+        and tail_meta.get("multiplicity_adjusted") is False
+        and len(tail_boot) == 12 and point_metrics_valid
+        and tail_boot["interval_type"].eq("unadjusted_exploratory_percentile_95").all()
+        and not tail_boot["multiplicity_adjusted"].any()
+        and np.isfinite(tail_boot[["joint_minus_comparator_point_estimate", "bootstrap_mean_difference", "ci_2.5", "ci_97.5"]].to_numpy(dtype=float)).all(),
+        "tail_audit_source_top_m_and_inference_scope",
+        "Exp28 recomputes all point statistics from the current locked source; each resample uses exactly 14 tail observations; percentile intervals are exploratory and unadjusted",
+        checks,
+    )
+
+    folder = root / "experiments/exp31_risk_execution_composition/results/final"
+    meta = json.loads((folder / "experiment_metadata.json").read_text())
+    freeze = json.loads((folder / "validation_freeze_manifest.json").read_text())
+    cert = pd.read_csv(folder / "validation_solver_certificates.csv")
+    weights = pd.read_csv(folder / "validation_frozen_weights.csv")
+    daily = pd.read_csv(folder / "risk_frontier_daily.csv")
+    boot = pd.read_csv(folder / "paired_tail_bootstrap.csv")
+    transfer = pd.read_csv(folder / "execution_transfer_certificates.csv")
+    transfer_daily = pd.read_csv(folder / "execution_transfer_daily.csv")
+    lineage_paths = {
+        "method_source_sha256": root / "code/src/aicdr/risk_execution_composition.py",
+        "protocol_readme_sha256": folder.parents[1] / "README.md",
+        "source_validation_sha256": root / "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+        "validation_weights_sha256": folder / "validation_frozen_weights.csv",
+        "validation_certificates_sha256": folder / "validation_solver_certificates.csv",
+        "source_test_sha256": root / "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
+        "source_witness_sha256": root / "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz",
+        "archived_bridge_certificate_sha256": root / "experiments/exp27_executable_common_witness/results/final/risk_to_executable_bridge_certificate.json",
+    }
+    _check(
+        all(meta.get(key) == sha256(path) for key, path in lineage_paths.items())
+        and all(meta.get(key) == value for key, value in freeze.items())
+        and meta.get("retrospective_method_development") is True
+        and meta.get("new_external_validation") is False
+        and meta.get("locked_outcome_hyperparameter_selection") is False
+        and meta.get("source_candidates_and_original_results_modified") is False,
+        "risk_revision_hashes_and_retrospective_scope",
+        "Exp31 binds the frozen validation design, implementation, original locked profiles, and original executable witness; the redesign is retrospective exploratory evidence",
+        checks,
+    )
+    alpha = weights[[col for col in weights if col.startswith("alpha_")]].to_numpy(dtype=float)
+    day_sets = daily.groupby(["split", "method"])["day"].agg(lambda days: set(days))
+    panels_valid = (len(cert) == 8 and len(weights) == 8 and alpha.shape == (8, 7)
+                    and not daily.duplicated(["split", "method", "day"]).any()
+                    and len(daily[daily["split"].eq("validation")]) == 8 * 16
+                    and len(daily[daily["split"].eq("locked")]) == 10 * 54
+                    and all(days == set(meta["validation_days"] if split == "validation" else meta["locked_days"]) for (split, _), days in day_sets.items()))
+    _check(
+        panels_valid and np.isfinite(alpha).all() and np.min(alpha) >= -1e-8
+        and np.allclose(alpha.sum(axis=1), 1., atol=1e-8, rtol=0.)
+        and np.isfinite(cert[["primal_residual", "kkt_residual", "mse_mw2", "total_false_credit_mwh", "tail_false_credit_mwh"]].to_numpy(dtype=float)).all()
+        and cert["primal_residual"].le(1e-5).all() and cert["kkt_residual"].le(1e-5).all()
+        and cert["mse_mw2"].le(cert["mse_budget_mw2"] + 1e-5).all()
+        and boot["inference"].eq("exploratory unadjusted percentile CI").all(),
+        "risk_revision_complete_panels_and_solver_certificates",
+        "8 validation fits and 10 locked controls retain all planned days; primal/KKT checks, simplex mass, exact measured accuracy and exploratory interval scope are explicit",
+        checks,
+    )
+    transfer_ok = (len(transfer) == 3 and len(transfer_daily) == 3 * 54
+                   and not transfer_daily.duplicated(["executable_profile", "day"]).any())
+    for actual, upper in (("executed_total_false_credit_mwh", "total_false_credit_upper_bound_mwh"), ("executed_tail_false_credit_mwh", "tail_false_credit_upper_bound_mwh"), ("executed_event_mse_mw2", "event_mse_upper_bound_mw2"), ("capped_total_false_credit_mwh", "target_total_false_credit_mwh"), ("capped_tail_false_credit_mwh", "target_tail_false_credit_mwh")):
+        transfer_ok &= bool((transfer[actual] <= transfer[upper] + 1e-9).all())
+    execution_fields = ["executed_total_budget_pass", "executed_tail_budget_pass", "executed_mse_budget_pass"]
+    payment_fields = ["capped_total_budget_pass", "capped_tail_budget_pass"]
+    transfer_ok &= transfer["execution_certificate_accept"].equals(transfer[execution_fields].all(axis=1))
+    transfer_ok &= transfer["payment_risk_certificate_accept"].equals(transfer[payment_fields].all(axis=1))
+    _check(
+        transfer_ok,
+        "risk_execution_transfer_preserves_bounds_and_failures",
+        f"3 complete runtime replays; executable accepted={int(transfer['execution_certificate_accept'].sum())}/3 and modeled capped risk accepted={int(transfer['payment_risk_certificate_accept'].sum())}/3; distinct claims are not conflated",
+        checks,
+    )
+
+
+def _audit_gate_revision(root: Path, cfg: dict[str, Any], checks: list[dict[str, Any]]) -> None:
+    """Bind matched eligibility and recompute all runtime status summaries."""
+    folder = root / "experiments/exp32_matched_gate_capacity/results/final"
+    meta = json.loads((folder / "experiment_metadata.json").read_text())
+    gate_meta = json.loads((folder / "matched_gate_metadata.json").read_text())
+    cap_meta = json.loads((folder / "runtime_capacity_metadata.json").read_text())
+    joint_meta = json.loads((folder / "joint_runtime_risk_mse_metadata.json").read_text())
+    protocol_hash = sha256(folder.parents[1] / "README.md")
+    source_hash = sha256(root / "experiments/exp27_executable_common_witness/results/final/runtime_complete_witness.npz")
+    source_modules = {name: sha256(root / "code/src/aicdr" / name) for name in ("matched_gate_capacity.py", "runtime_capacity.py", "risk_execution_composition.py")}
+    _check(
+        all(panel.get("protocol_sha256") == protocol_hash and panel.get("implementation_sha256") == source_modules for panel in (meta, gate_meta, cap_meta, joint_meta))
+        and meta.get("source_witness_sha256") == source_hash
+        and cap_meta.get("source_sha256") == source_hash,
+        "gate_runtime_revision_source_lineage",
+        "Exp32's three panels bind the current protocol and implementation; runtime declarations bind the unchanged full witness",
+        checks,
+    )
+    gate = pd.read_csv(folder / "matched_gate_daily.csv")
+    boundary = pd.read_csv(folder / "matched_gate_information_boundary.csv")
+    fit = json.loads((folder / "matched_gate_fit_certificates.json").read_text())
+    weight = pd.read_csv(folder / "matched_gate_weights.csv")
+    gate_hash_columns = ["eligible_ledger_sha256", "common_reference_sha256", "common_modeled_response_sha256"]
+    complete_gate = (len(gate) == 70 * 13 and len(boundary) == 70 and len(fit) == 4
+                     and not gate.duplicated(["day", "method"]).any()
+                     and gate.groupby("day")["method"].nunique().eq(13).all()
+                     and all(gate.groupby("day")[key].nunique().eq(1).all() for key in gate_hash_columns)
+                     and gate.loc[gate["split"].eq("validation"), "day"].nunique() == 16
+                     and gate.loc[gate["split"].eq("locked"), "day"].nunique() == 54)
+    _check(
+        complete_gate and not boundary["future_arrivals_used"].any()
+        and not boundary["execution_telemetry_used"].any()
+        and (boundary["latest_history_day"] < boundary["day"]).all()
+        and boundary["maximum_pre_gate_state_residual_mw"].le(1e-6).all()
+        and gate["baseline_event_service_floor_mwh"].eq(3.).all()
+        and gate["baseline_event_service_mwh"].ge(3. - 1e-8).all()
+        and not gate["observed_utility_intervention"].any()
+        and gate_meta.get("selection_uses_locked_outcomes") is False
+        and gate_meta.get("observed_meter_claim") is False
+        and gate_meta.get("runtime_composition_claim") is False
+        and gate_meta.get("modeled_response_tariff_per_mwh") == cfg["experiments"]["independent_event_replay_price_per_mwh"]
+        and len(weight) == 4 * 7 and weight["weight"].ge(-1e-8).all()
+        and np.allclose(weight.groupby("method")["weight"].sum(), 1., rtol=0., atol=1e-8)
+        and all(float(row["primal_residual"]) <= 1e-5 and float(row["kkt_residual"]) <= 1e-5 for row in fit),
+        "matched_gate_complete_common_information_and_scoring",
+        "910 method/day rows share eligible-ledger/reference/response hashes, 3-MWh floor and pre-gate state; modeled credits are not observed intervention evidence",
+        checks,
+    )
+    capacity = pd.read_csv(folder / "runtime_capacity_cells.csv")
+    summary = pd.read_csv(folder / "runtime_capacity_summary.csv").sort_values(["method", "nominal_reference_peak_utilization"]).reset_index(drop=True)
+    keys = ["method", "nominal_reference_peak_utilization"]
+    expected_summary = capacity.groupby(keys, as_index=False).agg(expected_cells=("day", "size"), feasible_cells=("success", "sum"), optimal_cells=("optimal", "sum")).sort_values(keys).reset_index(drop=True)
+    successes = capacity.loc[capacity["success"].eq(True)]
+    counts_match = (summary[keys].equals(expected_summary[keys])
+                    and np.array_equal(summary[["expected_cells", "feasible_cells", "optimal_cells"]].to_numpy(), expected_summary[["expected_cells", "feasible_cells", "optimal_cells"]].to_numpy()))
+    _check(
+        len(capacity) == 24 and not capacity.duplicated(["day", *keys]).any()
+        and capacity["status"].isin([0, 1, 2]).all()
+        and counts_match and cap_meta.get("expected_cells") == len(capacity)
+        and cap_meta.get("retained_cells") == len(capacity)
+        and cap_meta.get("feasible_cells") == int(capacity["success"].sum())
+        and cap_meta.get("optimal_cells") == int(capacity["optimal"].sum())
+        and capacity.loc[capacity["optimal"].eq(True), "status"].eq(0).all()
+        and successes["max_capacity_violation_mw"].le(1e-7).all()
+        and successes["max_job_energy_residual_mwh"].le(1e-8).all()
+        and successes["maximum_completion_deadline_violation_slots"].le(0).all()
+        and np.isfinite(successes["mip_gap"].to_numpy(dtype=float)).all()
+        and not capacity["future_arrivals_used"].any()
+        and not capacity["execution_telemetry_used"].any(),
+        "runtime_full_entitlement_capacity_and_status_counts",
+        f"24 planned full-runtime cells; feasible={int(capacity['success'].sum())}, optimal={int(capacity['optimal'].sum())}; raw/summary/metadata statuses agree; infrastructure errors are not scientific outcomes",
+        checks,
+    )
+    joint = pd.read_csv(folder / "joint_runtime_risk_mse_cells.csv")
+    joint_success = joint.loc[joint["success"].eq(True)]
+    joint_contract = joint_success.loc[joint_success["method"].eq("joint_zero_risk_exact_mse")]
+    _check(
+        len(joint) == 12 and not joint.duplicated(["day", *keys]).any()
+        and joint.groupby("method").size().eq(6).all()
+        and joint["status"].isin([0, 1, 2]).all()
+        and joint_meta.get("retained_cells") == len(joint)
+        and joint_meta.get("feasible_cells") == int(joint["success"].sum())
+        and joint_meta.get("optimal_cells") == int(joint["optimal"].sum())
+        and joint_meta.get("proven_infeasible_cells") == int(joint["status"].eq(2).sum())
+        and joint.loc[joint["optimal"].eq(True), "status"].eq(0).all()
+        and joint_success["max_capacity_violation_mw"].le(1e-7).all()
+        and joint_success["max_job_energy_residual_mwh"].le(1e-8).all()
+        and joint_success["independently_recomputed_total_false_credit_mwh"].le(joint_success["total_budget_mwh"] + 1e-8).all()
+        and joint_success["independently_recomputed_tail_false_credit_mwh"].le(joint_success["tail_budget_mwh"] + 1e-8).all()
+        and joint_contract["independently_recomputed_event_mse_mw2"].le(joint_contract["mse_budget_mw2"] + 1e-12).all()
+        and not joint["execution_telemetry_used"].any(),
+        "runtime_joint_risk_accuracy_retains_infeasible_cells",
+        f"12 declared joint/phase-I cells; feasible={int(joint['success'].sum())}, proven infeasible={int(joint['status'].eq(2).sum())}; same executed schedule is scored for capacity, risk and exact MSE",
+        checks,
+    )
 
 
 def run_audit(
@@ -387,61 +647,18 @@ def run_audit(
     unified_manifest = json.loads(
         unified_manifest_path.read_text(encoding="utf-8")
     )
-    expected_stages = {
-        "data",
-        "exp1",
-        "exp2",
-        "exp3",
-        "exp4",
-        "exp5",
-        "exp6",
-        "exp7",
-        "exp8",
-        "exp9",
-        "exp10",
-        "exp11",
-        "exp12",
-        "exp13",
-        "exp14",
-        "exp15",
-        "exp16",
-        "exp17",
-        "exp18",
-        "exp19",
-        "exp20",
-        "exp21",
-        "exp22",
-        "exp23",
-        "exp24",
-        "exp25",
-        "exp26",
-        "exp27",
-        "exp28",
-        "exp29",
-        "exp30",
-        "audit",
-    }
-    recorded_stages = unified_manifest.get("stages", {})
-    completed_before_audit = all(
-        recorded_stages.get(name, {}).get("status") == "completed"
-        for name in expected_stages - {"audit"}
+    revision_path = root / "reports/reproducibility/oct14_revision_manifest.json"
+    revision_manifest = (
+        json.loads(revision_path.read_text(encoding="utf-8"))
+        if revision_path.exists() else {}
     )
-    audit_status_valid = recorded_stages.get("audit", {}).get("status") in {
-        "running",
-        "completed",
-    }
+    manifest_valid, manifest_scope = _canonical_manifest_scope(
+        unified_manifest, revision_manifest
+    )
     _check(
-        unified_manifest.get("stage_requested") == "all"
-        and set(recorded_stages) == expected_stages
-        and completed_before_audit
-        and audit_status_valid,
+        manifest_valid,
         "canonical_unified_manifest_preserved",
-        (
-            f"{len(recorded_stages)}/{len(expected_stages)} stages recorded; "
-            f"canonical request={unified_manifest.get('stage_requested')}; "
-            f"audit status={recorded_stages.get('audit', {}).get('status')} "
-            "(running is expected during the self-check)"
-        ),
+        manifest_scope,
         checks,
     )
 
@@ -1350,90 +1567,74 @@ def run_audit(
         len(cfg["experiments"].get("preventive_ac_validation_day_indices", []))
         * len(cfg["experiments"].get("preventive_ac_validation_event_slots", []))
     )
-    # The retained panel is smaller than the connected-topology Cartesian
-    # product because the pre-registered native and method-specific AC domain
-    # gates exclude infeasible fixed-plan outage/method pairs before scoring.
-    # Reconstruct that count from the metadata instead of silently assuming
-    # every topology-connected outage survives both physical gates.
-    expected_ac_outcomes = int(
-        sum(
-            (
-                2 * int(ac_cross_meta["outages_by_network"][network])
-                - sum(
-                    len(outages)
-                    for key, outages in ac_cross_meta.get(
-                        "method_specific_inadmissible_outages_excluded_before_scoring",
-                        {},
-                    ).items()
-                    if str(key).startswith(f"{network}|")
-                )
-            )
-            for network in expected_ac_networks
+    # Topology fixes the evaluation domain. Solver failure is retained as an
+    # unknown, never converted into a method-specific exclusion or a proof of
+    # physical infeasibility.
+    topology_counts = {"IEEE RTS 24-bus": 37, "IEEE 30-bus": 38,
+                       "IEEE 39-bus": 35, "IEEE 118-bus": 177}
+    expected_ac_methods = {"Payment-Certified N-1 Verifier", "Trace-Anchored Reference"}
+    expected_ac_outcomes = (
+        sum(topology_counts.values()) * len(expected_ac_methods)
+        * len(cfg["experiments"]["preventive_ac_dc_peak_penetrations"])
+        * expected_ac_snapshots
+    )
+    ac_state_columns = {"outcome", "certificate_success", "limit_violation", "numerical_unknown", "physical_infeasibility_proven"}
+    ac_schema_valid = ac_state_columns.issubset(ac_cross.columns)
+    if ac_schema_valid:
+        certified = ac_cross.loc[ac_cross["certificate_success"].eq(1)]
+        known = ac_cross.loc[ac_cross["numerical_unknown"].eq(0)]
+        ac_state_valid = (
+            ac_cross["outcome"].isin({"certified", "converged_limit_violation", "numerical_unknown"}).all()
+            and ac_cross[["certificate_success", "limit_violation", "numerical_unknown"]].isin([0, 1]).all().all()
+            and ac_cross[["certificate_success", "limit_violation", "numerical_unknown"]].sum(axis=1).eq(1).all()
+            and ac_cross["outcome"].eq("certified").equals(ac_cross["certificate_success"].eq(1))
+            and ac_cross["outcome"].eq("converged_limit_violation").equals(ac_cross["limit_violation"].eq(1))
+            and ac_cross["outcome"].eq("numerical_unknown").equals(ac_cross["numerical_unknown"].eq(1))
+            and ac_cross["physical_infeasibility_proven"].eq(0).all()
+            and known["solver_success"].eq(1).all()
+            and ac_cross["outcome"].value_counts().to_dict() == ac_cross_meta.get("status_counts")
         )
-        * 3
-        * int(ac_cross_meta.get("locked_snapshot_count", 0))
+    else:
+        certified = ac_cross.iloc[:0]
+        ac_state_valid = False
+    ac_keys = ["network", "peak_dc_penetration", "method", "outage", "day", "event_slot"]
+    paired_keys = [key for key in ac_keys if key != "method"]
+    common_domain = (
+        not ac_cross.duplicated(ac_keys).any()
+        and ac_cross.groupby(paired_keys)["method"].nunique().eq(len(expected_ac_methods)).all()
+        and all(
+            set(ac_cross.loc[ac_cross["network"].eq(network)].groupby(
+                ["peak_dc_penetration", "method", "snapshot_index"])["outage"].nunique()) == {count}
+            for network, count in topology_counts.items()
+        )
     )
     _check(
         set(ac_cross["network"].unique()) == expected_ac_networks
-        and set(ac_cross["method"].unique())
-        == {"Payment-Certified N-1 Verifier", "Trace-Anchored Reference"}
+        and set(ac_cross["method"].unique()) == expected_ac_methods
         and len(ac_cross) == expected_ac_outcomes
-        and bool((ac_cross["solver_success"] == 1).all())
-        and np.isfinite(
-            ac_cross[
-                [
-                    "maximum_apparent_line_loading",
-                    "maximum_voltage_violation_pu",
-                    "maximum_nonreference_active_plan_deviation_mw",
-                ]
-            ].to_numpy(dtype=float)
-        ).all()
-        # Exp18 schema 12 carries the checksum-bound Exp9 scale and the
-        # method-specific physical-domain gate in every retained row.
-        and set(ac_cross["schema_version"].astype(int).unique()) == {12}
-        and int(ac_cross_meta.get("locked_snapshot_count", 0)) == len(
-            ac_cross_meta.get("locked_snapshots", [])
-        )
+        and common_domain and ac_schema_valid and ac_state_valid
+        and set(ac_cross["schema_version"].astype(int).unique()) == {13}
+        and ac_cross_meta.get("topology_connected_outages_by_network") == topology_counts
+        and ac_cross_meta.get("outages_by_network") == topology_counts
+        and ac_cross_meta.get("all_connected_cells_retained") is True
+        and ac_cross_meta.get("method_specific_outcome_exclusions") == 0
+        and int(ac_cross_meta.get("locked_snapshot_count", 0)) == len(ac_cross_meta.get("locked_snapshots", []))
         and int(ac_cross_meta.get("locked_snapshot_count", 0)) == expected_ac_snapshots
-        and expected_ac_snapshots >= 2
         and ac_cross["snapshot_index"].nunique() == expected_ac_snapshots
         and ac_cross.groupby("snapshot_index")["day"].nunique().eq(1).all()
         and ac_cross.groupby("snapshot_index")["event_slot"].nunique().eq(1).all()
         and ac_cross_meta.get("shared_active_plan") is True
-        and "preventive AC N-1 fixed-active-plan" in str(
-            ac_cross_meta.get("scope", "")
-        )
         and ac_cross_meta.get("ac_limits_enforced") is True
-        and ac_cross_meta.get("pre_registered_dc_bus_mapping_one_based")
-        == cfg["experiments"].get("preventive_ac_dc_bus_map_one_based")
-        and float(ac_cross_meta.get("load_multiplier", np.nan))
-        == float(cfg["experiments"].get("preventive_ac_load_multiplier"))
-        and np.isclose(
-            float(ac_cross_meta.get("fixed_active_plan_tolerance_mw", np.nan)),
-            float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")),
-            rtol=0.0,
-            atol=1e-15,
-        )
-        and bool((ac_cross["maximum_apparent_line_loading"] <= 1.0 + 1e-6).all())
-        and bool((ac_cross["maximum_voltage_violation_pu"] <= 1e-6).all())
-        and bool(
-            (
-                ac_cross["maximum_nonreference_active_plan_deviation_mw"]
-                <= float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")) + 1e-6
-            ).all()
-        )
-        and all(
-            int(ac_cross_meta["topology_connected_outages_by_network"][network])
-            == int(ac_cross_meta["outages_by_network"][network])
-            + int(ac_cross_meta["native_ac_inadmissible_connected_outages_by_network"].get(network, 0))
-            for network in expected_ac_networks
-        )
+        and ac_cross_meta.get("pre_registered_dc_bus_mapping_one_based") == cfg["experiments"].get("preventive_ac_dc_bus_map_one_based")
+        and float(ac_cross_meta.get("load_multiplier", np.nan)) == float(cfg["experiments"].get("preventive_ac_load_multiplier"))
+        and np.isclose(float(ac_cross_meta.get("fixed_active_plan_tolerance_mw", np.nan)), float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")), rtol=0.0, atol=1e-15)
+        and np.isfinite(certified[["maximum_apparent_line_loading", "maximum_voltage_violation_pu", "maximum_nonreference_active_plan_deviation_mw"]].to_numpy(dtype=float)).all()
+        and certified["maximum_apparent_line_loading"].le(1.0 + 1e-6).all()
+        and certified["maximum_voltage_violation_pu"].le(1e-6).all()
+        and certified["maximum_nonreference_active_plan_deviation_mw"].le(float(cfg["experiments"].get("preventive_ac_active_plan_tolerance_mw")) + 1e-6).all()
         and ac_cross_meta["test_outcomes_used_for_scaling"] is False,
-        "cross_network_ac_n1_admissibility_panel",
-        (
-            f"{len(ac_cross)} AC outcomes over four public networks; "
-            "native-case AC admissibility and validation-only scaling recorded"
-        ),
+        "cross_network_ac_n1_common_domain_panel",
+        f"{len(ac_cross)}/{expected_ac_outcomes} topology-declared cells; status counts={ac_cross_meta.get('status_counts')}; failures remain in both method denominators",
         checks,
     )
     scale_summary = pd.read_csv(
@@ -4696,6 +4897,9 @@ def run_audit(
         checks,
     )
 
+    _audit_risk_revision(root, cfg, checks)
+    _audit_gate_revision(root, cfg, checks)
+
     generated_files = []
     for path in sorted(root.glob("experiments/**/results/final/*")) + sorted(root.glob("experiments/**/figures/*")):
         if path.is_file():
@@ -4715,7 +4919,7 @@ def run_audit(
             "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
             "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
             "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
-            "The cross-network AC panel is a fixed-active-plan preventive AC-OPF certificate over every native-case admissible non-islanding outage in four public networks; it is a steady-state feasibility result and not a transient-stability or intertemporal unit-commitment certificate.",
+            "The cross-network AC panel retains every connected non-islanding outage in four public networks, classifies certified/limit-violation/numerical-unknown outcomes on identical method denominators, and does not treat nonlinear failure as physical infeasibility; certified cells are steady-state checks, not transient-stability or unit-commitment certificates.",
         ],
     }
     write_json(root / "audit/result_audit.json", audit)

@@ -1,0 +1,5 @@
+{
+  "protocol_sha256": "ccbcae26fbfc3df17a8e98816bee2ca1f01496e0bc5d90c3c11482ee2ce5dddb",
+  "csv_sha256": "ea4c1e014c954f9401522825fdd6b95e63ad4bb878ea099eb49cfe674009f6f2",
+  "origin": "Native diagnostics computed by this common-domain repair under the same input/protocol hash before the worker-count-only resume"
+}

@@ -1,3 +1,5 @@
+> Historical design record (superseded on 14 October 2026). This file preserves earlier derivations and implementation context; it is not the specification or evidence for the revised release. In particular, earlier claims of composed risk guarantees, all-pass AC coverage, independent selector implementation, or payment-wide dominance must not be inferred from this record. The canonical current statement is [main.tex](main.tex), with the corrected evidence indexed in [revision_matrix.md](revision_matrix.md) and the experiment-specific READMEs for Experiments 18, 28, 31, and 32.
+
 # 建模与公式依据追踪表
 
 本表区分三类内容：“采用”表示直接使用已有标准模型；“改写”表示在已有模型上为本文场景作可核验变换；“原创”表示本文新命题，必须由正文证明而不能仅用引用代替。文献键与 `references.bib` 完全一致。近期计算--电力耦合模型的场景边界参见 \cite{li2024computation}；该文不提供本文的声明账本与有符号结算证书。

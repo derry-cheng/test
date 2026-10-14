@@ -1,0 +1,12 @@
+INFO:exp32:Exp32 integrated day=61 utilization=0.98 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=61 utilization=0.98 method=phase_one_minimum_mse_zero_risk
+INFO:exp32:Exp32 integrated day=61 utilization=1.10 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=61 utilization=1.10 method=phase_one_minimum_mse_zero_risk
+INFO:exp32:Exp32 integrated day=88 utilization=0.98 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=88 utilization=0.98 method=phase_one_minimum_mse_zero_risk
+INFO:exp32:Exp32 integrated day=88 utilization=1.10 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=88 utilization=1.10 method=phase_one_minimum_mse_zero_risk
+INFO:exp32:Exp32 integrated day=114 utilization=0.98 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=114 utilization=0.98 method=phase_one_minimum_mse_zero_risk
+INFO:exp32:Exp32 integrated day=114 utilization=1.10 method=joint_zero_risk_exact_mse
+INFO:exp32:Exp32 integrated day=114 utilization=1.10 method=phase_one_minimum_mse_zero_risk

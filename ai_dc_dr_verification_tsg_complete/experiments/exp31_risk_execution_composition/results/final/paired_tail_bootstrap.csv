@@ -1,0 +1,9 @@
+method,comparator,metric,paired_difference,ci_low,ci_high,replications,block_days,inference
+active_tail_fraction_0.50,exact_mse_total_only,false_credit_mean_mwh,-0.02426412535268363,-0.051003852719208674,-8.352158727885641e-05,5000,3,exploratory unadjusted percentile CI
+active_tail_fraction_0.50,exact_mse_total_only,false_credit_top_m_tail_mwh,-0.08312384619372004,-0.18180098008062157,0.00608372624370555,5000,3,exploratory unadjusted percentile CI
+exact_mse_fixed_soft_joint,archived_joint,false_credit_mean_mwh,-0.24565598702159896,-0.44478849422891575,-0.08724494806687214,5000,3,exploratory unadjusted percentile CI
+exact_mse_fixed_soft_joint,archived_joint,false_credit_top_m_tail_mwh,-0.7666811077097897,-1.3763340893574785,-0.257982823103254,5000,3,exploratory unadjusted percentile CI
+active_tail_fraction_0.50,archived_joint,false_credit_mean_mwh,-0.2399962678052009,-0.43901327477531393,-0.08268331853380338,5000,3,exploratory unadjusted percentile CI
+active_tail_fraction_0.50,archived_joint,false_credit_top_m_tail_mwh,-0.7459876757379929,-1.3561706312207666,-0.23760248088319005,5000,3,exploratory unadjusted percentile CI
+exact_mse_total_only,archived_total_only,false_credit_mean_mwh,-0.0811957774006179,-0.17664445996519423,0.004780888328973224,5000,3,exploratory unadjusted percentile CI
+exact_mse_total_only,archived_total_only,false_credit_top_m_tail_mwh,-0.279330749121659,-0.5828032325994091,0.06174855937666196,5000,3,exploratory unadjusted percentile CI

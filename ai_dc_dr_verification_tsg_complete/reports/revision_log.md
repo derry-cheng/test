@@ -61,3 +61,7 @@ The large BurstGPT and MIT SuperCloud CSVs remain outside version control; the
 manifest-checked downloader in `code/scripts/download_public_inputs.py` restores
 them for full preprocessing. This final session consumed the locked processed
 assets and reran the dependent experiment stages and audit.
+
+## 2026-10-14 — Risk/execution reconstruction and uncensored AC audit
+
+Added Exp31 exact-convex active-tail fitting and risk transport certificates; Exp32 matched gate, runtime-complete capacity/risk/MSE models and phase-I feasibility; repaired Exp18 common topology denominator and Exp28 top-m bootstrap/source lineage. Rebuilt readable10-page manuscript and vector diagrams, corrected interval settlement units/aggregation, added unified runners and regression coverage. The new resolution report explicitly distinguishes implemented fixes from unsupported full-scale or causal deployment claims. Remote commit verification is recorded separately from numerical validation.

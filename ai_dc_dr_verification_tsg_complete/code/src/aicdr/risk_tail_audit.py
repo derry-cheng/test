@@ -14,9 +14,47 @@ import pandas as pd
 from .utils import write_json
 
 
+def _tail_count(sample_size: int, level: float) -> int:
+    """Use the contract's integer tail mass, including in bootstrap samples."""
+    if sample_size <= 0 or not np.isfinite(level) or not 0.0 <= level < 1.0:
+        raise ValueError("CVaR requires a nonempty sample and 0 <= level < 1")
+    return max(1, int(np.ceil((1.0 - level) * sample_size)))
+
+
 def _cvar(values: np.ndarray, level: float) -> float:
-    threshold = float(np.quantile(values, level, method="linear"))
-    return float(values[values >= threshold].mean())
+    """Mean of exactly the largest m observations, m=ceil((1-level)*n).
+
+    This is the integer-tail epigraph convention used by the fitted contract,
+    not an average of all observations above an interpolated quantile. The
+    distinction matters when resampling introduces ties at the cutoff.
+    """
+    values = np.asarray(values, dtype=float)
+    if values.ndim != 1 or not np.isfinite(values).all():
+        raise ValueError("CVaR requires a finite one-dimensional sample")
+    tail_count = _tail_count(len(values), level)
+    return float(np.sort(values)[-tail_count:].mean())
+
+
+def _paired_locked_panel(
+    frame: pd.DataFrame, methods: list[str], expected_days: int
+) -> tuple[pd.DataFrame, pd.Series]:
+    """Fail closed on an incomplete pairing or inconsistent truth denominator."""
+    test = frame.loc[frame["split"].eq("test") & frame["ablation"].isin(methods)].copy()
+    if test.duplicated(["day", "ablation"]).any():
+        raise ValueError("Tail audit has duplicate day/method rows")
+    pivot = test.pivot(index="day", columns="ablation", values="false_response_mwh").sort_index()
+    if set(pivot.columns) != set(methods) or len(pivot) != expected_days:
+        raise ValueError("Tail audit does not contain the complete declared locked panel")
+    pivot = pivot.loc[:, methods]
+    oracle = test.pivot(index="day", columns="ablation", values="oracle_response_mwh").sort_index()
+    oracle = oracle.reindex(index=pivot.index, columns=methods)
+    if not np.isfinite(pivot.to_numpy(dtype=float)).all() or not np.isfinite(oracle.to_numpy(dtype=float)).all():
+        raise ValueError("Tail audit requires finite, fully paired day/method data")
+    if (pivot.to_numpy(dtype=float) < 0.0).any() or (oracle.to_numpy(dtype=float) < 0.0).any():
+        raise ValueError("Tail audit requires nonnegative false credit and oracle response")
+    if not np.allclose(oracle.to_numpy(dtype=float), oracle[methods[0]].to_numpy(dtype=float)[:, None], rtol=0.0, atol=1e-10):
+        raise ValueError("Tail audit oracle response differs across paired methods")
+    return pivot, oracle[methods[0]]
 
 
 def run_exp28_risk_tail_audit(root: Path, cfg: dict[str, Any], logger: logging.Logger) -> None:
@@ -30,16 +68,14 @@ def run_exp28_risk_tail_audit(root: Path, cfg: dict[str, Any], logger: logging.L
     if not source.exists():
         raise FileNotFoundError(f"Risk ablation daily ledger is missing: {source}")
     frame = pd.read_csv(source)
-    test = frame.loc[frame["split"].eq("test")].copy()
     methods = [
         "total+CVaR ensemble",
         "total-budget-only ensemble",
         "CVaR-only ensemble",
     ]
-    if any(not test["ablation"].eq(method).any() for method in methods):
-        raise RuntimeError("The held-out risk ablation does not contain both declared modules")
-    pivot = test.pivot(index="day", columns="ablation", values="false_response_mwh").sort_index()
-    oracle = test[test["ablation"].eq(methods[0])].set_index("day")["oracle_response_mwh"].sort_index()
+    pivot, oracle = _paired_locked_panel(
+        frame, methods, int(cfg["experiments"].get("test_days", 54))
+    )
     ratios = pd.DataFrame({method: pivot[method] / oracle.clip(lower=1e-12) for method in methods})
     level = float(cfg["experiments"].get("risk_cvar_level", 0.75))
     rows = []
@@ -57,6 +93,8 @@ def run_exp28_risk_tail_audit(root: Path, cfg: dict[str, Any], logger: logging.L
                 "false_credit_mwh_cvar": _cvar(false_mwh, level),
                 "false_credit_mwh_q90": float(np.quantile(false_mwh, 0.90)),
                 "cvar_level": level,
+                "cvar_tail_days": _tail_count(len(values), level),
+                "cvar_convention": "mean_of_largest_m",
             }
         )
     summary = pd.DataFrame(rows)
@@ -114,18 +152,41 @@ def run_exp28_risk_tail_audit(root: Path, cfg: dict[str, Any], logger: logging.L
                 {
                     "comparison": comparator,
                     "metric": metric_name,
+                    "joint_minus_comparator_point_estimate": float(
+                        summary.loc[summary["ablation"].eq(methods[0]), metric_name].iloc[0]
+                        - summary.loc[summary["ablation"].eq(comparator), metric_name].iloc[0]
+                    ),
+                    # Retained for compatibility; this is a bootstrap mean,
+                    # not the observed paired point estimate.
                     "joint_minus_comparator_mean": float(differences.mean()),
+                    "bootstrap_mean_difference": float(differences.mean()),
                     "ci_2.5": float(np.quantile(differences, 0.025)),
                     "ci_97.5": float(np.quantile(differences, 0.975)),
                     "bootstrap_replications": replications,
                     "block_length_days": block,
+                    "interval_type": "unadjusted_exploratory_percentile_95",
+                    "multiplicity_adjusted": False,
+                    "cvar_tail_days": _tail_count(len(joint), level),
                 }
             )
     bootstrap = pd.DataFrame(bootstrap_rows)
     bootstrap.to_csv(final / "risk_tail_paired_bootstrap.csv", index=False)
     selected = summary.loc[summary["ablation"].eq(methods[0])].iloc[0]
     metadata = {
+        "schema_version": 2,
         "experiment": "held-out tail-risk audit for the total-plus-CVaR module",
+        "implementation_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "bootstrap_seed": int(cfg["project"]["seed"]),
+        "bootstrap_replications": replications,
+        "block_length_days": block,
+        "cvar_convention": "mean of exactly the largest m=ceil((1-level)*n) observations, including bootstrap ties",
+        "cvar_tail_days": _tail_count(len(ratios), level),
+        "confidence_interval": "unadjusted exploratory 95% percentile circular-block bootstrap interval",
+        "multiplicity_adjusted": False,
+        "holm_scope": "separate exact block-sign test families in Exp2; no Holm adjustment is applied to these percentile intervals",
+        "point_estimate_column": "joint_minus_comparator_point_estimate",
+        "bootstrap_mean_column": "bootstrap_mean_difference",
+        "selection_boundary": "the previously locked Exp2 profiles are evaluated without refitting, retuning, or locked-test selection",
         "source_file": str(source.relative_to(root)),
         "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "locked_test_days": int(len(ratios)),

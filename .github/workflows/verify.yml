@@ -1,0 +1,35 @@
+name: Verify research release
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      HIGHS_NUM_THREADS: '1'
+      PYTHONPATH: code/src:vendor
+    defaults:
+      run:
+        working-directory: ai_dc_dr_verification_tsg_complete
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: ai_dc_dr_verification_tsg_complete/requirements.txt
+      - run: python -m pip install -r requirements.txt 'pytest>=8,<10'
+      - run: python tests/run_tests.py
+      - run: python -m pytest -q tests
+      - name: Check source and manuscript artifact
+        run: |
+          python -m compileall -q code/src
+          python -c "from pypdf import PdfReader; p=PdfReader('paper/main.pdf'); assert len(p.pages)<=10, len(p.pages); print('PDF pages:',len(p.pages))"

@@ -1,0 +1,39 @@
+{
+  "source_commit": "f98b6bee487df1f9a650b4a9d6787659c1db6473",
+  "source_csv": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
+  "legacy_csv_sha256": "1458cf12f0498b082eddb53fa418eaa308cae884044b66b76d510e7023066fa9",
+  "input_sha256": {
+    "certified_profiles": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
+    "test_profiles": "6d22c790a6f9c9cdc969ee99787822d0fe17b566e4c17614dd837f5aae33a546",
+    "validation_profiles": "89430658f30e2a40ca52c80bca4528c15c97ed3cb29f82f1405a1fd73e391592"
+  },
+  "fixed_active_plan_tolerance_mw": 1e-08,
+  "bus_map": {
+    "IEEE RTS 24-bus": [
+      1,
+      2,
+      7,
+      13
+    ],
+    "IEEE 30-bus": [
+      1,
+      2,
+      13,
+      22
+    ],
+    "IEEE 39-bus": [
+      30,
+      31,
+      32,
+      33
+    ],
+    "IEEE 118-bus": [
+      1,
+      4,
+      6,
+      8
+    ]
+  },
+  "reuse_scope": "Only original successful rows with unchanged profile inputs, load, scale, bus map and three explicit certificate checks; original intact result arrays were not archived. Reuse is evidence preservation, not an independent rerun.",
+  "fresh_pair_rule": "Rerun both methods for IEEE30 outages 29 and 31; evaluate every absent topology-connected cell; never select on rerun outcomes."
+}

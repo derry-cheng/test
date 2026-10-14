@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 # Keep numerical backends from multiplying the declared experiment worker
@@ -18,7 +19,16 @@ for _thread_env in (
     "BLIS_NUM_THREADS",
 ):
     os.environ[_thread_env] = "1"
+# Bound aggregate worker CPU use even when a native backend ignores its
+# thread environment variable. Child processes inherit this Linux CPU set.
+if hasattr(os, "sched_getaffinity") and hasattr(os, "sched_setaffinity"):
+    _allowed_cpus = sorted(os.sched_getaffinity(0))
+    if len(_allowed_cpus) > 20:
+        os.sched_setaffinity(0, _allowed_cpus[:20])
+
 os.environ["HIGHS_NUM_THREADS"] = "1"
+os.environ.setdefault("MPLCONFIGDIR", str(Path(tempfile.gettempdir()) / "aicdr_matplotlib_cache"))
+os.environ.setdefault("XDG_CACHE_HOME", str(Path(tempfile.gettempdir()) / "aicdr_cache"))
 
 from aicdr.pipeline import run_pipeline
 from aicdr.utils import configure_logging, load_config
@@ -63,6 +73,8 @@ def main() -> int:
             "exp28",
             "exp29",
             "exp30",
+            "exp31",
+            "exp32",
             "exp26",
             "audit",
         ],

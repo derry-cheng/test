@@ -1,0 +1,29 @@
+method,candidate,weight
+Gate unconstrained ensemble,High-5 feasible w1,2.6869983706847776e-11
+Gate unconstrained ensemble,High-5 feasible w3,2.6869882134275492e-11
+Gate unconstrained ensemble,High-5 feasible w10,2.6869851445148608e-11
+Gate unconstrained ensemble,Historical mean feasible w1,2.6869851445146624e-11
+Gate unconstrained ensemble,Causal metadata feasible w0.3,0.9999999998098411
+Gate unconstrained ensemble,Causal metadata feasible w1,4.133983273877271e-11
+Gate unconstrained ensemble,Causal metadata feasible w3,4.133983273882933e-11
+Gate total-only ensemble,High-5 feasible w1,5.201981906667822e-14
+Gate total-only ensemble,High-5 feasible w3,5.2019819064036683e-14
+Gate total-only ensemble,High-5 feasible w10,5.20198190642738e-14
+Gate total-only ensemble,Historical mean feasible w1,5.201981906415655e-14
+Gate total-only ensemble,Causal metadata feasible w0.3,0.9999999999986857
+Gate total-only ensemble,Causal metadata feasible w1,5.5298442200696e-13
+Gate total-only ensemble,Causal metadata feasible w3,5.5298442200616e-13
+Gate tail-only ensemble,High-5 feasible w1,4.6985707476647183e-14
+Gate tail-only ensemble,High-5 feasible w3,4.6985707510598684e-14
+Gate tail-only ensemble,High-5 feasible w10,4.6985707511289537e-14
+Gate tail-only ensemble,Historical mean feasible w1,4.698570751128785e-14
+Gate tail-only ensemble,Causal metadata feasible w0.3,0.9999999999996099
+Gate tail-only ensemble,Causal metadata feasible w1,1.0102779398458701e-13
+Gate tail-only ensemble,Causal metadata feasible w3,1.0102779398457984e-13
+Gate joint ensemble,High-5 feasible w1,1.4030191102918312e-12
+Gate joint ensemble,High-5 feasible w3,1.4030191102905403e-12
+Gate joint ensemble,High-5 feasible w10,1.403019110290621e-12
+Gate joint ensemble,Historical mean feasible w1,1.4030191102903787e-12
+Gate joint ensemble,Causal metadata feasible w0.3,0.9999999999898631
+Gate joint ensemble,Causal metadata feasible w1,2.2625596957187044e-12
+Gate joint ensemble,Causal metadata feasible w3,2.262559695718733e-12

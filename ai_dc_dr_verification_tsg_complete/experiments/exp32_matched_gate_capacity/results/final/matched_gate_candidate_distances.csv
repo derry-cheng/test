@@ -1,0 +1,43 @@
+split,first_method,second_method,event_profile_l2_mw,max_absolute_difference_mw
+validation,High-5 feasible w1,High-5 feasible w3,3.552713678800501e-15,3.552713678800501e-15
+validation,High-5 feasible w1,High-5 feasible w10,0.0,0.0
+validation,High-5 feasible w1,Historical mean feasible w1,0.0,0.0
+validation,High-5 feasible w1,Causal metadata feasible w0.3,40.99370510512736,12.0
+validation,High-5 feasible w1,Causal metadata feasible w1,33.25967558380631,9.581748011677227
+validation,High-5 feasible w1,Causal metadata feasible w3,33.25967558380632,9.581748011677231
+validation,High-5 feasible w3,High-5 feasible w10,3.552713678800501e-15,3.552713678800501e-15
+validation,High-5 feasible w3,Historical mean feasible w1,3.552713678800501e-15,3.552713678800501e-15
+validation,High-5 feasible w3,Causal metadata feasible w0.3,40.99370510512736,12.0
+validation,High-5 feasible w3,Causal metadata feasible w1,33.25967558380631,9.581748011677227
+validation,High-5 feasible w3,Causal metadata feasible w3,33.25967558380632,9.581748011677231
+validation,High-5 feasible w10,Historical mean feasible w1,0.0,0.0
+validation,High-5 feasible w10,Causal metadata feasible w0.3,40.99370510512736,12.0
+validation,High-5 feasible w10,Causal metadata feasible w1,33.25967558380631,9.581748011677227
+validation,High-5 feasible w10,Causal metadata feasible w3,33.25967558380632,9.581748011677231
+validation,Historical mean feasible w1,Causal metadata feasible w0.3,40.99370510512736,12.0
+validation,Historical mean feasible w1,Causal metadata feasible w1,33.25967558380631,9.581748011677227
+validation,Historical mean feasible w1,Causal metadata feasible w3,33.25967558380632,9.581748011677231
+validation,Causal metadata feasible w0.3,Causal metadata feasible w1,14.631290443473313,6.337904542016595
+validation,Causal metadata feasible w0.3,Causal metadata feasible w3,14.631290443473311,6.337904542016595
+validation,Causal metadata feasible w1,Causal metadata feasible w3,3.802607052102695e-14,1.9539925233402755e-14
+locked,High-5 feasible w1,High-5 feasible w3,0.0,0.0
+locked,High-5 feasible w1,High-5 feasible w10,0.0,0.0
+locked,High-5 feasible w1,Historical mean feasible w1,0.0,0.0
+locked,High-5 feasible w1,Causal metadata feasible w0.3,77.23134315940864,12.0
+locked,High-5 feasible w1,Causal metadata feasible w1,58.92076220276766,10.025211814897041
+locked,High-5 feasible w1,Causal metadata feasible w3,58.920762202767655,10.025211814897041
+locked,High-5 feasible w3,High-5 feasible w10,0.0,0.0
+locked,High-5 feasible w3,Historical mean feasible w1,0.0,0.0
+locked,High-5 feasible w3,Causal metadata feasible w0.3,77.23134315940864,12.0
+locked,High-5 feasible w3,Causal metadata feasible w1,58.92076220276766,10.025211814897041
+locked,High-5 feasible w3,Causal metadata feasible w3,58.920762202767655,10.025211814897041
+locked,High-5 feasible w10,Historical mean feasible w1,0.0,0.0
+locked,High-5 feasible w10,Causal metadata feasible w0.3,77.23134315940864,12.0
+locked,High-5 feasible w10,Causal metadata feasible w1,58.92076220276766,10.025211814897041
+locked,High-5 feasible w10,Causal metadata feasible w3,58.920762202767655,10.025211814897041
+locked,Historical mean feasible w1,Causal metadata feasible w0.3,77.23134315940864,12.0
+locked,Historical mean feasible w1,Causal metadata feasible w1,58.92076220276766,10.025211814897041
+locked,Historical mean feasible w1,Causal metadata feasible w3,58.920762202767655,10.025211814897041
+locked,Causal metadata feasible w0.3,Causal metadata feasible w1,35.236866480495436,9.677539195344623
+locked,Causal metadata feasible w0.3,Causal metadata feasible w3,35.236866480495436,9.677539195344623
+locked,Causal metadata feasible w1,Causal metadata feasible w3,5.46356080350197e-14,2.4868995751603507e-14

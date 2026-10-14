@@ -1,0 +1,27 @@
+{
+  "source_sha256": "e8e819b52be45742bd373ba0325d700afe82c5f52c6b79b56da9148b4c8cf6a1",
+  "implementation_sha256": {
+    "matched_gate_capacity.py": "ad0df780f4929d5c3e3884874d47463812cd63865462c275c600e910aff28bac",
+    "runtime_capacity.py": "3a75e1a3b8f2845ec45e140b3c57c30071541a95cd668a277e9899a35788bd40",
+    "risk_execution_composition.py": "eb042db8989b280ba457be428a838acb0bad4e7ebf759692eb3533dd9f937eb6"
+  },
+  "protocol_sha256": "70a308d2cc7a4651138a1b6edae84386cd3bcad55d70c39a3eea32310cfb83b5",
+  "selected_locked_days": [
+    61,
+    88,
+    114
+  ],
+  "expected_cells": 24,
+  "retained_cells": 24,
+  "feasible_cells": 0,
+  "optimal_cells": 0,
+  "selection": "up to eight evenly spaced release/index-ordered jobs per region and pending/running stratum",
+  "model": "fixed-rate full-runtime blocks and all-slot capacity; no scaled entitlements",
+  "capacity_normalization": "gate-known immediate-start regional peaks divided by predeclared nominal utilization",
+  "population_scope": "small declared representative cohort; no full-scale congested claim",
+  "scheduler_state": "hypothetical first-gate-after-submission state; not observed execution",
+  "risk_scope": "direct deterministic common-reference/common-modeled-response scenario rows, not a future-meter guarantee",
+  "cpu_workers": 1,
+  "blas_threads": 1,
+  "solver_time_limit_seconds": 60
+}

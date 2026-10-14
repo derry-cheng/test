@@ -780,12 +780,25 @@ def test_information_boundary_and_cross_network_ac_audit_are_complete() -> None:
         ).read_text(encoding="utf-8")
     )
     assert len(np.unique(ac["network"])) == 4
-    assert np.all(ac["solver_success"] == 1)
-    assert np.max(ac["maximum_apparent_line_loading"]) <= 1.0 + 1e-8
-    assert np.max(ac["maximum_voltage_violation_pu"]) <= 1e-8
-    assert np.max(ac["maximum_nonreference_active_plan_deviation_mw"]) <= (
-        float(ac_metadata["fixed_active_plan_tolerance_mw"]) + 1.0e-6
-    )
+    # Keep failed/unknown cells in the shared topology denominator. Only a
+    # certified cell may claim the original release audit's 1e-6 limits.
+    states = pd.DataFrame(ac)
+    assert states["outcome"].isin({"certified", "converged_limit_violation", "numerical_unknown"}).all()
+    assert states[["certificate_success", "limit_violation", "numerical_unknown"]].sum(axis=1).eq(1).all()
+    assert states["physical_infeasibility_proven"].eq(0).all()
+    assert ac_metadata["all_connected_cells_retained"] is True
+    assert ac_metadata["method_specific_outcome_exclusions"] == 0
+    assert ac_metadata["status_counts"] == states["outcome"].value_counts().to_dict()
+    assert len(ac) == 10_332
+    keys = ["network", "peak_dc_penetration", "outage", "day", "event_slot"]
+    assert not states.duplicated(keys + ["method"]).any()
+    assert states.groupby(keys)["method"].nunique().eq(2).all()
+    certified = states.loc[states["certificate_success"].eq(1)]
+    assert certified["solver_success"].eq(1).all()
+    assert np.isfinite(certified[["maximum_apparent_line_loading", "maximum_voltage_violation_pu", "maximum_nonreference_active_plan_deviation_mw"]].to_numpy(dtype=float)).all()
+    assert certified["maximum_apparent_line_loading"].le(1.0 + 1e-6).all()
+    assert certified["maximum_voltage_violation_pu"].le(1e-6).all()
+    assert certified["maximum_nonreference_active_plan_deviation_mw"].le(float(ac_metadata["fixed_active_plan_tolerance_mw"]) + 1.0e-6).all()
     assert len(ac) == (
         sum(ac_metadata["outages_by_network"].values())
         * len(CFG["experiments"]["preventive_ac_dc_peak_penetrations"])

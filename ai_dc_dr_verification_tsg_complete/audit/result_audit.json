@@ -892,6 +892,46 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.png",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.pdf",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/common_domain_manifest.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/common_domain_protocol.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/native_connected_outage_diagnostics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/native_screened_common_domain_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/reconstructed_cells.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_18:experiments/exp18_preventive_ac_network_panel/results/final/solver_attempt_diagnostics.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "experiment_19:experiments/exp19_job_level_counterfactual/results/final/job_level_counterfactual_summary.csv",
       "passed": true,
       "detail": "exists and non-empty"
@@ -1242,6 +1282,156 @@
       "detail": "exists and non-empty"
     },
     {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_freeze_manifest.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_frozen_weights.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/validation_solver_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/risk_frontier_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/risk_frontier_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/paired_tail_bootstrap.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/execution_transfer_certificates.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/execution_transfer_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/results/final/solver_failures.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_31:experiments/exp31_risk_execution_composition/run.py",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/experiment_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_daily.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_weights.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_fit_certificates.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_information_boundary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/matched_gate_frozen_profiles.npz",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cells.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_summary.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cohort.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/runtime_direct_risk_certificates.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_cells.csv",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_metadata.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_certificates.json",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/README.md",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
+      "name": "experiment_32:experiments/exp32_matched_gate_capacity/run.py",
+      "passed": true,
+      "detail": "exists and non-empty"
+    },
+    {
       "name": "manuscript_sources:paper/main.tex",
       "passed": true,
       "detail": "exists and non-empty"
@@ -1354,12 +1544,12 @@
     {
       "name": "canonical_unified_manifest_preserved",
       "passed": true,
-      "detail": "32/32 stages recorded; canonical request=all; audit status=completed (running is expected during the self-check)"
+      "detail": "historical 32-stage all-run retained; current revision is targeted, not a new full run; recorded=32; status_valid=True"
     },
     {
       "name": "all_png_figures_decodable_and_high_resolution",
       "passed": true,
-      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2306x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=1800x797; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=2309x1077; fig_method_detail.png=1800x643; fig_risk_tail_tradeoff.png=2306x1045"
+      "detail": "fig15_ac_opf_validation.png=4195x1253; fig15b_ac_n1_contingency_validation.png=4069x1221; fig15c_preventive_ac_n1_validation.png=4069x1221; fig16_spatial_scale_robustness.png=4261x1253; fig18_rolling_market_validation.png=3493x2309; fig19_real_trace_replay.png=4133x1221; fig20_job_level_fidelity.png=4064x1221; fig21_interval_payment_certificate.png=4197x1221; fig22_ledger_capacity_provenance.png=4364x1189; fig23_decision_time_information.png=5093x1253; fig24_common_domain_coverage.png=1980x720; fig24_preventive_ac_cross_network.png=3877x1189; fig1_manipulation_phase_diagram.png=3042x1189; fig2_response_and_migration.png=3045x1125; fig25_trace_meter_replay.png=2341x1253; fig26_independent_event_replay.png=2309x1141; fig27_all_outage_security.png=2309x1253; fig28_common_executable_witness.png=2309x1141; fig_risk_tail_tradeoff.png=2306x1045; fig29_target_tracking.png=2309x1077; fig3_baseline_verification_performance.png=4645x1365; fig4_tuning_and_ablation.png=3429x2277; fig4b_intervention_robustness.png=3493x1253; fig5_settlement_value_alignment.png=4181x1221; fig6_network_loading_heatmap.png=2975x1317; fig6b_settlement_factor_decomposition.png=3077x1221; fig7_spatial_response_case.png=2917x1957; fig8_ieee118_data_center_topology.png=2597x2213; fig9_cross_network_robustness.png=4345x1253; fig10_binding_constraint_stress.png=3619x1157; fig11_exact_value_allocation.png=4100x1221; fig12_eight_participant_scaling.png=4005x1221; fig12b_exact_20_participant_scaling.png=3973x1189; fig13_n1_security_validation.png=4069x1221; fig14_payment_certificate.png=4037x1205; fig0_framework.png=2150x625; fig17_cross_layer_robustness.png=4101x1189; fig29_target_tracking.png=1123x800; fig_method_detail.png=1050x829; fig_risk_tail_tradeoff.png=1123x800"
     },
     {
       "name": "ieeetran_pdf_length_and_geometry",
@@ -1379,7 +1569,7 @@
     {
       "name": "maximum_two_sources_per_citation_group",
       "passed": true,
-      "detail": "39 in-text citation groups checked"
+      "detail": "36 in-text citation groups checked"
     },
     {
       "name": "complete_manuscript_bibliography",
@@ -1389,7 +1579,7 @@
     {
       "name": "every_labeled_equation_figure_table_is_referenced",
       "passed": true,
-      "detail": "49 labels; unreferenced=[]; missing=[]"
+      "detail": "47 labels; unreferenced=[]; missing=[]"
     },
     {
       "name": "required_abbreviation_expansions_present",
@@ -1562,9 +1752,9 @@
       "detail": "4 validation candidates select the recorded eta=0.55 under the declared false-credit budget; the locked reserve is reported for capacity planning while committed-ledger payment remains separate"
     },
     {
-      "name": "cross_network_ac_n1_admissibility_panel",
+      "name": "cross_network_ac_n1_common_domain_panel",
       "passed": true,
-      "detail": "9612 AC outcomes over four public networks; native-case AC admissibility and validation-only scaling recorded"
+      "detail": "10332/10332 topology-declared cells; status counts={'certified': 9642, 'numerical_unknown': 690}; failures remain in both method denominators"
     },
     {
       "name": "homogeneous_scale_has_fixed_nameplate_bound",
@@ -2010,6 +2200,46 @@
       "name": "no_stale_atomic_temporary_artifacts",
       "passed": true,
       "detail": "no hidden atomic-writer temporary files remain"
+    },
+    {
+      "name": "tail_audit_source_top_m_and_inference_scope",
+      "passed": true,
+      "detail": "Exp28 recomputes all point statistics from the current locked source; each resample uses exactly 14 tail observations; percentile intervals are exploratory and unadjusted"
+    },
+    {
+      "name": "risk_revision_hashes_and_retrospective_scope",
+      "passed": true,
+      "detail": "Exp31 binds the frozen validation design, implementation, original locked profiles, and original executable witness; the redesign is retrospective exploratory evidence"
+    },
+    {
+      "name": "risk_revision_complete_panels_and_solver_certificates",
+      "passed": true,
+      "detail": "8 validation fits and 10 locked controls retain all planned days; primal/KKT checks, simplex mass, exact measured accuracy and exploratory interval scope are explicit"
+    },
+    {
+      "name": "risk_execution_transfer_preserves_bounds_and_failures",
+      "passed": true,
+      "detail": "3 complete runtime replays; executable accepted=0/3 and modeled capped risk accepted=3/3; distinct claims are not conflated"
+    },
+    {
+      "name": "gate_runtime_revision_source_lineage",
+      "passed": true,
+      "detail": "Exp32's three panels bind the current protocol and implementation; runtime declarations bind the unchanged full witness"
+    },
+    {
+      "name": "matched_gate_complete_common_information_and_scoring",
+      "passed": true,
+      "detail": "910 method/day rows share eligible-ledger/reference/response hashes, 3-MWh floor and pre-gate state; modeled credits are not observed intervention evidence"
+    },
+    {
+      "name": "runtime_full_entitlement_capacity_and_status_counts",
+      "passed": true,
+      "detail": "24 planned full-runtime cells; feasible=24, optimal=24; raw/summary/metadata statuses agree; infrastructure errors are not scientific outcomes"
+    },
+    {
+      "name": "runtime_joint_risk_accuracy_retains_infeasible_cells",
+      "passed": true,
+      "detail": "12 declared joint/phase-I cells; feasible=10, proven infeasible=2; same executed schedule is scored for capacity, risk and exact MSE"
     }
   ],
   "statistical_tests": {
@@ -2641,19 +2871,49 @@
       "sha256": "4f922ac2c9a55f2860ab1385875c47addb6bc42e37c5ecfc67d71bf1f2a2b854"
     },
     {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/common_domain_manifest.csv",
+      "bytes": 574641,
+      "sha256": "961ca8d7773395f42714d314be6c871db313ef0b0740455b2817624a54e47264"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/common_domain_protocol.json",
+      "bytes": 4430,
+      "sha256": "e0ad1eb1850e3d033be2ce1278f6e541af9f260c8f085d12ca4ea6b5c13014bb"
+    },
+    {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json",
-      "bytes": 4476,
-      "sha256": "2b16e3a0298fc3a5dc7689334500ae7d1b9565d8a63fef3635a050f38e39b2c3"
+      "bytes": 7559,
+      "sha256": "70da6865927bbac3feb87833a8c63f04e2957699e4e176f342f82156b4d7154d"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/native_connected_outage_diagnostics.csv",
+      "bytes": 39542,
+      "sha256": "ea4c1e014c954f9401522825fdd6b95e63ad4bb878ea099eb49cfe674009f6f2"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/native_screened_common_domain_summary.csv",
+      "bytes": 3163,
+      "sha256": "be3655765b17a60ff3a61211604de2211d02b3251a61f979b4d8354f083b2146"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_results.csv",
-      "bytes": 2449253,
-      "sha256": "1458cf12f0498b082eddb53fa418eaa308cae884044b66b76d510e7023066fa9"
+      "bytes": 3792640,
+      "sha256": "3c32bc2e9eea8992538a147907b1e2827929dd898eb60eb0b42a8986991c6d1c"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/results/final/preventive_ac_cross_network_summary.csv",
-      "bytes": 2521,
-      "sha256": "376de8b83949cf80e02cf314ad0171d3d409a193dbef298a1c5f7b12e0f42e85"
+      "bytes": 3436,
+      "sha256": "df1d55cfca658da85284ca721e0acab2fb24ed7a3fdcf7805b36986758d5ac22"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/reconstructed_cells.csv",
+      "bytes": 248640,
+      "sha256": "48bf0fe75f291cffa9ec87ef751f1421356e552ca805a5102f4b03af9d066855"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/results/final/solver_attempt_diagnostics.csv",
+      "bytes": 935742,
+      "sha256": "48096ada884565c1e7d6fa17d0d71735939a8386bb565594b7f2ae755f20863b"
     },
     {
       "path": "experiments/exp19_job_level_counterfactual/results/final/experiment_metadata.json",
@@ -2912,18 +3172,18 @@
     },
     {
       "path": "experiments/exp28_risk_tail_audit/results/final/experiment_metadata.json",
-      "bytes": 954,
-      "sha256": "8e3f532cbc51438c32b5b2789a17f515696fe4fcd1e51bd9ff1258d673c14a50"
+      "bytes": 1812,
+      "sha256": "df7c991a5bec86dfa801984f29b7f53b79edab83476e4354a50a4bb60e64119a"
     },
     {
       "path": "experiments/exp28_risk_tail_audit/results/final/risk_tail_audit.csv",
-      "bytes": 612,
-      "sha256": "5bc86c88057bf8ee722cce1fa396364ac4b21d2b5e066fca2112677a5af71d6e"
+      "bytes": 711,
+      "sha256": "e65d863a8a6e766ed18dff0a135efe3f33646d99ea7c9685a99055e6f8e9fafe"
     },
     {
       "path": "experiments/exp28_risk_tail_audit/results/final/risk_tail_paired_bootstrap.csv",
-      "bytes": 1500,
-      "sha256": "aa1a5fa38bfa5aec7d981d7d60a47802c35bcb776d61883c4f600693bff8a91b"
+      "bytes": 2681,
+      "sha256": "3b6c9f75da979f014da3078793ca3939f5c0d254d8a0e7e7d00295b01414cb96"
     },
     {
       "path": "experiments/exp29_executable_target_bridge/results/final/executable_target_bridge_audit.csv",
@@ -3156,6 +3416,316 @@
       "sha256": "a75718c7a97065de0ad2e6614b856aa15d32c57a393095db3f831c62a063ce62"
     },
     {
+      "path": "experiments/exp31_risk_execution_composition/results/final/execution_transfer_certificates.csv",
+      "bytes": 2407,
+      "sha256": "fa774123f684038fbfb65359cc46a90a2d792caca30518f99b9581a9b5513154"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/execution_transfer_daily.csv",
+      "bytes": 13400,
+      "sha256": "4b05b7915aa2751fed8e6c0afac08f72a0d4ac9ce9ae872772f8651f836bd31d"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/experiment_metadata.json",
+      "bytes": 2440,
+      "sha256": "2ab6671d9aa5f11ee7171296623841e990eaffa1b6a8336490dfdf2e003b8f7a"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/paired_tail_bootstrap.csv",
+      "bytes": 1480,
+      "sha256": "d703323c606dad9a1541e5139eea88d22b9bdb04cb13553f8654c52f8636945e"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/risk_frontier_daily.csv",
+      "bytes": 289571,
+      "sha256": "c74b01b9978973b2775a3799db22df078c95dc495bd1e2ad4d310c0d9b62039c"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/risk_frontier_summary.csv",
+      "bytes": 3517,
+      "sha256": "e4bc4e56a04d90b82d91168a524a0f17c3a764fe658111b40eb14a0fe2a622a4"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/solver_failures.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/validation_freeze_manifest.json",
+      "bytes": 1544,
+      "sha256": "4d6ae4635ca970c7ac33553015f9ad909f7418f134a4f4a73d6d0f332916556b"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/validation_frozen_weights.csv",
+      "bytes": 1442,
+      "sha256": "24d1e2234a0f0424ff970329f0b8ed1f8ae140f2d440676161a5b0cdcb3a42df"
+    },
+    {
+      "path": "experiments/exp31_risk_execution_composition/results/final/validation_solver_certificates.csv",
+      "bytes": 3597,
+      "sha256": "e86ddd48fcb6d0994bae5e1a3ec9fa86c332ad2690cccc1eba4dfb3def7341cb"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/experiment_metadata.json",
+      "bytes": 881,
+      "sha256": "12912f2c5c27e8474a4e97655d736d9e519aff3f308c8d04078732c7c5adfa63"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day114_u0.98_joint_zero_risk_exact_mse.npz",
+      "bytes": 3365,
+      "sha256": "832c1515cefa0a292ce0118c07d97b9766fbf43a11b068a78852a2d0578633df"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day114_u0.98_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 3365,
+      "sha256": "832c1515cefa0a292ce0118c07d97b9766fbf43a11b068a78852a2d0578633df"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day114_u1.10_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 3428,
+      "sha256": "3e830dba8e0f76843ee4b9d94627d6646e3447432af4c126ef26cb604005cdfe"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day61_u0.98_joint_zero_risk_exact_mse.npz",
+      "bytes": 3942,
+      "sha256": "af36474e0724f7f2144fb2f763762f60651bb0a6e45dfefd277970945d9ffb3c"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day61_u0.98_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 3989,
+      "sha256": "9c6db57709b8dc01b9c192a4096593871df07ea5cf81b0c3f3bcf8633e13e5ab"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day61_u1.10_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 4030,
+      "sha256": "696291ce5f9a2edebfbba891a00eeeeb3fde59e6a6883233f0f42055cf96da06"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day88_u0.98_joint_zero_risk_exact_mse.npz",
+      "bytes": 4054,
+      "sha256": "a04d0fb9e91675b5fe8ff16c892221d63cc2af93fdf6a16fd7bb3394d0685ee9"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day88_u0.98_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 4152,
+      "sha256": "1880765eee0f45575490f9e185fe6c4200b1497a6e6e3180d7fa7dd951d54877"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day88_u1.10_joint_zero_risk_exact_mse.npz",
+      "bytes": 4097,
+      "sha256": "47989134b95f52d2f80aea97478b121decb73beb46b3dc80559017337840692c"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_day88_u1.10_phase_one_minimum_mse_zero_risk.npz",
+      "bytes": 4164,
+      "sha256": "0adf5bbe9ea09ca82d75998e63f3124175410849d4abf1d8c201180e733240c6"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_cells.csv",
+      "bytes": 6735,
+      "sha256": "ca15f1661fc49cfc4989a7a2b3ce246af8d3cbd6f661b8c42635ad9b8ab42e2a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_certificates.json",
+      "bytes": 19969,
+      "sha256": "2d5528a71306ab1aaa09ca9792607e35a8e5636eb76563d78f6cfdef3b6fbdb2"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_metadata.json",
+      "bytes": 1294,
+      "sha256": "7228874122ab8f59b73ad0b853a06b883f17c5b8fa7df02d86def0a87b0cbda3"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_candidate_distances.csv",
+      "bytes": 3735,
+      "sha256": "8555d8d57ab24a47d68e2dddb177f45c32c14cb8f3619aaf71d1d9c94ec2c7b9"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_daily.csv",
+      "bytes": 614752,
+      "sha256": "7bdd5eac49e0b6340aa1204520dfeac0ffce7ca6707694fff55bb8dc6f9a0317"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_fit_certificates.json",
+      "bytes": 6033,
+      "sha256": "1f0afac6b51bd8c88ac52d7303dc0c25e881aa177914e480edcfe4094817d97f"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_frozen_profiles.npz",
+      "bytes": 508230,
+      "sha256": "7886cdb3c5ec3892d01592b6232e80ee10304b730b8709f0abf7d4a2b721c926"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_hull_diagnostics.csv",
+      "bytes": 726,
+      "sha256": "1b777feb41a4bfc760b9f4e51f361feddaeb405a41b2d3166495456587d8720a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_information_boundary.csv",
+      "bytes": 25638,
+      "sha256": "6faa4fbf7c4269b218b16ac3fa0383cd05d8a40c005adfc3b5e01c7b7857e2c1"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_metadata.json",
+      "bytes": 2789,
+      "sha256": "cdcd2ef92c86e0bde441cc541aa5beb8236ec575c233c4dbbab5c6dfa0d81abb"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_summary.csv",
+      "bytes": 4348,
+      "sha256": "bfc040243752a4c6b0ea39601994da8e52e422813194bdfef3e4e6ba9323bcf6"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/matched_gate_weights.csv",
+      "bytes": 2004,
+      "sha256": "814d1715584123bf06c3fab463a2c2a334a161a4bd0b34c1e2906684e5b523bc"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cells.csv",
+      "bytes": 16116,
+      "sha256": "87b49fff89b58e9459ecd39c42826d460536a98e6aad71c666f5cd931b6b1ba6"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_cohort.csv",
+      "bytes": 22422,
+      "sha256": "85d5a2f4f01a918c4c75388b64ff57ff1cd07baede7059bbcff7fd4cc9e7b9ea"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_metadata.json",
+      "bytes": 1369,
+      "sha256": "5c6ac5a08ab30fc0c1120106875c47d563817a0d4b0e21501dd3d79617be2f1a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_summary.csv",
+      "bytes": 568,
+      "sha256": "9f3669d373afc879d58515df5d1d5d3897baea229fff12f40c08438a5bd712ae"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.20_runtime_cost_only.npz",
+      "bytes": 3976,
+      "sha256": "3cb4288d333d36b77a0b9e5969c21cc4f1ebc5ab8cae5e06bc5385b09f7d7f17"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.20_runtime_direct_total_tail.npz",
+      "bytes": 3976,
+      "sha256": "3cb4288d333d36b77a0b9e5969c21cc4f1ebc5ab8cae5e06bc5385b09f7d7f17"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.80_runtime_cost_only.npz",
+      "bytes": 3976,
+      "sha256": "cf2bafbac329758b30ebdc408735df1c322ad5d30419d7fd05907db34a1c2148"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.80_runtime_direct_total_tail.npz",
+      "bytes": 3976,
+      "sha256": "cf2bafbac329758b30ebdc408735df1c322ad5d30419d7fd05907db34a1c2148"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.98_runtime_cost_only.npz",
+      "bytes": 3977,
+      "sha256": "3a72f1a88487b169739d9683d975682edf321f01cc0815ac4e878d4f4b9f6508"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u0.98_runtime_direct_total_tail.npz",
+      "bytes": 3977,
+      "sha256": "3a72f1a88487b169739d9683d975682edf321f01cc0815ac4e878d4f4b9f6508"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u1.10_runtime_cost_only.npz",
+      "bytes": 3978,
+      "sha256": "2f100e2efd8118398ef112c062a04d0c63626f7dc9ac7888ccf2179f403313b6"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day114_u1.10_runtime_direct_total_tail.npz",
+      "bytes": 3973,
+      "sha256": "0197c9c8b365db9a106a98d9a21b1fd8af0de9d7d42316753dfc790f0da7ba3a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.20_runtime_cost_only.npz",
+      "bytes": 4576,
+      "sha256": "4420948e9e4dd195ec79602f98e3628d4b463b8c193e02ba9aa2d3a25ecb8a77"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.20_runtime_direct_total_tail.npz",
+      "bytes": 4576,
+      "sha256": "4420948e9e4dd195ec79602f98e3628d4b463b8c193e02ba9aa2d3a25ecb8a77"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.80_runtime_cost_only.npz",
+      "bytes": 4574,
+      "sha256": "845bd408a8e3502cb632209ebc83272622b2f4f68c3c004beeff200f3b7c07fe"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.80_runtime_direct_total_tail.npz",
+      "bytes": 4574,
+      "sha256": "845bd408a8e3502cb632209ebc83272622b2f4f68c3c004beeff200f3b7c07fe"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.98_runtime_cost_only.npz",
+      "bytes": 4579,
+      "sha256": "a74b323ea06a6d48e2448fabb74bd9a92fc482aaa1ff777468533f5cb9a66b0e"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u0.98_runtime_direct_total_tail.npz",
+      "bytes": 4579,
+      "sha256": "a74b323ea06a6d48e2448fabb74bd9a92fc482aaa1ff777468533f5cb9a66b0e"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u1.10_runtime_cost_only.npz",
+      "bytes": 4581,
+      "sha256": "a59585d7f831c6339dcc90ad14659754fb85d0be643f81001541e6fe20e99637"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day61_u1.10_runtime_direct_total_tail.npz",
+      "bytes": 4588,
+      "sha256": "6088a85ddac3c62bdcf322711a3f64a4a20e28c30e080e70f8206a52a741fcf8"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.20_runtime_cost_only.npz",
+      "bytes": 4743,
+      "sha256": "b834f414f2cb2250cdcb623f73639e00dec73dbe17b93c23832a28c93f57245b"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.20_runtime_direct_total_tail.npz",
+      "bytes": 4743,
+      "sha256": "b834f414f2cb2250cdcb623f73639e00dec73dbe17b93c23832a28c93f57245b"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.80_runtime_cost_only.npz",
+      "bytes": 4742,
+      "sha256": "0f238213aa46114ff2e0546f1be6b5732b62476b5f5e3c8d8be84216948489a8"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.80_runtime_direct_total_tail.npz",
+      "bytes": 4742,
+      "sha256": "0f238213aa46114ff2e0546f1be6b5732b62476b5f5e3c8d8be84216948489a8"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.98_runtime_cost_only.npz",
+      "bytes": 4749,
+      "sha256": "0f6d54b82569e9c87fe1cca9c83cefa56f0a7b39464476b48a943765740d745a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u0.98_runtime_direct_total_tail.npz",
+      "bytes": 4749,
+      "sha256": "0f6d54b82569e9c87fe1cca9c83cefa56f0a7b39464476b48a943765740d745a"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u1.10_runtime_cost_only.npz",
+      "bytes": 4777,
+      "sha256": "8e65907454be6d398692a6043dc89298ad89f95437aa5c624d1b4f2921df1514"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_day88_u1.10_runtime_direct_total_tail.npz",
+      "bytes": 4771,
+      "sha256": "cd6a61fb3583cfe152c80dc8e654885cf702b019de59caecb258be6bdf7b4ebf"
+    },
+    {
+      "path": "experiments/exp32_matched_gate_capacity/results/final/runtime_direct_risk_certificates.json",
+      "bytes": 41699,
+      "sha256": "05e40e88f22282406510c45007e960683c84f7709a601742edebef3a890cdc07"
+    },
+    {
       "path": "experiments/exp3_nodal_settlement/results/final/experiment_metadata.json",
       "bytes": 1987,
       "sha256": "e6a63a947cb1b7159532a98a7e66d235455a5f654449df55aa6e120069240359"
@@ -3333,7 +3903,7 @@
     {
       "path": "experiments/exp9_payment_certificate/results/final/experiment_metadata.json",
       "bytes": 6280,
-      "sha256": "5d12a43e8f9e8c917b39e101157ec1f61018b08e9e3787365d7afbfea6e40abf"
+      "sha256": "630a46ccb2f4c440cc694685ff8e963a029bded01fb6afb09eb651e2e9499c3a"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/network_capacity_activation_audit.csv",
@@ -3342,28 +3912,28 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/paired_payment_noninferiority.csv",
-      "bytes": 22391,
-      "sha256": "50076275d329350f5ab33630ca2239a604fb95ea8465656d3ad0cb8078e4e592"
+      "bytes": 22405,
+      "sha256": "a6ca41227110729b9230f4b1e85b679734373596edf4c993727aedb625209c49"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_daily.csv",
-      "bytes": 146901,
-      "sha256": "26f27ab6f8a7a6f68ce603adc81af682e194c74e26e856e9b2aecdcc8a4f35a1"
+      "bytes": 146880,
+      "sha256": "aea155f032bfda1b58bb89645c34d6cd4b490a1f7a56344e5b8b8778fc5e945b"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_intervals.csv",
-      "bytes": 2443705,
-      "sha256": "f04762b3dc55a40d1de71b6770f55888c79693a1650efd8f29795f5a43666423"
+      "bytes": 2435061,
+      "sha256": "bb01199b6dbafccb7829631f38da48600f515b9c0d2c6c330b8e3f9b489b22f3"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_summary.csv",
       "bytes": 2972,
-      "sha256": "a5b30ee50c0d3e9f3e0b2de0c07864d895505fdc32c1ec7c3ad5c3762c8ec734"
+      "sha256": "261fcd6539b4d7d665f86f46e128a5639bd0f54c01b54fcab8c80e50b7f4fb44"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_scenarios.csv",
-      "bytes": 112088,
-      "sha256": "605a66d55e15971d6df554ba0ffc2618699fc8310362b70a3da4c94cad8c1f35"
+      "bytes": 111811,
+      "sha256": "cf808f02b7f525508af7e72bb33f490f9dd45f917b65570012dca801b65dd18a"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_evaluation_unseen_summary.csv",
@@ -3377,8 +3947,8 @@
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_pareto_paired_ci.csv",
-      "bytes": 2639,
-      "sha256": "f80f34ee37dcd48c1a740b7599f4e633d056d9c56ae94b23157cc7413afb646d"
+      "bytes": 2642,
+      "sha256": "3bb0e3d349fb4cd780b2488fda0a84bb2fe4095668e5479aaf673432ec0fb274"
     },
     {
       "path": "experiments/exp9_payment_certificate/results/final/payment_target_selection_validation.csv",
@@ -3468,7 +4038,7 @@
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.pdf",
       "bytes": 19027,
-      "sha256": "5d48dc543716a9dc48d150043d099abefcd8718620c71ca473d1bd572a3e3122"
+      "sha256": "ab3410a7744f1c886121943a64245b4cc2789331b81e762a8fc1fc9bef80b35b"
     },
     {
       "path": "experiments/exp16_ledger_capacity_provenance/figures/fig22_ledger_capacity_provenance.png",
@@ -3484,6 +4054,16 @@
       "path": "experiments/exp17_decision_time_information/figures/fig23_decision_time_information.png",
       "bytes": 313776,
       "sha256": "75a8a0028981ab3b75df6def6b8699dcdb2649e8ea74cfab41d6454cdfa15beb"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.pdf",
+      "bytes": 16993,
+      "sha256": "df211962fbbea504d9df07507785f26613e08dc8c1528f525a9a7419089fbd7c"
+    },
+    {
+      "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_common_domain_coverage.png",
+      "bytes": 72291,
+      "sha256": "f715b07fdf5cff996a6ba6b07d8720686ca939bb9a104edbc0fa53308222d2b2"
     },
     {
       "path": "experiments/exp18_preventive_ac_network_panel/figures/fig24_preventive_ac_cross_network.pdf",
@@ -3557,18 +4137,18 @@
     },
     {
       "path": "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.pdf",
-      "bytes": 16689,
-      "sha256": "c9f5763baf9e1b8008a6a17113d4af41b2729b9a8bea8945c836eea03dcb8e8e"
+      "bytes": 16694,
+      "sha256": "fbc23dd8a73a78cac3c8e47236beee441c4c55389546d87f2d36b6d39a62d028"
     },
     {
       "path": "experiments/exp28_risk_tail_audit/figures/fig_risk_tail_tradeoff.png",
-      "bytes": 130593,
-      "sha256": "3d3b95130abf3b06131cded6d6d5dc52a4ebf77777b7cb224fd50913b5179723"
+      "bytes": 130745,
+      "sha256": "8739894688a3b4208e052de2416e0445ad29785a66e9062a7d77ac46b91386c0"
     },
     {
       "path": "experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.pdf",
       "bytes": 17431,
-      "sha256": "0997fe80e55c9959dedecd441d91e84d944d3323bf3f6a6e0221a857cc8293d6"
+      "sha256": "5ece5ef374cbda139602da473e2253ecb2d31a8f3a63541c845f08b96970909e"
     },
     {
       "path": "experiments/exp29_executable_target_bridge/figures/fig29_target_tracking.png",
@@ -3718,7 +4298,7 @@
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.pdf",
       "bytes": 22934,
-      "sha256": "f7b06e3d99745c081f8b6fa2a6acb529c6071c0c3587d4492820e9c03a503d92"
+      "sha256": "d8443318a5439e5caa32d24b0c080d4ce485a06da924a314fe912c9faaa13bda"
     },
     {
       "path": "experiments/exp9_payment_certificate/figures/fig14_payment_certificate.png",
@@ -3735,6 +4315,6 @@
     "The nonlinear AC outage panel solves a separate corrective post-contingency optimum for every non-islanding IEEE-9 and IEEE-14 line outage; it is not a simultaneous preventive AC security-constrained OPF or a transient-stability certificate.",
     "The shared-active-plan preventive AC panel fixes non-reference active generation across every finite non-islanding IEEE-9 outage, with reactive-power, voltage, and reference-generator loss recourse; it is not a transient-stability or intertemporal unit-commitment certificate.",
     "The event-gate information panel removes post-gate arrivals before optimization and uses the locked execution trace only for scoring; its complete-ledger comparator quantifies information cost rather than defining a deployable gate policy.",
-    "The cross-network AC panel is a fixed-active-plan preventive AC-OPF certificate over every native-case admissible non-islanding outage in four public networks; it is a steady-state feasibility result and not a transient-stability or intertemporal unit-commitment certificate."
+    "The cross-network AC panel retains every connected non-islanding outage in four public networks, classifies certified/limit-violation/numerical-unknown outcomes on identical method denominators, and does not treat nonlinear failure as physical infeasibility; certified cells are steady-state checks, not transient-stability or unit-commitment certificates."
   ]
 }

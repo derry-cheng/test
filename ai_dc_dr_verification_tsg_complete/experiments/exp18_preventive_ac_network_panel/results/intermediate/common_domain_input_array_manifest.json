@@ -1,0 +1,269 @@
+{
+  "certified_profiles": {
+    "path": "experiments/exp9_payment_certificate/results/final/certified_counterfactual_profiles.npz",
+    "file_sha256": "51cce4ab8343ec01c55939eda86ca6cf33d7c1c71a366915c4f13dc5c714e4ba",
+    "arrays": {
+      "days": {
+        "shape": [
+          54
+        ],
+        "dtype": "<i8",
+        "c_order_sha256": "0c492ecb03fe6e45681e9136411fe38eb775615cf005fbd7b44801252f575677"
+      },
+      "profiles": {
+        "shape": [
+          54,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "ad6fc2ad618ac1a11ad4915a389153bd1e9263de04a1fc0c464078c3226884b3"
+      },
+      "candidate_names": {
+        "shape": [
+          7
+        ],
+        "dtype": "<U28",
+        "c_order_sha256": "d4c08626b614ddd9e62494b6468acd6a4a3b43351df2cdc319de2dce76bbe356"
+      },
+      "projection_weights": {
+        "shape": [
+          6
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "2fbc1115b494de19fb56264224bf664f7de123cfe2e881014b6740af6648dcc7"
+      },
+      "reference_candidate": {
+        "shape": [],
+        "dtype": "<i8",
+        "c_order_sha256": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+      },
+      "candidate_checksum": {
+        "shape": [],
+        "dtype": "<U64",
+        "c_order_sha256": "185d9b9aa308215beaa520567f3ad8c4193f45d4f10bdd69cac806f4e3818ae6"
+      },
+      "fixed_facility_load_mw": {
+        "shape": [],
+        "dtype": "<f8",
+        "c_order_sha256": "3e6357a56fbae74413051d518261f4b70e5b3758172a70e7f101e996e00a9ee0"
+      },
+      "network_dc_scale": {
+        "shape": [],
+        "dtype": "<f8",
+        "c_order_sha256": "646a6d7ea0bf935fbae94915bb4a324d10cd4c5d69f914b7bfc37e418a0b9716"
+      }
+    }
+  },
+  "test_profiles": {
+    "path": "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz",
+    "file_sha256": "6d22c790a6f9c9cdc969ee99787822d0fe17b566e4c17614dd837f5aae33a546",
+    "arrays": {
+      "days": {
+        "shape": [
+          54
+        ],
+        "dtype": "<i8",
+        "c_order_sha256": "0c492ecb03fe6e45681e9136411fe38eb775615cf005fbd7b44801252f575677"
+      },
+      "methods": {
+        "shape": [
+          12
+        ],
+        "dtype": "<U34",
+        "c_order_sha256": "733738bb6078ea2a70bfc1728d4382aecfc10e574a6b289830d9a1d81d6be236"
+      },
+      "baselines": {
+        "shape": [
+          54,
+          12,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "afa19a92b614ac8d88fa86fe5c839190f1cb3bafe15f3d1ef74a5e90e33bf539"
+      },
+      "actual": {
+        "shape": [
+          54,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "db81dcb87d5ee149c877bd7cbb0588d3e847a320023d4e1eb70c4dacf12003b5"
+      },
+      "oracle": {
+        "shape": [
+          54,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "501a09605a58e16f274f95055ce859310429bd05c8999ed30d41c4ad6d2856f2"
+      },
+      "physics_migration": {
+        "shape": [
+          54
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "09c46cd0d1b9abe0eeb178b00482fb092b64ee84ae504241b4bd16eed6ed0a48"
+      },
+      "payment_contract_profiles": {
+        "shape": [
+          54,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "64e515206f0de151014d848a7decb47e5d06c75805aea0188002cbbff9dd339b"
+      },
+      "projection_candidates": {
+        "shape": [
+          54,
+          6,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "49c9d779dd643e976293a36febac4536ed3dd318dc7b544adc8576255e15c7c2"
+      },
+      "projection_weights": {
+        "shape": [
+          6
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "2fbc1115b494de19fb56264224bf664f7de123cfe2e881014b6740af6648dcc7"
+      },
+      "selected_single_projection_index": {
+        "shape": [],
+        "dtype": "<i8",
+        "c_order_sha256": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+      },
+      "selected_single_projection_weight": {
+        "shape": [],
+        "dtype": "<f8",
+        "c_order_sha256": "24b1f4ef66b650ff816e519b01742ff1753733d36e1b4c3e3b52743168915b1f"
+      },
+      "causal_pareto_profile": {
+        "shape": [
+          54,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "05e7b0d9ac70cba8e8aec86bee77a872197f06506354ae73aa89fc213a8cc0b7"
+      },
+      "causal_pareto_projection_weight": {
+        "shape": [],
+        "dtype": "<f8",
+        "c_order_sha256": "24b1f4ef66b650ff816e519b01742ff1753733d36e1b4c3e3b52743168915b1f"
+      },
+      "risk_candidate_profiles": {
+        "shape": [
+          54,
+          7,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "638a34a92af8aaf4109794eae3a3a8d9f7e8bc539cc649d5cd255964fff19005"
+      },
+      "risk_reference_index": {
+        "shape": [],
+        "dtype": "<i8",
+        "c_order_sha256": "23d7f42b1cdc1f0d492ebd756ed0fe8003995dda554d99418d47a81813650207"
+      }
+    }
+  },
+  "validation_profiles": {
+    "path": "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+    "file_sha256": "89430658f30e2a40ca52c80bca4528c15c97ed3cb29f82f1405a1fd73e391592",
+    "arrays": {
+      "days": {
+        "shape": [
+          16
+        ],
+        "dtype": "<i8",
+        "c_order_sha256": "5b2a3b4ed0b714c5f2983b57c2c4a8dc38f21fc9a50a93d6812a5d01534419df"
+      },
+      "projection_candidates": {
+        "shape": [
+          6,
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "c138e21e3d80da1e1d8bc89b1e95fac804730bbc3e8092155544c07b9da80b69"
+      },
+      "quantile_profile": {
+        "shape": [
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "7957f3f275ee7741a48acb2deb045d91805cfdde71a49916a1663a3b4294af57"
+      },
+      "actual": {
+        "shape": [
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "54e2d87f06becc0099c660b0b720ad6ec6250fe9db066b5c201f3523299774aa"
+      },
+      "oracle": {
+        "shape": [
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "e271f72a10df6d00c1343f77318064fe72a34f09cc70edeeea5a451bfcc1c889"
+      },
+      "projection_weights": {
+        "shape": [
+          6
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "2fbc1115b494de19fb56264224bf664f7de123cfe2e881014b6740af6648dcc7"
+      },
+      "selected_single_projection_index": {
+        "shape": [],
+        "dtype": "<i8",
+        "c_order_sha256": "f13ee6ed54ea2aae9fc49a9faeb5da6e8ddef0e12ed5d30d35a624ae813e0485"
+      },
+      "causal_pareto_profile": {
+        "shape": [
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "927b8670b0b060e23af3da9987ccdf6cf5da1f4d89cdd1bf9783eb95b129b833"
+      },
+      "causal_pareto_projection_weight": {
+        "shape": [],
+        "dtype": "<f8",
+        "c_order_sha256": "24b1f4ef66b650ff816e519b01742ff1753733d36e1b4c3e3b52743168915b1f"
+      },
+      "risk_candidate_profiles": {
+        "shape": [
+          7,
+          16,
+          4,
+          96
+        ],
+        "dtype": "<f8",
+        "c_order_sha256": "8200db9f169915bf8e3543beeea8e5e1544e91aa046f3faf92c86c4659cf0237"
+      },
+      "risk_reference_index": {
+        "shape": [],
+        "dtype": "<i8",
+        "c_order_sha256": "23d7f42b1cdc1f0d492ebd756ed0fe8003995dda554d99418d47a81813650207"
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "revision_date": "2026-10-14",
+  "base_commit": "f98b6bee487df1f9a650b4a9d6787659c1db6473",
+  "status": "local_validation_completed",
+  "historical_full_run_not_reexecuted": true,
+  "maximum_concurrent_cpu_cores": 20,
+  "unchanged_frozen_inputs": [
+    "data/processed/workload_15min.npz",
+    "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz",
+    "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz"
+  ],
+  "executed_stages": {
+    "exp28": {
+      "status": "completed",
+      "command": "python experiments/exp28_risk_tail_audit/run.py",
+      "scope": "Recomputed top-m tail audit and bootstrap from unchanged saved per-day outcomes"
+    },
+    "exp31": {
+      "status": "completed",
+      "command": "python experiments/exp31_risk_execution_composition/run.py",
+      "scope": "Retrospective exact-convex active-tail fit and risk/execution composition audit"
+    },
+    "exp18": {
+      "status": "completed",
+      "scope": "Common-domain reconstruction with checksum-bound reuse; fixed numerical restart budget",
+      "command": "python run_all.py --stage exp18 --resume"
+    },
+    "exp32": {
+      "status": "completed",
+      "scope": "Matched gate and exact coupled runtime-capacity-risk-MSE experiments",
+      "command": "python experiments/exp32_matched_gate_capacity/run.py"
+    },
+    "exp9": {
+      "status": "completed",
+      "command": "python run_all.py --stage exp9 --resume",
+      "scope": "Cached-certificate revalidation and metadata refresh; original profile NPZ bytes unchanged"
+    }
+  },
+  "updated_utc": "2026-10-14T09:42:24.434185+00:00",
+  "frozen_input_sha256": {
+    "data/processed/workload_15min.npz": "fd2cfee08fc752bc9b2b9b002a198ae6ef8a3c1410ceafe19cd51b90b7b74bd5",
+    "experiments/exp2_baseline_verification/results/intermediate/validation_profiles.npz": "89430658f30e2a40ca52c80bca4528c15c97ed3cb29f82f1405a1fd73e391592",
+    "experiments/exp2_baseline_verification/results/intermediate/test_profiles.npz": "6d22c790a6f9c9cdc969ee99787822d0fe17b566e4c17614dd837f5aae33a546"
+  },
+  "verification": {
+    "pytest": {
+      "command": "python -m pytest -q tests",
+      "passed": 96,
+      "failed": 0
+    },
+    "audit": {
+      "command": "python run_all.py --stage audit",
+      "passed": 448,
+      "failed": 0
+    },
+    "pdf_pages": 10,
+    "abstract_words": 182,
+    "references": 32,
+    "pdf_visual_review": "All10 pages rendered; framework/detail diagram, 8pt tables and new risk/capacity chart inspected; no observed overlaps after legend correction.",
+    "remote_main_updated_at_manifest_creation": false
+  },
+  "verified_artifact_sha256": {
+    "paper/main.tex": "020582e4d669bfbb5a48f620fa36281233a0480a0cf8c0aef7212e224be07dfd",
+    "paper/main.pdf": "56029f39aee3491015c9859a269c118b0f5e9f3c406ee7ff7c5e58c0ab8df5fd",
+    "audit/result_audit.json": "99ef4e609573d48d0129755d48d71b40b9c90d62e5cad85a48146016aa7d5a28",
+    "experiments/exp18_preventive_ac_network_panel/results/final/experiment_metadata.json": "70da6865927bbac3feb87833a8c63f04e2957699e4e176f342f82156b4d7154d",
+    "experiments/exp31_risk_execution_composition/results/final/experiment_metadata.json": "2ab6671d9aa5f11ee7171296623841e990eaffa1b6a8336490dfdf2e003b8f7a",
+    "experiments/exp32_matched_gate_capacity/results/final/matched_gate_metadata.json": "cdcd2ef92c86e0bde441cc541aa5beb8236ec575c233c4dbbab5c6dfa0d81abb",
+    "experiments/exp32_matched_gate_capacity/results/final/runtime_capacity_metadata.json": "5c6ac5a08ab30fc0c1120106875c47d563817a0d4b0e21501dd3d79617be2f1a",
+    "experiments/exp32_matched_gate_capacity/results/final/joint_runtime_risk_mse_metadata.json": "7228874122ab8f59b73ad0b853a06b883f17c5b8fa7df02d86def0a87b0cbda3"
+  }
+}

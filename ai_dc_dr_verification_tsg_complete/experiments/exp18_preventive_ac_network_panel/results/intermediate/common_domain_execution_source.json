@@ -1,0 +1,9 @@
+{
+  "final_execution_command": "PYTHONPATH=code/src:vendor python code/scripts/run_ac_common_domain_audit.py --resume --workers 8",
+  "source_sha256": {
+    "code/src/aicdr/ac_common_domain.py": "c53233ce2bb9dde99c4aeda690e28456956cbd49beedd3c649f3198a0b40335c",
+    "code/scripts/run_ac_common_domain_audit.py": "55c5c49e3969cfa97d41a6e03b13c0d5a769a0efef95cb770f754df5e0425e27",
+    "code/src/aicdr/experiments.py": "d8dbb96e1ea873e7c359c1ba85aac9a66991d56188aea720cb4a123e48175481"
+  },
+  "note": "Captured while the final resumed execution was active. No computational source edits occurred after that execution began."
+}

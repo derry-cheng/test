@@ -1,0 +1,9 @@
+method,nominal_reference_peak_utilization,expected_cells,feasible_cells,optimal_cells,maximum_elapsed_seconds,maximum_mip_gap
+runtime_cost_only,0.2,3,0,0,0.08603526899241842,
+runtime_cost_only,0.8,3,0,0,0.08060247100365814,
+runtime_cost_only,0.98,3,0,0,0.07793303800281137,
+runtime_cost_only,1.1,3,0,0,0.06904643699817825,
+runtime_direct_total_tail,0.2,3,0,0,0.08782712300308049,
+runtime_direct_total_tail,0.8,3,0,0,0.08392717900278512,
+runtime_direct_total_tail,0.98,3,0,0,0.07805937700322829,
+runtime_direct_total_tail,1.1,3,0,0,0.08510540099814534,
